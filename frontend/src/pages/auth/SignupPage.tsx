@@ -205,25 +205,7 @@ const SignupPage = () => {
               />
             </Grid>
 
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                select
-                label={t('auth.city')}
-                {...register('city')}
-                error={!!errors.city}
-                helperText={errors.city?.message}
-                defaultValue=""
-              >
-                {MAHARASHTRA_CITIES.map((city) => (
-                  <MenuItem key={city} value={city}>
-                    {city}
-                  </MenuItem>
-                ))}
-              </TextField>
-            </Grid>
-
-            <Grid item xs={12} sm={6}>
+            <Grid item xs={12} sm={4}>
               <TextField
                 fullWidth
                 label={t('auth.state')}
@@ -235,6 +217,31 @@ const SignupPage = () => {
                 }}
               />
             </Grid>
+
+            <Grid item xs={12} sm={4}>
+              <TextField
+                fullWidth
+                select
+                label={t('auth.city')}
+                {...register('city')}
+                error={!!errors.city}
+                helperText={errors.city?.message}
+                SelectProps={{
+                  displayEmpty: true,
+                }}
+              >
+                <MenuItem value="" disabled>
+                  Select City
+                </MenuItem>
+                {MAHARASHTRA_CITIES.map((city) => (
+                  <MenuItem key={city} value={city}>
+                    {city}
+                  </MenuItem>
+                ))}
+              </TextField>
+            </Grid>
+
+            <Grid item xs={12} sm={4}>
 
             <Grid item xs={12}>
               <TextField

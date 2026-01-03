@@ -129,7 +129,7 @@ const CheckoutPage = () => {
                 {t('checkout.shippingAddress')}
               </Typography>
               <Grid container spacing={2}>
-                <Grid item xs={12}>
+                <Grid item xs={12} sm={6}>
                   <TextField
                     fullWidth
                     label={t('auth.name')}
@@ -138,7 +138,7 @@ const CheckoutPage = () => {
                     helperText={errors.name?.message}
                   />
                 </Grid>
-                <Grid item xs={12}>
+                <Grid item xs={12} sm={6}>
                   <TextField
                     fullWidth
                     label={t('auth.phone')}
@@ -174,9 +174,12 @@ const CheckoutPage = () => {
                     {...register('state')}
                     error={!!errors.state}
                     helperText={errors.state?.message || 'Must be Maharashtra'}
+                    InputProps={{
+                      readOnly: true,
+                    }}
                   />
                 </Grid>
-                <Grid item xs={12}>
+                <Grid item xs={12} sm={6}>
                   <TextField
                     fullWidth
                     label={t('auth.pincode')}

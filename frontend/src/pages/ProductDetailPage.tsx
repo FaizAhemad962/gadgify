@@ -78,12 +78,12 @@ const ProductDetailPage = () => {
 
       <Grid container spacing={4}>
         <Grid item xs={12} md={6}>
-          <Card>
+          <Card sx={{ overflow: 'hidden' }}>
             <CardMedia
               component="img"
               image={product.imageUrl || 'https://via.placeholder.com/600x400?text=Product'}
               alt={product.name}
-              sx={{ width: '100%', height: 'auto' }}
+              sx={{ width: '100%', height: 500, objectFit: 'cover', display: 'block' }}
             />
           </Card>
         </Grid>

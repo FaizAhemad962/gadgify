@@ -81,7 +81,7 @@ const CartPage = () => {
                     component="img"
                     image={item.product.imageUrl || 'https://via.placeholder.com/150'}
                     alt={item.product.name}
-                    sx={{ height: 150, objectFit: 'cover' }}
+                    sx={{ height: 150, width: '100%', objectFit: 'cover', display: 'block' }}
                   />
                 </Grid>
                 <Grid item xs={12} sm={9}>
