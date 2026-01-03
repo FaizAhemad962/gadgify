@@ -16,7 +16,12 @@ i18n
       mr: { translation: mr },
     },
     fallbackLng: 'en',
+    lng: 'en',
     debug: false,
+    detection: {
+      order: ['localStorage', 'navigator'],
+      caches: ['localStorage'],
+    },
     interpolation: {
       escapeValue: false,
     },

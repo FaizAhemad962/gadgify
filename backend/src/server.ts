@@ -13,7 +13,19 @@ import adminRoutes from './routes/adminRoutes'
 const app: Application = express()
 
 // Security middleware
-app.use(helmet())
+app.use(
+  helmet({
+    crossOriginResourcePolicy: { policy: 'cross-origin' },
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        imgSrc: ["'self'", 'data:', 'http://localhost:5000', 'http://localhost:3000', 'https:'],
+        scriptSrc: ["'self'"],
+        styleSrc: ["'self'", "'unsafe-inline'", 'https:'],
+      },
+    },
+  })
+)
 
 // CORS
 app.use(
@@ -34,6 +46,10 @@ app.use('/api/', limiter)
 // Body parser
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
+
+// Serve uploaded files with proper path resolution
+const path = require('path')
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')))
 
 // Health check
 app.get('/health', (req: Request, res: Response) => {

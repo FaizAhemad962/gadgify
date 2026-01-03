@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useTranslation } from 'react-i18next'
 import {
   Box,
   Typography,
@@ -19,6 +20,7 @@ import type { Order } from '../../types'
 import { format } from 'date-fns'
 
 const AdminOrders = () => {
+  const { t } = useTranslation()
   const queryClient = useQueryClient()
 
   const { data: orders, isLoading } = useQuery({
@@ -52,20 +54,20 @@ const AdminOrders = () => {
   return (
     <Box>
       <Typography variant="h4" gutterBottom fontWeight="600">
-        Manage Orders
+        {t('admin.orders')}
       </Typography>
 
       <TableContainer component={Paper}>
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell>Order ID</TableCell>
-              <TableCell>Customer</TableCell>
-              <TableCell>Date</TableCell>
-              <TableCell>Items</TableCell>
-              <TableCell>Total</TableCell>
-              <TableCell>Payment</TableCell>
-              <TableCell>Status</TableCell>
+              <TableCell>{t('admin.orderId')}</TableCell>
+              <TableCell>{t('admin.customer')}</TableCell>
+              <TableCell>{t('admin.date')}</TableCell>
+              <TableCell>{t('admin.items')}</TableCell>
+              <TableCell>{t('admin.total')}</TableCell>
+              <TableCell>{t('admin.payment')}</TableCell>
+              <TableCell>{t('admin.status')}</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>

@@ -10,7 +10,6 @@ import {
   Typography,
   Box,
   Paper,
-  Grid,
   TextField,
   Button,
   Divider,
@@ -122,14 +121,14 @@ const CheckoutPage = () => {
       )}
 
       <form onSubmit={handleSubmit(onSubmit)}>
-        <Grid container spacing={3}>
-          <Grid item xs={12} md={8}>
+        <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 3 }}>
+          <Box sx={{ flex: { md: 2 } }}>
             <Paper sx={{ p: 3, mb: 3 }}>
               <Typography variant="h6" gutterBottom>
                 {t('checkout.shippingAddress')}
               </Typography>
-              <Grid container spacing={2}>
-                <Grid item xs={12} sm={6}>
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
+                <Box sx={{ flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 8px)' } }}>
                   <TextField
                     fullWidth
                     label={t('auth.name')}
@@ -137,8 +136,8 @@ const CheckoutPage = () => {
                     error={!!errors.name}
                     helperText={errors.name?.message}
                   />
-                </Grid>
-                <Grid item xs={12} sm={6}>
+                </Box>
+                <Box sx={{ flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 8px)' } }}>
                   <TextField
                     fullWidth
                     label={t('auth.phone')}
@@ -146,8 +145,8 @@ const CheckoutPage = () => {
                     error={!!errors.phone}
                     helperText={errors.phone?.message}
                   />
-                </Grid>
-                <Grid item xs={12}>
+                </Box>
+                <Box sx={{ flex: '1 1 100%' }}>
                   <TextField
                     fullWidth
                     multiline
@@ -157,8 +156,8 @@ const CheckoutPage = () => {
                     error={!!errors.address}
                     helperText={errors.address?.message}
                   />
-                </Grid>
-                <Grid item xs={12} sm={6}>
+                </Box>
+                <Box sx={{ flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 8px)' } }}>
                   <TextField
                     fullWidth
                     label={t('auth.city')}
@@ -166,20 +165,20 @@ const CheckoutPage = () => {
                     error={!!errors.city}
                     helperText={errors.city?.message}
                   />
-                </Grid>
-                <Grid item xs={12} sm={6}>
+                </Box>
+                <Box sx={{ flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 8px)' } }}>
                   <TextField
                     fullWidth
                     label={t('auth.state')}
                     {...register('state')}
                     error={!!errors.state}
-                    helperText={errors.state?.message || 'Must be Maharashtra'}
+                    helperText={errors.state?.message || t('common.mustBeMaharashtra')}
                     InputProps={{
                       readOnly: true,
                     }}
                   />
-                </Grid>
-                <Grid item xs={12} sm={6}>
+                </Box>
+                <Box sx={{ flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 8px)' } }}>
                   <TextField
                     fullWidth
                     label={t('auth.pincode')}
@@ -187,12 +186,12 @@ const CheckoutPage = () => {
                     error={!!errors.pincode}
                     helperText={errors.pincode?.message}
                   />
-                </Grid>
-              </Grid>
+                </Box>
+              </Box>
             </Paper>
-          </Grid>
+          </Box>
 
-          <Grid item xs={12} md={4}>
+          <Box sx={{ flex: { md: 1 } }}>
             <Paper sx={{ p: 3, position: 'sticky', top: 20 }}>
               <Typography variant="h6" gutterBottom>
                 {t('checkout.orderSummary')}
@@ -221,7 +220,7 @@ const CheckoutPage = () => {
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                   <Typography>{t('checkout.shipping')}</Typography>
                   <Typography>
-                    {shipping === 0 ? 'FREE' : `₹${shipping}`}
+                    {shipping === 0 ? t('common.free') : `₹${shipping}`}
                   </Typography>
                 </Box>
               </Box>
@@ -242,8 +241,8 @@ const CheckoutPage = () => {
                 {createOrderMutation.isPending ? 'Processing...' : t('checkout.placeOrder')}
               </Button>
             </Paper>
-          </Grid>
-        </Grid>
+          </Box>
+        </Box>
       </form>
     </Container>
   )

@@ -5,7 +5,6 @@ import { useTranslation } from 'react-i18next'
 import {
   Container,
   Typography,
-  Grid,
   Card,
   CardMedia,
   CardContent,
@@ -90,10 +89,10 @@ const ProductsPage = () => {
           <CircularProgress />
         </Box>
       ) : (
-        <Grid container spacing={3}>
+        <Box sx={{ display: 'flex', gap: 3, flexWrap: 'wrap', justifyContent: 'flex-start' }}>
           {filteredProducts && filteredProducts.length > 0 ? (
             filteredProducts.map((product) => (
-              <Grid item xs={12} sm={6} md={4} key={product.id}>
+              <Box key={product.id}>
                 <Card sx={{ height: 520, width: 360, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
                   <CardMedia
                     component="img"
@@ -166,18 +165,18 @@ const ProductsPage = () => {
                     </Button>
                   </CardActions>
                 </Card>
-              </Grid>
+              </Box>
             ))
           ) : (
-            <Grid item xs={12}>
+            <Box sx={{ width: '100%' }}>
               <Box sx={{ textAlign: 'center', py: 8 }}>
                 <Typography variant="h6" color="text.secondary">
-                  No products found
+                  {t('common.noProductsFound')}
                 </Typography>
               </Box>
-            </Grid>
+            </Box>
           )}
-        </Grid>
+        </Box>
       )}
     </Container>
   )

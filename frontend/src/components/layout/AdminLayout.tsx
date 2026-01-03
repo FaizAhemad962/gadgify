@@ -14,6 +14,9 @@ import {
   ListItemButton,
   ListItemIcon,
   ListItemText,
+  FormControl,
+  Select,
+  MenuItem,
 } from '@mui/material'
 import {
   Menu as MenuIcon,
@@ -21,19 +24,26 @@ import {
   Inventory,
   ShoppingCart,
   ExitToApp,
+  Home,
 } from '@mui/icons-material'
 import { useAuth } from '../../context/AuthContext'
 
 const drawerWidth = 240
+const collapsedWidth = 70
 
 const AdminLayout = () => {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const navigate = useNavigate()
   const { logout } = useAuth()
   const [mobileOpen, setMobileOpen] = useState(false)
+  const [open, setOpen] = useState(false)
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen)
+  }
+
+  const toggleDrawer = () => {
+    setOpen(!open)
   }
 
   const handleLogout = () => {
@@ -42,25 +52,37 @@ const AdminLayout = () => {
   }
 
   const menuItems = [
+    { text: t('nav.home'), icon: <Home />, path: '/' },
     { text: t('admin.dashboard'), icon: <Dashboard />, path: '/admin' },
     { text: t('admin.products'), icon: <Inventory />, path: '/admin/products' },
     { text: t('admin.orders'), icon: <ShoppingCart />, path: '/admin/orders' },
   ]
 
   const drawer = (
-    <div>
-      <Toolbar>
-        <Typography variant="h6" noWrap component="div">
-          {t('nav.admin')}
-        </Typography>
+    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+      <Toolbar sx={{ justifyContent: open ? 'space-between' : 'center' }}>
+        {open && (
+          <Typography variant="h6" noWrap component="div">
+            {t('app.title')}
+          </Typography>
+        )}
+        <IconButton onClick={toggleDrawer}>
+          <MenuIcon />
+        </IconButton>
       </Toolbar>
       <Divider />
-      <List>
+      <List sx={{ flex: 1 }}>
         {menuItems.map((item) => (
           <ListItem key={item.text} disablePadding>
-            <ListItemButton component={Link} to={item.path}>
-              <ListItemIcon>{item.icon}</ListItemIcon>
-              <ListItemText primary={item.text} />
+            <ListItemButton 
+              component={Link} 
+              to={item.path}
+              sx={{ justifyContent: open ? 'initial' : 'center', px: 2.5 }}
+            >
+              <ListItemIcon sx={{ minWidth: 0, mr: open ? 3 : 'auto', justifyContent: 'center' }}>
+                {item.icon}
+              </ListItemIcon>
+              {open && <ListItemText primary={item.text} />}
             </ListItemButton>
           </ListItem>
         ))}
@@ -68,15 +90,18 @@ const AdminLayout = () => {
       <Divider />
       <List>
         <ListItem disablePadding>
-          <ListItemButton onClick={handleLogout}>
-            <ListItemIcon>
+          <ListItemButton 
+            onClick={handleLogout}
+            sx={{ justifyContent: open ? 'initial' : 'center', px: 2.5 }}
+          >
+            <ListItemIcon sx={{ minWidth: 0, mr: open ? 3 : 'auto', justifyContent: 'center' }}>
               <ExitToApp />
             </ListItemIcon>
-            <ListItemText primary={t('nav.logout')} />
+            {open && <ListItemText primary={t('nav.logout')} />}
           </ListItemButton>
         </ListItem>
       </List>
-    </div>
+    </Box>
   )
 
   return (
@@ -84,8 +109,9 @@ const AdminLayout = () => {
       <AppBar
         position="fixed"
         sx={{
-          width: { sm: `calc(100% - ${drawerWidth}px)` },
-          ml: { sm: `${drawerWidth}px` },
+          width: { sm: `calc(100% - ${open ? drawerWidth : collapsedWidth}px)` },
+          ml: { sm: `${open ? drawerWidth : collapsedWidth}px` },
+          transition: 'width 0.3s, margin 0.3s',
         }}
       >
         <Toolbar>
@@ -97,14 +123,33 @@ const AdminLayout = () => {
           >
             <MenuIcon />
           </IconButton>
-          <Typography variant="h6" noWrap component="div">
-            {t('app.title')} - {t('nav.admin')}
-          </Typography>
+          {!open && (
+            <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
+              {t('app.title')} - {t('nav.admin')}
+            </Typography>
+          )}
+          {open && <Box sx={{ flexGrow: 1 }} />}
+          <FormControl size="small" sx={{ minWidth: 70 }}>
+            <Select
+              value={i18n.language || 'mr'}
+              onChange={(e) => i18n.changeLanguage(e.target.value)}
+              sx={{
+                color: 'white',
+                '.MuiOutlinedInput-notchedOutline': { borderColor: 'white' },
+                '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: 'white' },
+                '.MuiSvgIcon-root': { color: 'white' },
+              }}
+            >
+              <MenuItem value="en">EN</MenuItem>
+              <MenuItem value="mr">मर</MenuItem>
+              <MenuItem value="hi">हि</MenuItem>
+            </Select>
+          </FormControl>
         </Toolbar>
       </AppBar>
       <Box
         component="nav"
-        sx={{ width: { sm: drawerWidth }, flexShrink: { sm: 0 } }}
+        sx={{ width: { sm: open ? drawerWidth : collapsedWidth }, flexShrink: { sm: 0 }, transition: 'width 0.3s' }}
       >
         <Drawer
           variant="temporary"
@@ -122,7 +167,12 @@ const AdminLayout = () => {
           variant="permanent"
           sx={{
             display: { xs: 'none', sm: 'block' },
-            '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth },
+            '& .MuiDrawer-paper': { 
+              boxSizing: 'border-box', 
+              width: open ? drawerWidth : collapsedWidth,
+              transition: 'width 0.3s',
+              overflowX: 'hidden',
+            },
           }}
           open
         >
@@ -134,7 +184,8 @@ const AdminLayout = () => {
         sx={{
           flexGrow: 1,
           p: 3,
-          width: { sm: `calc(100% - ${drawerWidth}px)` },
+          width: { sm: `calc(100% - ${open ? drawerWidth : collapsedWidth}px)` },
+          transition: 'width 0.3s',
         }}
       >
         <Toolbar />

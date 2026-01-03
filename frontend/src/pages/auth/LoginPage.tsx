@@ -116,7 +116,7 @@ const LoginPage = () => {
             disabled={loginMutation.isPending}
             sx={{ mb: 2 }}
           >
-            {loginMutation.isPending ? 'Logging in...' : t('auth.loginButton')}
+            {loginMutation.isPending ? t('common.loggingIn') : t('auth.loginButton')}
           </Button>
 
           <Box sx={{ textAlign: 'center' }}>

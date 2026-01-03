@@ -3,7 +3,6 @@ import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import {
   Container,
-  Grid,
   Box,
   Typography,
   Button,
@@ -73,11 +72,11 @@ const ProductDetailPage = () => {
         onClick={() => navigate('/products')}
         sx={{ mb: 3 }}
       >
-        Back to Products
+        {t('common.backToProducts')}
       </Button>
 
-      <Grid container spacing={4}>
-        <Grid item xs={12} md={6}>
+      <Box sx={{ display: 'flex', gap: 4, flexDirection: { xs: 'column', md: 'row' } }}>
+        <Box sx={{ flex: 1 }}>
           <Card sx={{ overflow: 'hidden' }}>
             <CardMedia
               component="img"
@@ -86,9 +85,9 @@ const ProductDetailPage = () => {
               sx={{ width: '100%', height: 500, objectFit: 'cover', display: 'block' }}
             />
           </Card>
-        </Grid>
+        </Box>
 
-        <Grid item xs={12} md={6}>
+        <Box sx={{ flex: 1 }}>
           <Typography variant="h4" gutterBottom fontWeight="600">
             {product.name}
           </Typography>
@@ -133,17 +132,17 @@ const ProductDetailPage = () => {
 
           <Box sx={{ bgcolor: 'grey.100', p: 3, borderRadius: 2 }}>
             <Typography variant="subtitle2" gutterBottom>
-              Product Details
+              {t('common.productDetails')}
             </Typography>
             <Typography variant="body2" color="text.secondary">
               Category: {product.category}
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              Available Stock: {product.stock}
+              {t('common.availableStock')}: {product.stock}
             </Typography>
           </Box>
-        </Grid>
-      </Grid>
+        </Box>
+      </Box>
     </Container>
   )
 }

@@ -6,7 +6,6 @@ import {
   Box,
   Button,
   Paper,
-  Grid,
   IconButton,
   Divider,
   Card,
@@ -38,7 +37,7 @@ const CartPage = () => {
   if (isLoading) {
     return (
       <Container sx={{ py: 4 }}>
-        <Typography>Loading...</Typography>
+        <Typography>{t('common.loading')}</Typography>
       </Container>
     )
   }
@@ -71,35 +70,46 @@ const CartPage = () => {
         {t('cart.title')}
       </Typography>
 
-      <Grid container spacing={3}>
-        <Grid item xs={12} md={8}>
+      <Box sx={{ display: 'flex', gap: 3, flexDirection: { xs: 'column', md: 'row' } }}>
+        <Box sx={{ flex: { md: 2 } }}>
           {cart.items.map((item) => (
             <Card key={item.id} sx={{ mb: 2 }}>
-              <Grid container>
-                <Grid item xs={12} sm={3}>
+              <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' } }}>
+                <Box sx={{ width: { xs: '100%', sm: 200 }, flexShrink: 0 }}>
                   <CardMedia
                     component="img"
                     image={item.product.imageUrl || 'https://via.placeholder.com/150'}
                     alt={item.product.name}
-                    sx={{ height: 150, width: '100%', objectFit: 'cover', display: 'block' }}
+                    sx={{ height: 200, width: '100%', objectFit: 'cover' }}
                   />
-                </Grid>
-                <Grid item xs={12} sm={9}>
-                  <CardContent>
-                    <Grid container alignItems="center" spacing={2}>
-                      <Grid item xs={12} sm={6}>
-                        <Typography variant="h6" noWrap>
+                </Box>
+                <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+                  <CardContent sx={{ flex: 1 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, height: '100%' }}>
+                      <Box sx={{ maxWidth: '50%', minWidth: 0 }}>
+                        <Typography variant="h6" sx={{ wordBreak: 'break-word' }}>
                           {item.product.name}
                         </Typography>
-                        <Typography variant="body2" color="text.secondary" noWrap>
+                        <Typography 
+                          variant="body2" 
+                          color="text.secondary" 
+                          sx={{ 
+                            wordBreak: 'break-word', 
+                            overflow: 'hidden', 
+                            textOverflow: 'ellipsis', 
+                            display: '-webkit-box', 
+                            WebkitLineClamp: 2, 
+                            WebkitBoxOrient: 'vertical' 
+                          }}
+                        >
                           {item.product.description}
                         </Typography>
                         <Typography variant="h6" color="primary" sx={{ mt: 1 }}>
                           ₹{item.product.price.toLocaleString()}
                         </Typography>
-                      </Grid>
-                      <Grid item xs={12} sm={4}>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      </Box>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, ml: 'auto', flexShrink: 0 }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, border: '1px solid', borderColor: 'divider', borderRadius: 1, p: 0.5 }}>
                           <IconButton
                             size="small"
                             onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
@@ -107,7 +117,7 @@ const CartPage = () => {
                           >
                             <Remove />
                           </IconButton>
-                          <Typography sx={{ minWidth: 30, textAlign: 'center' }}>
+                          <Typography sx={{ minWidth: 30, textAlign: 'center', fontWeight: 500 }}>
                             {item.quantity}
                           </Typography>
                           <IconButton
@@ -118,24 +128,22 @@ const CartPage = () => {
                             <Add />
                           </IconButton>
                         </Box>
-                      </Grid>
-                      <Grid item xs={12} sm={2}>
                         <IconButton
                           color="error"
                           onClick={() => handleRemove(item.id)}
                         >
                           <Delete />
                         </IconButton>
-                      </Grid>
-                    </Grid>
+                      </Box>
+                    </Box>
                   </CardContent>
-                </Grid>
-              </Grid>
+                </Box>
+              </Box>
             </Card>
           ))}
-        </Grid>
+        </Box>
 
-        <Grid item xs={12} md={4}>
+        <Box sx={{ flex: { md: 1 } }}>
           <Paper sx={{ p: 3, position: 'sticky', top: 20 }}>
             <Typography variant="h6" gutterBottom>
               {t('checkout.orderSummary')}
@@ -149,7 +157,7 @@ const CartPage = () => {
               <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                 <Typography>{t('checkout.shipping')}</Typography>
                 <Typography>
-                  {shipping === 0 ? 'FREE' : `₹${shipping}`}
+                  {shipping === 0 ? t('common.free') : `₹${shipping}`}
                 </Typography>
               </Box>
             </Box>
@@ -177,8 +185,8 @@ const CartPage = () => {
               {t('cart.continueShopping')}
             </Button>
           </Paper>
-        </Grid>
-      </Grid>
+        </Box>
+      </Box>
     </Container>
   )
 }

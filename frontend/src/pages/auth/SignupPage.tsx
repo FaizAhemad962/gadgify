@@ -14,7 +14,6 @@ import {
   Link,
   Box,
   Alert,
-  Grid,
   InputAdornment,
   IconButton,
   MenuItem,
@@ -105,7 +104,7 @@ const SignupPage = () => {
           {t('auth.signup')}
         </Typography>
         <Typography variant="body2" align="center" color="text.secondary" sx={{ mb: 3 }}>
-          Available only in Maharashtra
+          {t('common.availableOnly')}
         </Typography>
 
         {error && (
@@ -115,18 +114,16 @@ const SignupPage = () => {
         )}
 
         <form onSubmit={handleSubmit(onSubmit)}>
-          <Grid container spacing={2}>
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label={t('auth.name')}
-                {...register('name')}
-                error={!!errors.name}
-                helperText={errors.name?.message}
-              />
-            </Grid>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <TextField
+              fullWidth
+              label={t('auth.name')}
+              {...register('name')}
+              error={!!errors.name}
+              helperText={errors.name?.message}
+            />
 
-            <Grid item xs={12} sm={6}>
+            <Box sx={{ display: 'flex', gap: 2, flexDirection: { xs: 'column', sm: 'row' } }}>
               <TextField
                 fullWidth
                 label={t('auth.email')}
@@ -135,9 +132,7 @@ const SignupPage = () => {
                 error={!!errors.email}
                 helperText={errors.email?.message}
               />
-            </Grid>
 
-            <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
                 label={t('auth.phone')}
@@ -145,9 +140,9 @@ const SignupPage = () => {
                 error={!!errors.phone}
                 helperText={errors.phone?.message}
               />
-            </Grid>
+            </Box>
 
-            <Grid item xs={12} sm={6}>
+            <Box sx={{ display: 'flex', gap: 2, flexDirection: { xs: 'column', sm: 'row' } }}>
               <TextField
                 fullWidth
                 label={t('auth.password')}
@@ -168,9 +163,7 @@ const SignupPage = () => {
                   ),
                 }}
               />
-            </Grid>
 
-            <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
                 label={t('auth.confirmPassword')}
@@ -191,34 +184,30 @@ const SignupPage = () => {
                   ),
                 }}
               />
-            </Grid>
+            </Box>
 
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                multiline
-                rows={2}
-                label={t('auth.address')}
-                {...register('address')}
-                error={!!errors.address}
-                helperText={errors.address?.message}
-              />
-            </Grid>
+            <TextField
+              fullWidth
+              multiline
+              rows={2}
+              label={t('auth.address')}
+              {...register('address')}
+              error={!!errors.address}
+              helperText={errors.address?.message}
+            />
 
-            <Grid item xs={12} sm={4}>
+            <Box sx={{ display: 'flex', gap: 2, flexDirection: { xs: 'column', sm: 'row' } }}>
               <TextField
                 fullWidth
                 label={t('auth.state')}
                 {...register('state')}
                 error={!!errors.state}
-                helperText={errors.state?.message || 'Must be Maharashtra'}
+                helperText={errors.state?.message || t('common.mustBeMaharashtra')}
                 InputProps={{
                   readOnly: true,
                 }}
               />
-            </Grid>
 
-            <Grid item xs={12} sm={4}>
               <TextField
                 fullWidth
                 select
@@ -231,7 +220,7 @@ const SignupPage = () => {
                 }}
               >
                 <MenuItem value="" disabled>
-                  Select City
+                  {t('common.selectCity')}
                 </MenuItem>
                 {MAHARASHTRA_CITIES.map((city) => (
                   <MenuItem key={city} value={city}>
@@ -239,11 +228,7 @@ const SignupPage = () => {
                   </MenuItem>
                 ))}
               </TextField>
-            </Grid>
 
-            <Grid item xs={12} sm={4}>
-
-            <Grid item xs={12}>
               <TextField
                 fullWidth
                 label={t('auth.pincode')}
@@ -251,20 +236,18 @@ const SignupPage = () => {
                 error={!!errors.pincode}
                 helperText={errors.pincode?.message}
               />
-            </Grid>
+            </Box>
 
-            <Grid item xs={12}>
-              <Button
-                fullWidth
-                variant="contained"
-                size="large"
-                type="submit"
-                disabled={signupMutation.isPending}
-              >
-                {signupMutation.isPending ? 'Creating Account...' : t('auth.signupButton')}
-              </Button>
-            </Grid>
-          </Grid>
+            <Button
+              fullWidth
+              variant="contained"
+              size="large"
+              type="submit"
+              disabled={signupMutation.isPending}
+            >
+              {signupMutation.isPending ? t('common.creatingAccount') : t('auth.signupButton')}
+            </Button>
+          </Box>
 
           <Box sx={{ textAlign: 'center', mt: 2 }}>
             <Typography variant="body2" color="text.secondary">

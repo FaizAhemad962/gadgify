@@ -1,10 +1,12 @@
 import { useQuery } from '@tanstack/react-query'
-import { Grid, Paper, Typography, Box } from '@mui/material'
+import { useTranslation } from 'react-i18next'
+import { Paper, Typography, Box } from '@mui/material'
 import { Inventory, ShoppingCart, People, AttachMoney } from '@mui/icons-material'
 import { productsApi } from '../../api/products'
 import { ordersApi } from '../../api/orders'
 
 const AdminDashboard = () => {
+  const { t } = useTranslation()
   const { data: products } = useQuery({
     queryKey: ['products'],
     queryFn: productsApi.getAll,
@@ -17,25 +19,25 @@ const AdminDashboard = () => {
 
   const stats = [
     {
-      title: 'Total Products',
+      title: t('admin.totalProducts'),
       value: products?.length || 0,
       icon: <Inventory sx={{ fontSize: 40 }} />,
       color: '#1976d2',
     },
     {
-      title: 'Total Orders',
+      title: t('admin.totalOrders'),
       value: orders?.length || 0,
       icon: <ShoppingCart sx={{ fontSize: 40 }} />,
       color: '#2e7d32',
     },
     {
-      title: 'Pending Orders',
+      title: t('admin.pendingOrders'),
       value: orders?.filter((o) => o.status === 'PENDING').length || 0,
       icon: <People sx={{ fontSize: 40 }} />,
       color: '#ed6c02',
     },
     {
-      title: 'Total Revenue',
+      title: t('admin.totalRevenue'),
       value: `₹${orders?.reduce((sum, o) => sum + o.total, 0).toLocaleString() || 0}`,
       icon: <AttachMoney sx={{ fontSize: 40 }} />,
       color: '#9c27b0',
@@ -45,12 +47,12 @@ const AdminDashboard = () => {
   return (
     <Box>
       <Typography variant="h4" gutterBottom fontWeight="600">
-        Admin Dashboard
+        {t('admin.dashboard')}
       </Typography>
 
-      <Grid container spacing={3}>
+      <Box sx={{ display: 'flex', gap: 3, flexWrap: 'wrap' }}>
         {stats.map((stat, index) => (
-          <Grid item xs={12} sm={6} md={3} key={index}>
+          <Box sx={{ flex: { xs: '1 1 100%', sm: '1 1 45%', md: '1 1 22%' }, minWidth: 200 }} key={index}>
             <Paper
               sx={{
                 p: 3,
@@ -69,13 +71,13 @@ const AdminDashboard = () => {
                 <Typography variant="body2">{stat.title}</Typography>
               </Box>
             </Paper>
-          </Grid>
+          </Box>
         ))}
-      </Grid>
+      </Box>
 
       <Paper sx={{ p: 3, mt: 3 }}>
         <Typography variant="h6" gutterBottom>
-          Recent Orders
+          {t('admin.recentOrders')}
         </Typography>
         {orders && orders.length > 0 ? (
           <Box>
@@ -96,7 +98,7 @@ const AdminDashboard = () => {
             ))}
           </Box>
         ) : (
-          <Typography color="text.secondary">No orders yet</Typography>
+          <Typography color="text.secondary">{t('admin.noOrders')}</Typography>
         )}
       </Paper>
     </Box>

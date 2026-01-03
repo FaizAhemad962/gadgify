@@ -6,7 +6,6 @@ import {
   Typography,
   Box,
   Paper,
-  Grid,
   Chip,
   CircularProgress,
   Alert,
@@ -65,11 +64,11 @@ const OrderDetailPage = () => {
         onClick={() => navigate('/orders')}
         sx={{ mb: 3 }}
       >
-        Back to Orders
+        {t('common.back')} to {t('orders.title')}
       </Button>
 
-      <Grid container spacing={3}>
-        <Grid item xs={12} md={8}>
+      <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 3 }}>
+        <Box sx={{ flex: { md: 2 } }}>
           <Paper sx={{ p: 3, mb: 3 }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', mb: 3 }}>
               <Box>
@@ -77,7 +76,7 @@ const OrderDetailPage = () => {
                   {t('orders.orderNumber')}{order.id.slice(0, 8)}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  Placed on {format(new Date(order.createdAt), 'PPP')}
+                  {t('orders.date')}: {format(new Date(order.createdAt), 'PPP')}
                 </Typography>
               </Box>
               <Box sx={{ textAlign: 'right' }}>
@@ -95,46 +94,46 @@ const OrderDetailPage = () => {
             <Divider sx={{ my: 3 }} />
 
             <Typography variant="h6" gutterBottom>
-              Order Items
+              {t('checkout.items')}
             </Typography>
             {order.items.map((item) => (
               <Card key={item.id} sx={{ mb: 2 }}>
-                <Grid container>
-                  <Grid item xs={12} sm={3}>
+                <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' } }}>
+                  <Box sx={{ width: { xs: '100%', sm: '25%' } }}>
                     <CardMedia
                       component="img"
                       image={item.product.imageUrl || 'https://via.placeholder.com/150'}
                       alt={item.product.name}
                       sx={{ height: 120, objectFit: 'cover' }}
                     />
-                  </Grid>
-                  <Grid item xs={12} sm={9}>
+                  </Box>
+                  <Box sx={{ flex: 1 }}>
                     <CardContent>
                       <Typography variant="h6" gutterBottom>
                         {item.product.name}
                       </Typography>
                       <Typography variant="body2" color="text.secondary" gutterBottom>
-                        Quantity: {item.quantity}
+                        {t('cart.quantity')}: {item.quantity}
                       </Typography>
                       <Typography variant="h6" color="primary">
                         ₹{(item.price * item.quantity).toLocaleString()}
                       </Typography>
                     </CardContent>
-                  </Grid>
-                </Grid>
+                  </Box>
+                </Box>
               </Card>
             ))}
           </Paper>
-        </Grid>
+        </Box>
 
-        <Grid item xs={12} md={4}>
+        <Box sx={{ flex: { md: 1 } }}>
           <Paper sx={{ p: 3, mb: 3 }}>
             <Typography variant="h6" gutterBottom>
-              Order Summary
+              {t('checkout.orderSummary')}
             </Typography>
             <Divider sx={{ my: 2 }} />
             <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
-              <Typography variant="h6">Total</Typography>
+              <Typography variant="h6">{t('cart.total')}</Typography>
               <Typography variant="h6" color="primary">
                 ₹{order.total.toLocaleString()}
               </Typography>
@@ -143,7 +142,7 @@ const OrderDetailPage = () => {
 
           <Paper sx={{ p: 3 }}>
             <Typography variant="h6" gutterBottom>
-              Shipping Address
+              {t('checkout.shippingAddress')}
             </Typography>
             <Divider sx={{ my: 2 }} />
             <Typography variant="body2" gutterBottom>
@@ -162,8 +161,8 @@ const OrderDetailPage = () => {
               {order.shippingAddress.pincode}
             </Typography>
           </Paper>
-        </Grid>
-      </Grid>
+        </Box>
+      </Box>
     </Container>
   )
 }

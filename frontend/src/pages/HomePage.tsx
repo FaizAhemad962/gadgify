@@ -1,4 +1,4 @@
-import { Container, Typography, Box, Button, Grid, Card, CardContent } from '@mui/material'
+import { Container, Typography, Box, Button, Card, CardContent } from '@mui/material'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { ShoppingCart, LocalShipping, Security, Support } from '@mui/icons-material'
@@ -8,10 +8,10 @@ const HomePage = () => {
   const navigate = useNavigate()
 
   const features = [
-    { icon: <ShoppingCart fontSize="large" />, title: 'Wide Selection', desc: 'Latest electronics and gadgets' },
-    { icon: <LocalShipping fontSize="large" />, title: 'Fast Delivery', desc: 'Quick delivery across Maharashtra' },
-    { icon: <Security fontSize="large" />, title: 'Secure Payment', desc: 'Safe and encrypted transactions' },
-    { icon: <Support fontSize="large" />, title: '24/7 Support', desc: 'Always here to help you' },
+    { icon: <ShoppingCart fontSize="large" />, title: t('common.wideSelection'), desc: t('common.latestGadgets') },
+    { icon: <LocalShipping fontSize="large" />, title: t('common.fastDelivery'), desc: t('common.quickDelivery') },
+    { icon: <Security fontSize="large" />, title: t('common.securePayment'), desc: t('common.safeTransactions') },
+    { icon: <Support fontSize="large" />, title: t('common.support247'), desc: t('common.alwaysHelp') },
   ]
 
   return (
@@ -33,8 +33,7 @@ const HomePage = () => {
             {t('app.subtitle')}
           </Typography>
           <Typography variant="body1" sx={{ mt: 2, mb: 4 }}>
-            Discover the latest electronics and gadgets at unbeatable prices.
-            Available exclusively in Maharashtra!
+            {t('common.discoverLatest')}
           </Typography>
           <Button
             variant="contained"
@@ -59,11 +58,11 @@ const HomePage = () => {
       {/* Features Section */}
       <Container maxWidth="lg" sx={{ py: 8 }}>
         <Typography variant="h4" align="center" gutterBottom fontWeight="600">
-          Why Choose Us?
+          {t('common.whyChooseUs')}
         </Typography>
-        <Grid container spacing={4} sx={{ mt: 2 }}>
+        <Box sx={{ display: 'flex', gap: 4, mt: 2, flexWrap: 'wrap', justifyContent: 'center' }}>
           {features.map((feature, index) => (
-            <Grid item xs={12} sm={6} md={3} key={index}>
+            <Box sx={{ flex: { xs: '1 1 100%', sm: '1 1 45%', md: '1 1 22%' }, minWidth: 250 }} key={index}>
               <Card
                 sx={{
                   height: '100%',
@@ -86,26 +85,26 @@ const HomePage = () => {
                   </Typography>
                 </CardContent>
               </Card>
-            </Grid>
+            </Box>
           ))}
-        </Grid>
+        </Box>
       </Container>
 
       {/* CTA Section */}
       <Box sx={{ bgcolor: 'grey.100', py: 6 }}>
         <Container maxWidth="md" sx={{ textAlign: 'center' }}>
           <Typography variant="h4" gutterBottom fontWeight="600">
-            Ready to Start Shopping?
+            {t('common.readyToShop')}
           </Typography>
           <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
-            Browse our wide selection of electronics and gadgets
+            {t('common.browseProducts')}
           </Typography>
           <Button
             variant="contained"
             size="large"
             onClick={() => navigate('/products')}
           >
-            Shop Now
+            {t('common.shopNow')}
           </Button>
         </Container>
       </Box>
