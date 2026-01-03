@@ -1,0 +1,94 @@
+{
+  "app": {
+    "title": "गैजिफाई",
+    "subtitle": "महाराष्ट्राचे प्रमुख इलेक्ट्रॉनिक्स स्टोअर"
+  },
+  "nav": {
+    "home": "मुख्यपृष्ठ",
+    "products": "उत्पादने",
+    "cart": "कार्ट",
+    "orders": "ऑर्डर",
+    "login": "लॉगिन",
+    "signup": "साइन अप",
+    "logout": "लॉगआउट",
+    "admin": "प्रशासन डॅशबोर्ड"
+  },
+  "auth": {
+    "login": "लॉगिन",
+    "signup": "साइन अप",
+    "email": "ईमेल",
+    "password": "पासवर्ड",
+    "confirmPassword": "पासवर्डची पुष्टी करा",
+    "name": "पूर्ण नाव",
+    "phone": "फोन नंबर",
+    "state": "राज्य",
+    "city": "शहर",
+    "address": "पत्ता",
+    "pincode": "पिनकोड",
+    "alreadyHaveAccount": "आधीच खाते आहे?",
+    "dontHaveAccount": "खाते नाही?",
+    "loginButton": "लॉगिन करा",
+    "signupButton": "साइन अप करा"
+  },
+  "products": {
+    "title": "आमची उत्पादने",
+    "search": "उत्पादने शोधा...",
+    "addToCart": "कार्टमध्ये जोडा",
+    "buyNow": "आता खरेदी करा",
+    "price": "किंमत",
+    "stock": "स्टॉकमध्ये",
+    "outOfStock": "स्टॉक संपला",
+    "viewDetails": "तपशील पहा"
+  },
+  "cart": {
+    "title": "शॉपिंग कार्ट",
+    "empty": "तुमची कार्ट रिकामी आहे",
+    "subtotal": "उपएकूण",
+    "total": "एकूण",
+    "proceedToCheckout": "चेकआउटवर जा",
+    "continueShopping": "खरेदी सुरू ठेवा",
+    "remove": "काढा",
+    "quantity": "प्रमाण"
+  },
+  "checkout": {
+    "title": "चेकआउट",
+    "shippingAddress": "शिपिंग पत्ता",
+    "paymentMethod": "पेमेंट पद्धत",
+    "orderSummary": "ऑर्डर सारांश",
+    "placeOrder": "ऑर्डर द्या",
+    "items": "वस्तू",
+    "shipping": "शिपिंग",
+    "tax": "कर"
+  },
+  "orders": {
+    "title": "माझे ऑर्डर",
+    "orderNumber": "ऑर्डर #",
+    "date": "तारीख",
+    "status": "स्थिती",
+    "total": "एकूण",
+    "viewDetails": "तपशील पहा"
+  },
+  "errors": {
+    "maharashtraOnly": "ही सेवा सध्या केवळ महाराष्ट्रात उपलब्ध आहे.",
+    "somethingWrong": "काहीतरी चूक झाली. कृपया पुन्हा प्रयत्न करा.",
+    "required": "हे फील्ड आवश्यक आहे",
+    "invalidEmail": "अवैध ईमेल पत्ता",
+    "passwordMismatch": "पासवर्ड जुळत नाहीत",
+    "minLength": "किमान {{count}} वर्ण आवश्यक आहेत"
+  },
+  "success": {
+    "addedToCart": "उत्पादन कार्टमध्ये जोडले",
+    "orderPlaced": "ऑर्डर यशस्वीरित्या दिली!",
+    "loginSuccess": "लॉगिन यशस्वी",
+    "signupSuccess": "खाते यशस्वीरित्या तयार केले"
+  },
+  "admin": {
+    "dashboard": "प्रशासन डॅशबोर्ड",
+    "products": "उत्पादने व्यवस्थापित करा",
+    "orders": "ऑर्डर व्यवस्थापित करा",
+    "users": "वापरकर्ते व्यवस्थापित करा",
+    "addProduct": "उत्पादन जोडा",
+    "editProduct": "उत्पादन संपादित करा",
+    "deleteProduct": "उत्पादन हटवा"
+  }
+}

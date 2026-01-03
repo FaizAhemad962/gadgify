@@ -1,0 +1,111 @@
+import { Request, Response, NextFunction } from 'express'
+import prisma from '../config/database'
+
+export const getAllProducts = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const products = await prisma.product.findMany({
+      orderBy: { createdAt: 'desc' },
+    })
+    res.json(products)
+  } catch (error) {
+    next(error)
+  }
+}
+
+export const getProductById = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const { id } = req.params
+    const product = await prisma.product.findUnique({ where: { id } })
+
+    if (!product) {
+      res.status(404).json({ message: 'Product not found' })
+      return
+    }
+
+    res.json(product)
+  } catch (error) {
+    next(error)
+  }
+}
+
+export const createProduct = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const { name, description, price, stock, imageUrl, category } = req.body
+
+    const product = await prisma.product.create({
+      data: { name, description, price, stock, imageUrl, category },
+    })
+
+    res.status(201).json(product)
+  } catch (error) {
+    next(error)
+  }
+}
+
+export const updateProduct = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const { id } = req.params
+    const { name, description, price, stock, imageUrl, category } = req.body
+
+    const product = await prisma.product.update({
+      where: { id },
+      data: { name, description, price, stock, imageUrl, category },
+    })
+
+    res.json(product)
+  } catch (error) {
+    next(error)
+  }
+}
+
+export const deleteProduct = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const { id } = req.params
+    await prisma.product.delete({ where: { id } })
+    res.status(204).send()
+  } catch (error) {
+    next(error)
+  }
+}
+
+export const searchProducts = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const { q } = req.query
+    const products = await prisma.product.findMany({
+      where: {
+        OR: [
+          { name: { contains: q as string } },
+          { description: { contains: q as string } },
+          { category: { contains: q as string } },
+        ],
+      },
+    })
+    res.json(products)
+  } catch (error) {
+    next(error)
+  }
+}

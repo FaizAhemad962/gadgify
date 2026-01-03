@@ -1,0 +1,94 @@
+{
+  "app": {
+    "title": "गैजिफाई",
+    "subtitle": "महाराष्ट्र का प्रमुख इलेक्ट्रॉनिक्स स्टोर"
+  },
+  "nav": {
+    "home": "होम",
+    "products": "उत्पाद",
+    "cart": "कार्ट",
+    "orders": "ऑर्डर",
+    "login": "लॉगिन",
+    "signup": "साइन अप",
+    "logout": "लॉगआउट",
+    "admin": "एडमिन डैशबोर्ड"
+  },
+  "auth": {
+    "login": "लॉगिन",
+    "signup": "साइन अप",
+    "email": "ईमेल",
+    "password": "पासवर्ड",
+    "confirmPassword": "पासवर्ड की पुष्टि करें",
+    "name": "पूरा नाम",
+    "phone": "फोन नंबर",
+    "state": "राज्य",
+    "city": "शहर",
+    "address": "पता",
+    "pincode": "पिनकोड",
+    "alreadyHaveAccount": "पहले से खाता है?",
+    "dontHaveAccount": "खाता नहीं है?",
+    "loginButton": "लॉगिन करें",
+    "signupButton": "साइन अप करें"
+  },
+  "products": {
+    "title": "हमारे उत्पाद",
+    "search": "उत्पाद खोजें...",
+    "addToCart": "कार्ट में जोड़ें",
+    "buyNow": "अभी खरीदें",
+    "price": "कीमत",
+    "stock": "स्टॉक में",
+    "outOfStock": "स्टॉक खत्म",
+    "viewDetails": "विवरण देखें"
+  },
+  "cart": {
+    "title": "शॉपिंग कार्ट",
+    "empty": "आपकी कार्ट खाली है",
+    "subtotal": "उप-योग",
+    "total": "कुल",
+    "proceedToCheckout": "चेकआउट पर जाएं",
+    "continueShopping": "खरीदारी जारी रखें",
+    "remove": "हटाएं",
+    "quantity": "मात्रा"
+  },
+  "checkout": {
+    "title": "चेकआउट",
+    "shippingAddress": "शिपिंग पता",
+    "paymentMethod": "भुगतान विधि",
+    "orderSummary": "ऑर्डर सारांश",
+    "placeOrder": "ऑर्डर करें",
+    "items": "आइटम",
+    "shipping": "शिपिंग",
+    "tax": "कर"
+  },
+  "orders": {
+    "title": "मेरे ऑर्डर",
+    "orderNumber": "ऑर्डर #",
+    "date": "तारीख",
+    "status": "स्थिति",
+    "total": "कुल",
+    "viewDetails": "विवरण देखें"
+  },
+  "errors": {
+    "maharashtraOnly": "यह सेवा वर्तमान में केवल महाराष्ट्र में उपलब्ध है।",
+    "somethingWrong": "कुछ गलत हो गया। कृपया पुनः प्रयास करें।",
+    "required": "यह फ़ील्ड आवश्यक है",
+    "invalidEmail": "अमान्य ईमेल पता",
+    "passwordMismatch": "पासवर्ड मेल नहीं खाते",
+    "minLength": "न्यूनतम {{count}} वर्ण आवश्यक हैं"
+  },
+  "success": {
+    "addedToCart": "उत्पाद कार्ट में जोड़ा गया",
+    "orderPlaced": "ऑर्डर सफलतापूर्वक दिया गया!",
+    "loginSuccess": "लॉगिन सफल",
+    "signupSuccess": "खाता सफलतापूर्वक बनाया गया"
+  },
+  "admin": {
+    "dashboard": "एडमिन डैशबोर्ड",
+    "products": "उत्पाद प्रबंधित करें",
+    "orders": "ऑर्डर प्रबंधित करें",
+    "users": "उपयोगकर्ता प्रबंधित करें",
+    "addProduct": "उत्पाद जोड़ें",
+    "editProduct": "उत्पाद संपादित करें",
+    "deleteProduct": "उत्पाद हटाएं"
+  }
+}
