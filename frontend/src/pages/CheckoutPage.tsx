@@ -110,19 +110,9 @@ const CheckoutPage = () => {
     return cart.items.reduce((sum, item) => sum + item.product.price * item.quantity, 0)
   }
 
-  const calculateTotalWeight = () => {
-    if (!cart?.items) return 0
-    return cart.items.reduce((sum, item) => sum + (item.product.weight || 0.5) * item.quantity, 0)
-  }
-
-  const calculateShipping = (weight: number) => {
-    // Shipping based on weight (in kg)
-    // ₹20 per kg, minimum ₹50
-    if (weight === 0) return 0
-    const shippingRate = 20 // ₹ per kg
-    const minShipping = 50
-    const calculatedShipping = weight * shippingRate
-    return Math.max(calculatedShipping, minShipping)
+  const calculateShipping = () => {
+    // Fixed shipping rate of ₹50
+    return 50
   }
 
   const onSubmit = async (data: ShippingFormData) => {
@@ -138,8 +128,7 @@ const CheckoutPage = () => {
     }
 
     const subtotal = calculateSubtotal()
-    const weight = calculateTotalWeight()
-    const shipping = calculateShipping(weight)
+    const shipping = calculateShipping()
     const total = subtotal + shipping
 
     const orderData = {
@@ -149,7 +138,6 @@ const CheckoutPage = () => {
         price: item.product.price,
       })),
       subtotal,
-      weight,
       shipping,
       total,
       shippingAddress: data,
@@ -164,8 +152,7 @@ const CheckoutPage = () => {
   }
 
   const subtotal = calculateSubtotal()
-  const weight = calculateTotalWeight()
-  const shipping = calculateShipping(weight)
+  const shipping = calculateShipping()
   const total = subtotal + shipping
 
   return (
@@ -279,12 +266,7 @@ const CheckoutPage = () => {
                 </Box>
                 
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                  <Typography>Total Weight</Typography>
-                  <Typography>{weight.toFixed(2)} kg</Typography>
-                </Box>
-                
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                  <Typography>{t('checkout.shipping')} (₹20/kg, min ₹50)</Typography>
+                  <Typography>{t('checkout.shipping')}</Typography>
                   <Typography>₹{shipping.toLocaleString()}</Typography>
                 </Box>
               </Box>

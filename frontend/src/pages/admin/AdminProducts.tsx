@@ -51,7 +51,6 @@ const productSchema = z.object({
   description: z.string().min(10, 'Description must be at least 10 characters'),
   price: z.number().min(1, 'Price must be greater than 0'),
   stock: z.number().min(0, 'Stock cannot be negative'),
-  weight: z.number().min(0.1, 'Weight must be at least 0.1 kg'),
   imageUrl: z.string().optional(),
   videoUrl: z.string().optional(),
   colors: z.string().optional(),
@@ -126,7 +125,6 @@ const AdminProducts = () => {
         description: product.description,
         price: product.price,
         stock: product.stock,
-        weight: product.weight || 0.5,
         imageUrl: product.imageUrl,
         videoUrl: product.videoUrl || '',
         colors: product.colors || '',
@@ -157,7 +155,6 @@ const AdminProducts = () => {
         videoUrl: '',
         colors: '',
         category: '',
-        weight: 0.5,
       })
       setImagePreview('')
       setVideoPreview('')
@@ -182,11 +179,23 @@ const AdminProducts = () => {
   const handleRemoveImage = () => {
     setImageFile(null)
     setImagePreview('')
+    // Clear the imageUrl in the form
+    reset((formValues) => ({ ...formValues, imageUrl: '' }))
+    // If editing, clear the imageUrl from editingProduct
+    if (editingProduct) {
+      setEditingProduct({ ...editingProduct, imageUrl: '' })
+    }
   }
 
   const handleRemoveVideo = () => {
     setVideoFile(null)
     setVideoPreview('')
+    // Clear the videoUrl in the form
+    reset((formValues) => ({ ...formValues, videoUrl: '' }))
+    // If editing, clear the videoUrl from editingProduct
+    if (editingProduct) {
+      setEditingProduct({ ...editingProduct, videoUrl: '' })
+    }
   }
 
   const handleImageFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -408,17 +417,6 @@ const AdminProducts = () => {
                     helperText={errors.stock?.message}
                   />
                 </Box>
-                <Box sx={{ flex: 1 }}>
-                  <TextField
-                    fullWidth
-                    label="Weight (kg)"
-                    type="number"
-                    step="0.1"
-                    {...register('weight', { valueAsNumber: true })}
-                    error={!!errors.weight}
-                    helperText={errors.weight?.message || 'Product weight in kilograms'}
-                  />
-                </Box>
               </Box>
 
               <Box>
@@ -473,18 +471,18 @@ const AdminProducts = () => {
                       color="error"
                       onClick={handleRemoveImage}
                     >
-                      Remove
+                      {t('admin.remove')}
                     </Button>
                   )}
                 </Box>
                 {imageFile && (
                   <Typography variant="caption" display="block" sx={{ mt: 1 }}>
-                    Selected: {imageFile.name}
+                    {t('admin.selected')}: {imageFile.name}
                   </Typography>
                 )}
                 {!imageFile && editingProduct?.imageUrl && (
                   <Typography variant="caption" display="block" sx={{ mt: 1, color: 'text.secondary' }}>
-                    Current: {editingProduct.imageUrl.split('/').pop()}
+                    {t('admin.current')}: {editingProduct.imageUrl.split('/').pop()}
                   </Typography>
                 )}
                 
@@ -505,7 +503,7 @@ const AdminProducts = () => {
               {/* Video Upload Section */}
               <Box>
                 <Typography variant="subtitle2" gutterBottom>
-                  Product Video (Optional)
+                  {t('admin.productVideo')}
                 </Typography>
                 {/* Hidden field to maintain videoUrl in form */}
                 <input type="hidden" {...register('videoUrl')} />
@@ -516,7 +514,7 @@ const AdminProducts = () => {
                     startIcon={<Upload />}
                     fullWidth
                   >
-                    Upload Video File
+                    {t('admin.uploadVideo')}
                     <input
                       type="file"
                       hidden
@@ -531,24 +529,24 @@ const AdminProducts = () => {
                       color="error"
                       onClick={handleRemoveVideo}
                     >
-                      Remove
+                      {t('admin.remove')}
                     </Button>
                   )}
                 </Box>
                 {videoFile && (
                   <Typography variant="caption" display="block" sx={{ mt: 1 }}>
-                    Selected: {videoFile.name}
+                    {t('admin.selected')}: {videoFile.name}
                   </Typography>
                 )}
                 {!videoFile && editingProduct?.videoUrl && (
                   <Typography variant="caption" display="block" sx={{ mt: 1, color: 'text.secondary' }}>
-                    Current: {editingProduct.videoUrl.split('/').pop()}
+                    {t('admin.current')}: {editingProduct.videoUrl.split('/').pop()}
                   </Typography>
                 )}
                 {videoPreview && (
                   <Box sx={{ mt: 2, textAlign: 'center' }}>
                     <Typography variant="caption" display="block" sx={{ mb: 1 }}>
-                      Video Preview:
+                      {t('admin.videoPreview')}:
                     </Typography>
                     <video
                       src={videoPreview}
@@ -563,11 +561,11 @@ const AdminProducts = () => {
               <Box>
                 <TextField
                   fullWidth
-                  label="Available Colors"
-                  placeholder="e.g., Red, Blue, Green, Black"
+                  label={t('admin.colors')}
+                  placeholder={t('admin.colorsPlaceholder')}
                   {...register('colors')}
                   error={!!errors.colors}
-                  helperText={errors.colors?.message || 'Enter colors separated by commas'}
+                  helperText={errors.colors?.message || t('admin.colorsHelper')}
                 />
               </Box>
             </Box>

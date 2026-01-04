@@ -341,11 +341,11 @@ const Navbar = () => {
                                   </Typography>
                                   {product.stock > 0 ? (
                                     <Typography variant="caption" color="success.main">
-                                      In Stock
+                                      {t('products.stock')}
                                     </Typography>
                                   ) : (
                                     <Typography variant="caption" color="error">
-                                      Out of Stock
+                                      {t('products.outOfStock')}
                                     </Typography>
                                   )}
                                 </CardContent>
