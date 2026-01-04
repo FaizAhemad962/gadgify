@@ -9,4 +9,6 @@ export const config = {
   jwtExpiresIn: process.env.JWT_EXPIRES_IN || '7d',
   stripeSecretKey: process.env.STRIPE_SECRET_KEY || '',
   frontendUrl: process.env.FRONTEND_URL || 'http://localhost:3000',
+  razorpayKeyId: process.env.RAZORPAY_KEY_ID || '',
+  razorpayKeySecret: process.env.RAZORPAY_KEY_SECRET || '',
 }

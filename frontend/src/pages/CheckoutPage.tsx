@@ -55,9 +55,49 @@ const CheckoutPage = () => {
 
   const createOrderMutation = useMutation({
     mutationFn: ordersApi.create,
-    onSuccess: (order) => {
-      clearCart()
-      navigate(`/orders/${order.id}`)
+    onSuccess: async (order) => {
+      // Create Razorpay payment
+      try {
+        const paymentData = await ordersApi.createPaymentIntent(order.id)
+        
+        const options = {
+          key: paymentData.keyId,
+          amount: paymentData.amount,
+          currency: paymentData.currency,
+          name: 'Gadgify',
+          description: 'Order Payment',
+          order_id: paymentData.razorpayOrderId,
+          handler: async function (response: any) {
+            try {
+              await ordersApi.confirmPayment(order.id, {
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
+              })
+              clearCart()
+              navigate(`/orders/${order.id}`)
+            } catch (err) {
+              setError('Payment verification failed')
+            }
+          },
+          prefill: {
+            name: user?.name,
+            email: user?.email,
+            contact: user?.phone,
+          },
+          theme: {
+            color: '#1976d2',
+          },
+        }
+        
+        const razorpay = new (window as any).Razorpay(options)
+        razorpay.on('payment.failed', function () {
+          setError('Payment failed. Please try again.')
+        })
+        razorpay.open()
+      } catch (err) {
+        setError('Failed to initiate payment')
+      }
     },
     onError: (error: Error) => {
       setError(t('errors.somethingWrong'))

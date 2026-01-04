@@ -19,7 +19,7 @@ const Footer = () => {
           © {new Date().getFullYear()} {t('app.title')} - {t('app.subtitle')}
         </Typography>
         <Typography variant="body2" color="text.secondary" align="center" sx={{ mt: 1 }}>
-          Available only in Maharashtra, India
+          {t('common.availableInMaharashtra')}
         </Typography>
       </Container>
     </Box>

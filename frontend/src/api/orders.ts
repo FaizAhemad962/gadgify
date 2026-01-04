@@ -28,10 +28,14 @@ export const ordersApi = {
     return response.data
   },
 
-  confirmPayment: async (orderId: string, paymentId: string): Promise<Order> => {
+  confirmPayment: async (orderId: string, paymentData: {
+    razorpay_order_id: string
+    razorpay_payment_id: string
+    razorpay_signature: string
+  }): Promise<Order> => {
     const response = await apiClient.post<Order>(
       `/orders/${orderId}/confirm-payment`,
-      { paymentId }
+      paymentData
     )
     return response.data
   },

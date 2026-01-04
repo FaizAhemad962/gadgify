@@ -1,12 +1,20 @@
 import { Response, NextFunction } from 'express'
 import prisma from '../config/database'
 import { AuthRequest } from '../middlewares/auth'
-import Stripe from 'stripe'
+import { razorpayInstance } from '../config/razorpay'
 import { config } from '../config'
+import crypto from 'crypto'
 
-const stripe = new Stripe(config.stripeSecretKey, {
-  apiVersion: '2025-12-15.clover',
-})
+// Helper function to parse shippingAddress JSON
+const transformOrder = (order: any) => {
+  if (!order) return order
+  return {
+    ...order,
+    shippingAddress: typeof order.shippingAddress === 'string' 
+      ? JSON.parse(order.shippingAddress) 
+      : order.shippingAddress
+  }
+}
 
 export const createOrder = async (
   req: AuthRequest,
@@ -41,7 +49,7 @@ export const createOrder = async (
       data: {
         userId,
         total,
-        shippingAddress,
+        shippingAddress: JSON.stringify(shippingAddress),
         items: {
           create: items.map((item: any) => ({
             productId: item.productId,
@@ -89,7 +97,7 @@ export const createOrder = async (
       await prisma.cartItem.deleteMany({ where: { cartId: cart.id } })
     }
 
-    res.status(201).json(order)
+    res.status(201).json(transformOrder(order))
   } catch (error) {
     next(error)
   }
@@ -111,7 +119,7 @@ export const getOrders = async (
       orderBy: { createdAt: 'desc' },
     })
 
-    res.json(orders)
+    res.json(orders.map(transformOrder))
   } catch (error) {
     next(error)
   }
@@ -159,7 +167,7 @@ export const getOrderById = async (
       return
     }
 
-    res.json(order)
+    res.json(transformOrder(order))
   } catch (error) {
     next(error)
   }
@@ -187,14 +195,22 @@ export const createPaymentIntent = async (
       return
     }
 
-    const paymentIntent = await stripe.paymentIntents.create({
-      amount: Math.round(order.total * 100), // Convert to cents
-      currency: 'inr',
-      metadata: { orderId: order.id },
+    // Create Razorpay order
+    const razorpayOrder = await razorpayInstance.orders.create({
+      amount: Math.round(order.total * 100), // Amount in paise
+      currency: 'INR',
+      receipt: order.id,
+      notes: {
+        orderId: order.id,
+        userId: req.user!.id,
+      },
     })
 
     res.json({
-      clientSecret: paymentIntent.client_secret,
+      razorpayOrderId: razorpayOrder.id,
+      amount: razorpayOrder.amount,
+      currency: razorpayOrder.currency,
+      keyId: config.razorpayKeyId,
       orderId: order.id,
     })
   } catch (error) {
@@ -209,7 +225,7 @@ export const confirmPayment = async (
 ): Promise<void> => {
   try {
     const { orderId } = req.params
-    const { paymentId } = req.body
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body
 
     const order = await prisma.order.findUnique({
       where: { id: orderId },
@@ -239,11 +255,23 @@ export const confirmPayment = async (
       return
     }
 
+    // Verify Razorpay signature
+    const body = razorpay_order_id + '|' + razorpay_payment_id
+    const expectedSignature = crypto
+      .createHmac('sha256', config.razorpayKeySecret)
+      .update(body.toString())
+      .digest('hex')
+
+    if (expectedSignature !== razorpay_signature) {
+      res.status(400).json({ message: 'Invalid payment signature' })
+      return
+    }
+
     const updatedOrder = await prisma.order.update({
       where: { id: orderId },
       data: {
         paymentStatus: 'COMPLETED',
-        paymentId,
+        paymentId: razorpay_payment_id,
         status: 'PROCESSING',
       },
       include: {
@@ -267,7 +295,7 @@ export const confirmPayment = async (
       },
     })
 
-    res.json(updatedOrder)
+    res.json(transformOrder(updatedOrder))
   } catch (error) {
     next(error)
   }
@@ -303,7 +331,7 @@ export const getAllOrders = async (
       orderBy: { createdAt: 'desc' },
     })
 
-    res.json(orders)
+    res.json(orders.map(transformOrder))
   } catch (error) {
     next(error)
   }
@@ -342,7 +370,7 @@ export const updateOrderStatus = async (
       },
     })
 
-    res.json(order)
+    res.json(transformOrder(order))
   } catch (error) {
     next(error)
   }
