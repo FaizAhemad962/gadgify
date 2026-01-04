@@ -57,7 +57,7 @@
     "orderSummary": "ऑर्डर सारांश",
     "placeOrder": "ऑर्डर करें",
     "items": "आइटम",
-    "shipping": "शिपिंग",    "gst": "जीएसटी",    "totalGst": "कुल जीएसटी",    "tax": "कर"
+    "shipping": "शिपिंग"
   },
   "orders": {
     "title": "मेरे ऑर्डर",

@@ -57,7 +57,8 @@
     "orderSummary": "ऑर्डर सारांश",
     "placeOrder": "ऑर्डर द्या",
     "items": "वस्तू",
-    "shipping": "शिपिंग",    "gst": "जीएसटी",    "totalGst": "एकूण जीएसटी",    "tax": "कर"
+    "shipping": "शिपिंग",
+    "tax": "कर"
   },
   "orders": {
     "title": "माझे ऑर्डर",

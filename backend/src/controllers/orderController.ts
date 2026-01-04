@@ -4,7 +4,6 @@ import { AuthRequest } from '../middlewares/auth'
 import { razorpayInstance } from '../config/razorpay'
 import { config } from '../config'
 import crypto from 'crypto'
-import { fetchGSTRateByHSN, fetchGSTRatesForProducts } from '../services/gstService'
 
 // Helper function to parse shippingAddress JSON
 const transformOrder = (order: any) => {
@@ -23,10 +22,10 @@ export const createOrder = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const { items, subtotal, shipping, total, shippingAddress } = req.body
+    const { items, subtotal, weight, shipping, total, shippingAddress } = req.body
     const userId = req.user!.id
 
-    // Fetch all products with their categories for GST calculation
+    // Fetch all products
     const productIds = items.map((item: any) => item.productId)
     const products = await prisma.product.findMany({
       where: { id: { in: productIds } }
@@ -52,53 +51,13 @@ export const createOrder = async (
       }
     }
 
-    // Calculate GST dynamically using HSN codes from government API with fallback
-    let calculatedGST = 0
-    const gstBreakdown: Record<string, any> = {}
-
-    // Collect all HSN codes for batch fetching
-    const hsnCodes = products
-      .map(p => p.hsn)
-      .filter(Boolean) as string[]
-
-    // Fetch GST rates for all HSN codes (with caching and fallback)
-    const hsnGSTRates = hsnCodes.length > 0 
-      ? await fetchGSTRatesForProducts(hsnCodes)
-      : {}
-
-    // Calculate GST for each item using its product's HSN
-    items.forEach((item: any) => {
-      const product = productMap.get(item.productId)!
-      const itemTotal = item.price * item.quantity
-      
-      // Get GST rate from government API or fallback
-      const gstRate = product.hsn && hsnGSTRates[product.hsn] 
-        ? hsnGSTRates[product.hsn]
-        : 18 // Default to 18% if HSN not available
-      
-      const itemGST = (itemTotal * gstRate) / 100
-      calculatedGST += itemGST
-
-      // Build breakdown by rate
-      if (!gstBreakdown[gstRate]) {
-        gstBreakdown[gstRate] = {
-          amount: 0,
-          hsn: product.hsn || 'N/A',
-          description: product.category,
-        }
-      }
-      gstBreakdown[gstRate].amount += itemGST
-    })
-
     // Create order
     const order = await prisma.order.create({
       data: {
         userId,
         subtotal,
-        gst: calculatedGST,
-        gstBreakdown: JSON.stringify(gstBreakdown),
         shipping,
-        total: subtotal + calculatedGST + shipping,
+        total: subtotal + shipping,
         shippingAddress: JSON.stringify(shippingAddress),
         items: {
           create: items.map((item: any) => ({

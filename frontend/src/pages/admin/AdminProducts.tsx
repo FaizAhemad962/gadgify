@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import {
@@ -23,6 +23,7 @@ import {
   InputLabel,
   Select,
   MenuItem,
+  CircularProgress,
 } from '@mui/material'
 import { Edit, Delete, Add, Upload } from '@mui/icons-material'
 import { useForm } from 'react-hook-form'
@@ -30,7 +31,6 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { productsApi } from '../../api/products'
 import type { Product } from '../../types'
-import { getGSTInfoForCategory } from '../../utils/gstRates'
 
 const CATEGORIES = [
   'Smartphones',
@@ -51,11 +51,11 @@ const productSchema = z.object({
   description: z.string().min(10, 'Description must be at least 10 characters'),
   price: z.number().min(1, 'Price must be greater than 0'),
   stock: z.number().min(0, 'Stock cannot be negative'),
+  weight: z.number().min(0.1, 'Weight must be at least 0.1 kg'),
   imageUrl: z.string().optional(),
   videoUrl: z.string().optional(),
   colors: z.string().optional(),
   category: z.string().min(2, 'Category is required'),
-  hsn: z.string().optional(),
 })
 
 type ProductFormData = z.infer<typeof productSchema>
@@ -71,7 +71,6 @@ const AdminProducts = () => {
   const [videoFile, setVideoFile] = useState<File | null>(null)
   const [videoPreview, setVideoPreview] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('')
-  const [hsnCode, setHsnCode] = useState('')
 
   const { data: products } = useQuery({
     queryKey: ['products'],
@@ -122,18 +121,16 @@ const AdminProducts = () => {
     if (product) {
       setEditingProduct(product)
       setSelectedCategory(product.category)
-      const gstInfo = getGSTInfoForCategory(product.category)
-      setHsnCode(product.hsn || gstInfo.hsn)
       reset({
         name: product.name,
         description: product.description,
         price: product.price,
         stock: product.stock,
+        weight: product.weight || 0.5,
         imageUrl: product.imageUrl,
         videoUrl: product.videoUrl || '',
         colors: product.colors || '',
         category: product.category,
-        hsn: product.hsn || gstInfo.hsn,
       })
       
       // Set image preview
@@ -151,7 +148,6 @@ const AdminProducts = () => {
     } else {
       setEditingProduct(null)
       setSelectedCategory('')
-      setHsnCode('')
       reset({
         name: '',
         description: '',
@@ -161,7 +157,7 @@ const AdminProducts = () => {
         videoUrl: '',
         colors: '',
         category: '',
-        hsn: '',
+        weight: 0.5,
       })
       setImagePreview('')
       setVideoPreview('')
@@ -278,7 +274,6 @@ const AdminProducts = () => {
       ...data, 
       imageUrl: finalImageUrl, 
       videoUrl: finalVideoUrl || undefined,
-      hsn: hsnCode || getGSTInfoForCategory(data.category).hsn,
     }
 
     if (editingProduct) {
@@ -413,65 +408,18 @@ const AdminProducts = () => {
                     helperText={errors.stock?.message}
                   />
                 </Box>
-              </Box>
-
-              {/* GST Calculation Example */}
-              {watch('price') && selectedCategory && (
-                <Box
-                  sx={{
-                    p: 1.5,
-                    bgcolor: 'rgba(76, 175, 80, 0.08)',
-                    border: '1px solid #4CAF50',
-                    borderRadius: 1,
-                  }}
-                >
-                  <Typography variant="caption" color="text.secondary" display="block" sx={{ mb: 0.5 }}>
-                    📊 GST Calculation Example (For Reference)
-                  </Typography>
-                  <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: 1 }}>
-                    <Box>
-                      <Typography variant="caption" color="text.secondary">
-                        Base Price
-                      </Typography>
-                      <Typography variant="body2" fontWeight={600}>
-                        ₹{(Number(watch('price')) || 0).toFixed(2)}
-                      </Typography>
-                    </Box>
-                    <Box>
-                      <Typography variant="caption" color="text.secondary">
-                        GST Rate
-                      </Typography>
-                      <Typography variant="body2" fontWeight={600} sx={{ color: '#4CAF50' }}>
-                        {getGSTInfoForCategory(selectedCategory).gstRate}%
-                      </Typography>
-                    </Box>
-                    <Box>
-                      <Typography variant="caption" color="text.secondary">
-                        GST Amount
-                      </Typography>
-                      <Typography variant="body2" fontWeight={600}>
-                        ₹
-                        {(
-                          (Number(watch('price')) || 0) *
-                          (getGSTInfoForCategory(selectedCategory).gstRate / 100)
-                        ).toFixed(2)}
-                      </Typography>
-                    </Box>
-                    <Box>
-                      <Typography variant="caption" color="text.secondary">
-                        Total Price
-                      </Typography>
-                      <Typography variant="body2" fontWeight={600} sx={{ color: '#1976d2' }}>
-                        ₹
-                        {(
-                          (Number(watch('price')) || 0) +
-                          ((Number(watch('price')) || 0) * getGSTInfoForCategory(selectedCategory).gstRate) / 100
-                        ).toFixed(2)}
-                      </Typography>
-                    </Box>
-                  </Box>
+                <Box sx={{ flex: 1 }}>
+                  <TextField
+                    fullWidth
+                    label="Weight (kg)"
+                    type="number"
+                    step="0.1"
+                    {...register('weight', { valueAsNumber: true })}
+                    error={!!errors.weight}
+                    helperText={errors.weight?.message || 'Product weight in kilograms'}
+                  />
                 </Box>
-              )}
+              </Box>
 
               <Box>
                 <FormControl fullWidth error={!!errors.category}>
@@ -482,8 +430,6 @@ const AdminProducts = () => {
                     defaultValue={editingProduct?.category || ''}
                     onChange={(e) => {
                       setSelectedCategory(e.target.value)
-                      const gstInfo = getGSTInfoForCategory(e.target.value)
-                      setHsnCode(gstInfo.hsn)
                     }}
                   >
                     {CATEGORIES.map((category) => (
@@ -498,64 +444,6 @@ const AdminProducts = () => {
                     </Typography>
                   )}
                 </FormControl>
-              </Box>
-              <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 2 }}>
-                <Box sx={{ flex: 1 }}>
-                  <TextField
-                    fullWidth
-                    label="HSN Code"
-                    placeholder="Auto-populated based on category"
-                    value={hsnCode}
-                    onChange={(e) => setHsnCode(e.target.value)}
-                    helperText="Harmonized System of Nomenclature code for GST purposes"
-                  />
-                </Box>
-                {selectedCategory && (
-                  <Box
-                    sx={{
-                      flex: 1,
-                      display: 'flex',
-                      flexDirection: 'column',
-                      justifyContent: 'space-between',
-                      p: 2,
-                      bgcolor: 'rgba(25, 118, 210, 0.08)',
-                      borderRadius: 1,
-                      border: '1px solid #1976d2',
-                    }}
-                  >
-                    <Box>
-                      <Typography variant="caption" color="text.secondary" display="block" sx={{ mb: 0.5 }}>
-                        Category
-                      </Typography>
-                      <Typography variant="body2" fontWeight={600} sx={{ mb: 1.5 }}>
-                        {selectedCategory}
-                      </Typography>
-                    </Box>
-                    <Box>
-                      <Typography variant="caption" color="text.secondary" display="block" sx={{ mb: 0.5 }}>
-                        HSN Code
-                      </Typography>
-                      <Typography variant="body2" fontWeight={600} sx={{ mb: 1.5 }}>
-                        {hsnCode || 'Not set'}
-                      </Typography>
-                    </Box>
-                    <Box sx={{ bgcolor: 'white', p: 1, borderRadius: 0.5 }}>
-                      <Typography variant="caption" color="text.secondary" display="block" sx={{ mb: 0.5 }}>
-                        GST Rate (Applicable)
-                      </Typography>
-                      <Typography
-                        variant="h6"
-                        sx={{
-                          color: '#1976d2',
-                          fontWeight: 700,
-                          fontSize: '1.25rem',
-                        }}
-                      >
-                        {getGSTInfoForCategory(selectedCategory).gstRate}%
-                      </Typography>
-                    </Box>
-                  </Box>
-                )}
               </Box>
               <Box>
                 <Typography variant="subtitle2" gutterBottom>

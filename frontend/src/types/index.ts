@@ -21,7 +21,6 @@ export interface Product {
   videoUrl?: string
   colors?: string
   category: string
-  hsn?: string
   createdAt: string
   updatedAt: string
   averageRating?: number
@@ -58,8 +57,6 @@ export interface Order {
   user: User
   items: OrderItem[]
   subtotal?: number
-  gst?: number
-  gstBreakdown?: string
   shipping?: number
   total: number
   status: 'PENDING' | 'PROCESSING' | 'SHIPPED' | 'DELIVERED' | 'CANCELLED'
@@ -136,8 +133,12 @@ export interface CreateOrderRequest {
 }
 
 export interface PaymentIntent {
-  clientSecret: string
+  clientSecret?: string
   orderId: string
+  keyId?: string
+  amount?: number
+  currency?: string
+  razorpayOrderId?: string
 }
 
 export interface ApiError {

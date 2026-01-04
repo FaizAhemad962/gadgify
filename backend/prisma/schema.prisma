@@ -33,11 +33,11 @@ model Product {
   description String
   price       Float
   stock       Int
+  weight      Float       @default(0.5) // Weight in kg
   imageUrl    String
   videoUrl    String?
   colors      String?
   category    String
-  hsn         String?
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
   cartItems   CartItem[]
@@ -90,8 +90,7 @@ model Order {
   id              String      @id @default(uuid())
   userId          String
   subtotal        Float?
-  gst             Float?
-  gstBreakdown    String?
+  weight          Float?      @default(0)
   shipping        Float?
   total           Float
   status          String      @default("PENDING")

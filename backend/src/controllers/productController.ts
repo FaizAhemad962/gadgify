@@ -66,10 +66,10 @@ export const createProduct = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const { name, description, price, stock, imageUrl, videoUrl, colors, category } = req.body
+    const { name, description, price, stock, imageUrl, videoUrl, colors, category, weight } = req.body
 
     const product = await prisma.product.create({
-      data: { name, description, price, stock, imageUrl, videoUrl, colors, category },
+      data: { name, description, price, stock, imageUrl, videoUrl, colors, category, weight: weight || 0.5 },
     })
 
     res.status(201).json(product)
@@ -85,11 +85,11 @@ export const updateProduct = async (
 ): Promise<void> => {
   try {
     const { id } = req.params
-    const { name, description, price, stock, imageUrl, videoUrl, colors, category } = req.body
+    const { name, description, price, stock, imageUrl, videoUrl, colors, category, weight } = req.body
 
     const product = await prisma.product.update({
       where: { id },
-      data: { name, description, price, stock, imageUrl, videoUrl, colors, category },
+      data: { name, description, price, stock, imageUrl, videoUrl, colors, category, weight: weight || 0.5 },
     })
 
     res.json(product)

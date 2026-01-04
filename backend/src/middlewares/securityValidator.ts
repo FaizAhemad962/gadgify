@@ -124,13 +124,6 @@ export const validatePasswordStrength = (password: string): { valid: boolean; er
 }
 
 /**
- * Validate HSN code format (4-8 digits)
- */
-export const validateHSNCode = (hsn: string): boolean => {
-  return /^\d{4,8}$/.test(hsn.trim())
-}
-
-/**
  * Validate phone number format (10 digits for India)
  */
 export const validatePhoneNumber = (phone: string): boolean => {

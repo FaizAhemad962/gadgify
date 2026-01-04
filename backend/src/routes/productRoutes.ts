@@ -18,7 +18,6 @@ import { uploadLimiter } from '../middlewares/rateLimiter'
 import { productSchema, ratingSchema } from '../validators'
 import { upload, videoUpload } from '../middlewares/upload'
 import { Request, Response } from 'express'
-import { fetchGSTRateByHSN } from '../services/gstService'
 
 const router = Router()
 
@@ -67,30 +66,5 @@ router.delete('/:id', authenticate, authorize('ADMIN'), deleteProduct)
 router.get('/:productId/ratings', getRatings)
 router.post('/:productId/ratings', authenticate, validate(ratingSchema), createRating)
 router.delete('/:productId/ratings', authenticate, deleteRating)
-
-// GST rate endpoint - Get GST rate by HSN code from government sources
-router.get('/gst/rate/:hsn', async (req: Request, res: Response) => {
-  try {
-    const { hsn } = req.params
-    
-    // Validate HSN format (should be 4-8 digits)
-    if (!hsn || !/^\d{4,8}$/.test(hsn)) {
-      return res.status(400).json({ message: 'Invalid HSN code format' })
-    }
-
-    const gstData = await fetchGSTRateByHSN(hsn)
-    
-    res.json({
-      hsn: gstData.hsn,
-      gstRate: gstData.gstRate,
-      description: gstData.description,
-      lastUpdated: gstData.lastUpdated,
-      source: 'government-api-with-fallback',
-    })
-  } catch (error) {
-    console.error('Error fetching GST rate:', error)
-    res.status(500).json({ message: 'Failed to fetch GST rate' })
-  }
-})
 
 export default router

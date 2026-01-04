@@ -138,10 +138,6 @@ const OrderDetailPage = () => {
                 <Typography>₹{order.subtotal?.toLocaleString() || 0}</Typography>
               </Box>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                <Typography>{t('checkout.gst')} (18%)</Typography>
-                <Typography>₹{order.gst?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || 0}</Typography>
-              </Box>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                 <Typography>{t('checkout.shipping')}</Typography>
                 <Typography>
                   {order.shipping === 0 ? t('common.free') : `₹${order.shipping?.toLocaleString() || 0}`}

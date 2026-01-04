@@ -57,10 +57,7 @@
     "orderSummary": "Order Summary",
     "placeOrder": "Place Order",
     "items": "Items",
-    "shipping": "Shipping",
-    "gst": "GST",
-    "totalGst": "Total GST",
-    "tax": "Tax"
+    "shipping": "Shipping"
   },
   "orders": {
     "title": "My Orders",

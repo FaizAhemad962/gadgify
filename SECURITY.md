@@ -53,9 +53,6 @@ validatePhoneNumber(phone) // 6-9XXXXXXXXX
 // Pincode (6 digits)
 validatePincode(pincode)
 
-// HSN Code (4-8 digits)
-validateHSNCode(hsn)
-
 // URL validation
 validateURL(url)
 ```
@@ -188,13 +185,6 @@ router.post('/products',
   validate(schema),   // Validate input
   createProduct
 )
-```
-
-#### GST API Endpoint
-```typescript
-// GET /api/products/gst/rate/:hsn
-// SECURITY: HSN code validated with regex (/^\d{4,8}$/)
-// Prevents injection attacks
 ```
 
 ### 10. Sensitive Data Protection
@@ -375,10 +365,6 @@ npm audit fix --force
 - Secure API endpoints
 
 ### India GST Compliance
-- Accurate GST rate calculation
-- Invoice generation with breakdown
-- GST registration number (if applicable)
-- Compliance with government regulations
 
 ## 🔐 Best Practices Going Forward
 
