@@ -4,7 +4,7 @@ import { AuthRequest } from '../middlewares/auth'
 import { razorpayInstance } from '../config/razorpay'
 import { config } from '../config'
 import crypto from 'crypto'
-import { calculateOrderGST, getGSTBreakdown } from '../utils/gstRates'
+import { fetchGSTRateByHSN, fetchGSTRatesForProducts } from '../services/gstService'
 
 // Helper function to parse shippingAddress JSON
 const transformOrder = (order: any) => {
@@ -52,18 +52,43 @@ export const createOrder = async (
       }
     }
 
-    // Calculate GST based on product categories and HSN codes
-    const itemsWithCategory = items.map((item: any) => {
-      const product = productMap.get(item.productId)!
-      return {
-        price: item.price,
-        quantity: item.quantity,
-        category: product.category
-      }
-    })
+    // Calculate GST dynamically using HSN codes from government API with fallback
+    let calculatedGST = 0
+    const gstBreakdown: Record<string, any> = {}
 
-    const calculatedGST = calculateOrderGST(itemsWithCategory)
-    const gstBreakdown = getGSTBreakdown(itemsWithCategory)
+    // Collect all HSN codes for batch fetching
+    const hsnCodes = products
+      .map(p => p.hsn)
+      .filter(Boolean) as string[]
+
+    // Fetch GST rates for all HSN codes (with caching and fallback)
+    const hsnGSTRates = hsnCodes.length > 0 
+      ? await fetchGSTRatesForProducts(hsnCodes)
+      : {}
+
+    // Calculate GST for each item using its product's HSN
+    items.forEach((item: any) => {
+      const product = productMap.get(item.productId)!
+      const itemTotal = item.price * item.quantity
+      
+      // Get GST rate from government API or fallback
+      const gstRate = product.hsn && hsnGSTRates[product.hsn] 
+        ? hsnGSTRates[product.hsn]
+        : 18 // Default to 18% if HSN not available
+      
+      const itemGST = (itemTotal * gstRate) / 100
+      calculatedGST += itemGST
+
+      // Build breakdown by rate
+      if (!gstBreakdown[gstRate]) {
+        gstBreakdown[gstRate] = {
+          amount: 0,
+          hsn: product.hsn || 'N/A',
+          description: product.category,
+        }
+      }
+      gstBreakdown[gstRate].amount += itemGST
+    })
 
     // Create order
     const order = await prisma.order.create({
