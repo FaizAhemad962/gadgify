@@ -21,6 +21,7 @@ export interface Product {
   videoUrl?: string
   colors?: string
   category: string
+  hsn?: string
   createdAt: string
   updatedAt: string
   averageRating?: number

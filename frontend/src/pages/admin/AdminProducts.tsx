@@ -30,6 +30,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { productsApi } from '../../api/products'
 import type { Product } from '../../types'
+import { getGSTInfoForCategory } from '../../utils/gstRates'
 
 const CATEGORIES = [
   'Smartphones',
@@ -54,6 +55,7 @@ const productSchema = z.object({
   videoUrl: z.string().optional(),
   colors: z.string().optional(),
   category: z.string().min(2, 'Category is required'),
+  hsn: z.string().optional(),
 })
 
 type ProductFormData = z.infer<typeof productSchema>
@@ -68,6 +70,8 @@ const AdminProducts = () => {
   const [imagePreview, setImagePreview] = useState('')
   const [videoFile, setVideoFile] = useState<File | null>(null)
   const [videoPreview, setVideoPreview] = useState('')
+  const [selectedCategory, setSelectedCategory] = useState('')
+  const [hsnCode, setHsnCode] = useState('')
 
   const { data: products } = useQuery({
     queryKey: ['products'],
@@ -116,6 +120,9 @@ const AdminProducts = () => {
   const handleOpen = (product?: Product) => {
     if (product) {
       setEditingProduct(product)
+      setSelectedCategory(product.category)
+      const gstInfo = getGSTInfoForCategory(product.category)
+      setHsnCode(product.hsn || gstInfo.hsn)
       reset({
         name: product.name,
         description: product.description,
@@ -125,6 +132,7 @@ const AdminProducts = () => {
         videoUrl: product.videoUrl || '',
         colors: product.colors || '',
         category: product.category,
+        hsn: product.hsn || gstInfo.hsn,
       })
       
       // Set image preview
@@ -141,6 +149,8 @@ const AdminProducts = () => {
       }
     } else {
       setEditingProduct(null)
+      setSelectedCategory('')
+      setHsnCode('')
       reset({
         name: '',
         description: '',
@@ -150,6 +160,7 @@ const AdminProducts = () => {
         videoUrl: '',
         colors: '',
         category: '',
+        hsn: '',
       })
       setImagePreview('')
       setVideoPreview('')
@@ -262,7 +273,12 @@ const AdminProducts = () => {
       return
     }
 
-    const productData = { ...data, imageUrl: finalImageUrl, videoUrl: finalVideoUrl || undefined }
+    const productData = { 
+      ...data, 
+      imageUrl: finalImageUrl, 
+      videoUrl: finalVideoUrl || undefined,
+      hsn: hsnCode || getGSTInfoForCategory(data.category).hsn,
+    }
 
     if (editingProduct) {
       updateMutation.mutate({ id: editingProduct.id, data: productData })
@@ -404,6 +420,11 @@ const AdminProducts = () => {
                     label={t('admin.category')}
                     {...register('category')}
                     defaultValue={editingProduct?.category || ''}
+                    onChange={(e) => {
+                      setSelectedCategory(e.target.value)
+                      const gstInfo = getGSTInfoForCategory(e.target.value)
+                      setHsnCode(gstInfo.hsn)
+                    }}
                   >
                     {CATEGORIES.map((category) => (
                       <MenuItem key={category} value={category}>
@@ -417,6 +438,25 @@ const AdminProducts = () => {
                     </Typography>
                   )}
                 </FormControl>
+              </Box>
+              <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 2 }}>
+                <Box sx={{ flex: 1 }}>
+                  <TextField
+                    fullWidth
+                    label="HSN Code"
+                    placeholder="Auto-populated based on category"
+                    value={hsnCode}
+                    onChange={(e) => setHsnCode(e.target.value)}
+                    helperText="Harmonized System of Nomenclature code for GST purposes"
+                  />
+                </Box>
+                {selectedCategory && (
+                  <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                    <Typography variant="body2" color="text.secondary">
+                      {selectedCategory} → {getGSTInfoForCategory(selectedCategory).gstRate}% GST
+                    </Typography>
+                  </Box>
+                )}
               </Box>
               <Box>
                 <Typography variant="subtitle2" gutterBottom>
