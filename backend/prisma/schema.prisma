@@ -33,7 +33,6 @@ model Product {
   description String
   price       Float
   stock       Int
-  weight      Float       @default(0.5) // Weight in kg
   imageUrl    String
   videoUrl    String?
   colors      String?
@@ -90,7 +89,6 @@ model Order {
   id              String      @id @default(uuid())
   userId          String
   subtotal        Float?
-  weight          Float?      @default(0)
   shipping        Float?
   total           Float
   status          String      @default("PENDING")

@@ -22,7 +22,7 @@ export const createOrder = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const { items, subtotal, weight, shipping, total, shippingAddress } = req.body
+    const { items, subtotal, shipping, total, shippingAddress } = req.body
     const userId = req.user!.id
 
     // Fetch all products
