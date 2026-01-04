@@ -73,6 +73,8 @@ export const fetchGSTRateByHSN = async (hsn: string): Promise<HSNGSTData> => {
   } catch (error) {
     console.warn(`Failed to fetch GST rate for HSN ${cleanHSN} from API, using fallback`, error)
     return getFallbackGSTRate(cleanHSN)
+  }
+}
 
 /**
  * Fetch GST rate from official government sources

@@ -82,6 +82,7 @@ const AdminProducts = () => {
     register,
     handleSubmit,
     reset,
+    watch,
     formState: { errors },
   } = useForm<ProductFormData>({
     resolver: zodResolver(productSchema),
@@ -413,6 +414,65 @@ const AdminProducts = () => {
                   />
                 </Box>
               </Box>
+
+              {/* GST Calculation Example */}
+              {watch('price') && selectedCategory && (
+                <Box
+                  sx={{
+                    p: 1.5,
+                    bgcolor: 'rgba(76, 175, 80, 0.08)',
+                    border: '1px solid #4CAF50',
+                    borderRadius: 1,
+                  }}
+                >
+                  <Typography variant="caption" color="text.secondary" display="block" sx={{ mb: 0.5 }}>
+                    📊 GST Calculation Example (For Reference)
+                  </Typography>
+                  <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: 1 }}>
+                    <Box>
+                      <Typography variant="caption" color="text.secondary">
+                        Base Price
+                      </Typography>
+                      <Typography variant="body2" fontWeight={600}>
+                        ₹{(Number(watch('price')) || 0).toFixed(2)}
+                      </Typography>
+                    </Box>
+                    <Box>
+                      <Typography variant="caption" color="text.secondary">
+                        GST Rate
+                      </Typography>
+                      <Typography variant="body2" fontWeight={600} sx={{ color: '#4CAF50' }}>
+                        {getGSTInfoForCategory(selectedCategory).gstRate}%
+                      </Typography>
+                    </Box>
+                    <Box>
+                      <Typography variant="caption" color="text.secondary">
+                        GST Amount
+                      </Typography>
+                      <Typography variant="body2" fontWeight={600}>
+                        ₹
+                        {(
+                          (Number(watch('price')) || 0) *
+                          (getGSTInfoForCategory(selectedCategory).gstRate / 100)
+                        ).toFixed(2)}
+                      </Typography>
+                    </Box>
+                    <Box>
+                      <Typography variant="caption" color="text.secondary">
+                        Total Price
+                      </Typography>
+                      <Typography variant="body2" fontWeight={600} sx={{ color: '#1976d2' }}>
+                        ₹
+                        {(
+                          (Number(watch('price')) || 0) +
+                          ((Number(watch('price')) || 0) * getGSTInfoForCategory(selectedCategory).gstRate) / 100
+                        ).toFixed(2)}
+                      </Typography>
+                    </Box>
+                  </Box>
+                </Box>
+              )}
+
               <Box>
                 <FormControl fullWidth error={!!errors.category}>
                   <InputLabel>{t('admin.category')}</InputLabel>
@@ -451,10 +511,49 @@ const AdminProducts = () => {
                   />
                 </Box>
                 {selectedCategory && (
-                  <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                    <Typography variant="body2" color="text.secondary">
-                      {selectedCategory} → {getGSTInfoForCategory(selectedCategory).gstRate}% GST
-                    </Typography>
+                  <Box
+                    sx={{
+                      flex: 1,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'space-between',
+                      p: 2,
+                      bgcolor: 'rgba(25, 118, 210, 0.08)',
+                      borderRadius: 1,
+                      border: '1px solid #1976d2',
+                    }}
+                  >
+                    <Box>
+                      <Typography variant="caption" color="text.secondary" display="block" sx={{ mb: 0.5 }}>
+                        Category
+                      </Typography>
+                      <Typography variant="body2" fontWeight={600} sx={{ mb: 1.5 }}>
+                        {selectedCategory}
+                      </Typography>
+                    </Box>
+                    <Box>
+                      <Typography variant="caption" color="text.secondary" display="block" sx={{ mb: 0.5 }}>
+                        HSN Code
+                      </Typography>
+                      <Typography variant="body2" fontWeight={600} sx={{ mb: 1.5 }}>
+                        {hsnCode || 'Not set'}
+                      </Typography>
+                    </Box>
+                    <Box sx={{ bgcolor: 'white', p: 1, borderRadius: 0.5 }}>
+                      <Typography variant="caption" color="text.secondary" display="block" sx={{ mb: 0.5 }}>
+                        GST Rate (Applicable)
+                      </Typography>
+                      <Typography
+                        variant="h6"
+                        sx={{
+                          color: '#1976d2',
+                          fontWeight: 700,
+                          fontSize: '1.25rem',
+                        }}
+                      >
+                        {getGSTInfoForCategory(selectedCategory).gstRate}%
+                      </Typography>
+                    </Box>
                   </Box>
                 )}
               </Box>
