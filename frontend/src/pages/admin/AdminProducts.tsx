@@ -19,8 +19,6 @@ import {
   DialogActions,
   TextField,
   Alert,
-  Tabs,
-  Tab,
   FormControl,
   InputLabel,
   Select,
@@ -53,6 +51,8 @@ const productSchema = z.object({
   price: z.number().min(1, 'Price must be greater than 0'),
   stock: z.number().min(0, 'Stock cannot be negative'),
   imageUrl: z.string().optional(),
+  videoUrl: z.string().optional(),
+  colors: z.string().optional(),
   category: z.string().min(2, 'Category is required'),
 })
 
@@ -64,9 +64,10 @@ const AdminProducts = () => {
   const [open, setOpen] = useState(false)
   const [editingProduct, setEditingProduct] = useState<Product | null>(null)
   const [error, setError] = useState('')
-  const [imageTab, setImageTab] = useState(0)
   const [imageFile, setImageFile] = useState<File | null>(null)
   const [imagePreview, setImagePreview] = useState('')
+  const [videoFile, setVideoFile] = useState<File | null>(null)
+  const [videoPreview, setVideoPreview] = useState('')
 
   const { data: products } = useQuery({
     queryKey: ['products'],
@@ -121,9 +122,23 @@ const AdminProducts = () => {
         price: product.price,
         stock: product.stock,
         imageUrl: product.imageUrl,
+        videoUrl: product.videoUrl || '',
+        colors: product.colors || '',
         category: product.category,
       })
+      
+      // Set image preview
       setImagePreview(product.imageUrl)
+      
+      // Set video preview - ensure full URL
+      if (product.videoUrl) {
+        // If it's already a full URL, use it; otherwise construct it
+        const videoUrl = product.videoUrl.startsWith('http') 
+          ? product.videoUrl 
+          : `http://localhost:5000${product.videoUrl}`
+        setVideoPreview(videoUrl)
+        console.log('Video preview URL:', videoUrl)
+      }
     } else {
       setEditingProduct(null)
       reset({
@@ -132,14 +147,17 @@ const AdminProducts = () => {
         price: 0,
         stock: 0,
         imageUrl: '',
+        videoUrl: '',
+        colors: '',
         category: '',
       })
       setImagePreview('')
+      setVideoPreview('')
     }
     setOpen(true)
     setError('')
     setImageFile(null)
-    setImageTab(0)
+    setVideoFile(null)
   }
 
   const handleClose = () => {
@@ -148,8 +166,19 @@ const AdminProducts = () => {
     reset()
     setError('')
     setImageFile(null)
+    setVideoFile(null)
     setImagePreview('')
-    setImageTab(0)
+    setVideoPreview('')
+  }
+
+  const handleRemoveImage = () => {
+    setImageFile(null)
+    setImagePreview('')
+  }
+
+  const handleRemoveVideo = () => {
+    setVideoFile(null)
+    setVideoPreview('')
   }
 
   const handleImageFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -169,11 +198,28 @@ const AdminProducts = () => {
     }
   }
 
+  const handleVideoFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      if (file.size > 50 * 1024 * 1024) {
+        setError('Video size should not exceed 50MB')
+        return
+      }
+      setVideoFile(file)
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        setVideoPreview(reader.result as string)
+      }
+      reader.readAsDataURL(file)
+    }
+  }
+
   const onSubmit = async (data: ProductFormData) => {
     let finalImageUrl = data.imageUrl || ''
+    let finalVideoUrl = data.videoUrl || ''
 
-    // If user uploaded a file, upload it first and get the URL
-    if (imageTab === 1 && imageFile) {
+    // If user uploaded a new image file, upload it first and get the URL
+    if (imageFile) {
       try {
         const uploadResult = await productsApi.uploadImage(imageFile)
         // uploadResult.imageUrl is like "/uploads/product-123456.jpg"
@@ -187,6 +233,27 @@ const AdminProducts = () => {
         setError('Failed to upload image. Please try again.')
         return
       }
+    } else if (editingProduct && !finalImageUrl) {
+      // When editing without uploading new image, keep existing image
+      finalImageUrl = editingProduct.imageUrl
+    }
+
+    // If user uploaded a new video file
+    if (videoFile) {
+      try {
+        const uploadResult = await productsApi.uploadVideo(videoFile)
+        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
+        const baseUrl = apiUrl.replace('/api', '')
+        finalVideoUrl = `${baseUrl}${uploadResult.videoUrl}`
+        console.log('Uploaded video URL:', finalVideoUrl)
+      } catch (err) {
+        console.error('Video upload error:', err)
+        setError('Failed to upload video. Please try again.')
+        return
+      }
+    } else if (editingProduct && !finalVideoUrl) {
+      // When editing without uploading new video, keep existing video
+      finalVideoUrl = editingProduct.videoUrl || ''
     }
 
     // Validate that we have an image
@@ -195,7 +262,7 @@ const AdminProducts = () => {
       return
     }
 
-    const productData = { ...data, imageUrl: finalImageUrl }
+    const productData = { ...data, imageUrl: finalImageUrl, videoUrl: finalVideoUrl || undefined }
 
     if (editingProduct) {
       updateMutation.mutate({ id: editingProduct.id, data: productData })
@@ -355,42 +422,43 @@ const AdminProducts = () => {
                 <Typography variant="subtitle2" gutterBottom>
                   {t('admin.productImage')}
                 </Typography>
-                <Tabs value={imageTab} onChange={(_, v) => setImageTab(v)} sx={{ mb: 2 }}>
-                  <Tab label={t('admin.imageUrl')} />
-                  <Tab label={t('admin.uploadImage')} />
-                </Tabs>
-                
-                {imageTab === 0 ? (
-                  <TextField
+                {/* Hidden field to maintain imageUrl in form */}
+                <input type="hidden" {...register('imageUrl')} />
+                <Box sx={{ display: 'flex', gap: 1 }}>
+                  <Button
+                    variant="outlined"
+                    component="label"
+                    startIcon={<Upload />}
                     fullWidth
-                    label={t('admin.imageUrl')}
-                    {...register('imageUrl')}
-                    error={!!errors.imageUrl}
-                    helperText={errors.imageUrl?.message}
-                    onChange={(e) => setImagePreview(e.target.value)}
-                  />
-                ) : (
-                  <Box>
+                  >
+                    {t('admin.chooseImage')}
+                    <input
+                      type="file"
+                      hidden
+                      accept="image/*"
+                      onChange={handleImageFileChange}
+                      key={imageFile?.name || 'image-input'}
+                    />
+                  </Button>
+                  {(imageFile || imagePreview) && (
                     <Button
                       variant="outlined"
-                      component="label"
-                      startIcon={<Upload />}
-                      fullWidth
+                      color="error"
+                      onClick={handleRemoveImage}
                     >
-                      {t('admin.chooseImage')}
-                      <input
-                        type="file"
-                        hidden
-                        accept="image/*"
-                        onChange={handleImageFileChange}
-                      />
+                      Remove
                     </Button>
-                    {imageFile && (
-                      <Typography variant="caption" display="block" sx={{ mt: 1 }}>
-                        {imageFile.name}
-                      </Typography>
-                    )}
-                  </Box>
+                  )}
+                </Box>
+                {imageFile && (
+                  <Typography variant="caption" display="block" sx={{ mt: 1 }}>
+                    Selected: {imageFile.name}
+                  </Typography>
+                )}
+                {!imageFile && editingProduct?.imageUrl && (
+                  <Typography variant="caption" display="block" sx={{ mt: 1, color: 'text.secondary' }}>
+                    Current: {editingProduct.imageUrl.split('/').pop()}
+                  </Typography>
                 )}
                 
                 {imagePreview && (
@@ -405,6 +473,75 @@ const AdminProducts = () => {
                     />
                   </Box>
                 )}
+              </Box>
+
+              {/* Video Upload Section */}
+              <Box>
+                <Typography variant="subtitle2" gutterBottom>
+                  Product Video (Optional)
+                </Typography>
+                {/* Hidden field to maintain videoUrl in form */}
+                <input type="hidden" {...register('videoUrl')} />
+                <Box sx={{ display: 'flex', gap: 1 }}>
+                  <Button
+                    variant="outlined"
+                    component="label"
+                    startIcon={<Upload />}
+                    fullWidth
+                  >
+                    Upload Video File
+                    <input
+                      type="file"
+                      hidden
+                      accept="video/*"
+                      onChange={handleVideoFileChange}
+                      key={videoFile?.name || 'video-input'}
+                    />
+                  </Button>
+                  {(videoFile || videoPreview) && (
+                    <Button
+                      variant="outlined"
+                      color="error"
+                      onClick={handleRemoveVideo}
+                    >
+                      Remove
+                    </Button>
+                  )}
+                </Box>
+                {videoFile && (
+                  <Typography variant="caption" display="block" sx={{ mt: 1 }}>
+                    Selected: {videoFile.name}
+                  </Typography>
+                )}
+                {!videoFile && editingProduct?.videoUrl && (
+                  <Typography variant="caption" display="block" sx={{ mt: 1, color: 'text.secondary' }}>
+                    Current: {editingProduct.videoUrl.split('/').pop()}
+                  </Typography>
+                )}
+                {videoPreview && (
+                  <Box sx={{ mt: 2, textAlign: 'center' }}>
+                    <Typography variant="caption" display="block" sx={{ mb: 1 }}>
+                      Video Preview:
+                    </Typography>
+                    <video
+                      src={videoPreview}
+                      controls
+                      style={{ maxWidth: '100%', maxHeight: 200, borderRadius: 8 }}
+                    />
+                  </Box>
+                )}
+              </Box>
+
+              {/* Colors Section */}
+              <Box>
+                <TextField
+                  fullWidth
+                  label="Available Colors"
+                  placeholder="e.g., Red, Blue, Green, Black"
+                  {...register('colors')}
+                  error={!!errors.colors}
+                  helperText={errors.colors?.message || 'Enter colors separated by commas'}
+                />
               </Box>
             </Box>
           </DialogContent>

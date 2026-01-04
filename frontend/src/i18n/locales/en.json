@@ -58,6 +58,8 @@
     "placeOrder": "Place Order",
     "items": "Items",
     "shipping": "Shipping",
+    "gst": "GST",
+    "totalGst": "Total GST",
     "tax": "Tax"
   },
   "orders": {
@@ -74,13 +76,20 @@
     "required": "This field is required",
     "invalidEmail": "Invalid email address",
     "passwordMismatch": "Passwords do not match",
-    "minLength": "Minimum {{count}} characters required"
+    "minLength": "Minimum {{count}} characters required",
+    "failedToSubmitRating": "Failed to submit rating",
+    "failedToDeleteRating": "Failed to delete rating",
+    "paymentVerificationFailed": "Payment verification failed",
+    "paymentFailed": "Payment failed. Please try again.",
+    "failedToInitiatePayment": "Failed to initiate payment"
   },
   "success": {
     "addedToCart": "Product added to cart",
     "orderPlaced": "Order placed successfully!",
     "loginSuccess": "Login successful",
-    "signupSuccess": "Account created successfully"
+    "signupSuccess": "Account created successfully",
+    "ratingSubmitted": "Rating submitted successfully!",
+    "ratingDeleted": "Rating deleted successfully"
   },
   "admin": {
     "dashboard": "Admin Dashboard",
@@ -158,7 +167,14 @@
     "productDetails": "Product Details",
     "availableStock": "Available Stock",
     "noProductsFound": "No products found",
-    "free": "FREE"
+    "free": "FREE",
+    "writeReview": "Write a Review",
+    "yourRating": "Your Rating",
+    "yourComment": "Your Comment (Optional)",
+    "submitReview": "Submit Review",
+    "submitting": "Submitting...",
+    "customerReviews": "Customer Reviews",
+    "noReviews": "No ratings yet. Be the first to review this product!"
   },
   "categories": {
     "Smartphones": "Smartphones",

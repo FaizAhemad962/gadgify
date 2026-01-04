@@ -22,6 +22,8 @@ export const productSchema = Joi.object({
   price: Joi.number().min(1).required(),
   stock: Joi.number().min(0).required(),
   imageUrl: Joi.string().uri().required(),
+  videoUrl: Joi.string().uri().optional().allow(''),
+  colors: Joi.string().optional().allow(''),
   category: Joi.string().min(2).required(),
 })
 
@@ -54,4 +56,9 @@ export const createOrderSchema = Joi.object({
     state: Joi.string().required(),
     pincode: Joi.string().required(),
   }).required(),
+})
+
+export const ratingSchema = Joi.object({
+  rating: Joi.number().min(1).max(5).required(),
+  comment: Joi.string().max(500).optional().allow(''),
 })

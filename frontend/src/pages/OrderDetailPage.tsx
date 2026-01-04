@@ -132,6 +132,23 @@ const OrderDetailPage = () => {
               {t('checkout.orderSummary')}
             </Typography>
             <Divider sx={{ my: 2 }} />
+            <Box sx={{ mb: 1 }}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                <Typography>{t('cart.subtotal')}</Typography>
+                <Typography>₹{order.subtotal?.toLocaleString() || 0}</Typography>
+              </Box>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                <Typography>{t('checkout.gst')} (18%)</Typography>
+                <Typography>₹{order.gst?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || 0}</Typography>
+              </Box>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                <Typography>{t('checkout.shipping')}</Typography>
+                <Typography>
+                  {order.shipping === 0 ? t('common.free') : `₹${order.shipping?.toLocaleString() || 0}`}
+                </Typography>
+              </Box>
+            </Box>
+            <Divider sx={{ my: 2 }} />
             <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
               <Typography variant="h6">{t('cart.total')}</Typography>
               <Typography variant="h6" color="primary">

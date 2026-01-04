@@ -1,20 +1,38 @@
+import { lazy, Suspense } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
+import { Box, CircularProgress } from '@mui/material'
 import { useAuth } from '../context/AuthContext'
 import Layout from '../components/layout/Layout'
-import HomePage from '../pages/HomePage'
-import ProductsPage from '../pages/ProductsPage'
-import ProductDetailPage from '../pages/ProductDetailPage'
-import CartPage from '../pages/CartPage'
-import CheckoutPage from '../pages/CheckoutPage'
-import OrdersPage from '../pages/OrdersPage'
-import OrderDetailPage from '../pages/OrderDetailPage'
-import LoginPage from '../pages/auth/LoginPage'
-import SignupPage from '../pages/auth/SignupPage'
-import AdminLayout from '../components/layout/AdminLayout'
-import AdminDashboard from '../pages/admin/AdminDashboard'
-import AdminProducts from '../pages/admin/AdminProducts'
-import AdminOrders from '../pages/admin/AdminOrders'
-import NotFoundPage from '../pages/NotFoundPage'
+
+// Lazy load all page components
+const HomePage = lazy(() => import('../pages/HomePage'))
+const ProductsPage = lazy(() => import('../pages/ProductsPage'))
+const ProductDetailPage = lazy(() => import('../pages/ProductDetailPage'))
+const CartPage = lazy(() => import('../pages/CartPage'))
+const CheckoutPage = lazy(() => import('../pages/CheckoutPage'))
+const OrdersPage = lazy(() => import('../pages/OrdersPage'))
+const OrderDetailPage = lazy(() => import('../pages/OrderDetailPage'))
+const LoginPage = lazy(() => import('../pages/auth/LoginPage'))
+const SignupPage = lazy(() => import('../pages/auth/SignupPage'))
+const AdminLayout = lazy(() => import('../components/layout/AdminLayout'))
+const AdminDashboard = lazy(() => import('../pages/admin/AdminDashboard'))
+const AdminProducts = lazy(() => import('../pages/admin/AdminProducts'))
+const AdminOrders = lazy(() => import('../pages/admin/AdminOrders'))
+const NotFoundPage = lazy(() => import('../pages/NotFoundPage'))
+
+// Loading fallback component
+const PageLoader = () => (
+  <Box
+    sx={{
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      minHeight: '60vh',
+    }}
+  >
+    <CircularProgress size={60} />
+  </Box>
+)
 
 // Protected route wrapper
 const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
@@ -39,7 +57,8 @@ const AdminRoute = ({ children }: { children: React.ReactNode }) => {
 
 const AppRoutes = () => {
   return (
-    <Routes>
+    <Suspense fallback={<PageLoader />}>
+      <Routes>
       {/* Public routes */}
       <Route path="/login" element={<LoginPage />} />
       <Route path="/signup" element={<SignupPage />} />
@@ -101,7 +120,8 @@ const AppRoutes = () => {
 
       {/* 404 */}
       <Route path="*" element={<NotFoundPage />} />
-    </Routes>
+      </Routes>
+    </Suspense>
   )
 }
 

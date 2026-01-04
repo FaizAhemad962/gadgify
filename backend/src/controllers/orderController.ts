@@ -4,6 +4,7 @@ import { AuthRequest } from '../middlewares/auth'
 import { razorpayInstance } from '../config/razorpay'
 import { config } from '../config'
 import crypto from 'crypto'
+import { calculateOrderGST, getGSTBreakdown } from '../utils/gstRates'
 
 // Helper function to parse shippingAddress JSON
 const transformOrder = (order: any) => {
@@ -22,14 +23,21 @@ export const createOrder = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const { items, total, shippingAddress } = req.body
+    const { items, subtotal, shipping, total, shippingAddress } = req.body
     const userId = req.user!.id
+
+    // Fetch all products with their categories for GST calculation
+    const productIds = items.map((item: any) => item.productId)
+    const products = await prisma.product.findMany({
+      where: { id: { in: productIds } }
+    })
+
+    // Create a map for quick lookup
+    const productMap = new Map(products.map(p => [p.id, p]))
 
     // Validate stock for all items
     for (const item of items) {
-      const product = await prisma.product.findUnique({
-        where: { id: item.productId },
-      })
+      const product = productMap.get(item.productId)
 
       if (!product) {
         res.status(404).json({ message: `Product ${item.productId} not found` })
@@ -44,11 +52,28 @@ export const createOrder = async (
       }
     }
 
+    // Calculate GST based on product categories and HSN codes
+    const itemsWithCategory = items.map((item: any) => {
+      const product = productMap.get(item.productId)!
+      return {
+        price: item.price,
+        quantity: item.quantity,
+        category: product.category
+      }
+    })
+
+    const calculatedGST = calculateOrderGST(itemsWithCategory)
+    const gstBreakdown = getGSTBreakdown(itemsWithCategory)
+
     // Create order
     const order = await prisma.order.create({
       data: {
         userId,
-        total,
+        subtotal,
+        gst: calculatedGST,
+        gstBreakdown: JSON.stringify(gstBreakdown),
+        shipping,
+        total: subtotal + calculatedGST + shipping,
         shippingAddress: JSON.stringify(shippingAddress),
         items: {
           create: items.map((item: any) => ({

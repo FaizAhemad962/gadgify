@@ -57,8 +57,7 @@
     "orderSummary": "ऑर्डर सारांश",
     "placeOrder": "ऑर्डर द्या",
     "items": "वस्तू",
-    "shipping": "शिपिंग",
-    "tax": "कर"
+    "shipping": "शिपिंग",    "gst": "जीएसटी",    "totalGst": "एकूण जीएसटी",    "tax": "कर"
   },
   "orders": {
     "title": "माझे ऑर्डर",
@@ -74,13 +73,20 @@
     "required": "हे फील्ड आवश्यक आहे",
     "invalidEmail": "अवैध ईमेल पत्ता",
     "passwordMismatch": "पासवर्ड जुळत नाहीत",
-    "minLength": "किमान {{count}} वर्ण आवश्यक आहेत"
+    "minLength": "किमान {{count}} वर्ण आवश्यक आहेत",
+    "failedToSubmitRating": "रेटिंग सबमिट करण्यात अयशस्वी",
+    "failedToDeleteRating": "रेटिंग हटवण्यात अयशस्वी",
+    "paymentVerificationFailed": "पेमेंट पडताळणी अयशस्वी",
+    "paymentFailed": "पेमेंट अयशस्वी. कृपया पुन्हा प्रयत्न करा.",
+    "failedToInitiatePayment": "पेमेंट सुरू करण्यात अयशस्वी"
   },
   "success": {
     "addedToCart": "उत्पादन कार्टमध्ये जोडले",
     "orderPlaced": "ऑर्डर यशस्वीरित्या दिली!",
     "loginSuccess": "लॉगिन यशस्वी",
-    "signupSuccess": "खाते यशस्वीरित्या तयार केले"
+    "signupSuccess": "खाते यशस्वीरित्या तयार केले",
+    "ratingSubmitted": "रेटिंग यशस्वीरित्या सबमिट केले!",
+    "ratingDeleted": "रेटिंग यशस्वीरित्या हटवले"
   },
   "admin": {
     "dashboard": "प्रशासन डॅशबोर्ड",
@@ -159,7 +165,14 @@
     "productDetails": "उत्पादन तपशील",
     "availableStock": "उपलब्ध स्टॉक",
     "noProductsFound": "कोणतीही उत्पादने सापडली नाहीत",
-    "free": "मोफत"
+    "free": "मोफत",
+    "writeReview": "पुनरावलोकन लिहा",
+    "yourRating": "तुमचे रेटिंग",
+    "yourComment": "तुमची टिप्पणी (वैकल्पिक)",
+    "submitReview": "पुनरावलोकन सबमिट करा",
+    "submitting": "सबमिट करत आहे...",
+    "customerReviews": "ग्राहक पुनरावलोकने",
+    "noReviews": "अद्याप कोणतेही रेटिंग नाहीत. या उत्पादनाचे पुनरावलोकन करणारे पहिले व्हा!"
   },
   "categories": {
     "Smartphones": "स्मार्टफोन",

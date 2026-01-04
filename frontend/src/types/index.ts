@@ -18,9 +18,13 @@ export interface Product {
   price: number
   stock: number
   imageUrl: string
+  videoUrl?: string
+  colors?: string
   category: string
   createdAt: string
   updatedAt: string
+  averageRating?: number
+  totalRatings?: number
 }
 
 export interface CartItem {
@@ -52,6 +56,10 @@ export interface Order {
   userId: string
   user: User
   items: OrderItem[]
+  subtotal?: number
+  gst?: number
+  gstBreakdown?: string
+  shipping?: number
   total: number
   status: 'PENDING' | 'PROCESSING' | 'SHIPPED' | 'DELIVERED' | 'CANCELLED'
   paymentStatus: 'PENDING' | 'COMPLETED' | 'FAILED'

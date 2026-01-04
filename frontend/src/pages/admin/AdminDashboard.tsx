@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { Paper, Typography, Box } from '@mui/material'
-import { Inventory, ShoppingCart, People, AttachMoney } from '@mui/icons-material'
+import { Inventory, ShoppingCart, People, CurrencyRupee } from '@mui/icons-material'
 import { productsApi } from '../../api/products'
 import { ordersApi } from '../../api/orders'
 
@@ -39,7 +39,7 @@ const AdminDashboard = () => {
     {
       title: t('admin.totalRevenue'),
       value: `₹${orders?.reduce((sum, o) => sum + o.total, 0).toLocaleString() || 0}`,
-      icon: <AttachMoney sx={{ fontSize: 40 }} />,
+      icon: <CurrencyRupee sx={{ fontSize: 40 }} />,
       color: '#9c27b0',
     },
   ]

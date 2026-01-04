@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { useQuery } from '@tanstack/react-query'
 import {
   AppBar,
   Box,
@@ -14,14 +15,38 @@ import {
   Badge,
   Select,
   FormControl,
+  Paper,
+  Grid,
+  Card,
+  CardMedia,
+  CardContent,
 } from '@mui/material'
 import {
   Menu as MenuIcon,
   ShoppingCart,
   AccountCircle,
+  KeyboardArrowDown,
 } from '@mui/icons-material'
 import { useAuth } from '../../context/AuthContext'
 import { useCart } from '../../context/CartContext'
+import { productsApi } from '../../api/products'
+import type { Product } from '../../types'
+import LazyImage from '../common/LazyImage'
+import { StarRating } from '../common/StarRating'
+
+const CATEGORIES = [
+  'Smartphones',
+  'Laptops',
+  'Tablets',
+  'Smartwatches',
+  'Headphones',
+  'Cameras',
+  'Gaming',
+  'Accessories',
+  'Home Appliances',
+  'Audio',
+  'Wearables',
+]
 
 const Navbar = () => {
   const { t, i18n } = useTranslation()
@@ -31,6 +56,27 @@ const Navbar = () => {
 
   const [anchorElNav, setAnchorElNav] = useState<null | HTMLElement>(null)
   const [anchorElUser, setAnchorElUser] = useState<null | HTMLElement>(null)
+  const [showMegaMenu, setShowMegaMenu] = useState(false)
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
+
+  const { data: products = [] } = useQuery({
+    queryKey: ['products'],
+    queryFn: productsApi.getAll,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes
+  })
+
+  // Group products by category
+  const productsByCategory = products.reduce((acc, product) => {
+    if (!acc[product.category]) {
+      acc[product.category] = []
+    }
+    acc[product.category].push(product)
+    return acc
+  }, {} as Record<string, Product[]>)
+
+  // Get categories that have products
+  const availableCategories = CATEGORIES.filter(cat => productsByCategory[cat]?.length > 0)
 
   const handleOpenNavMenu = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorElNav(event.currentTarget)
@@ -138,12 +184,181 @@ const Navbar = () => {
             >
               {t('nav.home')}
             </Button>
-            <Button
-              onClick={() => navigate('/products')}
-              sx={{ my: 2, color: 'white', display: 'block' }}
+            <Box
+              sx={{ position: 'relative' }}
+              onMouseEnter={() => {
+                setShowMegaMenu(true)
+                setSelectedCategory(availableCategories[0] || null)
+              }}
+              onMouseLeave={() => {
+                setShowMegaMenu(false)
+                setSelectedCategory(null)
+              }}
             >
-              {t('nav.products')}
-            </Button>
+              <Button
+                onClick={() => navigate('/products')}
+                endIcon={<KeyboardArrowDown />}
+                sx={{ my: 2, color: 'white', display: 'flex' }}
+              >
+                {t('nav.products')}
+              </Button>
+              
+              {/* Mega Menu */}
+              {showMegaMenu && (
+                <Paper
+                  sx={{
+                    position: 'fixed',
+                    top: 64,
+                    left: 0,
+                    right: 0,
+                    width: '100vw',
+                    boxShadow: 3,
+                    zIndex: 1300,
+                    display: 'flex',
+                    maxHeight: '70vh',
+                  }}
+                >
+                  {/* Categories Sidebar */}
+                  <Box
+                    sx={{
+                      width: 250,
+                      borderRight: 1,
+                      borderColor: 'divider',
+                      bgcolor: 'grey.50',
+                      overflowY: 'auto',
+                      py: 2,
+                    }}
+                  >
+                    {availableCategories.map((category) => (
+                      <Box
+                        key={category}
+                        sx={{
+                          px: 3,
+                          py: 1.5,
+                          cursor: 'pointer',
+                          bgcolor: selectedCategory === category ? 'primary.main' : 'transparent',
+                          color: selectedCategory === category ? 'white' : 'text.primary',
+                          '&:hover': {
+                            bgcolor: selectedCategory === category ? 'primary.dark' : 'grey.200',
+                          },
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                        }}
+                        onMouseEnter={() => setSelectedCategory(category)}
+                        onClick={() => {
+                          setShowMegaMenu(false)
+                          navigate(`/products?category=${category}`)
+                        }}
+                      >
+                        <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                          {t(`categories.${category}`)}
+                        </Typography>
+                        <Typography variant="caption">
+                          ({productsByCategory[category]?.length || 0})
+                        </Typography>
+                      </Box>
+                    ))}
+                  </Box>
+
+                  {/* Products Display */}
+                  <Box
+                    sx={{
+                      flex: 1,
+                      p: 3,
+                      overflowY: 'auto',
+                    }}
+                  >
+                    {selectedCategory && (
+                      <>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+                          <Typography variant="h6" sx={{ fontWeight: 700, color: 'primary.main' }}>
+                            {t(`categories.${selectedCategory}`)}
+                          </Typography>
+                          <Button
+                            variant="outlined"
+                            size="small"
+                            onClick={() => {
+                              setShowMegaMenu(false)
+                              navigate(`/products?category=${selectedCategory}`)
+                            }}
+                          >
+                            View All ({productsByCategory[selectedCategory]?.length || 0})
+                          </Button>
+                        </Box>
+                        
+                        <Grid container spacing={2}>
+                          {(productsByCategory[selectedCategory] || []).slice(0, 8).map((product) => (
+                            <Grid item xs={12} sm={6} md={3} key={product.id}>
+                              <Card
+                                sx={{
+                                  cursor: 'pointer',
+                                  height: '100%',
+                                  '&:hover': {
+                                    boxShadow: 4,
+                                    transform: 'translateY(-4px)',
+                                    transition: 'all 0.2s',
+                                  },
+                                }}
+                                onClick={() => {
+                                  setShowMegaMenu(false)
+                                  navigate(`/products/${product.id}`)
+                                }}
+                              >
+                                <LazyImage
+                                  src={product.imageUrl}
+                                  alt={product.name}
+                                  height={140}
+                                  objectFit="cover"
+                                />
+                                <CardContent sx={{ p: 2 }}>
+                                  <Typography
+                                    variant="body2"
+                                    sx={{
+                                      fontWeight: 500,
+                                      overflow: 'hidden',
+                                      textOverflow: 'ellipsis',
+                                      display: '-webkit-box',
+                                      WebkitLineClamp: 2,
+                                      WebkitBoxOrient: 'vertical',
+                                      minHeight: 40,
+                                      mb: 1,
+                                    }}
+                                  >
+                                    {product.name}
+                                  </Typography>
+                                  {product.totalRatings && product.totalRatings > 0 ? (
+                                    <Box sx={{ mb: 1 }}>
+                                      <StarRating
+                                        rating={product.averageRating || 0}
+                                        totalRatings={product.totalRatings}
+                                        size="small"
+                                      />
+                                    </Box>
+                                  ) : null}
+                                  <Typography variant="h6" color="primary" sx={{ fontWeight: 700 }}>
+                                    ₹{product.price.toLocaleString()}
+                                  </Typography>
+                                  {product.stock > 0 ? (
+                                    <Typography variant="caption" color="success.main">
+                                      In Stock
+                                    </Typography>
+                                  ) : (
+                                    <Typography variant="caption" color="error">
+                                      Out of Stock
+                                    </Typography>
+                                  )}
+                                </CardContent>
+                              </Card>
+                            </Grid>
+                          ))}
+                        </Grid>
+                      </>
+                    )}
+                  </Box>
+                </Paper>
+              )}
+            </Box>
             {isAuthenticated && (
               <Button
                 onClick={() => navigate('/orders')}

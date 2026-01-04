@@ -1,6 +1,7 @@
 import { useParams, useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
+import { useState } from 'react'
 import {
   Container,
   Box,
@@ -11,11 +12,18 @@ import {
   Chip,
   Card,
   CardMedia,
+  Grid,
+  Paper,
+  Divider,
 } from '@mui/material'
 import { ShoppingCart, ArrowBack } from '@mui/icons-material'
 import { productsApi } from '../api/products'
+import { ratingsApi } from '../api/ratings'
 import { useCart } from '../context/CartContext'
 import { useAuth } from '../context/AuthContext'
+import { StarRating } from '../components/common/StarRating'
+import { RatingForm } from '../components/product/RatingForm'
+import { RatingsList } from '../components/product/RatingsList'
 
 const ProductDetailPage = () => {
   const { id } = useParams<{ id: string }>()
@@ -23,10 +31,17 @@ const ProductDetailPage = () => {
   const navigate = useNavigate()
   const { isAuthenticated } = useAuth()
   const { addToCart } = useCart()
+  const [selectedColor, setSelectedColor] = useState<string>('')
 
   const { data: product, isLoading, error } = useQuery({
     queryKey: ['product', id],
     queryFn: () => productsApi.getById(id!),
+    enabled: !!id,
+  })
+
+  const { data: ratingsData } = useQuery({
+    queryKey: ['ratings', id],
+    queryFn: () => ratingsApi.getRatings(id!),
     enabled: !!id,
   })
 
@@ -92,6 +107,16 @@ const ProductDetailPage = () => {
             {product.name}
           </Typography>
 
+          {ratingsData && ratingsData.totalRatings > 0 && (
+            <Box sx={{ mb: 2 }}>
+              <StarRating
+                rating={ratingsData.averageRating}
+                totalRatings={ratingsData.totalRatings}
+                size="medium"
+              />
+            </Box>
+          )}
+
           <Box sx={{ mb: 3 }}>
             {product.stock > 0 ? (
               <Chip label={`${t('products.stock')}: ${product.stock}`} color="success" />
@@ -141,7 +166,75 @@ const ProductDetailPage = () => {
               {t('common.availableStock')}: {product.stock}
             </Typography>
           </Box>
+
+          {/* Color Selection */}
+          {product.colors && (
+            <Box sx={{ mt: 3 }}>
+              <Typography variant="subtitle2" gutterBottom>
+                Available Colors
+              </Typography>
+              <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                {product.colors.split(',').map((color: string) => (
+                  <Chip
+                    key={color.trim()}
+                    label={color.trim()}
+                    onClick={() => setSelectedColor(color.trim())}
+                    color={selectedColor === color.trim() ? 'primary' : 'default'}
+                    variant={selectedColor === color.trim() ? 'filled' : 'outlined'}
+                    sx={{ cursor: 'pointer' }}
+                  />
+                ))}
+              </Box>
+            </Box>
+          )}
         </Box>
+      </Box>
+
+      {/* Product Video Section */}
+      {product.videoUrl && (
+        <Box sx={{ mt: 6 }}>
+          <Typography variant="h5" gutterBottom fontWeight="600" sx={{ mb: 3 }}>
+            Product Video
+          </Typography>
+          <Paper elevation={3} sx={{ p: 2, borderRadius: 2 }}>
+            <Box
+              sx={{
+                position: 'relative',
+                width: '100%',
+                paddingTop: '56.25%', // 16:9 aspect ratio
+                bgcolor: '#000',
+                borderRadius: 2,
+                overflow: 'hidden',
+              }}
+            >
+              <video
+                src={product.videoUrl}
+                controls
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'contain',
+                }}
+              />
+            </Box>
+          </Paper>
+        </Box>
+      )}
+
+      {/* Ratings Section */}
+      <Box sx={{ mt: 6 }}>
+        <Divider sx={{ mb: 4 }} />
+
+        {isAuthenticated && (
+          <Box sx={{ mb: 4 }}>
+            <RatingForm productId={id!} />
+          </Box>
+        )}
+
+        <RatingsList productId={id!} />
       </Box>
     </Container>
   )

@@ -18,6 +18,7 @@ import {
 import { useCart } from '../context/CartContext'
 import { useAuth } from '../context/AuthContext'
 import { ordersApi } from '../api/orders'
+import { calculateOrderGST, getGSTBreakdown } from '../utils/gstRates'
 
 const shippingSchema = z.object({
   name: z.string().min(2, 'Name is required'),
@@ -77,7 +78,7 @@ const CheckoutPage = () => {
               clearCart()
               navigate(`/orders/${order.id}`)
             } catch (err) {
-              setError('Payment verification failed')
+              setError(t('errors.paymentVerificationFailed'))
             }
           },
           prefill: {
@@ -92,11 +93,11 @@ const CheckoutPage = () => {
         
         const razorpay = new (window as any).Razorpay(options)
         razorpay.on('payment.failed', function () {
-          setError('Payment failed. Please try again.')
+          setError(t('errors.paymentFailed'))
         })
         razorpay.open()
       } catch (err) {
-        setError('Failed to initiate payment')
+        setError(t('errors.failedToInitiatePayment'))
       }
     },
     onError: (error: Error) => {
@@ -108,6 +109,23 @@ const CheckoutPage = () => {
   const calculateSubtotal = () => {
     if (!cart?.items) return 0
     return cart.items.reduce((sum, item) => sum + item.product.price * item.quantity, 0)
+  }
+
+  const calculateGST = () => {
+    if (!cart?.items) return 0
+    
+    // Calculate GST based on product categories and HSN codes
+    const itemsWithCategory = cart.items.map(item => ({
+      price: item.product.price,
+      quantity: item.quantity,
+      category: item.product.category
+    }))
+    
+    return calculateOrderGST(itemsWithCategory)
+  }
+
+  const calculateShipping = (subtotal: number) => {
+    return subtotal >= 5000 ? 0 : 100
   }
 
   const onSubmit = async (data: ShippingFormData) => {
@@ -123,8 +141,9 @@ const CheckoutPage = () => {
     }
 
     const subtotal = calculateSubtotal()
-    const shipping = subtotal > 5000 ? 0 : 100
-    const total = subtotal + shipping
+    const gst = calculateGST()
+    const shipping = calculateShipping(subtotal)
+    const total = subtotal + gst + shipping
 
     const orderData = {
       items: cart.items.map((item) => ({
@@ -132,6 +151,8 @@ const CheckoutPage = () => {
         quantity: item.quantity,
         price: item.product.price,
       })),
+      subtotal,
+      shipping,
       total,
       shippingAddress: data,
     }
@@ -145,8 +166,9 @@ const CheckoutPage = () => {
   }
 
   const subtotal = calculateSubtotal()
-  const shipping = subtotal > 5000 ? 0 : 100
-  const total = subtotal + shipping
+  const gst = calculateGST()
+  const shipping = calculateShipping(subtotal)
+  const total = subtotal + gst + shipping
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
@@ -257,6 +279,33 @@ const CheckoutPage = () => {
                   <Typography>{t('cart.subtotal')}</Typography>
                   <Typography>₹{subtotal.toLocaleString()}</Typography>
                 </Box>
+                
+                {/* GST Breakdown */}
+                {(() => {
+                  const itemsWithCategory = cart.items.map(item => ({
+                    price: item.product.price,
+                    quantity: item.quantity,
+                    category: item.product.category
+                  }))
+                  const gstBreakdown = getGSTBreakdown(itemsWithCategory)
+                  
+                  return Object.entries(gstBreakdown).map(([rate, info]) => (
+                    <Box key={rate} sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5, ml: 2 }}>
+                      <Typography variant="body2" color="text.secondary">
+                        {t('checkout.gst')} @ {rate}% (HSN: {info.hsn})
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        ₹{info.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      </Typography>
+                    </Box>
+                  ))
+                })()}
+                
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                  <Typography fontWeight={500}>{t('checkout.totalGst')}</Typography>
+                  <Typography fontWeight={500}>₹{gst.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</Typography>
+                </Box>
+                
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                   <Typography>{t('checkout.shipping')}</Typography>
                   <Typography>

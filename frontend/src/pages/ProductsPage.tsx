@@ -1,6 +1,6 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import {
   Container,
@@ -20,18 +20,74 @@ import { ShoppingCart } from '@mui/icons-material'
 import { productsApi } from '../api/products'
 import { useCart } from '../context/CartContext'
 import { useAuth } from '../context/AuthContext'
+import LazyImage from '../components/common/LazyImage'
+import { StarRating } from '../components/common/StarRating'
+
+const PRODUCTS_PER_PAGE = 12
 
 const ProductsPage = () => {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const { isAuthenticated } = useAuth()
   const { addToCart } = useCart()
+  const [searchParams, setSearchParams] = useSearchParams()
   const [searchQuery, setSearchQuery] = useState('')
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
+  const [displayCount, setDisplayCount] = useState(PRODUCTS_PER_PAGE)
+  const loaderRef = useRef<HTMLDivElement>(null)
 
   const { data: products, isLoading, error } = useQuery({
     queryKey: ['products'],
     queryFn: productsApi.getAll,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes
   })
+
+  const filteredProducts = products?.filter((product) => {
+    const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      product.description.toLowerCase().includes(searchQuery.toLowerCase())
+    const matchesCategory = !selectedCategory || product.category === selectedCategory
+    return matchesSearch && matchesCategory
+  })
+
+  const handleClearCategory = () => {
+    setSelectedCategory(null)
+    setSearchParams({})
+  }
+
+  // Get unique categories from products
+  const categories = Array.from(new Set(products?.map(p => p.category) || []))
+
+  // Read category from URL on mount
+  useEffect(() => {
+    const category = searchParams.get('category')
+    if (category) {
+      setSelectedCategory(category)
+    }
+  }, [searchParams])
+
+  // Infinite scroll observer
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && filteredProducts && displayCount < filteredProducts.length) {
+          setDisplayCount((prev) => prev + PRODUCTS_PER_PAGE)
+        }
+      },
+      { threshold: 0.1 }
+    )
+
+    if (loaderRef.current) {
+      observer.observe(loaderRef.current)
+    }
+
+    return () => observer.disconnect()
+  }, [displayCount, filteredProducts])
+
+  // Reset display count when filters change
+  useEffect(() => {
+    setDisplayCount(PRODUCTS_PER_PAGE)
+  }, [searchQuery, selectedCategory])
 
   const handleAddToCart = async (productId: string) => {
     if (!isAuthenticated) {
@@ -55,11 +111,6 @@ const ProductsPage = () => {
     navigate('/cart')
   }
 
-  const filteredProducts = products?.filter((product) =>
-    product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    product.description.toLowerCase().includes(searchQuery.toLowerCase())
-  )
-
   if (error) {
     return (
       <Container sx={{ py: 4 }}>
@@ -69,19 +120,46 @@ const ProductsPage = () => {
   }
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
+    <Container maxWidth="xl" sx={{ py: 4 }}>
       <Typography variant="h4" gutterBottom fontWeight="600">
         {t('products.title')}
       </Typography>
 
-      <Box sx={{ mb: 4 }}>
+      {selectedCategory && (
+        <Box sx={{ mb: 2 }}>
+          <Chip
+            label={`${t('products.category')}: ${t(`categories.${selectedCategory}`)}`}
+            onDelete={handleClearCategory}
+            color="primary"
+            sx={{ mr: 1 }}
+          />
+        </Box>
+      )}
+
+      <Box sx={{ mb: 4, display: 'flex', gap: 2, flexWrap: 'wrap', alignItems: 'center' }}>
         <TextField
           fullWidth
           placeholder={t('products.search')}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           variant="outlined"
+          sx={{ flex: 1, minWidth: 250 }}
         />
+        <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+          {categories.map((category) => (
+            <Chip
+              key={category}
+              label={t(`categories.${category}`)}
+              onClick={() => {
+                setSelectedCategory(category)
+                setSearchParams({ category })
+              }}
+              variant={selectedCategory === category ? 'filled' : 'outlined'}
+              color={selectedCategory === category ? 'primary' : 'default'}
+              sx={{ cursor: 'pointer' }}
+            />
+          ))}
+        </Box>
       </Box>
 
       {isLoading ? (
@@ -89,20 +167,32 @@ const ProductsPage = () => {
           <CircularProgress />
         </Box>
       ) : (
-        <Box sx={{ display: 'flex', gap: 3, flexWrap: 'wrap', justifyContent: 'flex-start' }}>
-          {filteredProducts && filteredProducts.length > 0 ? (
-            filteredProducts.map((product) => (
-              <Box key={product.id}>
-                <Card sx={{ height: 520, width: 360, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-                  <CardMedia
-                    component="img"
-                    height="240"
-                    image={product.imageUrl || 'https://via.placeholder.com/300x240?text=Product'}
-                    alt={product.name}
-                    sx={{ objectFit: 'cover', cursor: 'pointer', width: 360, display: 'block' }}
+        <>
+          <Box sx={{ 
+            display: 'grid', 
+            gridTemplateColumns: { 
+              xs: '1fr', 
+              sm: 'repeat(2, 1fr)', 
+              md: 'repeat(3, 1fr)', 
+              lg: 'repeat(4, 1fr)' 
+            },
+            gap: 3 
+          }}>
+            {filteredProducts && filteredProducts.length > 0 ? (
+              filteredProducts.slice(0, displayCount).map((product) => (
+                <Card key={product.id} sx={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', height: '100%' }}>
+                  <Box
+                    sx={{ cursor: 'pointer', height: 240 }}
                     onClick={() => navigate(`/products/${product.id}`)}
-                  />
-                  <CardContent sx={{ p: 2, flexGrow: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', width: 360 }}>
+                  >
+                    <LazyImage
+                      src={product.imageUrl || 'https://via.placeholder.com/300x240?text=Product'}
+                      alt={product.name}
+                      height={240}
+                      objectFit="cover"
+                    />
+                  </Box>
+                  <CardContent sx={{ p: 2, flexGrow: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                     <Box>
                       <Typography 
                         variant="h6"
@@ -118,6 +208,15 @@ const ProductsPage = () => {
                       >
                         {product.name}
                       </Typography>
+                      {product.totalRatings && product.totalRatings > 0 ? (
+                        <Box sx={{ mb: 1 }}>
+                          <StarRating
+                            rating={product.averageRating || 0}
+                            totalRatings={product.totalRatings}
+                            size="small"
+                          />
+                        </Box>
+                      ) : null}
                       <Typography
                         variant="body2"
                         color="text.secondary"
@@ -165,18 +264,30 @@ const ProductsPage = () => {
                     </Button>
                   </CardActions>
                 </Card>
-              </Box>
             ))
           ) : (
-            <Box sx={{ width: '100%' }}>
-              <Box sx={{ textAlign: 'center', py: 8 }}>
-                <Typography variant="h6" color="text.secondary">
-                  {t('common.noProductsFound')}
-                </Typography>
-              </Box>
+            <Box sx={{ gridColumn: '1 / -1', textAlign: 'center', py: 8 }}>
+              <Typography variant="h6" color="text.secondary">
+                {t('common.noProductsFound')}
+              </Typography>
             </Box>
           )}
-        </Box>
+          </Box>
+
+          {/* Infinite scroll loader */}
+          {filteredProducts && displayCount < filteredProducts.length && (
+            <Box
+              ref={loaderRef}
+              sx={{
+                display: 'flex',
+                justifyContent: 'center',
+                py: 4,
+              }}
+            >
+              <CircularProgress />
+            </Box>
+          )}
+        </>
       )}
     </Container>
   )

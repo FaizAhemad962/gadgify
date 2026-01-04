@@ -19,8 +19,8 @@ const storage = multer.diskStorage({
   },
 })
 
-// File filter
-const fileFilter = (req: any, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
+// File filter for images
+const imageFileFilter = (req: any, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
   const allowedTypes = /jpeg|jpg|png|gif|webp/
   const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase())
   const mimetype = allowedTypes.test(file.mimetype)
@@ -32,10 +32,31 @@ const fileFilter = (req: any, file: Express.Multer.File, cb: multer.FileFilterCa
   }
 }
 
+// File filter for videos
+const videoFileFilter = (req: any, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
+  const allowedTypes = /mp4|avi|mov|wmv|flv|webm|mkv/
+  const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase())
+  const mimetype = /video/.test(file.mimetype)
+
+  if (mimetype && extname) {
+    return cb(null, true)
+  } else {
+    cb(new Error('Only video files are allowed!'))
+  }
+}
+
 export const upload = multer({
   storage,
   limits: {
-    fileSize: 5 * 1024 * 1024, // 5MB limit
+    fileSize: 5 * 1024 * 1024, // 5MB limit for images
   },
-  fileFilter,
+  fileFilter: imageFileFilter,
+})
+
+export const videoUpload = multer({
+  storage,
+  limits: {
+    fileSize: 50 * 1024 * 1024, // 50MB limit for videos
+  },
+  fileFilter: videoFileFilter,
 })

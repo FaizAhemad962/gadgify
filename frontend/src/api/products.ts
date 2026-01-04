@@ -41,4 +41,15 @@ export const productsApi = {
     })
     return response.data
   },
+
+  uploadVideo: async (file: File): Promise<{ videoUrl: string }> => {
+    const formData = new FormData()
+    formData.append('video', file)
+    const response = await apiClient.post<{ videoUrl: string }>('/products/upload-video', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    })
+    return response.data
+  },
 }

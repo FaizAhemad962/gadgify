@@ -9,8 +9,32 @@ export const getAllProducts = async (
   try {
     const products = await prisma.product.findMany({
       orderBy: { createdAt: 'desc' },
+      include: {
+        ratings: {
+          select: {
+            rating: true,
+          },
+        },
+      },
     })
-    res.json(products)
+
+    // Calculate average rating for each product
+    const productsWithRatings = products.map((product) => {
+      const ratings = product.ratings
+      const averageRating = ratings.length > 0
+        ? ratings.reduce((sum: number, r: { rating: number }) => sum + r.rating, 0) / ratings.length
+        : 0
+      const totalRatings = ratings.length
+
+      const { ratings: _, ...productData } = product
+      return {
+        ...productData,
+        averageRating: Number(averageRating.toFixed(1)),
+        totalRatings,
+      }
+    })
+
+    res.json(productsWithRatings)
   } catch (error) {
     next(error)
   }
@@ -42,10 +66,10 @@ export const createProduct = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const { name, description, price, stock, imageUrl, category } = req.body
+    const { name, description, price, stock, imageUrl, videoUrl, colors, category } = req.body
 
     const product = await prisma.product.create({
-      data: { name, description, price, stock, imageUrl, category },
+      data: { name, description, price, stock, imageUrl, videoUrl, colors, category },
     })
 
     res.status(201).json(product)
@@ -61,11 +85,11 @@ export const updateProduct = async (
 ): Promise<void> => {
   try {
     const { id } = req.params
-    const { name, description, price, stock, imageUrl, category } = req.body
+    const { name, description, price, stock, imageUrl, videoUrl, colors, category } = req.body
 
     const product = await prisma.product.update({
       where: { id },
-      data: { name, description, price, stock, imageUrl, category },
+      data: { name, description, price, stock, imageUrl, videoUrl, colors, category },
     })
 
     res.json(product)
