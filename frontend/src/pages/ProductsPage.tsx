@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
@@ -6,7 +6,6 @@ import {
   Container,
   Typography,
   Card,
-  CardMedia,
   CardContent,
   CardActions,
   Button,

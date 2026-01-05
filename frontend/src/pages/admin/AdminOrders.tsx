@@ -23,7 +23,7 @@ const AdminOrders = () => {
   const { t } = useTranslation()
   const queryClient = useQueryClient()
 
-  const { data: orders, isLoading } = useQuery({
+  const { data: orders } = useQuery({
     queryKey: ['admin-orders'],
     queryFn: ordersApi.getAllOrders,
   })
@@ -36,16 +36,16 @@ const AdminOrders = () => {
     },
   })
 
-  const getStatusColor = (status: string) => {
-    const colors: Record<string, 'default' | 'primary' | 'secondary' | 'error' | 'info' | 'success' | 'warning'> = {
-      PENDING: 'warning',
-      PROCESSING: 'info',
-      SHIPPED: 'primary',
-      DELIVERED: 'success',
-      CANCELLED: 'error',
-    }
-    return colors[status] || 'default'
-  }
+  // const getStatusColor = (status: string) => {
+  //   const colors: Record<string, 'default' | 'primary' | 'secondary' | 'error' | 'info' | 'success' | 'warning'> = {
+  //     PENDING: 'warning',
+  //     PROCESSING: 'info',
+  //     SHIPPED: 'primary',
+  //     DELIVERED: 'success',
+  //     CANCELLED: 'error',
+  //   }
+  //   return colors[status] || 'default'
+  // }
 
   const handleStatusChange = (orderId: string, newStatus: Order['status']) => {
     updateStatusMutation.mutate({ orderId, status: newStatus })

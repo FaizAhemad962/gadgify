@@ -12,7 +12,6 @@ import {
   Chip,
   Card,
   CardMedia,
-  Grid,
   Paper,
   Divider,
 } from '@mui/material'

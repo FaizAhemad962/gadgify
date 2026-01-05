@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import {
@@ -22,8 +22,7 @@ import {
   FormControl,
   InputLabel,
   Select,
-  MenuItem,
-  CircularProgress,
+  MenuItem
 } from '@mui/material'
 import { Edit, Delete, Add, Upload } from '@mui/icons-material'
 import { useForm } from 'react-hook-form'
@@ -69,7 +68,8 @@ const AdminProducts = () => {
   const [imagePreview, setImagePreview] = useState('')
   const [videoFile, setVideoFile] = useState<File | null>(null)
   const [videoPreview, setVideoPreview] = useState('')
-  const [selectedCategory, setSelectedCategory] = useState('')
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [_, setSelectedCategory] = useState('')
 
   const { data: products } = useQuery({
     queryKey: ['products'],
@@ -80,7 +80,6 @@ const AdminProducts = () => {
     register,
     handleSubmit,
     reset,
-    watch,
     formState: { errors },
   } = useForm<ProductFormData>({
     resolver: zodResolver(productSchema),

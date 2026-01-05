@@ -16,9 +16,7 @@ import {
   Select,
   FormControl,
   Paper,
-  Grid,
   Card,
-  CardMedia,
   CardContent,
 } from '@mui/material'
 import {
@@ -287,9 +285,19 @@ const Navbar = () => {
                           </Button>
                         </Box>
                         
-                        <Grid container spacing={2}>
+                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
                           {(productsByCategory[selectedCategory] || []).slice(0, 8).map((product) => (
-                            <Grid item xs={12} sm={6} md={3} key={product.id}>
+                            <Box
+                              key={product.id}
+                              sx={{
+                                width: {
+                                  xs: '100%',
+                                  sm: 'calc(50% - 16px)',
+                                  md: 'calc(25% - 16px)',
+                                },
+                                minWidth: 0,
+                              }}
+                            >
                               <Card
                                 sx={{
                                   cursor: 'pointer',
@@ -350,9 +358,9 @@ const Navbar = () => {
                                   )}
                                 </CardContent>
                               </Card>
-                            </Grid>
+                            </Box>
                           ))}
-                        </Grid>
+                        </Box>
                       </>
                     )}
                   </Box>
