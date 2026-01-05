@@ -2,7 +2,6 @@ import React, { useState } from 'react'
 import {
   Box,
   IconButton,
-  Paper,
   Typography,
   Modal,
 } from '@mui/material'

@@ -17,7 +17,6 @@ import {
 } from '@mui/material'
 import { ArrowBack } from '@mui/icons-material'
 import { ordersApi } from '../api/orders'
-import { format } from 'date-fns'
 
 const OrderDetailPage = () => {
   const { id } = useParams<{ id: string }>()

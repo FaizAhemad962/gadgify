@@ -29,7 +29,7 @@ const ProductsPage = () => {
   const { isAuthenticated } = useAuth()
   const { addToCart } = useCart()
   const [searchParams, setSearchParams] = useSearchParams()
-  const [searchQuery, setSearchQuery] = useState('')
+  const [searchQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
   const [displayCount, setDisplayCount] = useState(PRODUCTS_PER_PAGE)
   const loaderRef = useRef<HTMLDivElement>(null)

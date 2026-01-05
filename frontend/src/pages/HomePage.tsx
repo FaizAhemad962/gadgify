@@ -1,18 +1,18 @@
 import { Container, Typography, Box, Button, Card, CardContent, Divider } from '@mui/material'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { ShoppingCart, LocalShipping, Security, Support, Rocket, TrendingUp } from '@mui/icons-material'
+import { ShoppingCart, LocalShipping, Security, Support, Rocket } from '@mui/icons-material'
 
 const HomePage = () => {
   const { t } = useTranslation()
   const navigate = useNavigate()
 
-  const features = [
-    { icon: <ShoppingCart fontSize="large" />, title: t('common.wideSelection'), desc: t('common.latestGadgets') },
-    { icon: <LocalShipping fontSize="large" />, title: t('common.fastDelivery'), desc: t('common.quickDelivery') },
-    { icon: <Security fontSize="large" />, title: t('common.securePayment'), desc: t('common.safeTransactions') },
-    { icon: <Support fontSize="large" />, title: t('common.support247'), desc: t('common.alwaysHelp') },
-  ]
+  // const features = [
+  //   { icon: <ShoppingCart fontSize="large" />, title: t('common.wideSelection'), desc: t('common.latestGadgets') },
+  //   { icon: <LocalShipping fontSize="large" />, title: t('common.fastDelivery'), desc: t('common.quickDelivery') },
+  //   { icon: <Security fontSize="large" />, title: t('common.securePayment'), desc: t('common.safeTransactions') },
+  //   { icon: <Support fontSize="large" />, title: t('common.support247'), desc: t('common.alwaysHelp') },
+  // ]
 
   return (
     <Box sx={{ bgcolor: '#fafafa' }}>
