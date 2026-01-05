@@ -11,9 +11,7 @@ import {
   Alert,
   Button,
   Divider,
-  Card,
-  CardMedia,
-  CardContent,
+  Card
 } from '@mui/material'
 import { ArrowBack } from '@mui/icons-material'
 import { ordersApi } from '../api/orders'
