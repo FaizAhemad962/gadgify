@@ -356,10 +356,10 @@ const CheckoutPage = () => {
                 mb: 3 
               }}>
                 <Typography variant="caption" sx={{ fontWeight: 600, color: '#1976d2', display: 'block', mb: 0.5 }}>
-                  💳 PAYMENT METHOD
+                  💳 {t('checkout.paymentMethod')}
                 </Typography>
                 <Typography variant="body2" sx={{ color: 'text.secondary', fontSize: '0.85rem' }}>
-                  You will be redirected to Razorpay for secure payment
+                  {t('checkout.paymentMethodInfo')}
                 </Typography>
               </Box>
 

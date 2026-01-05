@@ -126,7 +126,7 @@ const ProductsPage = () => {
           {t('products.title')}
         </Typography>
         <Typography variant="body1" sx={{ color: 'text.secondary', mb: 3 }}>
-          Discover our amazing collection of electronics and gadgets
+          {t('products.description')}
         </Typography>
         
         {/* Categories Filter */}

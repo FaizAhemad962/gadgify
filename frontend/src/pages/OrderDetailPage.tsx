@@ -139,26 +139,34 @@ const OrderDetailPage = () => {
             {order.items.map((item) => (
               <Card key={item.id} sx={{ mb: 2, '&:hover': { boxShadow: '0 4px 12px rgba(0,0,0,0.1)' } }}>
                 <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' } }}>
-                  <Box sx={{ width: { xs: '100%', sm: '25%' } }}>
-                    <CardMedia
-                      component="img"
-                      image={item.product.imageUrl || 'https://via.placeholder.com/150'}
+                  <Box sx={{ 
+                    width: { xs: '100%', sm: '200px' }, 
+                    flexShrink: 0, 
+                  
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'flex-start',
+                  }}>
+                    <img 
+                      src={item.product.imageUrl }
                       alt={item.product.name}
-                      sx={{ height: 120, objectFit: 'cover' }}
+                      style={{ 
+                        width: '130px',
+                        height: '125px',
+                        padding: '6px'
+                      }}
                     />
                   </Box>
-                  <Box sx={{ flex: 1 }}>
-                    <CardContent>
-                      <Typography variant="h6" gutterBottom>
-                        {item.product.name}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary" gutterBottom>
-                        {t('cart.quantity')}: {item.quantity}
-                      </Typography>
-                      <Typography variant="h6" color="primary">
-                        ₹{(item.price * item.quantity).toLocaleString()}
-                      </Typography>
-                    </CardContent>
+                  <Box sx={{ flex: 1, p: 2 }}>
+                    <Typography variant="h6" gutterBottom sx={{ fontWeight: 600, color: 'text.primary' }}>
+                      {item.product.name}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary" gutterBottom>
+                      {t('cart.quantity')}: {item.quantity}
+                    </Typography>
+                    <Typography variant="h6" color="primary" sx={{ fontWeight: 700, mt: 2 }}>
+                      ₹{(item.price * item.quantity).toLocaleString()}
+                    </Typography>
                   </Box>
                 </Box>
               </Card>
