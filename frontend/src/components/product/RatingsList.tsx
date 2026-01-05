@@ -8,6 +8,7 @@ import {
   Rating,
   Divider,
   CircularProgress,
+  Button,
 } from '@mui/material'
 import { Delete, Star } from '@mui/icons-material'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
@@ -15,6 +16,7 @@ import { ratingsApi, type Rating as RatingType } from '../../api/ratings'
 import { useAuth } from '../../context/AuthContext'
 import { format } from 'date-fns'
 import { useTranslation } from 'react-i18next'
+import { useNavigate } from 'react-router-dom'
 
 interface RatingsListProps {
   productId: string
@@ -22,7 +24,8 @@ interface RatingsListProps {
 
 export const RatingsList: React.FC<RatingsListProps> = ({ productId }) => {
   const { t } = useTranslation()
-  const { user } = useAuth()
+  const { user, isAuthenticated } = useAuth()
+  const navigate = useNavigate()
   const queryClient = useQueryClient()
 
   const { data, isLoading } = useQuery({
@@ -53,10 +56,24 @@ export const RatingsList: React.FC<RatingsListProps> = ({ productId }) => {
 
   if (ratings.length === 0) {
     return (
-      <Paper elevation={1} sx={{ p: 3, textAlign: 'center' }}>
-        <Typography color="text.secondary">
+      <Paper elevation={1} sx={{ p: 4, textAlign: 'center' }}>
+        <Typography color="text.secondary" sx={{ mb: 3 }}>
           {t('common.noReviews')}
         </Typography>
+        {!isAuthenticated && (
+          <Box sx={{ mt: 3 }}>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+              Please login to write a review
+            </Typography>
+            <Button 
+              variant="contained" 
+              color="primary"
+              onClick={() => navigate('/login')}
+            >
+              Login to Review
+            </Button>
+          </Box>
+        )}
       </Paper>
     )
   }

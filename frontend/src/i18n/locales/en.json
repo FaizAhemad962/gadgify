@@ -39,7 +39,12 @@
     "stock": "In Stock",
     "outOfStock": "Out of Stock",
     "viewDetails": "View Details",
-    "category": "Category"
+    "category": "Category",
+    "allProducts": "All Products",
+    "availableColors": "Available Colors",
+    "securePayment": "Secure Payment",
+    "safeCheckout": "Safe & encrypted checkout",
+    "freeDeliveryAbove": "Free Delivery On orders above ₹500"
   },
   "cart": {
     "title": "Shopping Cart",
@@ -62,11 +67,21 @@
   },
   "orders": {
     "title": "My Orders",
+    "toMyOrders": "to My Orders",
     "orderNumber": "Order #",
     "date": "Date",
     "status": "Status",
     "total": "Total",
-    "viewDetails": "View Details"
+    "viewDetails": "View Details",
+    "items": "Items",
+    "moreItems": "more items",
+    "pending": "Pending",
+    "processing": "Processing",
+    "shipped": "Shipped",
+    "delivered": "Delivered",
+    "cancelled": "Cancelled",
+    "paymentStatus": "Payment"
+
   },
   "errors": {
     "maharashtraOnly": "This service is currently available only in Maharashtra.",
@@ -161,6 +176,14 @@
     "safeTransactions": "Safe and encrypted transactions",
     "support247": "24/7 Support",
     "alwaysHelp": "Always here to help you",
+    "happyCustomers": "Happy Customers",
+    "products": "Products",
+    "support": "Support",
+    "authentic": "Authentic",
+    "trustedByThousands": "Trusted by Thousands of Customers",
+    "whyChooseGadgify": "Why Choose Gadgify?",
+    "commitmentMessage": "We're committed to providing you with the best shopping experience",
+    "freeShippingLabel": "FREE ✓",
     "availableOnly": "Available only in Maharashtra",
     "availableInMaharashtra": "Available only in Maharashtra, India",
     "discoverLatest": "Discover the latest electronics and gadgets at unbeatable prices. Available exclusively in Maharashtra!",
@@ -181,7 +204,48 @@
     "submitReview": "Submit Review",
     "submitting": "Submitting...",
     "customerReviews": "Customer Reviews",
-    "noReviews": "No ratings yet. Be the first to review this product!"
+    "noReviews": "No ratings yet. Be the first to review this product!",
+    "enterFullName": "Enter your full name",
+    "emailPlaceholder": "your@email.com",
+    "minSixCharacters": "Min. 6 characters",
+    "tenDigitNumber": "10-digit number",
+    "reEnterPassword": "Re-enter password",
+    "streetAddress": "Street address",
+    "sixDigitCode": "6-digit code",
+    "freeShipping": "Free Shipping",
+    "fastAndFreeShipping": "Fast & Free Shipping on orders",
+    "aboveAmount": "above ₹500",
+    "securepayment": "Secure Payment",
+    "easyReturns": "Easy Returns",
+    "safeToShop": "Safe to Shop",
+    "sslEncrypted": "SSL encrypted and secure transactions",
+    "sevenDayReturn": "7-day hassle-free return policy",
+    "easySevenDayReturns": "Easy 7-day returns on products",
+    "processingPayment": "Processing Payment...",
+    "completeOrderAndPay": "Complete Order & Pay",
+    "sslSecured": "SSL Secured",
+    "encryptedPayment": "Encrypted Payment",
+    "or": "Or",
+    "secure": "Secure",
+    "verified": "Verified",
+    "protected": "Protected",
+    "maharashtra": "Maharashtra",
+    "startShopping": "Start shopping now and discover the latest electronics at unbeatable prices"
+  },
+  "footer": {
+    "aboutDesc": "Your premier destination for authentic electronics and gadgets in Maharashtra.",
+    "quickNavigation": "Quick Navigation",
+    "support": "Support",
+    "email": "Email",
+    "phone": "Phone",
+    "availability": "Availability",
+    "available247": "24/7 Available",
+    "connect": "Connect",
+    "allRightsReserved": "All Rights Reserved",
+    "privacyPolicy": "Privacy Policy",
+    "termsOfService": "Terms of Service",
+    "returnPolicy": "Return Policy",
+    "madeWith": "Made with ❤️ in Maharashtra"
   },
   "categories": {
     "Smartphones": "Smartphones",
@@ -195,5 +259,25 @@
     "Home Appliances": "Home Appliances",
     "Audio": "Audio",
     "Wearables": "Wearables"
+  },
+  "payment": {
+    "label": "Payment",
+    "pending": "Pending",
+    "completed": "Completed",
+    "failed": "Failed"
+  },
+   "months": {
+    "january": "January",
+    "february": "February",
+    "march": "March",
+    "april": "April",
+    "may": "May",
+    "june": "June",
+    "july": "July",
+    "august": "August",
+    "september": "September",
+    "october": "October",
+    "november": "November",
+    "december": "December"
   }
 }

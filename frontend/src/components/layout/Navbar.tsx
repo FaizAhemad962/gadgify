@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { useQuery } from '@tanstack/react-query'
 import {
   AppBar,
   Box,
@@ -15,36 +14,15 @@ import {
   Badge,
   Select,
   FormControl,
-  Paper,
-  Card,
-  CardContent,
+  TextField,
 } from '@mui/material'
 import {
   Menu as MenuIcon,
   ShoppingCart,
   AccountCircle,
-  KeyboardArrowDown,
 } from '@mui/icons-material'
 import { useAuth } from '../../context/AuthContext'
 import { useCart } from '../../context/CartContext'
-import { productsApi } from '../../api/products'
-import type { Product } from '../../types'
-import LazyImage from '../common/LazyImage'
-import { StarRating } from '../common/StarRating'
-
-const CATEGORIES = [
-  'Smartphones',
-  'Laptops',
-  'Tablets',
-  'Smartwatches',
-  'Headphones',
-  'Cameras',
-  'Gaming',
-  'Accessories',
-  'Home Appliances',
-  'Audio',
-  'Wearables',
-]
 
 const Navbar = () => {
   const { t, i18n } = useTranslation()
@@ -54,27 +32,7 @@ const Navbar = () => {
 
   const [anchorElNav, setAnchorElNav] = useState<null | HTMLElement>(null)
   const [anchorElUser, setAnchorElUser] = useState<null | HTMLElement>(null)
-  const [showMegaMenu, setShowMegaMenu] = useState(false)
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
-
-  const { data: products = [] } = useQuery({
-    queryKey: ['products'],
-    queryFn: productsApi.getAll,
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    gcTime: 10 * 60 * 1000, // 10 minutes
-  })
-
-  // Group products by category
-  const productsByCategory = products.reduce((acc, product) => {
-    if (!acc[product.category]) {
-      acc[product.category] = []
-    }
-    acc[product.category].push(product)
-    return acc
-  }, {} as Record<string, Product[]>)
-
-  // Get categories that have products
-  const availableCategories = CATEGORIES.filter(cat => productsByCategory[cat]?.length > 0)
+  const [searchQuery, setSearchQuery] = useState('')
 
   const handleOpenNavMenu = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorElNav(event.currentTarget)
@@ -103,24 +61,35 @@ const Navbar = () => {
   }
 
   return (
-    <AppBar position="sticky">
+    <AppBar 
+      position="sticky"
+      sx={{
+        background: 'linear-gradient(90deg, #1976d2 0%, #1565c0 100%)',
+        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
+      }}
+    >
       <Container maxWidth="xl">
         <Toolbar disableGutters>
-          {/* Logo */}
+          {/* Logo - Desktop */}
           <Typography
             variant="h6"
             noWrap
             component={Link}
             to="/"
             sx={{
-              mr: 2,
+              mr: 3,
               display: { xs: 'none', md: 'flex' },
-              fontWeight: 700,
+              fontWeight: 900,
+              fontSize: '1.5rem',
               color: 'inherit',
               textDecoration: 'none',
+              letterSpacing: '0.5px',
+              '&:hover': {
+                opacity: 0.9,
+              },
             }}
           >
-            {t('app.title')}
+            🛍️ {t('app.title')}
           </Typography>
 
           {/* Mobile menu */}
@@ -130,6 +99,7 @@ const Navbar = () => {
               aria-label="menu"
               onClick={handleOpenNavMenu}
               color="inherit"
+              sx={{ '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.1)' } }}
             >
               <MenuIcon />
             </IconButton>
@@ -143,20 +113,20 @@ const Navbar = () => {
               sx={{ display: { xs: 'block', md: 'none' } }}
             >
               <MenuItem onClick={() => { handleCloseNavMenu(); navigate('/') }}>
-                <Typography textAlign="center">{t('nav.home')}</Typography>
+                <Typography textAlign="center" sx={{ fontWeight: 600 }}>🏠 {t('nav.home')}</Typography>
               </MenuItem>
               <MenuItem onClick={() => { handleCloseNavMenu(); navigate('/products') }}>
-                <Typography textAlign="center">{t('nav.products')}</Typography>
+                <Typography textAlign="center" sx={{ fontWeight: 600 }}>📱 {t('nav.products')}</Typography>
               </MenuItem>
               {isAuthenticated && (
                 <MenuItem onClick={() => { handleCloseNavMenu(); navigate('/orders') }}>
-                  <Typography textAlign="center">{t('nav.orders')}</Typography>
+                  <Typography textAlign="center" sx={{ fontWeight: 600 }}>📦 {t('nav.orders')}</Typography>
                 </MenuItem>
               )}
             </Menu>
           </Box>
 
-          {/* Mobile logo */}
+          {/* Logo - Mobile */}
           <Typography
             variant="h6"
             noWrap
@@ -166,211 +136,109 @@ const Navbar = () => {
               mr: 2,
               display: { xs: 'flex', md: 'none' },
               flexGrow: 1,
-              fontWeight: 700,
+              fontWeight: 900,
+              fontSize: '1.3rem',
               color: 'inherit',
               textDecoration: 'none',
+              letterSpacing: '0.5px',
             }}
           >
-            {t('app.title')}
+            🛍️ {t('app.title')}
           </Typography>
 
           {/* Desktop menu */}
-          <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
+          <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' }, gap: 0.5 }}>
             <Button
               onClick={() => navigate('/')}
-              sx={{ my: 2, color: 'white', display: 'block' }}
+              sx={{ 
+                py: 2, 
+                color: 'white', 
+                display: 'block',
+                fontWeight: 600,
+                fontSize: '0.95rem',
+                transition: 'all 0.3s',
+                position: 'relative',
+                '&:hover': { 
+                  color: '#fff',
+                  '&::after': {
+                    width: '100%',
+                  }
+                },
+                '&::after': {
+                  content: '""',
+                  position: 'absolute',
+                  bottom: 10,
+                  left: 0,
+                  width: 0,
+                  height: 3,
+                  bgcolor: '#ff9800',
+                  borderRadius: '2px',
+                  transition: 'width 0.3s',
+                }
+              }}
             >
               {t('nav.home')}
             </Button>
-            <Box
-              sx={{ position: 'relative' }}
-              onMouseEnter={() => {
-                setShowMegaMenu(true)
-                setSelectedCategory(availableCategories[0] || null)
-              }}
-              onMouseLeave={() => {
-                setShowMegaMenu(false)
-                setSelectedCategory(null)
+            <Button
+              onClick={() => navigate('/products')}
+              sx={{ 
+                py: 2, 
+                color: 'white', 
+                display: 'block',
+                fontWeight: 600,
+                fontSize: '0.95rem',
+                transition: 'all 0.3s',
+                position: 'relative',
+                '&:hover': { 
+                  color: '#fff',
+                  '&::after': {
+                    width: '100%',
+                  }
+                },
+                '&::after': {
+                  content: '""',
+                  position: 'absolute',
+                  bottom: 10,
+                  left: 0,
+                  width: 0,
+                  height: 3,
+                  bgcolor: '#ff9800',
+                  borderRadius: '2px',
+                  transition: 'width 0.3s',
+                }
               }}
             >
-              <Button
-                onClick={() => navigate('/products')}
-                endIcon={<KeyboardArrowDown />}
-                sx={{ my: 2, color: 'white', display: 'flex' }}
-              >
-                {t('nav.products')}
-              </Button>
-              
-              {/* Mega Menu */}
-              {showMegaMenu && (
-                <Paper
-                  sx={{
-                    position: 'fixed',
-                    top: 64,
-                    left: 0,
-                    right: 0,
-                    width: '100vw',
-                    boxShadow: 3,
-                    zIndex: 1300,
-                    display: 'flex',
-                    maxHeight: '70vh',
-                  }}
-                >
-                  {/* Categories Sidebar */}
-                  <Box
-                    sx={{
-                      width: 250,
-                      borderRight: 1,
-                      borderColor: 'divider',
-                      bgcolor: 'grey.50',
-                      overflowY: 'auto',
-                      py: 2,
-                    }}
-                  >
-                    {availableCategories.map((category) => (
-                      <Box
-                        key={category}
-                        sx={{
-                          px: 3,
-                          py: 1.5,
-                          cursor: 'pointer',
-                          bgcolor: selectedCategory === category ? 'primary.main' : 'transparent',
-                          color: selectedCategory === category ? 'white' : 'text.primary',
-                          '&:hover': {
-                            bgcolor: selectedCategory === category ? 'primary.dark' : 'grey.200',
-                          },
-                          display: 'flex',
-                          justifyContent: 'space-between',
-                          alignItems: 'center',
-                        }}
-                        onMouseEnter={() => setSelectedCategory(category)}
-                        onClick={() => {
-                          setShowMegaMenu(false)
-                          navigate(`/products?category=${category}`)
-                        }}
-                      >
-                        <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                          {t(`categories.${category}`)}
-                        </Typography>
-                        <Typography variant="caption">
-                          ({productsByCategory[category]?.length || 0})
-                        </Typography>
-                      </Box>
-                    ))}
-                  </Box>
-
-                  {/* Products Display */}
-                  <Box
-                    sx={{
-                      flex: 1,
-                      p: 3,
-                      overflowY: 'auto',
-                    }}
-                  >
-                    {selectedCategory && (
-                      <>
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-                          <Typography variant="h6" sx={{ fontWeight: 700, color: 'primary.main' }}>
-                            {t(`categories.${selectedCategory}`)}
-                          </Typography>
-                          <Button
-                            variant="outlined"
-                            size="small"
-                            onClick={() => {
-                              setShowMegaMenu(false)
-                              navigate(`/products?category=${selectedCategory}`)
-                            }}
-                          >
-                            View All ({productsByCategory[selectedCategory]?.length || 0})
-                          </Button>
-                        </Box>
-                        
-                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
-                          {(productsByCategory[selectedCategory] || []).slice(0, 8).map((product) => (
-                            <Box
-                              key={product.id}
-                              sx={{
-                                width: {
-                                  xs: '100%',
-                                  sm: 'calc(50% - 16px)',
-                                  md: 'calc(25% - 16px)',
-                                },
-                                minWidth: 0,
-                              }}
-                            >
-                              <Card
-                                sx={{
-                                  cursor: 'pointer',
-                                  height: '100%',
-                                  '&:hover': {
-                                    boxShadow: 4,
-                                    transform: 'translateY(-4px)',
-                                    transition: 'all 0.2s',
-                                  },
-                                }}
-                                onClick={() => {
-                                  setShowMegaMenu(false)
-                                  navigate(`/products/${product.id}`)
-                                }}
-                              >
-                                <LazyImage
-                                  src={product.imageUrl}
-                                  alt={product.name}
-                                  height={140}
-                                  objectFit="cover"
-                                />
-                                <CardContent sx={{ p: 2 }}>
-                                  <Typography
-                                    variant="body2"
-                                    sx={{
-                                      fontWeight: 500,
-                                      overflow: 'hidden',
-                                      textOverflow: 'ellipsis',
-                                      display: '-webkit-box',
-                                      WebkitLineClamp: 2,
-                                      WebkitBoxOrient: 'vertical',
-                                      minHeight: 40,
-                                      mb: 1,
-                                    }}
-                                  >
-                                    {product.name}
-                                  </Typography>
-                                  {product.totalRatings && product.totalRatings > 0 ? (
-                                    <Box sx={{ mb: 1 }}>
-                                      <StarRating
-                                        rating={product.averageRating || 0}
-                                        totalRatings={product.totalRatings}
-                                        size="small"
-                                      />
-                                    </Box>
-                                  ) : null}
-                                  <Typography variant="h6" color="primary" sx={{ fontWeight: 700 }}>
-                                    ₹{product.price.toLocaleString()}
-                                  </Typography>
-                                  {product.stock > 0 ? (
-                                    <Typography variant="caption" color="success.main">
-                                      {t('products.stock')}
-                                    </Typography>
-                                  ) : (
-                                    <Typography variant="caption" color="error">
-                                      {t('products.outOfStock')}
-                                    </Typography>
-                                  )}
-                                </CardContent>
-                              </Card>
-                            </Box>
-                          ))}
-                        </Box>
-                      </>
-                    )}
-                  </Box>
-                </Paper>
-              )}
-            </Box>
+              {t('nav.products')}
+            </Button>
             {isAuthenticated && (
               <Button
                 onClick={() => navigate('/orders')}
-                sx={{ my: 2, color: 'white', display: 'block' }}
+                sx={{ 
+                  py: 2, 
+                  color: 'white', 
+                  display: 'block',
+                  fontWeight: 600,
+                  fontSize: '0.95rem',
+                  transition: 'all 0.3s',
+                  position: 'relative',
+                  '&:hover': { 
+                    color: '#fff',
+                    '&::after': {
+                      width: '100%',
+                    }
+                  },
+                  '&::after': {
+                    content: '""',
+                    position: 'absolute',
+                    bottom: 10,
+                    left: 0,
+                    width: 0,
+                    height: 3,
+                    bgcolor: '#ff9800',
+                    borderRadius: '2px',
+                    transition: 'width 0.3s',
+                  }
+                }}
               >
                 {t('nav.orders')}
               </Button>
@@ -378,28 +246,88 @@ const Navbar = () => {
             {isAdmin && (
               <Button
                 onClick={() => navigate('/admin')}
-                sx={{ my: 2, color: 'white', display: 'block' }}
+                sx={{ 
+                  py: 2, 
+                  color: '#ff9800', 
+                  display: 'block',
+                  fontWeight: 700,
+                  fontSize: '0.95rem',
+                  transition: 'all 0.3s',
+                  '&:hover': { 
+                    color: '#fff',
+                    bgcolor: 'rgba(255, 152, 0, 0.2)',
+                  }
+                }}
               >
-                {t('nav.admin')}
+                ⚙️ {t('nav.admin')}
               </Button>
             )}
           </Box>
 
+          {/* Search Bar */}
+          <TextField
+            placeholder={t('products.search')}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            onKeyPress={(e) => {
+              if (e.key === 'Enter') {
+                navigate(`/products?search=${searchQuery}`)
+              }
+            }}
+            variant="outlined"
+            size="small"
+            sx={{
+              width: { xs: '100%', md: 280 },
+              mr: { xs: 0, md: 2 },
+              mb: { xs: 2, md: 0 },
+              backgroundColor: 'rgba(255, 255, 255, 0.95)',
+              borderRadius: 1.5,
+              '& .MuiOutlinedInput-root': {
+                color: '#333',
+                fontWeight: 500,
+                '& fieldset': {
+                  borderColor: 'rgba(0, 0, 0, 0.1)',
+                },
+                '&:hover fieldset': {
+                  borderColor: '#ff9800',
+                },
+                '&.Mui-focused fieldset': {
+                  borderColor: '#ff9800',
+                  borderWidth: 2,
+                },
+              },
+              '& .MuiOutlinedInput-input::placeholder': {
+                color: 'rgba(0, 0, 0, 0.5)',
+                opacity: 1,
+              },
+            }}
+          />
+
           {/* Language selector */}
-          <FormControl size="small" sx={{ mr: 2, minWidth: 70 }}>
+          <FormControl size="small" sx={{ mr: 2, minWidth: 60 }}>
             <Select
               value={i18n.language}
               onChange={(e) => changeLanguage(e.target.value)}
               sx={{
                 color: 'white',
-                '.MuiOutlinedInput-notchedOutline': { borderColor: 'white' },
-                '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: 'white' },
+                fontWeight: 600,
+                backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                borderRadius: 1,
+                '.MuiOutlinedInput-notchedOutline': { 
+                  borderColor: 'rgba(255, 255, 255, 0.5)',
+                },
+                '&:hover .MuiOutlinedInput-notchedOutline': { 
+                  borderColor: 'rgba(255, 255, 255, 0.9)',
+                },
                 '.MuiSvgIcon-root': { color: 'white' },
+                '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                  borderColor: '#ff9800',
+                }
               }}
             >
-              <MenuItem value="en">EN</MenuItem>
-              <MenuItem value="mr">मर</MenuItem>
-              <MenuItem value="hi">हि</MenuItem>
+              <MenuItem value="en" sx={{ fontWeight: 600 }}>EN</MenuItem>
+              <MenuItem value="mr" sx={{ fontWeight: 600 }}>मर</MenuItem>
+              <MenuItem value="hi" sx={{ fontWeight: 600 }}>हि</MenuItem>
             </Select>
           </FormControl>
 
@@ -409,9 +337,16 @@ const Navbar = () => {
               size="large"
               onClick={() => navigate('/cart')}
               color="inherit"
-              sx={{ mr: 2 }}
+              sx={{ 
+                mr: 2,
+                transition: 'all 0.3s',
+                '&:hover': {
+                  transform: 'scale(1.1)',
+                  bgcolor: 'rgba(255, 255, 255, 0.1)',
+                }
+              }}
             >
-              <Badge badgeContent={itemCount} color="error">
+              <Badge badgeContent={itemCount} color="error" sx={{ '& .MuiBadge-badge': { fontWeight: 700, fontSize: '0.75rem' } }}>
                 <ShoppingCart />
               </Badge>
             </IconButton>
@@ -424,6 +359,12 @@ const Navbar = () => {
                 size="large"
                 onClick={handleOpenUserMenu}
                 color="inherit"
+                sx={{
+                  transition: 'all 0.3s',
+                  '&:hover': {
+                    bgcolor: 'rgba(255, 255, 255, 0.1)',
+                  }
+                }}
               >
                 <AccountCircle />
               </IconButton>
@@ -434,29 +375,53 @@ const Navbar = () => {
                 transformOrigin={{ vertical: 'top', horizontal: 'right' }}
                 open={Boolean(anchorElUser)}
                 onClose={handleCloseUserMenu}
+                sx={{
+                  '& .MuiPaper-root': {
+                    borderRadius: 1.5,
+                    boxShadow: '0 4px 16px rgba(0, 0, 0, 0.15)',
+                  }
+                }}
               >
-                <MenuItem disabled>
-                  <Typography textAlign="center">{user?.name}</Typography>
+                <MenuItem disabled sx={{ bgcolor: '#f5f5f5' }}>
+                  <Typography textAlign="center" sx={{ fontWeight: 700, color: 'text.primary' }}>👤 {user?.name}</Typography>
                 </MenuItem>
-                <MenuItem onClick={() => { handleCloseUserMenu(); navigate('/orders') }}>
-                  <Typography textAlign="center">{t('nav.orders')}</Typography>
+                <MenuItem onClick={() => { handleCloseUserMenu(); navigate('/orders') }} sx={{ fontWeight: 600 }}>
+                  <Typography textAlign="center">📦 {t('nav.orders')}</Typography>
                 </MenuItem>
-                <MenuItem onClick={handleLogout}>
-                  <Typography textAlign="center">{t('nav.logout')}</Typography>
+                <MenuItem onClick={handleLogout} sx={{ fontWeight: 600, color: '#d32f2f' }}>
+                  <Typography textAlign="center">🚪 {t('nav.logout')}</Typography>
                 </MenuItem>
               </Menu>
             </Box>
           ) : (
-            <Box>
+            <Box sx={{ display: 'flex', gap: 1 }}>
               <Button
                 onClick={() => navigate('/login')}
-                sx={{ color: 'white' }}
+                sx={{ 
+                  color: 'white',
+                  fontWeight: 700,
+                  transition: 'all 0.3s',
+                  '&:hover': {
+                    bgcolor: 'rgba(255, 255, 255, 0.1)',
+                  }
+                }}
               >
                 {t('nav.login')}
               </Button>
               <Button
                 onClick={() => navigate('/signup')}
-                sx={{ color: 'white' }}
+                sx={{ 
+                  color: 'white',
+                  bgcolor: '#ff9800',
+                  fontWeight: 700,
+                  borderRadius: 1,
+                  px: 2,
+                  transition: 'all 0.3s',
+                  '&:hover': {
+                    bgcolor: '#f57c00',
+                    transform: 'translateY(-2px)',
+                  }
+                }}
               >
                 {t('nav.signup')}
               </Button>

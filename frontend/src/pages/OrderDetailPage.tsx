@@ -41,6 +41,45 @@ const OrderDetailPage = () => {
     return colors[status] || 'default'
   }
 
+  const getStatusLabel = (status: string) => {
+    const statusMap: Record<string, string> = {
+      PENDING: t('orders.pending'),
+      PROCESSING: t('orders.processing'),
+      SHIPPED: t('orders.shipped'),
+      DELIVERED: t('orders.delivered'),
+      CANCELLED: t('orders.cancelled'),
+    }
+    return statusMap[status] || status
+  }
+
+  const getPaymentStatusColor = (status: string) => {
+    const colors: Record<string, 'default' | 'primary' | 'secondary' | 'error' | 'info' | 'success' | 'warning'> = {
+      PENDING: 'warning',
+      COMPLETED: 'success',
+      FAILED: 'error',
+    }
+    return colors[status] || 'default'
+  }
+
+  const getPaymentStatusLabel = (status: string) => {
+    const statusMap: Record<string, string> = {
+      PENDING: t('payment.pending'),
+      COMPLETED: t('payment.completed'),
+      FAILED: t('payment.failed'),
+    }
+    return statusMap[status] || status
+  }
+
+  const formatDate = (date: string | Date) => {
+    const dateObj = new Date(date)
+    const monthIndex = dateObj.getMonth()
+    const monthNames = ['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december']
+    const year = dateObj.getFullYear()
+    const day = dateObj.getDate()
+    const monthName = t(`months.${monthNames[monthIndex]}`)
+    return `${day} ${monthName} ${year}`
+  }
+
   if (isLoading) {
     return (
       <Container sx={{ py: 4, display: 'flex', justifyContent: 'center' }}>
@@ -64,7 +103,7 @@ const OrderDetailPage = () => {
         onClick={() => navigate('/orders')}
         sx={{ mb: 3 }}
       >
-        {t('common.back')} to {t('orders.title')}
+        {t('common.back')} {t('orders.toMyOrders')}
       </Button>
 
       <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 3 }}>
@@ -72,22 +111,24 @@ const OrderDetailPage = () => {
           <Paper sx={{ p: 3, mb: 3 }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', mb: 3 }}>
               <Box>
-                <Typography variant="h5" gutterBottom fontWeight="600">
+                <Typography variant="h5" gutterBottom fontWeight="700" sx={{ color: 'text.primary' }}>
                   {t('orders.orderNumber')}{order.id.slice(0, 8)}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  {t('orders.date')}: {format(new Date(order.createdAt), 'PPP')}
+                  {t('orders.date')}: {formatDate(order.createdAt)}
                 </Typography>
               </Box>
-              <Box sx={{ textAlign: 'right' }}>
+              <Box sx={{ textAlign: 'right', display: 'flex', flexDirection: 'column', gap: 1 }}>
                 <Chip
-                  label={order.status}
+                  label={`${t('orders.status')}: ${getStatusLabel(order.status)}`}
                   color={getStatusColor(order.status)}
-                  sx={{ mb: 1 }}
+                  sx={{ fontWeight: 600 }}
                 />
-                <Typography variant="body2" color="text.secondary">
-                  Payment: {order.paymentStatus}
-                </Typography>
+                <Chip
+                  label={`${t('payment.label')}: ${getPaymentStatusLabel(order.paymentStatus)}`}
+                  color={getPaymentStatusColor(order.paymentStatus)}
+                  sx={{ fontWeight: 600 }}
+                />
               </Box>
             </Box>
 
@@ -97,7 +138,7 @@ const OrderDetailPage = () => {
               {t('checkout.items')}
             </Typography>
             {order.items.map((item) => (
-              <Card key={item.id} sx={{ mb: 2 }}>
+              <Card key={item.id} sx={{ mb: 2, '&:hover': { boxShadow: '0 4px 12px rgba(0,0,0,0.1)' } }}>
                 <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' } }}>
                   <Box sx={{ width: { xs: '100%', sm: '25%' } }}>
                     <CardMedia

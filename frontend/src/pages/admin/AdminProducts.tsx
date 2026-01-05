@@ -299,59 +299,98 @@ const AdminProducts = () => {
 
   return (
     <Box>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
-        <Typography variant="h4" fontWeight="600">
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+        <Typography variant="h4" fontWeight="600" sx={{ color: '#fff', background: 'linear-gradient(135deg, #1976d2, #ff9800)', backgroundClip: 'text', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
           {t('admin.products')}
         </Typography>
         <Button
           variant="contained"
           startIcon={<Add />}
           onClick={() => handleOpen()}
+          sx={{
+            bgcolor: '#1976d2',
+            color: '#fff',
+            textTransform: 'none',
+            fontWeight: '600',
+            px: 3,
+            py: 1.2,
+            borderRadius: '8px',
+            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+            '&:hover': {
+              bgcolor: '#1565c0',
+              transform: 'translateY(-2px)',
+              boxShadow: '0 6px 16px rgba(25, 118, 210, 0.3)',
+            }
+          }}
         >
           {t('admin.addProduct')}
         </Button>
       </Box>
 
-      <TableContainer component={Paper}>
+      <TableContainer component={Paper} sx={{ bgcolor: '#242628', color: '#a0a0a0', border: '1px solid #3a3a3a', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)' }}>
         <Table>
           <TableHead>
-            <TableRow>
-              <TableCell>{t('admin.image')}</TableCell>
-              <TableCell>{t('admin.name')}</TableCell>
-              <TableCell>{t('admin.category')}</TableCell>
-              <TableCell>{t('admin.price')}</TableCell>
-              <TableCell>{t('admin.stock')}</TableCell>
-              <TableCell align="right">{t('admin.actions')}</TableCell>
+            <TableRow sx={{ bgcolor: '#1976d2', borderBottom: '2px solid #3a3a3a' }}>
+              <TableCell sx={{ color: '#fff', fontWeight: '700' }}>{t('admin.image')}</TableCell>
+              <TableCell sx={{ color: '#fff', fontWeight: '700' }}>{t('admin.name')}</TableCell>
+              <TableCell sx={{ color: '#fff', fontWeight: '700' }}>{t('admin.category')}</TableCell>
+              <TableCell sx={{ color: '#fff', fontWeight: '700' }}>{t('admin.price')}</TableCell>
+              <TableCell sx={{ color: '#fff', fontWeight: '700' }}>{t('admin.stock')}</TableCell>
+              <TableCell align="right" sx={{ color: '#fff', fontWeight: '700' }}>{t('admin.actions')}</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {products?.map((product) => (
-              <TableRow key={product.id}>
-                <TableCell>
+              <TableRow key={product.id} sx={{ 
+                borderBottom: '1px solid #3a3a3a',
+                bgcolor: '#1e1e1e',
+                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                '&:hover': {
+                  bgcolor: '#2d3339',
+                  boxShadow: 'inset 0 0 0 1px rgba(25, 118, 210, 0.2)',
+                }
+              }}>
+                <TableCell sx={{ py: 1.5 }}>
                   <img
                     src={product.imageUrl || 'https://via.placeholder.com/50'}
                     alt={product.name}
-                    style={{ width: 50, height: 50, objectFit: 'cover', borderRadius: 4 }}
+                    style={{ width: 50, height: 50, objectFit: 'cover', borderRadius: 6 }}
                     onError={(e) => {
                       console.error('Image load error:', product.imageUrl)
                       e.currentTarget.src = 'https://via.placeholder.com/50'
                     }}
                   />
                 </TableCell>
-                <TableCell>{product.name}</TableCell>
-                <TableCell>{t(`categories.${product.category}`)}</TableCell>
-                <TableCell>₹{product.price.toLocaleString()}</TableCell>
-                <TableCell>{product.stock}</TableCell>
-                <TableCell align="right">
+                <TableCell sx={{ color: '#e0e0e0', fontWeight: '500' }}>{product.name}</TableCell>
+                <TableCell sx={{ color: '#b0b0b0' }}>{t(`categories.${product.category}`)}</TableCell>
+                <TableCell sx={{ color: '#ff9800', fontWeight: '700' }}>₹{product.price.toLocaleString()}</TableCell>
+                <TableCell sx={{ color: '#b0b0b0', fontWeight: '500' }}>{product.stock}</TableCell>
+                <TableCell align="right" sx={{ py: 1.5 }}>
                   <IconButton
                     color="primary"
                     onClick={() => handleOpen(product)}
+                    sx={{
+                      color: '#1976d2',
+                      transition: 'all 0.2s',
+                      '&:hover': {
+                        bgcolor: 'rgba(25, 118, 210, 0.1)',
+                        color: '#42a5f5',
+                      }
+                    }}
                   >
                     <Edit />
                   </IconButton>
                   <IconButton
                     color="error"
                     onClick={() => handleDelete(product.id)}
+                    sx={{
+                      color: '#ef5350',
+                      transition: 'all 0.2s',
+                      '&:hover': {
+                        bgcolor: 'rgba(239, 83, 80, 0.1)',
+                        color: '#f44336',
+                      }
+                    }}
                   >
                     <Delete />
                   </IconButton>
@@ -363,18 +402,27 @@ const AdminProducts = () => {
       </TableContainer>
 
       {/* Add/Edit Dialog */}
-      <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth>
+      <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth
+        PaperProps={{
+          sx: {
+            bgcolor: '#242628',
+            backgroundImage: 'none',
+            border: '1px solid #3a3a3a',
+            borderRadius: '12px',
+          }
+        }}
+      >
         <form onSubmit={handleSubmit(onSubmit)}>
-          <DialogTitle>
+          <DialogTitle sx={{ color: '#ff9800', fontWeight: '600', borderBottom: '1px solid #3a3a3a', fontSize: '1.3rem' }}>
             {editingProduct ? t('admin.editProduct') : t('admin.addNewProduct')}
           </DialogTitle>
-          <DialogContent>
+          <DialogContent sx={{ bgcolor: '#242628', backgroundImage: 'none' }}>
             {error && (
-              <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError('')}>
+              <Alert severity="error" sx={{ mb: 2, bgcolor: 'rgba(244, 67, 54, 0.1)', color: '#ef5350', border: '1px solid rgba(244, 67, 54, 0.3)' }} onClose={() => setError('')}>
                 {error}
               </Alert>
             )}
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5, mt: 2 }}>
               <Box>
                 <TextField
                   fullWidth
@@ -382,6 +430,17 @@ const AdminProducts = () => {
                   {...register('name')}
                   error={!!errors.name}
                   helperText={errors.name?.message}
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      color: '#b0b0b0',
+                      bgcolor: '#242628',
+                      '& fieldset': { borderColor: '#3a3a3a' },
+                      '&:hover fieldset': { borderColor: '#1976d2' },
+                      '&.Mui-focused fieldset': { borderColor: '#1976d2' },
+                    },
+                    '& .MuiInputBase-input::placeholder': { color: '#707070', opacity: 1 },
+                    '& .MuiInputLabel-root': { color: '#b0b0b0', '&.Mui-focused': { color: '#1976d2' } },
+                  }}
                 />
               </Box>
               <Box>
@@ -393,6 +452,17 @@ const AdminProducts = () => {
                   {...register('description')}
                   error={!!errors.description}
                   helperText={errors.description?.message}
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      color: '#b0b0b0',
+                      bgcolor: '#242628',
+                      '& fieldset': { borderColor: '#3a3a3a' },
+                      '&:hover fieldset': { borderColor: '#1976d2' },
+                      '&.Mui-focused fieldset': { borderColor: '#1976d2' },
+                    },
+                    '& .MuiInputBase-input::placeholder': { color: '#707070', opacity: 1 },
+                    '& .MuiInputLabel-root': { color: '#b0b0b0', '&.Mui-focused': { color: '#1976d2' } },
+                  }}
                 />
               </Box>
               <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 2 }}>
@@ -404,6 +474,16 @@ const AdminProducts = () => {
                     {...register('price', { valueAsNumber: true })}
                     error={!!errors.price}
                     helperText={errors.price?.message}
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        color: '#b0b0b0',
+                        bgcolor: '#242628',
+                        '& fieldset': { borderColor: '#3a3a3a' },
+                        '&:hover fieldset': { borderColor: '#1976d2' },
+                        '&.Mui-focused fieldset': { borderColor: '#1976d2' },
+                      },
+                      '& .MuiInputLabel-root': { color: '#b0b0b0', '&.Mui-focused': { color: '#1976d2' } },
+                    }}
                   />
                 </Box>
                 <Box sx={{ flex: 1 }}>
@@ -414,13 +494,23 @@ const AdminProducts = () => {
                     {...register('stock', { valueAsNumber: true })}
                     error={!!errors.stock}
                     helperText={errors.stock?.message}
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        color: '#b0b0b0',
+                        bgcolor: '#242628',
+                        '& fieldset': { borderColor: '#3a3a3a' },
+                        '&:hover fieldset': { borderColor: '#1976d2' },
+                        '&.Mui-focused fieldset': { borderColor: '#1976d2' },
+                      },
+                      '& .MuiInputLabel-root': { color: '#b0b0b0', '&.Mui-focused': { color: '#1976d2' } },
+                    }}
                   />
                 </Box>
               </Box>
 
               <Box>
                 <FormControl fullWidth error={!!errors.category}>
-                  <InputLabel>{t('admin.category')}</InputLabel>
+                  <InputLabel sx={{ color: '#b0b0b0' }}>{t('admin.category')}</InputLabel>
                   <Select
                     label={t('admin.category')}
                     {...register('category')}
@@ -428,9 +518,26 @@ const AdminProducts = () => {
                     onChange={(e) => {
                       setSelectedCategory(e.target.value)
                     }}
+                    sx={{
+                      color: '#b0b0b0',
+                      bgcolor: '#242628',
+                      '& .MuiOutlinedInput-notchedOutline': { borderColor: '#3a3a3a' },
+                      '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#1976d2' },
+                      '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#1976d2' },
+                      '.MuiSvgIcon-root': { color: '#b0b0b0' },
+                    }}
+                    MenuProps={{
+                      PaperProps: {
+                        sx: {
+                          bgcolor: '#1e1e1e',
+                          border: '1px solid #3a3a3a',
+                          boxShadow: '0 4px 16px rgba(0, 0, 0, 0.4)',
+                        }
+                      }
+                    }}
                   >
                     {CATEGORIES.map((category) => (
-                      <MenuItem key={category} value={category}>
+                      <MenuItem key={category} value={category} sx={{ bgcolor: '#1e1e1e', color: '#b0b0b0', fontSize: '0.875rem', py: 1.5, transition: 'all 0.2s', '&:hover': { bgcolor: '#1976d2', color: '#fff' }, '&.Mui-selected': { bgcolor: '#1565c0', color: '#fff', fontWeight: '600', '&:hover': { bgcolor: '#0d47a1' } } }}>
                         {t(`categories.${category}`)}
                       </MenuItem>
                     ))}
@@ -443,7 +550,7 @@ const AdminProducts = () => {
                 </FormControl>
               </Box>
               <Box>
-                <Typography variant="subtitle2" gutterBottom>
+                <Typography variant="subtitle2" gutterBottom sx={{ color: '#b0b0b0', fontWeight: '600' }}>
                   {t('admin.productImage')}
                 </Typography>
                 {/* Hidden field to maintain imageUrl in form */}
@@ -454,6 +561,12 @@ const AdminProducts = () => {
                     component="label"
                     startIcon={<Upload />}
                     fullWidth
+                    sx={{
+                      color: '#1976d2',
+                      borderColor: '#1976d2',
+                      transition: 'all 0.2s',
+                      '&:hover': { bgcolor: 'rgba(25, 118, 210, 0.1)', borderColor: '#42a5f5', color: '#42a5f5' }
+                    }}
                   >
                     {t('admin.chooseImage')}
                     <input
@@ -469,31 +582,37 @@ const AdminProducts = () => {
                       variant="outlined"
                       color="error"
                       onClick={handleRemoveImage}
+                      sx={{
+                        borderColor: '#ef5350',
+                        color: '#ef5350',
+                        transition: 'all 0.2s',
+                        '&:hover': { bgcolor: 'rgba(239, 83, 80, 0.1)', borderColor: '#f44336', color: '#f44336' }
+                      }}
                     >
                       {t('admin.remove')}
                     </Button>
                   )}
                 </Box>
                 {imageFile && (
-                  <Typography variant="caption" display="block" sx={{ mt: 1 }}>
+                  <Typography variant="caption" display="block" sx={{ mt: 1, color: '#b0b0b0' }}>
                     {t('admin.selected')}: {imageFile.name}
                   </Typography>
                 )}
                 {!imageFile && editingProduct?.imageUrl && (
-                  <Typography variant="caption" display="block" sx={{ mt: 1, color: 'text.secondary' }}>
+                  <Typography variant="caption" display="block" sx={{ mt: 1, color: '#707070' }}>
                     {t('admin.current')}: {editingProduct.imageUrl.split('/').pop()}
                   </Typography>
                 )}
                 
                 {imagePreview && (
                   <Box sx={{ mt: 2, textAlign: 'center' }}>
-                    <Typography variant="caption" display="block" sx={{ mb: 1 }}>
+                    <Typography variant="caption" display="block" sx={{ mb: 1, color: '#b0b0b0' }}>
                       {t('admin.preview')}:
                     </Typography>
                     <img
                       src={imagePreview}
                       alt="Preview"
-                      style={{ maxWidth: '100%', maxHeight: 200, objectFit: 'contain', borderRadius: 8 }}
+                      style={{ maxWidth: '100%', maxHeight: 200, objectFit: 'contain', borderRadius: 8, border: '1px solid #3a3a3a' }}
                     />
                   </Box>
                 )}
@@ -501,7 +620,7 @@ const AdminProducts = () => {
 
               {/* Video Upload Section */}
               <Box>
-                <Typography variant="subtitle2" gutterBottom>
+                <Typography variant="subtitle2" gutterBottom sx={{ color: '#b0b0b0', fontWeight: '600' }}>
                   {t('admin.productVideo')}
                 </Typography>
                 {/* Hidden field to maintain videoUrl in form */}
@@ -512,6 +631,12 @@ const AdminProducts = () => {
                     component="label"
                     startIcon={<Upload />}
                     fullWidth
+                    sx={{
+                      color: '#1976d2',
+                      borderColor: '#1976d2',
+                      transition: 'all 0.2s',
+                      '&:hover': { bgcolor: 'rgba(25, 118, 210, 0.1)', borderColor: '#42a5f5', color: '#42a5f5' }
+                    }}
                   >
                     {t('admin.uploadVideo')}
                     <input
@@ -527,30 +652,36 @@ const AdminProducts = () => {
                       variant="outlined"
                       color="error"
                       onClick={handleRemoveVideo}
+                      sx={{
+                        borderColor: '#ef5350',
+                        color: '#ef5350',
+                        transition: 'all 0.2s',
+                        '&:hover': { bgcolor: 'rgba(239, 83, 80, 0.1)', borderColor: '#f44336', color: '#f44336' }
+                      }}
                     >
                       {t('admin.remove')}
                     </Button>
                   )}
                 </Box>
                 {videoFile && (
-                  <Typography variant="caption" display="block" sx={{ mt: 1 }}>
+                  <Typography variant="caption" display="block" sx={{ mt: 1, color: '#b0b0b0' }}>
                     {t('admin.selected')}: {videoFile.name}
                   </Typography>
                 )}
                 {!videoFile && editingProduct?.videoUrl && (
-                  <Typography variant="caption" display="block" sx={{ mt: 1, color: 'text.secondary' }}>
+                  <Typography variant="caption" display="block" sx={{ mt: 1, color: '#707070' }}>
                     {t('admin.current')}: {editingProduct.videoUrl.split('/').pop()}
                   </Typography>
                 )}
                 {videoPreview && (
                   <Box sx={{ mt: 2, textAlign: 'center' }}>
-                    <Typography variant="caption" display="block" sx={{ mb: 1 }}>
+                    <Typography variant="caption" display="block" sx={{ mb: 1, color: '#b0b0b0' }}>
                       {t('admin.videoPreview')}:
                     </Typography>
                     <video
                       src={videoPreview}
                       controls
-                      style={{ maxWidth: '100%', maxHeight: 200, borderRadius: 8 }}
+                      style={{ maxWidth: '100%', maxHeight: 200, borderRadius: 8, border: '1px solid #3a3a3a' }}
                     />
                   </Box>
                 )}
@@ -565,16 +696,45 @@ const AdminProducts = () => {
                   {...register('colors')}
                   error={!!errors.colors}
                   helperText={errors.colors?.message || t('admin.colorsHelper')}
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      color: '#b0b0b0',
+                      bgcolor: '#242628',
+                      '& fieldset': { borderColor: '#3a3a3a' },
+                      '&:hover fieldset': { borderColor: '#1976d2' },
+                      '&.Mui-focused fieldset': { borderColor: '#1976d2' },
+                    },
+                    '& .MuiInputBase-input::placeholder': { color: '#707070', opacity: 1 },
+                    '& .MuiInputLabel-root': { color: '#b0b0b0', '&.Mui-focused': { color: '#1976d2' } },
+                    '& .MuiFormHelperText-root': { color: '#707070' },
+                  }}
                 />
               </Box>
             </Box>
           </DialogContent>
-          <DialogActions>
-            <Button onClick={handleClose}>{t('admin.cancel')}</Button>
+          <DialogActions sx={{ bgcolor: '#242628', borderTop: '1px solid #3a3a3a', p: 2, gap: 1 }}>
+            <Button onClick={handleClose} sx={{ color: '#b0b0b0', textTransform: 'none', fontWeight: '500', '&:hover': { bgcolor: 'rgba(176, 176, 176, 0.1)' } }}>
+              {t('admin.cancel')}
+            </Button>
             <Button
               type="submit"
               variant="contained"
               disabled={createMutation.isPending || updateMutation.isPending}
+              sx={{
+                bgcolor: '#1976d2',
+                color: '#fff',
+                textTransform: 'none',
+                fontWeight: '600',
+                transition: 'all 0.2s',
+                '&:hover': {
+                  bgcolor: '#1565c0',
+                  boxShadow: '0 4px 12px rgba(25, 118, 210, 0.3)',
+                },
+                '&:disabled': {
+                  bgcolor: '#707070',
+                  color: '#505050',
+                }
+              }}
             >
               {editingProduct ? t('admin.update') : t('admin.create')}
             </Button>

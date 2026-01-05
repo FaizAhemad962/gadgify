@@ -10,8 +10,6 @@ import {
   CircularProgress,
   Alert,
   Chip,
-  Card,
-  CardMedia,
   Paper,
   Divider,
 } from '@mui/material'
@@ -23,6 +21,7 @@ import { useAuth } from '../context/AuthContext'
 import { StarRating } from '../components/common/StarRating'
 import { RatingForm } from '../components/product/RatingForm'
 import { RatingsList } from '../components/product/RatingsList'
+import { ProductCarousel } from '../components/product/ProductCarousel'
 
 const ProductDetailPage = () => {
   const { id } = useParams<{ id: string }>()
@@ -90,56 +89,68 @@ const ProductDetailPage = () => {
       </Button>
 
       <Box sx={{ display: 'flex', gap: 4, flexDirection: { xs: 'column', md: 'row' } }}>
-        <Box sx={{ flex: 1 }}>
-          <Card sx={{ overflow: 'hidden' }}>
-            <CardMedia
-              component="img"
-              image={product.imageUrl || 'https://via.placeholder.com/600x400?text=Product'}
-              alt={product.name}
-              sx={{ width: '100%', height: 500, objectFit: 'cover', display: 'block' }}
-            />
-          </Card>
+        <Box sx={{ flex: 1, minWidth: 0 }}>
+          {/* Product Carousel */}
+          <ProductCarousel
+            items={[
+              {
+                type: 'image',
+                url: product.imageUrl || 'https://via.placeholder.com/400x400?text=Product',
+                alt: product.name,
+              },
+              ...(product.videoUrl
+                ? [
+                    {
+                      type: 'video' as const,
+                      url: product.videoUrl,
+                      alt: 'Product Video',
+                    },
+                  ]
+                : []),
+            ]}
+          />
         </Box>
 
-        <Box sx={{ flex: 1 }}>
-          <Typography variant="h4" gutterBottom fontWeight="600">
-            {product.name}
-          </Typography>
+        <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 3 }}>
+          <Box>
+            <Typography variant="h4" gutterBottom fontWeight="700" sx={{ color: 'text.primary', mb: 2 }}>
+              {product.name}
+            </Typography>
 
-          {ratingsData && ratingsData.totalRatings > 0 && (
-            <Box sx={{ mb: 2 }}>
-              <StarRating
-                rating={ratingsData.averageRating}
-                totalRatings={ratingsData.totalRatings}
-                size="medium"
-              />
-            </Box>
-          )}
-
-          <Box sx={{ mb: 3 }}>
-            {product.stock > 0 ? (
-              <Chip label={`${t('products.stock')}: ${product.stock}`} color="success" />
-            ) : (
-              <Chip label={t('products.outOfStock')} color="error" />
+            {ratingsData && ratingsData.totalRatings > 0 && (
+              <Box sx={{ mb: 2 }}>
+                <StarRating
+                  rating={ratingsData.averageRating}
+                  totalRatings={ratingsData.totalRatings}
+                  size="medium"
+                />
+              </Box>
             )}
           </Box>
 
-          <Typography variant="h5" color="primary" gutterBottom fontWeight="600">
-            ₹{product.price.toLocaleString()}
-          </Typography>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Typography variant="h5" color="primary" fontWeight="700">
+              ₹{product.price.toLocaleString()}
+            </Typography>
+            {product.stock > 0 ? (
+              <Chip label={`${t('products.stock')}: ${product.stock}`} sx={{ bgcolor: '#4caf50', color: '#fff', fontWeight: 600 }} />
+            ) : (
+              <Chip label={t('products.outOfStock')} sx={{ bgcolor: '#f44336', color: '#fff', fontWeight: 600 }} />
+            )}
+          </Box>
 
-          <Typography variant="body1" color="text.secondary" sx={{ mb: 4, lineHeight: 1.8 }}>
+          <Typography variant="body1" sx={{ color: 'text.secondary', lineHeight: 2, fontSize: '1rem' }}>
             {product.description}
           </Typography>
 
-          <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
+          <Box sx={{ display: 'flex', gap: 2 }}>
             <Button
               variant="outlined"
               size="large"
               startIcon={<ShoppingCart />}
               onClick={handleAddToCart}
               disabled={product.stock === 0}
-              sx={{ flex: 1 }}
+              sx={{ flex: 1, fontWeight: 600 }}
             >
               {t('products.addToCart')}
             </Button>
@@ -148,31 +159,39 @@ const ProductDetailPage = () => {
               size="large"
               onClick={handleBuyNow}
               disabled={product.stock === 0}
-              sx={{ flex: 1 }}
+              sx={{ flex: 1, fontWeight: 600, bgcolor: '#ff9800', '&:hover': { bgcolor: '#f57c00' } }}
             >
               {t('products.buyNow')}
             </Button>
           </Box>
 
-          <Box sx={{ bgcolor: 'grey.100', p: 3, borderRadius: 2 }}>
-            <Typography variant="subtitle2" gutterBottom>
-              {t('common.productDetails')}
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              Category: {product.category}
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              {t('common.availableStock')}: {product.stock}
-            </Typography>
+          {/* Product Info Sections */}
+          <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
+            <Paper sx={{ p: 2.5, borderRadius: 2, border: '1px solid #eee' }}>
+              <Typography variant="h6" sx={{ fontWeight: 600, color: 'text.primary', mb: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
+                ✓ {t('common.fastDelivery')}
+              </Typography>
+              <Typography variant="body2" sx={{ color: 'text.secondary', fontSize: '0.9rem' }}>
+                {t('products.freeDeliveryAbove')}
+              </Typography>
+            </Paper>
+            <Paper sx={{ p: 2.5, borderRadius: 2, border: '1px solid #eee' }}>
+              <Typography variant="h6" sx={{ fontWeight: 600, color: 'text.primary', mb: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
+                ✓ {t('products.securePayment')}
+              </Typography>
+              <Typography variant="body2" sx={{ color: 'text.secondary', fontSize: '0.9rem' }}>
+                {t('products.safeCheckout')}
+              </Typography>
+            </Paper>
           </Box>
 
           {/* Color Selection */}
           {product.colors && (
-            <Box sx={{ mt: 3 }}>
-              <Typography variant="subtitle2" gutterBottom>
-                Available Colors
+            <Box>
+              <Typography variant="subtitle2" gutterBottom fontWeight="600" sx={{ color: 'text.primary', mb: 2 }}>
+                {t('products.availableColors')}
               </Typography>
-              <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+              <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap' }}>
                 {product.colors.split(',').map((color: string) => (
                   <Chip
                     key={color.trim()}
@@ -180,7 +199,7 @@ const ProductDetailPage = () => {
                     onClick={() => setSelectedColor(color.trim())}
                     color={selectedColor === color.trim() ? 'primary' : 'default'}
                     variant={selectedColor === color.trim() ? 'filled' : 'outlined'}
-                    sx={{ cursor: 'pointer' }}
+                    sx={{ cursor: 'pointer', fontWeight: 500 }}
                   />
                 ))}
               </Box>
@@ -189,46 +208,17 @@ const ProductDetailPage = () => {
         </Box>
       </Box>
 
-      {/* Product Video Section */}
-      {product.videoUrl && (
-        <Box sx={{ mt: 6 }}>
-          <Typography variant="h5" gutterBottom fontWeight="600" sx={{ mb: 3 }}>
-            Product Video
-          </Typography>
-          <Paper elevation={3} sx={{ p: 2, borderRadius: 2 }}>
-            <Box
-              sx={{
-                position: 'relative',
-                width: '100%',
-                paddingTop: '56.25%', // 16:9 aspect ratio
-                bgcolor: '#000',
-                borderRadius: 2,
-                overflow: 'hidden',
-              }}
-            >
-              <video
-                src={product.videoUrl}
-                controls
-                style={{
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  width: '100%',
-                  height: '100%',
-                  objectFit: 'contain',
-                }}
-              />
-            </Box>
-          </Paper>
-        </Box>
-      )}
+      {/* Product Video Section - Removed as carousel handles video */}
 
       {/* Ratings Section */}
-      <Box sx={{ mt: 6 }}>
-        <Divider sx={{ mb: 4 }} />
+      <Box sx={{ mt: 8 }}>
+        <Divider sx={{ mb: 6, borderColor: '#ddd' }} />
+        <Typography variant="h5" gutterBottom fontWeight="700" sx={{ color: 'text.primary', mb: 4 }}>
+          Customer Reviews
+        </Typography>
 
         {isAuthenticated && (
-          <Box sx={{ mb: 4 }}>
+          <Box sx={{ mb: 6 }}>
             <RatingForm productId={id!} />
           </Box>
         )}

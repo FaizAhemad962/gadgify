@@ -59,27 +59,44 @@ const AdminLayout = () => {
   ]
 
   const drawer = (
-    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-      <Toolbar sx={{ justifyContent: open ? 'space-between' : 'center' }}>
+    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', bgcolor: '#1a1a1a' }}>
+      <Toolbar sx={{ justifyContent: open ? 'space-between' : 'center', bgcolor: '#0f1419', borderBottom: '1px solid #333' }}>
         {open && (
-          <Typography variant="h6" noWrap component="div">
+          <Typography variant="h6" noWrap component="div" sx={{ fontWeight: 700, background: 'linear-gradient(135deg, #1976d2, #ff9800)', backgroundClip: 'text', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
             {t('app.title')}
           </Typography>
         )}
-        <IconButton onClick={toggleDrawer}>
+        <IconButton onClick={toggleDrawer} sx={{ color: '#ff9800' }}>
           <MenuIcon />
         </IconButton>
       </Toolbar>
-      <Divider />
-      <List sx={{ flex: 1 }}>
+      <List sx={{ flex: 1, pt: 2 }}>
         {menuItems.map((item) => (
-          <ListItem key={item.text} disablePadding>
+          <ListItem key={item.text} disablePadding sx={{ mb: 1 }}>
             <ListItemButton 
               component={Link} 
               to={item.path}
-              sx={{ justifyContent: open ? 'initial' : 'center', px: 2.5 }}
+              sx={{ 
+                justifyContent: open ? 'initial' : 'center', 
+                px: 2,
+                mx: 1,
+                borderRadius: '8px',
+                color: '#a0a0a0',
+                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                '&:hover': {
+                  bgcolor: '#1976d2',
+                  color: '#fff',
+                  '& .MuiListItemIcon-root': { color: '#fff' },
+                  transform: 'translateX(4px)'
+                },
+                '&.active': {
+                  bgcolor: '#1976d2',
+                  color: '#fff',
+                  '& .MuiListItemIcon-root': { color: '#fff' }
+                }
+              }}
             >
-              <ListItemIcon sx={{ minWidth: 0, mr: open ? 3 : 'auto', justifyContent: 'center' }}>
+              <ListItemIcon sx={{ minWidth: 0, mr: open ? 3 : 'auto', justifyContent: 'center', color: 'inherit' }}>
                 {item.icon}
               </ListItemIcon>
               {open && <ListItemText primary={item.text} />}
@@ -87,14 +104,27 @@ const AdminLayout = () => {
           </ListItem>
         ))}
       </List>
-      <Divider />
+      <Divider sx={{ borderColor: '#333', my: 2 }} />
       <List>
-        <ListItem disablePadding>
+        <ListItem disablePadding sx={{ mb: 1 }}>
           <ListItemButton 
             onClick={handleLogout}
-            sx={{ justifyContent: open ? 'initial' : 'center', px: 2.5 }}
+            sx={{ 
+              justifyContent: open ? 'initial' : 'center', 
+              px: 2,
+              mx: 1,
+              borderRadius: '8px',
+              color: '#a0a0a0',
+              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+              '&:hover': {
+                bgcolor: '#ff5252',
+                color: '#fff',
+                '& .MuiListItemIcon-root': { color: '#fff' },
+                transform: 'translateX(4px)'
+              }
+            }}
           >
-            <ListItemIcon sx={{ minWidth: 0, mr: open ? 3 : 'auto', justifyContent: 'center' }}>
+            <ListItemIcon sx={{ minWidth: 0, mr: open ? 3 : 'auto', justifyContent: 'center', color: 'inherit' }}>
               <ExitToApp />
             </ListItemIcon>
             {open && <ListItemText primary={t('nav.logout')} />}
@@ -112,6 +142,8 @@ const AdminLayout = () => {
           width: { sm: `calc(100% - ${open ? drawerWidth : collapsedWidth}px)` },
           ml: { sm: `${open ? drawerWidth : collapsedWidth}px` },
           transition: 'width 0.3s, margin 0.3s',
+          bgcolor: '#1976d2',
+          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)',
         }}
       >
         <Toolbar>
@@ -158,7 +190,12 @@ const AdminLayout = () => {
           ModalProps={{ keepMounted: true }}
           sx={{
             display: { xs: 'block', sm: 'none' },
-            '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth },
+            '& .MuiDrawer-paper': { 
+              boxSizing: 'border-box', 
+              width: drawerWidth,
+              bgcolor: '#1a1a1a',
+              borderRight: '1px solid #333',
+            },
           }}
         >
           {drawer}
@@ -172,6 +209,8 @@ const AdminLayout = () => {
               width: open ? drawerWidth : collapsedWidth,
               transition: 'width 0.3s',
               overflowX: 'hidden',
+              bgcolor: '#1a1a1a',
+              borderRight: '1px solid #333',
             },
           }}
           open
