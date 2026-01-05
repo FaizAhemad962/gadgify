@@ -47,6 +47,8 @@ export const createOrderSchema = Joi.object({
     )
     .min(1)
     .required(),
+  subtotal: Joi.number().min(0).required(),
+  shipping: Joi.number().min(0).required(),
   total: Joi.number().min(0).required(),
   shippingAddress: Joi.object({
     name: Joi.string().required(),
