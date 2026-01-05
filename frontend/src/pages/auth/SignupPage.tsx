@@ -63,16 +63,13 @@ const SignupPage = () => {
   const {
     register,
     handleSubmit,
-    formState: { errors },
-    watch,
+    formState: { errors }
   } = useForm<SignupFormData>({
     resolver: zodResolver(signupSchema),
     defaultValues: {
       state: 'Maharashtra',
     },
   })
-
-  const state = watch('state')
 
   const signupMutation = useMutation({
     mutationFn: authApi.signup,

@@ -1,5 +1,4 @@
 import prisma from './config/database'
-import { hashPassword } from './utils/auth'
 
 async function seed() {
   console.log('🌱 Seeding database...')
