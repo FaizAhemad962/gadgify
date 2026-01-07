@@ -25,6 +25,9 @@ export const productSchema = Joi.object({
   videoUrl: Joi.string().uri().optional().allow(''),
   colors: Joi.string().optional().allow(''),
   category: Joi.string().min(2).required(),
+  hsnNo: Joi.string().optional().allow(''),
+  gstPercentage: Joi.number().min(0).max(100).optional(),
+  gstPrice: Joi.number().min(0).optional(),
 })
 
 export const addToCartSchema = Joi.object({

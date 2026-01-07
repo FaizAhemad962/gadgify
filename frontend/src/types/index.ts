@@ -21,6 +21,9 @@ export interface Product {
   videoUrl?: string
   colors?: string
   category: string
+  hsnNo?: string
+  gstPercentage?: number
+  gstPrice?: number
   createdAt: string
   updatedAt: string
   averageRating?: number
@@ -102,6 +105,11 @@ export interface CreateProductRequest {
   stock: number
   imageUrl: string
   category: string
+  videoUrl?: string
+  colors?: string
+  hsnNo?: string
+  gstPercentage?: number
+  gstPrice?: number
 }
 
 export type UpdateProductRequest = Partial<CreateProductRequest>

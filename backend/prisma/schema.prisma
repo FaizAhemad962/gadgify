@@ -37,6 +37,9 @@ model Product {
   videoUrl    String?
   colors      String?
   category    String
+  hsnNo       String?
+  gstPercentage Float?
+  gstPrice    Float?
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
   cartItems   CartItem[]

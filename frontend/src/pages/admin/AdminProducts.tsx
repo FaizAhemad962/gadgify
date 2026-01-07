@@ -54,6 +54,9 @@ const productSchema = z.object({
   videoUrl: z.string().optional(),
   colors: z.string().optional(),
   category: z.string().min(2, 'Category is required'),
+  hsnNo: z.string().optional(),
+  gstPercentage: z.number().min(0).max(100).optional(),
+  gstPrice: z.number().min(0).optional(),
 })
 
 type ProductFormData = z.infer<typeof productSchema>
@@ -128,6 +131,9 @@ const AdminProducts = () => {
         videoUrl: product.videoUrl || '',
         colors: product.colors || '',
         category: product.category,
+        hsnNo: product.hsnNo || '',
+        gstPercentage: product.gstPercentage || undefined,
+        gstPrice: product.gstPrice || undefined,
       })
       
       // Set image preview
@@ -154,6 +160,9 @@ const AdminProducts = () => {
         videoUrl: '',
         colors: '',
         category: '',
+        hsnNo: '',
+        gstPercentage: undefined,
+        gstPrice: undefined,
       })
       setImagePreview('')
       setVideoPreview('')
@@ -200,8 +209,9 @@ const AdminProducts = () => {
   const handleImageFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
-      if (file.size > 5 * 1024 * 1024) {
-        setError(t('admin.imageSizeError'))
+      // Check file size: 500KB limit
+      if (file.size > 500 * 1024) {
+        setError(t('admin.imageSizeError') || 'Image size should not exceed 500KB')
         return
       }
       setImageFile(file)
@@ -217,8 +227,9 @@ const AdminProducts = () => {
   const handleVideoFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
-      if (file.size > 50 * 1024 * 1024) {
-        setError('Video size should not exceed 50MB')
+      // Check file size: 2MB limit
+      if (file.size > 2 * 1024 * 1024) {
+        setError('Video size should not exceed 2MB')
         return
       }
       setVideoFile(file)
@@ -549,6 +560,74 @@ const AdminProducts = () => {
                   )}
                 </FormControl>
               </Box>
+
+              {/* HSN No, GST %, and GST Price Section */}
+              <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 2 }}>
+                <Box sx={{ flex: 1 }}>
+                  <TextField
+                    fullWidth
+                    label="HSN No."
+                    placeholder="e.g., 8517.62"
+                    {...register('hsnNo')}
+                    error={!!errors.hsnNo}
+                    helperText={errors.hsnNo?.message}
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        color: '#b0b0b0',
+                        bgcolor: '#242628',
+                        '& fieldset': { borderColor: '#3a3a3a' },
+                        '&:hover fieldset': { borderColor: '#1976d2' },
+                        '&.Mui-focused fieldset': { borderColor: '#1976d2' },
+                      },
+                      '& .MuiInputLabel-root': { color: '#b0b0b0', '&.Mui-focused': { color: '#1976d2' } },
+                    }}
+                  />
+                </Box>
+                <Box sx={{ flex: 1 }}>
+                  <TextField
+                    fullWidth
+                    label="GST %"
+                    type="number"
+                    inputProps={{ step: '0.01', min: '0', max: '100' }}
+                    {...register('gstPercentage', { valueAsNumber: true })}
+                    error={!!errors.gstPercentage}
+                    helperText={errors.gstPercentage?.message || '(0-100)'}
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        color: '#b0b0b0',
+                        bgcolor: '#242628',
+                        '& fieldset': { borderColor: '#3a3a3a' },
+                        '&:hover fieldset': { borderColor: '#1976d2' },
+                        '&.Mui-focused fieldset': { borderColor: '#1976d2' },
+                      },
+                      '& .MuiInputLabel-root': { color: '#b0b0b0', '&.Mui-focused': { color: '#1976d2' } },
+                      '& .MuiFormHelperText-root': { color: '#707070' },
+                    }}
+                  />
+                </Box>
+                <Box sx={{ flex: 1 }}>
+                  <TextField
+                    fullWidth
+                    label="GST Price (₹)"
+                    type="number"
+                    inputProps={{ step: '0.01', min: '0' }}
+                    {...register('gstPrice', { valueAsNumber: true })}
+                    error={!!errors.gstPrice}
+                    helperText={errors.gstPrice?.message}
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        color: '#b0b0b0',
+                        bgcolor: '#242628',
+                        '& fieldset': { borderColor: '#3a3a3a' },
+                        '&:hover fieldset': { borderColor: '#1976d2' },
+                        '&.Mui-focused fieldset': { borderColor: '#1976d2' },
+                      },
+                      '& .MuiInputLabel-root': { color: '#b0b0b0', '&.Mui-focused': { color: '#1976d2' } },
+                    }}
+                  />
+                </Box>
+              </Box>
+
               <Box>
                 <Typography variant="subtitle2" gutterBottom sx={{ color: '#b0b0b0', fontWeight: '600' }}>
                   {t('admin.productImage')}
