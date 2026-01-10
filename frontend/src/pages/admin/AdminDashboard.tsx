@@ -12,10 +12,12 @@ const AdminDashboard = () => {
     queryFn: productsApi.getAll,
   })
 
-  const { data: orders } = useQuery({
+  const { data: ordersData } = useQuery({
     queryKey: ['admin-orders'],
-    queryFn: ordersApi.getAllOrders,
+    queryFn: () => ordersApi.getAllOrders(),
   })
+
+  const orders = ordersData?.orders || []
 
   const stats = [
     {
@@ -26,19 +28,19 @@ const AdminDashboard = () => {
     },
     {
       title: t('admin.totalOrders'),
-      value: Array.isArray(orders) ? orders.length : 0,
+      value: orders.length,
       icon: <ShoppingCart sx={{ fontSize: 40 }} />,
       color: '#2e7d32',
     },
     {
       title: t('admin.pendingOrders'),
-      value: Array.isArray(orders) ? orders.filter((o) => o.status === 'PENDING').length : 0,
+      value: orders.filter((o) => o.status === 'PENDING').length,
       icon: <People sx={{ fontSize: 40 }} />,
       color: '#ed6c02',
     },
     {
       title: t('admin.totalRevenue'),
-      value: `₹${Array.isArray(orders) ? orders.reduce((sum, o) => sum + o.total, 0).toLocaleString() : 0}`,
+      value: `₹${orders.reduce((sum, o) => sum + o.total, 0).toLocaleString()}`,
       icon: <CurrencyRupee sx={{ fontSize: 40 }} />,
       color: '#9c27b0',
     },
@@ -88,7 +90,7 @@ const AdminDashboard = () => {
         <Typography variant="h6" gutterBottom sx={{ color: '#ff9800', fontWeight: '600', mb: 2.5 }}>
           {t('admin.recentOrders')}
         </Typography>
-        {orders && orders.length > 0 ? (
+        {orders.length > 0 ? (
           <Box>
             {orders.slice(0, 5).map((order) => (
               <Box

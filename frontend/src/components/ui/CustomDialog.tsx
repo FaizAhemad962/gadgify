@@ -9,7 +9,7 @@ import {
 
 interface CustomDialogProps extends Omit<DialogProps, 'children'> {
   title: string
-  content: React.ReactNode
+  contentNode: React.ReactNode
   actions?: React.ReactNode
   isDarkTheme?: boolean
   onClose: () => void
@@ -17,7 +17,7 @@ interface CustomDialogProps extends Omit<DialogProps, 'children'> {
 
 export const CustomDialog = ({
   title,
-  content,
+  contentNode,
   actions,
   isDarkTheme = false,
   onClose,
@@ -54,7 +54,7 @@ export const CustomDialog = ({
         }}
       >
         <Box sx={{ mt: 2 }}>
-          {content}
+          {contentNode}
         </Box>
       </DialogContent>
       {actions && (

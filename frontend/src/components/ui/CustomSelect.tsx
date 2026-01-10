@@ -3,8 +3,8 @@ import {
   InputLabel,
   Select,
   MenuItem,
-  SelectProps,
-  FormControlProps,
+  type SelectProps,
+  type FormControlProps,
 } from '@mui/material'
 
 interface CustomSelectProps extends Omit<SelectProps, 'children'> {

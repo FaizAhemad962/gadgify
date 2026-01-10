@@ -12,28 +12,24 @@ import {
   Container,
   Button,
   Badge,
-  TextField,
-  InputAdornment,
 } from '@mui/material'
 import {
   Menu as MenuIcon,
   ShoppingCart,
   AccountCircle,
-  Search,
 } from '@mui/icons-material'
 import { useAuth } from '../../context/AuthContext'
 import { useCart } from '../../context/CartContext'
 import LanguageSelector from '../common/LanguageSelector'
 
 const Navbar = () => {
-  const { t, i18n } = useTranslation()
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const { isAuthenticated, isAdmin, logout, user } = useAuth()
   const { itemCount } = useCart()
 
   const [anchorElNav, setAnchorElNav] = useState<null | HTMLElement>(null)
   const [anchorElUser, setAnchorElUser] = useState<null | HTMLElement>(null)
-  const [searchQuery, setSearchQuery] = useState('')
 
   const handleOpenNavMenu = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorElNav(event.currentTarget)

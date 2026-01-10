@@ -7,8 +7,6 @@ import {
   TableContainer,
   Paper,
   type TableProps,
-  type TableHeadProps,
-  type TableBodyProps,
   type TableContainerProps,
 } from '@mui/material'
 

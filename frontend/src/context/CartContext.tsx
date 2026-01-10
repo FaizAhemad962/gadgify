@@ -40,14 +40,14 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       
       // Optimistically update to new value
       if (previousCart) {
-        const existingItem = previousCart.items.find(item => item.product_id === newItem.productId)
+        const existingItem = previousCart.items.find(item => item.productId === newItem.productId)
         
         if (existingItem) {
           // Item exists, update quantity
           queryClient.setQueryData(['cart'], {
             ...previousCart,
             items: previousCart.items.map(item =>
-              item.product_id === newItem.productId
+              item.productId === newItem.productId
                 ? { ...item, quantity: item.quantity + newItem.quantity }
                 : item
             ),
@@ -60,7 +60,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
               ...previousCart.items,
               {
                 id: `temp-${Date.now()}`,
-                product_id: newItem.productId,
+                productId: newItem.productId,
                 quantity: newItem.quantity,
                 product: {} as any, // Will be overwritten on success
               },
@@ -71,7 +71,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       
       return { previousCart }
     },
-    onError: (err, newItem, context: any) => {
+    onError: (_err, _newItem, context: any) => {
       // Revert on error
       if (context?.previousCart) {
         queryClient.setQueryData(['cart'], context.previousCart)
@@ -102,7 +102,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       
       return { previousCart }
     },
-    onError: (err, variables, context: any) => {
+    onError: (_err, _variables, context: any) => {
       if (context?.previousCart) {
         queryClient.setQueryData(['cart'], context.previousCart)
       }
@@ -128,7 +128,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       
       return { previousCart }
     },
-    onError: (err, variables, context: any) => {
+    onError: (_err, _variables, context: any) => {
       if (context?.previousCart) {
         queryClient.setQueryData(['cart'], context.previousCart)
       }

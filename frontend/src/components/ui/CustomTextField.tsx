@@ -1,6 +1,6 @@
 import { TextField, type TextFieldProps } from '@mui/material'
 
-interface CustomTextFieldProps extends TextFieldProps {
+type CustomTextFieldProps = TextFieldProps & {
   isDarkTheme?: boolean
 }
 

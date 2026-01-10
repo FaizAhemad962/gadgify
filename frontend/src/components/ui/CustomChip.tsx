@@ -1,4 +1,4 @@
-import { Chip, ChipProps } from '@mui/material'
+import { Chip, type ChipProps } from '@mui/material'
 
 interface CustomChipProps extends ChipProps {
   isDarkTheme?: boolean

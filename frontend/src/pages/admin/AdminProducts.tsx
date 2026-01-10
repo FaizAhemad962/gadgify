@@ -18,7 +18,7 @@ import {
   MenuItem
 } from '@mui/material'
 import { Add, Upload, Search } from '@mui/icons-material'
-import { useForm } from 'react-hook-form'
+import { useForm, type SubmitHandler, type Resolver } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { productsApi } from '../../api/products'
@@ -50,15 +50,30 @@ const productSchema = z.object({
   category: z.string().min(2, 'Category is required'),
   hsnNo: z.string().optional(),
   gstPercentage: z
-    .coerce
-    .number()
-    .min(0, 'GST must be at least 0')
-    .max(100, 'GST cannot exceed 100')
+    .string()
     .optional()
-    .nullable(),
+    .transform((val) => {
+      if (val === undefined || val === '') return undefined
+      const num = Number(val)
+      return Number.isNaN(num) ? undefined : num
+    })
+    .refine((val) => val === undefined || (val >= 0 && val <= 100), {
+      message: 'GST must be between 0 and 100',
+    }),
 })
 
-type ProductFormData = z.infer<typeof productSchema>
+type ProductFormData = {
+  name: string
+  description: string
+  price: number
+  stock: number
+  category: string
+  imageUrl?: string
+  videoUrl?: string
+  colors?: string
+  hsnNo?: string
+  gstPercentage?: number
+}
 
 const AdminProducts = () => {
   const { t } = useTranslation()
@@ -87,7 +102,7 @@ const AdminProducts = () => {
     reset,
     formState: { errors },
   } = useForm<ProductFormData>({
-    resolver: zodResolver(productSchema),
+    resolver: zodResolver(productSchema) as Resolver<ProductFormData>,
   })
 
   const createMutation = useMutation({
@@ -136,7 +151,7 @@ const AdminProducts = () => {
         colors: product.colors || '',
         category: product.category,
         hsnNo: product.hsnNo || '',
-        gstPercentage: product.gstPercentage || undefined,
+        gstPercentage: product.gstPercentage ?? undefined,
       })
       
       // Set image preview
@@ -243,7 +258,7 @@ const AdminProducts = () => {
     }
   }
 
-  const onSubmit = async (data: ProductFormData) => {
+  const onSubmit: SubmitHandler<ProductFormData> = async (data) => {
     let finalImageUrl = data.imageUrl || ''
     let finalVideoUrl = data.videoUrl || ''
 
@@ -291,9 +306,10 @@ const AdminProducts = () => {
       return
     }
 
-    const productData = { 
-      ...data, 
-      imageUrl: finalImageUrl, 
+    const productData = {
+      ...data,
+      gstPercentage: data.gstPercentage ?? undefined,
+      imageUrl: finalImageUrl,
       videoUrl: finalVideoUrl || undefined,
     }
 

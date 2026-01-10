@@ -1,21 +1,22 @@
-import { LoadingButton, LoadingButtonProps } from '@mui/lab'
+import { Button, CircularProgress, type ButtonProps } from '@mui/material'
 
-interface CustomLoadingButtonProps extends LoadingButtonProps {
+type CustomLoadingButtonProps = ButtonProps & {
   isLoading?: boolean
 }
 
-export const CustomLoadingButton = ({ 
-  isLoading = false, 
-  loading = isLoading,
-  disabled = false, 
-  children, 
-  ...props 
+export const CustomLoadingButton = ({
+  isLoading = false,
+  disabled = false,
+  children,
+  ...props
 }: CustomLoadingButtonProps) => {
+  const loading = isLoading
+
   return (
-    <LoadingButton
+    <Button
       {...props}
-      loading={loading}
       disabled={disabled || loading}
+      startIcon={loading ? <CircularProgress size={18} color="inherit" /> : props.startIcon}
       sx={{
         textTransform: 'none',
         fontWeight: '600',
@@ -24,6 +25,6 @@ export const CustomLoadingButton = ({
       }}
     >
       {children}
-    </LoadingButton>
+    </Button>
   )
 }
