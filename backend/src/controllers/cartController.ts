@@ -45,7 +45,7 @@ export const addToCart = async (
     const userId = req.user!.id
 
     // Check if product exists and has stock
-    const product = await prisma.product.findUnique({ where: { id: productId } })
+    const product = await prisma.product.findFirst({ where: { id: productId, deletedAt: null } as any })
     if (!product) {
       res.status(404).json({ message: 'Product not found' })
       return

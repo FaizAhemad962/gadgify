@@ -38,7 +38,7 @@ const addToCart = async (req, res, next) => {
         const { productId, quantity } = req.body;
         const userId = req.user.id;
         // Check if product exists and has stock
-        const product = await database_1.default.product.findUnique({ where: { id: productId } });
+        const product = await database_1.default.product.findFirst({ where: { id: productId, deletedAt: null } });
         if (!product) {
             res.status(404).json({ message: 'Product not found' });
             return;

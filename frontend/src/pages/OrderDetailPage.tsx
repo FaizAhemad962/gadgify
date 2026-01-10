@@ -15,6 +15,7 @@ import {
 } from '@mui/material'
 import { ArrowBack } from '@mui/icons-material'
 import { ordersApi } from '../api/orders'
+import { formatDate } from '../utils/dateFormatter'
 
 const OrderDetailPage = () => {
   const { id } = useParams<{ id: string }>()
@@ -67,16 +68,6 @@ const OrderDetailPage = () => {
     return statusMap[status] || status
   }
 
-  const formatDate = (date: string | Date) => {
-    const dateObj = new Date(date)
-    const monthIndex = dateObj.getMonth()
-    const monthNames = ['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december']
-    const year = dateObj.getFullYear()
-    const day = dateObj.getDate()
-    const monthName = t(`months.${monthNames[monthIndex]}`)
-    return `${day} ${monthName} ${year}`
-  }
-
   if (isLoading) {
     return (
       <Container sx={{ py: 4, display: 'flex', justifyContent: 'center' }}>
@@ -112,7 +103,7 @@ const OrderDetailPage = () => {
                   {t('orders.orderNumber')}{order.id.slice(0, 8)}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  {t('orders.date')}: {formatDate(order.createdAt)}
+                  {t('orders.date')}: {formatDate(order.createdAt, t)}
                 </Typography>
               </Box>
               <Box sx={{ textAlign: 'right', display: 'flex', flexDirection: 'column', gap: 1 }}>

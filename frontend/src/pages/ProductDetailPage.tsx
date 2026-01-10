@@ -143,14 +143,14 @@ const ProductDetailPage = () => {
             {product.description}
           </Typography>
 
-          <Box sx={{ display: 'flex', gap: 2 }}>
+          <Box sx={{ display: 'flex', gap: 2, flexDirection: { xs: 'column', sm: 'row' } }}>
             <Button
               variant="outlined"
               size="large"
               startIcon={<ShoppingCart />}
               onClick={handleAddToCart}
               disabled={product.stock === 0}
-              sx={{ flex: 1, fontWeight: 600 }}
+              sx={{ flex: 1, fontWeight: 600, minHeight: 48 }}
             >
               {t('products.addToCart')}
             </Button>
@@ -159,14 +159,14 @@ const ProductDetailPage = () => {
               size="large"
               onClick={handleBuyNow}
               disabled={product.stock === 0}
-              sx={{ flex: 1, fontWeight: 600, bgcolor: '#ff9800', '&:hover': { bgcolor: '#f57c00' } }}
+              sx={{ flex: 1, fontWeight: 600, minHeight: 48, bgcolor: '#ff9800', '&:hover': { bgcolor: '#f57c00' } }}
             >
               {t('products.buyNow')}
             </Button>
           </Box>
 
           {/* Product Info Sections */}
-          <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
             <Paper sx={{ p: 2.5, borderRadius: 2, border: '1px solid #eee' }}>
               <Typography variant="h6" sx={{ fontWeight: 600, color: 'text.primary', mb: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
                 ✓ {t('common.fastDelivery')}

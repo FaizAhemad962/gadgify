@@ -10,6 +10,15 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
+  optimizeDeps: {
+    include: [
+      '@mui/material',
+      '@mui/icons-material',
+      '@mui/x-data-grid',
+      '@emotion/react',
+      '@emotion/styled',
+    ],
+  },
   server: {
     port: 3000,
     proxy: {

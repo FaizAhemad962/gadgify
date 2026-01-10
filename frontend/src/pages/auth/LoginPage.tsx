@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { useNavigate, Link as RouterLink } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import i18n from 'i18next'
 import { useMutation } from '@tanstack/react-query'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -22,6 +21,7 @@ import {
 import { Visibility, VisibilityOff } from '@mui/icons-material'
 import { authApi } from '../../api/auth'
 import { useAuth } from '../../context/AuthContext'
+import LanguageSelector from '../../components/common/LanguageSelector'
 
 const loginSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -56,9 +56,13 @@ const LoginPage = () => {
     },
   })
 
-  const onSubmit = (data: LoginFormData) => {
+  const onSubmit = async (data: LoginFormData) => {
     setError('')
-    loginMutation.mutate(data)
+    try {
+      await loginMutation.mutateAsync(data)
+    } catch (err: any) {
+      // Error is handled in onError callback
+    }
   }
 
   return (
@@ -95,48 +99,7 @@ const LoginPage = () => {
       }}
     >
       {/* Language Selector */}
-      <Box
-        sx={{
-          position: 'absolute',
-          top: 20,
-          right: 20,
-          zIndex: 10,
-        }}
-      >
-        <TextField
-          select
-          size="small"
-          defaultValue={i18n.language}
-          onChange={(e) => i18n.changeLanguage(e.target.value)}
-          sx={{
-            width: 140,
-            '& .MuiOutlinedInput-root': {
-              backgroundColor: 'rgba(255, 255, 255, 0.95)',
-              transition: 'all 0.3s ease',
-              '&:hover': {
-                backgroundColor: '#ffffff',
-                borderColor: '#ff9800',
-              },
-              '&.Mui-focused': {
-                backgroundColor: '#ffffff',
-                borderColor: '#ff9800',
-                boxShadow: '0 0 0 3px rgba(255, 152, 0, 0.1)',
-              },
-            },
-            '& .MuiOutlinedInput-notchedOutline': {
-              borderColor: '#e0e0e0',
-            },
-            '& .MuiOutlinedInput-input': {
-              color: '#1976d2',
-              fontWeight: 600,
-            },
-          }}
-        >
-          <MenuItem value="en">🇬🇧 English</MenuItem>
-          <MenuItem value="mr">🇮🇳 Marathi</MenuItem>
-          <MenuItem value="hi">🇮🇳 हिंदी</MenuItem>
-        </TextField>
-      </Box>
+      <LanguageSelector variant="auth" />
 
       <Container maxWidth="sm" sx={{ position: 'relative', zIndex: 1 }}>
         <Paper
@@ -202,7 +165,10 @@ const LoginPage = () => {
             </Alert>
           )}
 
-          <form onSubmit={handleSubmit(onSubmit)}>
+          <form onSubmit={(e) => {
+            e.preventDefault()
+            handleSubmit(onSubmit)(e)
+          }}>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
               <TextField
                 fullWidth

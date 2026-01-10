@@ -3,7 +3,11 @@ import path from 'path'
 import fs from 'fs'
 
 // Ensure uploads directory exists
-const uploadsDir = path.join(__dirname, '../../uploads')
+// Use Render's persistent disk in production, local path in development
+const uploadsDir = process.env.NODE_ENV === 'production' 
+  ? '/var/data/uploads' 
+  : path.join(__dirname, '../../uploads')
+
 if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir, { recursive: true })
 }
@@ -15,7 +19,8 @@ const storage = multer.diskStorage({
   },
   filename: (req, file, cb) => {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9)
-    cb(null, 'product-' + uniqueSuffix + path.extname(file.originalname))
+    const prefix = file.fieldname === 'image' ? 'profile-' : 'product-'
+    cb(null, prefix + uniqueSuffix + path.extname(file.originalname))
   },
 })
 
@@ -48,7 +53,7 @@ const videoFileFilter = (req: any, file: Express.Multer.File, cb: multer.FileFil
 export const upload = multer({
   storage,
   limits: {
-    fileSize: 500 * 1024, // 500KB limit for images
+    fileSize: 5 * 1024 * 1024, // 5MB limit for images (profile + product)
   },
   fileFilter: imageFileFilter,
 })

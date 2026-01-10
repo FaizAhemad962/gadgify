@@ -14,7 +14,7 @@ import { Delete, Star } from '@mui/icons-material'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { ratingsApi, type Rating as RatingType } from '../../api/ratings'
 import { useAuth } from '../../context/AuthContext'
-import { format } from 'date-fns'
+import { formatDate } from '../../utils/dateFormatter'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 
@@ -99,7 +99,7 @@ export const RatingsList: React.FC<RatingsListProps> = ({ productId }) => {
                       {rating.user.name}
                     </Typography>
                     <Typography variant="caption" color="text.secondary">
-                      {format(new Date(rating.createdAt), 'MMM dd, yyyy')}
+                      {formatDate(rating.createdAt, t)}
                     </Typography>
                   </Box>
 

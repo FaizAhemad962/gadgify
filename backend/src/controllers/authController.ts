@@ -97,6 +97,7 @@ export const signup = async (
         city: true,
         address: true,
         pincode: true,
+        profilePhoto: true,
         createdAt: true,
       },
     })
@@ -182,6 +183,7 @@ export const getProfile = async (
         city: true,
         address: true,
         pincode: true,
+        profilePhoto: true,
         createdAt: true,
       },
     })
@@ -192,6 +194,146 @@ export const getProfile = async (
     }
 
     res.json(user)
+  } catch (error) {
+    next(error)
+  }
+}
+
+export const updateProfile = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const { name, phone, city, address, pincode } = req.body
+    const userId = req.user!.id
+
+    // Update user profile
+    const updatedUser = await prisma.user.update({
+      where: { id: userId },
+      data: {
+        name,
+        phone,
+        city,
+        address,
+        pincode,
+      },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        phone: true,
+        role: true,
+        state: true,
+        city: true,
+        address: true,
+        pincode: true,
+        profilePhoto: true,
+        createdAt: true,
+      },
+    })
+
+    logger.info(`User profile updated: ${updatedUser.email}`)
+
+    res.json({ message: 'Profile updated successfully', user: updatedUser })
+  } catch (error) {
+    next(error)
+  }
+}
+
+export const updateProfilePhoto = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const userId = req.user!.id
+    
+    if (!req.file) {
+      res.status(400).json({ message: 'No image file provided' })
+      return
+    }
+
+    // Get file URL (relative path for serving via static middleware)
+    const profilePhotoUrl = `/uploads/${req.file.filename}`
+
+    // Update user profile photo
+    const updatedUser = await prisma.user.update({
+      where: { id: userId },
+      data: {
+        profilePhoto: profilePhotoUrl,
+      },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        phone: true,
+        role: true,
+        state: true,
+        city: true,
+        address: true,
+        pincode: true,
+        profilePhoto: true,
+        createdAt: true,
+      },
+    })
+
+    logger.info(`User profile photo updated: ${updatedUser.email}`)
+
+    res.json({ message: 'Profile photo updated successfully', user: updatedUser })
+  } catch (error) {
+    next(error)
+  }
+}
+
+export const changePassword = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const { currentPassword, newPassword } = req.body
+    const userId = req.user!.id
+
+    // Get user with password
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+    })
+
+    if (!user) {
+      res.status(404).json({ message: 'User not found' })
+      return
+    }
+
+    // Verify current password
+    const isValidPassword = await comparePassword(currentPassword, user.password)
+    if (!isValidPassword) {
+      res.status(401).json({ message: 'Current password is incorrect' })
+      return
+    }
+
+    // Validate new password strength
+    const passwordValidation = validatePasswordStrength(newPassword)
+    if (!passwordValidation.valid) {
+      res.status(400).json({
+        message: 'New password does not meet security requirements',
+        errors: passwordValidation.errors,
+      })
+      return
+    }
+
+    // Hash new password
+    const hashedPassword = await hashPassword(newPassword)
+
+    // Update password
+    await prisma.user.update({
+      where: { id: userId },
+      data: { password: hashedPassword },
+    })
+
+    logger.info(`Password changed for user: ${user.email}`)
+
+    res.json({ message: 'Password changed successfully' })
   } catch (error) {
     next(error)
   }

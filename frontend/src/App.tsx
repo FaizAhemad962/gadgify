@@ -6,6 +6,7 @@ import { theme } from './theme/theme'
 import { AuthProvider } from './context/AuthContext'
 import { CartProvider } from './context/CartContext'
 import AppRoutes from './routes/AppRoutes'
+import ScrollToTop from './components/ScrollToTop'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -23,6 +24,7 @@ function App() {
       <ThemeProvider theme={theme}>
         <CssBaseline />
         <BrowserRouter>
+          <ScrollToTop />
           <AuthProvider>
             <CartProvider>
               <AppRoutes />

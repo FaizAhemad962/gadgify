@@ -48,7 +48,7 @@ const CheckoutPage = () => {
       phone: user?.phone || '',
       address: user?.address || '',
       city: user?.city || '',
-      state: user?.state || 'Maharashtra',
+      state: user?.state || t('states.maharashtra'),
       pincode: user?.pincode || '',
     },
   })

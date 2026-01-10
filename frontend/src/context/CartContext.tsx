@@ -28,26 +28,111 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     staleTime: 0,
   })
 
-  // Add to cart mutation
+  // Add to cart mutation with optimistic updates
   const addMutation = useMutation({
     mutationFn: cartApi.addItem,
+    onMutate: async (newItem) => {
+      // Cancel pending queries
+      await queryClient.cancelQueries({ queryKey: ['cart'] })
+      
+      // Snapshot the previous value
+      const previousCart = queryClient.getQueryData<Cart>(['cart'])
+      
+      // Optimistically update to new value
+      if (previousCart) {
+        const existingItem = previousCart.items.find(item => item.product_id === newItem.productId)
+        
+        if (existingItem) {
+          // Item exists, update quantity
+          queryClient.setQueryData(['cart'], {
+            ...previousCart,
+            items: previousCart.items.map(item =>
+              item.product_id === newItem.productId
+                ? { ...item, quantity: item.quantity + newItem.quantity }
+                : item
+            ),
+          })
+        } else {
+          // New item, add to cart (using a temporary ID)
+          queryClient.setQueryData(['cart'], {
+            ...previousCart,
+            items: [
+              ...previousCart.items,
+              {
+                id: `temp-${Date.now()}`,
+                product_id: newItem.productId,
+                quantity: newItem.quantity,
+                product: {} as any, // Will be overwritten on success
+              },
+            ],
+          })
+        }
+      }
+      
+      return { previousCart }
+    },
+    onError: (err, newItem, context: any) => {
+      // Revert on error
+      if (context?.previousCart) {
+        queryClient.setQueryData(['cart'], context.previousCart)
+      }
+    },
     onSuccess: () => {
+      // Refetch to sync with server
       queryClient.invalidateQueries({ queryKey: ['cart'] })
     },
   })
 
-  // Update item mutation
+  // Update item mutation with optimistic updates
   const updateMutation = useMutation({
     mutationFn: ({ itemId, quantity }: { itemId: string; quantity: number }) =>
       cartApi.updateItem(itemId, { quantity }),
+    onMutate: async ({ itemId, quantity }) => {
+      await queryClient.cancelQueries({ queryKey: ['cart'] })
+      const previousCart = queryClient.getQueryData<Cart>(['cart'])
+      
+      if (previousCart) {
+        queryClient.setQueryData(['cart'], {
+          ...previousCart,
+          items: previousCart.items.map(item =>
+            item.id === itemId ? { ...item, quantity } : item
+          ),
+        })
+      }
+      
+      return { previousCart }
+    },
+    onError: (err, variables, context: any) => {
+      if (context?.previousCart) {
+        queryClient.setQueryData(['cart'], context.previousCart)
+      }
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['cart'] })
     },
   })
 
-  // Remove item mutation
+  // Remove item mutation with optimistic updates
   const removeMutation = useMutation({
     mutationFn: cartApi.removeItem,
+    onMutate: async (itemId) => {
+      await queryClient.cancelQueries({ queryKey: ['cart'] })
+      const previousCart = queryClient.getQueryData<Cart>(['cart'])
+      
+      if (previousCart) {
+        queryClient.setQueryData(['cart'], {
+          ...previousCart,
+          items: previousCart.items.filter(item => item.id !== itemId),
+        })
+      }
+      
+      return { previousCart }
+    },
+    onError: (err, variables, context: any) => {
+      if (context?.previousCart) {
+        queryClient.setQueryData(['cart'], context.previousCart)
+      }
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['cart'] })
     },

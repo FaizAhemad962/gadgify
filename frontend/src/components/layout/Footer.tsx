@@ -155,7 +155,7 @@ const Footer = () => {
             <Typography variant="h6" gutterBottom fontWeight="800" sx={{ color: '#fff', mb: 3, fontSize: '1.1rem' }}>
               🌐 {t('footer.connect')}
             </Typography>
-            <Box sx={{ display: 'flex', gap: 2, mb: 4 }}>
+            <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
               {/* Facebook */}
               <IconButton
                 href="#"

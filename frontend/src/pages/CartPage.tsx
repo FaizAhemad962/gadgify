@@ -19,7 +19,10 @@ const CartPage = () => {
 
   const calculateSubtotal = () => {
     if (!cart?.items) return 0
-    return cart.items.reduce((sum, item) => sum + item.product.price * item.quantity, 0)
+    return cart.items.reduce((sum, item) => {
+      const price = item.product?.price || 0
+      return sum + price * item.quantity
+    }, 0)
   }
 
   const handleQuantityChange = async (itemId: string, newQuantity: number) => {
@@ -120,7 +123,7 @@ const CartPage = () => {
                       {item.product.description}
                     </Typography>
                     <Typography variant="h6" color="primary" sx={{ fontWeight: 700 }}>
-                      ₹{item.product.price.toLocaleString()}
+                      ₹{(item.product.price || 0).toLocaleString()}
                     </Typography>
                   </Box>
 
@@ -148,7 +151,7 @@ const CartPage = () => {
                       </IconButton>
                     </Box>
                     <Typography variant="body2" sx={{ fontWeight: 600, color: 'text.secondary' }}>
-                      ₹{(item.product.price * item.quantity).toLocaleString()}
+                      ₹{((item.product.price || 0) * item.quantity).toLocaleString()}
                     </Typography>
                     <IconButton
                       color="error"
@@ -231,7 +234,7 @@ const CartPage = () => {
             {/* Trust Signals */}
             <Box sx={{ mt: 3.5, pt: 2.5, borderTop: '1px solid #eee' }}>
               <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600, textTransform: 'uppercase', fontSize: '0.7rem', letterSpacing: '0.5px', display: 'block', mb: 2 }}>
-                Why Shop With Us
+                {t('common.whyShopWithUs')}
               </Typography>
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>

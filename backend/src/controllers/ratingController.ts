@@ -53,8 +53,8 @@ export const createRating = async (
     }
 
     // Check if product exists
-    const product = await prisma.product.findUnique({
-      where: { id: productId },
+    const product = await prisma.product.findFirst({
+      where: { id: productId, deletedAt: null } as any,
     })
 
     if (!product) {

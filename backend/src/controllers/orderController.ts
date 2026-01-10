@@ -29,7 +29,7 @@ export const createOrder = async (
     // Fetch all products
     const productIds = items.map((item: any) => item.productId)
     const products = await prisma.product.findMany({
-      where: { id: { in: productIds } }
+      where: { id: { in: productIds }, deletedAt: null } as any,
     })
 
     // Create a map for quick lookup
@@ -318,30 +318,56 @@ export const getAllOrders = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const orders = await prisma.order.findMany({
-      include: {
-        items: {
-          include: { product: true },
-        },
-        user: {
-          select: {
-            id: true,
-            email: true,
-            name: true,
-            phone: true,
-            role: true,
-            state: true,
-            city: true,
-            address: true,
-            pincode: true,
-            createdAt: true,
+    const page = parseInt(req.query.page as string) || 1
+    const limit = parseInt(req.query.limit as string) || 20
+    const search = (req.query.search as string) || ''
+
+    const skip = (page - 1) * limit
+
+    // Build search filter
+    const searchFilter = search
+      ? {
+          OR: [
+            { id: { contains: search, mode: 'insensitive' as const } },
+            { user: { name: { contains: search, mode: 'insensitive' as const } } },
+            { user: { email: { contains: search, mode: 'insensitive' as const } } },
+          ],
+        }
+      : {}
+
+    const [orders, total] = await Promise.all([
+      prisma.order.findMany({
+        where: searchFilter,
+        include: {
+          items: {
+            include: { product: true },
+          },
+          user: {
+            select: {
+              id: true,
+              email: true,
+              name: true,
+              phone: true,
+              role: true,
+              state: true,
+              city: true,
+              address: true,
+              pincode: true,
+              createdAt: true,
+            },
           },
         },
-      },
-      orderBy: { createdAt: 'desc' },
-    })
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: limit,
+      }),
+      prisma.order.count({ where: searchFilter }),
+    ])
 
-    res.json(orders.map(transformOrder))
+    res.json({
+      orders: orders.map(transformOrder),
+      total,
+    })
   } catch (error) {
     next(error)
   }

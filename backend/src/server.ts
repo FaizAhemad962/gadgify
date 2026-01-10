@@ -7,6 +7,7 @@ import { sanitizeInput, sanitizeStrings } from './middlewares/sanitize'
 import { logSecurityEvents } from './middlewares/securityLogger'
 import { apiLimiter } from './middlewares/rateLimiter'
 import logger from './utils/logger'
+import { initializeConnectionPool } from './utils/connectionPool'
 import authRoutes from './routes/authRoutes'
 import productRoutes from './routes/productRoutes'
 import cartRoutes from './routes/cartRoutes'
@@ -14,6 +15,11 @@ import orderRoutes from './routes/orderRoutes'
 import adminRoutes from './routes/adminRoutes'
 
 const app: Application = express()
+
+// Upload directory configuration (Render persistent disk in production)
+const uploadDir = process.env.NODE_ENV === 'production' 
+  ? '/var/data/uploads' 
+  : './uploads'
 
 // Trust proxy (for rate limiting and logging)
 app.set('trust proxy', 1)
@@ -68,18 +74,27 @@ app.use('/api/', apiLimiter)
 
 // Serve uploaded files with proper path resolution
 const path = require('path')
-app.use('/uploads', express.static(path.join(__dirname, '../uploads'), {
-  maxAge: '7d',
-  immutable: true,
-  setHeaders: (res, filePath) => {
-    if (filePath.match(/\.(jpg|jpeg|png|gif|webp)$/i)) {
-      res.setHeader('Cache-Control', 'public, max-age=604800, immutable')
+app.use(
+  '/uploads',
+  express.static(uploadDir, {
+    maxAge: '7d',
+    immutable: true,
+    setHeaders: (res, filePath) => {
+      if (filePath.match(/\.(jpg|jpeg|png|gif|webp)$/i)) {
+        res.setHeader(
+          'Cache-Control',
+          'public, max-age=604800, immutable'
+        )
+      }
+      if (filePath.match(/\.(mp4|avi|mov|wmv|flv|webm|mkv)$/i)) {
+        res.setHeader(
+          'Cache-Control',
+          'public, max-age=2592000, immutable'
+        )
+      }
     }
-    if (filePath.match(/\.(mp4|avi|mov|wmv|flv|webm|mkv)$/i)) {
-      res.setHeader('Cache-Control', 'public, max-age=2592000, immutable')
-    }
-  }
-}))
+  })
+)
 
 // Health check
 app.get('/health', (req: Request, res: Response) => {
@@ -103,14 +118,26 @@ app.use(errorHandler)
 
 const PORT = config.port
 
-app.listen(PORT, () => {
-  logger.info(`🚀 Server running on port ${PORT}`)
-  logger.info(`📝 Environment: ${config.nodeEnv}`)
-  logger.info(`🌐 Frontend URL: ${config.frontendUrl}`)
-  logger.info(`🔒 Security: Enabled`)
-  console.log(`🚀 Server running on port ${PORT}`)
-  console.log(`📝 Environment: ${config.nodeEnv}`)
-  console.log(`🌐 Frontend URL: ${config.frontendUrl}`)
-})
+const startServer = async () => {
+  try {
+    // Initialize database connection pool
+    await initializeConnectionPool()
+
+    app.listen(PORT, () => {
+      logger.info(`🚀 Server running on port ${PORT}`)
+      logger.info(`📝 Environment: ${config.nodeEnv}`)
+      logger.info(`🌐 Frontend URL: ${config.frontendUrl}`)
+      logger.info(`🔒 Security: Enabled`)
+      console.log(`🚀 Server running on port ${PORT}`)
+      console.log(`📝 Environment: ${config.nodeEnv}`)
+      console.log(`🌐 Frontend URL: ${config.frontendUrl}`)
+    })
+  } catch (error) {
+    logger.error('Failed to start server:', error)
+    process.exit(1)
+  }
+}
+
+startServer()
 
 export default app

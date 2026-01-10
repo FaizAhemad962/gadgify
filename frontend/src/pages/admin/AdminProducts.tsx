@@ -4,31 +4,25 @@ import { useTranslation } from 'react-i18next'
 import {
   Box,
   Button,
-  Paper,
   Typography,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  IconButton,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
   TextField,
+  InputAdornment,
   Alert,
   FormControl,
   InputLabel,
   Select,
   MenuItem
 } from '@mui/material'
-import { Edit, Delete, Add, Upload } from '@mui/icons-material'
+import { Add, Upload, Search } from '@mui/icons-material'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { productsApi } from '../../api/products'
+import { AdminProductsDataGrid } from '../../components/admin/AdminProductsDataGrid'
 import type { Product } from '../../types'
 
 const CATEGORIES = [
@@ -55,8 +49,13 @@ const productSchema = z.object({
   colors: z.string().optional(),
   category: z.string().min(2, 'Category is required'),
   hsnNo: z.string().optional(),
-  gstPercentage: z.number().min(0).max(100).optional(),
-  gstPrice: z.number().min(0).optional(),
+  gstPercentage: z
+    .coerce
+    .number()
+    .min(0, 'GST must be at least 0')
+    .max(100, 'GST cannot exceed 100')
+    .optional()
+    .nullable(),
 })
 
 type ProductFormData = z.infer<typeof productSchema>
@@ -73,10 +72,13 @@ const AdminProducts = () => {
   const [videoPreview, setVideoPreview] = useState('')
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [_, setSelectedCategory] = useState('')
+  const [page, setPage] = useState(0)
+  const [rowsPerPage, setRowsPerPage] = useState(25)
+  const [searchQuery, setSearchQuery] = useState('')
 
-  const { data: products } = useQuery({
-    queryKey: ['products'],
-    queryFn: productsApi.getAll,
+  const { data: productsData, isLoading } = useQuery({
+    queryKey: ['admin-products', page, rowsPerPage, searchQuery],
+    queryFn: () => productsApi.getAllProducts(page + 1, rowsPerPage, searchQuery),
   })
 
   const {
@@ -94,8 +96,9 @@ const AdminProducts = () => {
       queryClient.invalidateQueries({ queryKey: ['products'] })
       handleClose()
     },
-    onError: (error: any) => {
-      setError(error.response?.data?.message || t('admin.payloadError'))
+    onError: (error: Error) => {
+      const errorMessage = error instanceof Error ? error.message : t('admin.payloadError')
+      setError(errorMessage)
     },
   })
 
@@ -106,8 +109,9 @@ const AdminProducts = () => {
       queryClient.invalidateQueries({ queryKey: ['products'] })
       handleClose()
     },
-    onError: (error: any) => {
-      setError(error.response?.data?.message || t('admin.payloadError'))
+    onError: (error: Error) => {
+      const errorMessage = error instanceof Error ? error.message : t('admin.payloadError')
+      setError(errorMessage)
     },
   })
 
@@ -133,7 +137,6 @@ const AdminProducts = () => {
         category: product.category,
         hsnNo: product.hsnNo || '',
         gstPercentage: product.gstPercentage || undefined,
-        gstPrice: product.gstPrice || undefined,
       })
       
       // Set image preview
@@ -162,7 +165,6 @@ const AdminProducts = () => {
         category: '',
         hsnNo: '',
         gstPercentage: undefined,
-        gstPrice: undefined,
       })
       setImagePreview('')
       setVideoPreview('')
@@ -308,6 +310,15 @@ const AdminProducts = () => {
     }
   }
 
+  const handlePageChange = (newPage: number) => {
+    setPage(newPage)
+  }
+
+  const handleRowsPerPageChange = (rowsPerPage: number) => {
+    setRowsPerPage(rowsPerPage)
+    setPage(0)
+  }
+
   return (
     <Box>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
@@ -338,96 +349,73 @@ const AdminProducts = () => {
         </Button>
       </Box>
 
-      <TableContainer component={Paper} sx={{ bgcolor: '#242628', color: '#a0a0a0', border: '1px solid #3a3a3a', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)' }}>
-        <Table>
-          <TableHead>
-            <TableRow sx={{ bgcolor: '#1976d2', borderBottom: '2px solid #3a3a3a' }}>
-              <TableCell sx={{ color: '#fff', fontWeight: '700' }}>{t('admin.image')}</TableCell>
-              <TableCell sx={{ color: '#fff', fontWeight: '700' }}>{t('admin.name')}</TableCell>
-              <TableCell sx={{ color: '#fff', fontWeight: '700' }}>{t('admin.category')}</TableCell>
-              <TableCell sx={{ color: '#fff', fontWeight: '700' }}>{t('admin.price')}</TableCell>
-              <TableCell sx={{ color: '#fff', fontWeight: '700' }}>{t('admin.stock')}</TableCell>
-              <TableCell align="right" sx={{ color: '#fff', fontWeight: '700' }}>{t('admin.actions')}</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {products?.map((product) => (
-              <TableRow key={product.id} sx={{ 
-                borderBottom: '1px solid #3a3a3a',
-                bgcolor: '#1e1e1e',
-                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                '&:hover': {
-                  bgcolor: '#2d3339',
-                  boxShadow: 'inset 0 0 0 1px rgba(25, 118, 210, 0.2)',
-                }
-              }}>
-                <TableCell sx={{ py: 1.5 }}>
-                  <img
-                    src={product.imageUrl || 'https://via.placeholder.com/50'}
-                    alt={product.name}
-                    style={{ width: 50, height: 50, objectFit: 'cover', borderRadius: 6 }}
-                    onError={(e) => {
-                      console.error('Image load error:', product.imageUrl)
-                      e.currentTarget.src = 'https://via.placeholder.com/50'
-                    }}
-                  />
-                </TableCell>
-                <TableCell sx={{ color: '#e0e0e0', fontWeight: '500' }}>{product.name}</TableCell>
-                <TableCell sx={{ color: '#b0b0b0' }}>{t(`categories.${product.category}`)}</TableCell>
-                <TableCell sx={{ color: '#ff9800', fontWeight: '700' }}>₹{product.price.toLocaleString()}</TableCell>
-                <TableCell sx={{ color: '#b0b0b0', fontWeight: '500' }}>{product.stock}</TableCell>
-                <TableCell align="right" sx={{ py: 1.5 }}>
-                  <IconButton
-                    color="primary"
-                    onClick={() => handleOpen(product)}
-                    sx={{
-                      color: '#1976d2',
-                      transition: 'all 0.2s',
-                      '&:hover': {
-                        bgcolor: 'rgba(25, 118, 210, 0.1)',
-                        color: '#42a5f5',
-                      }
-                    }}
-                  >
-                    <Edit />
-                  </IconButton>
-                  <IconButton
-                    color="error"
-                    onClick={() => handleDelete(product.id)}
-                    sx={{
-                      color: '#ef5350',
-                      transition: 'all 0.2s',
-                      '&:hover': {
-                        bgcolor: 'rgba(239, 83, 80, 0.1)',
-                        color: '#f44336',
-                      }
-                    }}
-                  >
-                    <Delete />
-                  </IconButton>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
+      {/* Search Bar */}
+      <Box sx={{ mb: 3 }}>
+        <TextField
+          placeholder={t('admin.searchProducts')}
+          value={searchQuery}
+          onChange={(e) => {
+            setSearchQuery(e.target.value)
+            setPage(0) // Reset to first page on search
+          }}
+          variant="outlined"
+          size="small"
+          InputProps={{
+            endAdornment: (
+              <InputAdornment position="end">
+                <Search sx={{ color: '#666' }} />
+              </InputAdornment>
+            ),
+          }}
+          sx={{
+            width: 300,
+            backgroundColor: '#fff',
+            borderRadius: 1.5,
+            '& .MuiOutlinedInput-root': {
+              color: '#333',
+              '& fieldset': {
+                borderColor: 'rgba(0, 0, 0, 0.1)',
+              },
+              '&:hover fieldset': {
+                borderColor: '#1976d2',
+              },
+              '&.Mui-focused fieldset': {
+                borderColor: '#1976d2',
+                borderWidth: 2,
+              },
+            },
+          }}
+        />
+      </Box>
+
+      <AdminProductsDataGrid
+        products={productsData?.products || []}
+        onEdit={handleOpen}
+        onDelete={handleDelete}
+        page={page}
+        rowsPerPage={rowsPerPage}
+        total={productsData?.total || 0}
+        onPageChange={handlePageChange}
+        onRowsPerPageChange={handleRowsPerPageChange}
+        isLoading={isLoading}
+      />
 
       {/* Add/Edit Dialog */}
       <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth
         PaperProps={{
           sx: {
-            bgcolor: '#242628',
+            bgcolor: '#ffffff',
             backgroundImage: 'none',
-            border: '1px solid #3a3a3a',
+            border: '1px solid #e0e0e0',
             borderRadius: '12px',
           }
         }}
       >
         <form onSubmit={handleSubmit(onSubmit)}>
-          <DialogTitle sx={{ color: '#ff9800', fontWeight: '600', borderBottom: '1px solid #3a3a3a', fontSize: '1.3rem' }}>
+          <DialogTitle sx={{ color: '#1976d2', fontWeight: '600', borderBottom: '1px solid #e0e0e0', fontSize: '1.3rem' }}>
             {editingProduct ? t('admin.editProduct') : t('admin.addNewProduct')}
           </DialogTitle>
-          <DialogContent sx={{ bgcolor: '#242628', backgroundImage: 'none' }}>
+          <DialogContent sx={{ bgcolor: '#ffffff', backgroundImage: 'none' }}>
             {error && (
               <Alert severity="error" sx={{ mb: 2, bgcolor: 'rgba(244, 67, 54, 0.1)', color: '#ef5350', border: '1px solid rgba(244, 67, 54, 0.3)' }} onClose={() => setError('')}>
                 {error}
@@ -441,17 +429,7 @@ const AdminProducts = () => {
                   {...register('name')}
                   error={!!errors.name}
                   helperText={errors.name?.message}
-                  sx={{
-                    '& .MuiOutlinedInput-root': {
-                      color: '#b0b0b0',
-                      bgcolor: '#242628',
-                      '& fieldset': { borderColor: '#3a3a3a' },
-                      '&:hover fieldset': { borderColor: '#1976d2' },
-                      '&.Mui-focused fieldset': { borderColor: '#1976d2' },
-                    },
-                    '& .MuiInputBase-input::placeholder': { color: '#707070', opacity: 1 },
-                    '& .MuiInputLabel-root': { color: '#b0b0b0', '&.Mui-focused': { color: '#1976d2' } },
-                  }}
+                 
                 />
               </Box>
               <Box>
@@ -463,17 +441,7 @@ const AdminProducts = () => {
                   {...register('description')}
                   error={!!errors.description}
                   helperText={errors.description?.message}
-                  sx={{
-                    '& .MuiOutlinedInput-root': {
-                      color: '#b0b0b0',
-                      bgcolor: '#242628',
-                      '& fieldset': { borderColor: '#3a3a3a' },
-                      '&:hover fieldset': { borderColor: '#1976d2' },
-                      '&.Mui-focused fieldset': { borderColor: '#1976d2' },
-                    },
-                    '& .MuiInputBase-input::placeholder': { color: '#707070', opacity: 1 },
-                    '& .MuiInputLabel-root': { color: '#b0b0b0', '&.Mui-focused': { color: '#1976d2' } },
-                  }}
+                  
                 />
               </Box>
               <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 2 }}>
@@ -485,16 +453,7 @@ const AdminProducts = () => {
                     {...register('price', { valueAsNumber: true })}
                     error={!!errors.price}
                     helperText={errors.price?.message}
-                    sx={{
-                      '& .MuiOutlinedInput-root': {
-                        color: '#b0b0b0',
-                        bgcolor: '#242628',
-                        '& fieldset': { borderColor: '#3a3a3a' },
-                        '&:hover fieldset': { borderColor: '#1976d2' },
-                        '&.Mui-focused fieldset': { borderColor: '#1976d2' },
-                      },
-                      '& .MuiInputLabel-root': { color: '#b0b0b0', '&.Mui-focused': { color: '#1976d2' } },
-                    }}
+                   
                   />
                 </Box>
                 <Box sx={{ flex: 1 }}>
@@ -505,16 +464,7 @@ const AdminProducts = () => {
                     {...register('stock', { valueAsNumber: true })}
                     error={!!errors.stock}
                     helperText={errors.stock?.message}
-                    sx={{
-                      '& .MuiOutlinedInput-root': {
-                        color: '#b0b0b0',
-                        bgcolor: '#242628',
-                        '& fieldset': { borderColor: '#3a3a3a' },
-                        '&:hover fieldset': { borderColor: '#1976d2' },
-                        '&.Mui-focused fieldset': { borderColor: '#1976d2' },
-                      },
-                      '& .MuiInputLabel-root': { color: '#b0b0b0', '&.Mui-focused': { color: '#1976d2' } },
-                    }}
+                   
                   />
                 </Box>
               </Box>
@@ -529,14 +479,7 @@ const AdminProducts = () => {
                     onChange={(e) => {
                       setSelectedCategory(e.target.value)
                     }}
-                    sx={{
-                      color: '#b0b0b0',
-                      bgcolor: '#242628',
-                      '& .MuiOutlinedInput-notchedOutline': { borderColor: '#3a3a3a' },
-                      '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#1976d2' },
-                      '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#1976d2' },
-                      '.MuiSvgIcon-root': { color: '#b0b0b0' },
-                    }}
+                  
                     MenuProps={{
                       PaperProps: {
                         sx: {
@@ -561,7 +504,7 @@ const AdminProducts = () => {
                 </FormControl>
               </Box>
 
-              {/* HSN No, GST %, and GST Price Section */}
+              {/* HSN No and GST % Section with Calculated Fields */}
               <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 2 }}>
                 <Box sx={{ flex: 1 }}>
                   <TextField
@@ -571,16 +514,7 @@ const AdminProducts = () => {
                     {...register('hsnNo')}
                     error={!!errors.hsnNo}
                     helperText={errors.hsnNo?.message}
-                    sx={{
-                      '& .MuiOutlinedInput-root': {
-                        color: '#b0b0b0',
-                        bgcolor: '#242628',
-                        '& fieldset': { borderColor: '#3a3a3a' },
-                        '&:hover fieldset': { borderColor: '#1976d2' },
-                        '&.Mui-focused fieldset': { borderColor: '#1976d2' },
-                      },
-                      '& .MuiInputLabel-root': { color: '#b0b0b0', '&.Mui-focused': { color: '#1976d2' } },
-                    }}
+                    
                   />
                 </Box>
                 <Box sx={{ flex: 1 }}>
@@ -589,44 +523,36 @@ const AdminProducts = () => {
                     label="GST %"
                     type="number"
                     inputProps={{ step: '0.01', min: '0', max: '100' }}
-                    {...register('gstPercentage', { valueAsNumber: true })}
+                    {...register('gstPercentage')}
                     error={!!errors.gstPercentage}
-                    helperText={errors.gstPercentage?.message || '(0-100)'}
-                    sx={{
-                      '& .MuiOutlinedInput-root': {
-                        color: '#b0b0b0',
-                        bgcolor: '#242628',
-                        '& fieldset': { borderColor: '#3a3a3a' },
-                        '&:hover fieldset': { borderColor: '#1976d2' },
-                        '&.Mui-focused fieldset': { borderColor: '#1976d2' },
-                      },
-                      '& .MuiInputLabel-root': { color: '#b0b0b0', '&.Mui-focused': { color: '#1976d2' } },
-                      '& .MuiFormHelperText-root': { color: '#707070' },
-                    }}
-                  />
-                </Box>
-                <Box sx={{ flex: 1 }}>
-                  <TextField
-                    fullWidth
-                    label="GST Price (₹)"
-                    type="number"
-                    inputProps={{ step: '0.01', min: '0' }}
-                    {...register('gstPrice', { valueAsNumber: true })}
-                    error={!!errors.gstPrice}
-                    helperText={errors.gstPrice?.message}
-                    sx={{
-                      '& .MuiOutlinedInput-root': {
-                        color: '#b0b0b0',
-                        bgcolor: '#242628',
-                        '& fieldset': { borderColor: '#3a3a3a' },
-                        '&:hover fieldset': { borderColor: '#1976d2' },
-                        '&.Mui-focused fieldset': { borderColor: '#1976d2' },
-                      },
-                      '& .MuiInputLabel-root': { color: '#b0b0b0', '&.Mui-focused': { color: '#1976d2' } },
-                    }}
+                    helperText={errors.gstPercentage?.message || '(0-100) Optional'}
+                   
                   />
                 </Box>
               </Box>
+
+              {/* Tax Calculation Display (Read-Only) */}
+              {editingProduct?.price && editingProduct?.gstPercentage ? (
+                <Box sx={{ p: 1.5, bgcolor: '#1e1e1e', border: '1px solid #3a3a3a', borderRadius: '8px' }}>
+                  <Typography variant="subtitle2" sx={{ color: '#ff9800', fontWeight: '600', mb: 1 }}>
+                    💰 Tax Calculation
+                  </Typography>
+                  <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 2 }}>
+                    <Box sx={{ flex: 1 }}>
+                      <Typography variant="caption" sx={{ color: '#707070' }}>Base Price</Typography>
+                      <Typography sx={{ color: '#b0b0b0', fontWeight: '600' }}>₹{(editingProduct?.price || 0).toLocaleString('en-IN', { maximumFractionDigits: 2 })}</Typography>
+                    </Box>
+                    <Box sx={{ flex: 1 }}>
+                      <Typography variant="caption" sx={{ color: '#707070' }}>GST Amount ({editingProduct?.gstPercentage}%)</Typography>
+                      <Typography sx={{ color: '#4caf50', fontWeight: '600' }}>₹{(((editingProduct?.price || 0) * (editingProduct?.gstPercentage || 0)) / 100).toLocaleString('en-IN', { maximumFractionDigits: 2 })}</Typography>
+                    </Box>
+                    <Box sx={{ flex: 1 }}>
+                      <Typography variant="caption" sx={{ color: '#707070' }}>Final Price (incl. GST)</Typography>
+                      <Typography sx={{ color: '#ff9800', fontWeight: '700', fontSize: '1.1rem' }}>₹{((editingProduct?.price || 0) + (((editingProduct?.price || 0) * (editingProduct?.gstPercentage || 0)) / 100)).toLocaleString('en-IN', { maximumFractionDigits: 2 })}</Typography>
+                    </Box>
+                  </Box>
+                </Box>
+              ) : null}
 
               <Box>
                 <Typography variant="subtitle2" gutterBottom sx={{ color: '#b0b0b0', fontWeight: '600' }}>
@@ -688,10 +614,11 @@ const AdminProducts = () => {
                     <Typography variant="caption" display="block" sx={{ mb: 1, color: '#b0b0b0' }}>
                       {t('admin.preview')}:
                     </Typography>
-                    <img
+                    <Box
+                      component="img"
                       src={imagePreview}
                       alt="Preview"
-                      style={{ maxWidth: '100%', maxHeight: 200, objectFit: 'contain', borderRadius: 8, border: '1px solid #3a3a3a' }}
+                      sx={{ maxWidth: '100%', maxHeight: 200, objectFit: 'contain', borderRadius: 1, border: '1px solid #3a3a3a' }}
                     />
                   </Box>
                 )}
@@ -757,10 +684,11 @@ const AdminProducts = () => {
                     <Typography variant="caption" display="block" sx={{ mb: 1, color: '#b0b0b0' }}>
                       {t('admin.videoPreview')}:
                     </Typography>
-                    <video
+                    <Box
+                      component="video"
                       src={videoPreview}
                       controls
-                      style={{ maxWidth: '100%', maxHeight: 200, borderRadius: 8, border: '1px solid #3a3a3a' }}
+                      sx={{ maxWidth: '100%', maxHeight: 200, borderRadius: 1, border: '1px solid #3a3a3a' }}
                     />
                   </Box>
                 )}
@@ -775,23 +703,12 @@ const AdminProducts = () => {
                   {...register('colors')}
                   error={!!errors.colors}
                   helperText={errors.colors?.message || t('admin.colorsHelper')}
-                  sx={{
-                    '& .MuiOutlinedInput-root': {
-                      color: '#b0b0b0',
-                      bgcolor: '#242628',
-                      '& fieldset': { borderColor: '#3a3a3a' },
-                      '&:hover fieldset': { borderColor: '#1976d2' },
-                      '&.Mui-focused fieldset': { borderColor: '#1976d2' },
-                    },
-                    '& .MuiInputBase-input::placeholder': { color: '#707070', opacity: 1 },
-                    '& .MuiInputLabel-root': { color: '#b0b0b0', '&.Mui-focused': { color: '#1976d2' } },
-                    '& .MuiFormHelperText-root': { color: '#707070' },
-                  }}
+                 
                 />
               </Box>
             </Box>
           </DialogContent>
-          <DialogActions sx={{ bgcolor: '#242628', borderTop: '1px solid #3a3a3a', p: 2, gap: 1 }}>
+          <DialogActions sx={{ bgcolor: '#ffffff', borderTop: '1px solid #e0e0e0', p: 2, gap: 1 }}>
             <Button onClick={handleClose} sx={{ color: '#b0b0b0', textTransform: 'none', fontWeight: '500', '&:hover': { bgcolor: 'rgba(176, 176, 176, 0.1)' } }}>
               {t('admin.cancel')}
             </Button>

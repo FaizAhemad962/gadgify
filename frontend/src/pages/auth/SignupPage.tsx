@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { useNavigate, Link as RouterLink } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import i18n from 'i18next'
 import { useMutation } from '@tanstack/react-query'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -22,6 +21,8 @@ import {
 import { Visibility, VisibilityOff } from '@mui/icons-material'
 import { authApi } from '../../api/auth'
 import { useAuth } from '../../context/AuthContext'
+import { getMaharashtraCities } from '../../constants/location'
+import LanguageSelector from '../../components/common/LanguageSelector'
 
 const signupSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -40,24 +41,13 @@ const signupSchema = z.object({
 
 type SignupFormData = z.infer<typeof signupSchema>
 
-const MAHARASHTRA_CITIES = [
-  'Mumbai',
-  'Pune',
-  'Nagpur',
-  'Nashik',
-  'Aurangabad',
-  'Solapur',
-  'Kolhapur',
-  'Thane',
-  'Navi Mumbai',
-  'Other',
-]
-
 const SignupPage = () => {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const { login } = useAuth()
   const [showPassword, setShowPassword] = useState(false)
+
+  const MAHARASHTRA_CITIES = getMaharashtraCities()
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [error, setError] = useState('')
 
@@ -68,7 +58,7 @@ const SignupPage = () => {
   } = useForm<SignupFormData>({
     resolver: zodResolver(signupSchema),
     defaultValues: {
-      state: 'Maharashtra',
+      state: t('states.maharashtra'),
     },
   })
 
@@ -83,7 +73,7 @@ const SignupPage = () => {
     },
   })
 
-  const onSubmit = (data: SignupFormData) => {
+  const onSubmit = async (data: SignupFormData) => {
     // Validate Maharashtra only
     if (data.state.toLowerCase() !== 'maharashtra') {
       setError(t('errors.maharashtraOnly'))
@@ -92,7 +82,11 @@ const SignupPage = () => {
 
     setError('')
     const { confirmPassword, ...signupData } = data
-    signupMutation.mutate(signupData)
+    try {
+      await signupMutation.mutateAsync(signupData)
+    } catch (err: any) {
+      // Error is handled in onError callback
+    }
   }
 
   return (
@@ -129,48 +123,7 @@ const SignupPage = () => {
       }}
     >
       {/* Language Selector */}
-      <Box
-        sx={{
-          position: 'absolute',
-          top: 20,
-          right: 20,
-          zIndex: 10,
-        }}
-      >
-        <TextField
-          select
-          size="small"
-          defaultValue={i18n.language}
-          onChange={(e) => i18n.changeLanguage(e.target.value)}
-          sx={{
-            width: 140,
-            '& .MuiOutlinedInput-root': {
-              backgroundColor: 'rgba(255, 255, 255, 0.95)',
-              transition: 'all 0.3s ease',
-              '&:hover': {
-                backgroundColor: '#ffffff',
-                borderColor: '#ff9800',
-              },
-              '&.Mui-focused': {
-                backgroundColor: '#ffffff',
-                borderColor: '#ff9800',
-                boxShadow: '0 0 0 3px rgba(255, 152, 0, 0.1)',
-              },
-            },
-            '& .MuiOutlinedInput-notchedOutline': {
-              borderColor: '#e0e0e0',
-            },
-            '& .MuiOutlinedInput-input': {
-              color: '#1976d2',
-              fontWeight: 600,
-            },
-          }}
-        >
-          <MenuItem value="en">🇬🇧 English</MenuItem>
-          <MenuItem value="mr">🇮🇳 Marathi</MenuItem>
-          <MenuItem value="hi">🇮🇳 हिंदी</MenuItem>
-        </TextField>
-      </Box>
+      <LanguageSelector variant="auth" />
 
       <Container maxWidth="md" sx={{ position: 'relative', zIndex: 1 }}>
         <Paper
@@ -236,7 +189,10 @@ const SignupPage = () => {
             </Alert>
           )}
 
-          <form onSubmit={handleSubmit(onSubmit)}>
+          <form onSubmit={(e) => {
+            e.preventDefault()
+            handleSubmit(onSubmit)(e)
+          }}>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
               {/* Name */}
               <TextField
@@ -506,8 +462,8 @@ const SignupPage = () => {
                     {t('common.selectCity')}
                   </MenuItem>
                   {MAHARASHTRA_CITIES.map((city) => (
-                    <MenuItem key={city} value={city}>
-                      {city}
+                    <MenuItem key={city.key} value={city.label}>
+                      {city.label}
                     </MenuItem>
                   ))}
                 </TextField>

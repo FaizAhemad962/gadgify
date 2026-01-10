@@ -41,8 +41,14 @@ export const ordersApi = {
   },
 
   // Admin APIs
-  getAllOrders: async (): Promise<Order[]> => {
-    const response = await apiClient.get<Order[]>('/admin/orders')
+  getAllOrders: async (page = 1, limit = 20, search = ''): Promise<{ orders: Order[]; total: number }> => {
+    const response = await apiClient.get<{ orders: Order[]; total: number }>('/admin/orders', {
+      params: {
+        page,
+        limit,
+        search,
+      },
+    })
     return response.data
   },
 

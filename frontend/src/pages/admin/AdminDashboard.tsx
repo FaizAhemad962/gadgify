@@ -26,19 +26,19 @@ const AdminDashboard = () => {
     },
     {
       title: t('admin.totalOrders'),
-      value: orders?.length || 0,
+      value: Array.isArray(orders) ? orders.length : 0,
       icon: <ShoppingCart sx={{ fontSize: 40 }} />,
       color: '#2e7d32',
     },
     {
       title: t('admin.pendingOrders'),
-      value: orders?.filter((o) => o.status === 'PENDING').length || 0,
+      value: Array.isArray(orders) ? orders.filter((o) => o.status === 'PENDING').length : 0,
       icon: <People sx={{ fontSize: 40 }} />,
       color: '#ed6c02',
     },
     {
       title: t('admin.totalRevenue'),
-      value: `₹${orders?.reduce((sum, o) => sum + o.total, 0).toLocaleString() || 0}`,
+      value: `₹${Array.isArray(orders) ? orders.reduce((sum, o) => sum + o.total, 0).toLocaleString() : 0}`,
       icon: <CurrencyRupee sx={{ fontSize: 40 }} />,
       color: '#9c27b0',
     },

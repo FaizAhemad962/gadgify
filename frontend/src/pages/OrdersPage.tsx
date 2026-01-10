@@ -14,7 +14,7 @@ import {
 } from '@mui/material'
 import { ShoppingBag } from '@mui/icons-material'
 import { ordersApi } from '../api/orders'
-import { format } from 'date-fns'
+import { formatDate } from '../utils/dateFormatter'
 
 const OrdersPage = () => {
   const { t } = useTranslation()
@@ -116,7 +116,7 @@ const OrdersPage = () => {
                       {t('orders.orderNumber')}{order.id.slice(0, 8)}
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
-                      {t('orders.date')}: {format(new Date(order.createdAt), 'PPP')}
+                      {t('orders.date')}: {formatDate(order.createdAt, t)}
                     </Typography>
                   </Box>
                   <Box sx={{ textAlign: { sm: 'right' } }}>

@@ -8,10 +8,18 @@
     "products": "Products",
     "cart": "Cart",
     "orders": "Orders",
+    "profile": "Profile",
     "login": "Login",
     "signup": "Sign Up",
     "logout": "Logout",
-    "admin": "Admin Dashboard"
+    "admin": "Admin Dashboard",
+    "searchProducts": "Search products...",
+    "language": "Language",
+    "languages": {
+      "en": "English",
+      "mr": "मराठी",
+      "hi": "हिंदी"
+    }
   },
   "auth": {
     "login": "Login",
@@ -96,7 +104,9 @@
     "failedToDeleteRating": "Failed to delete rating",
     "paymentVerificationFailed": "Payment verification failed",
     "paymentFailed": "Payment failed. Please try again.",
-    "failedToInitiatePayment": "Failed to initiate payment"
+    "failedToInitiatePayment": "Failed to initiate payment",
+    "invalidFileType": "Please select a valid image file",
+    "fileTooLarge": "File size must be less than 5MB"
   },
   "success": {
     "addedToCart": "Product added to cart",
@@ -166,6 +176,9 @@
   "common": {
     "loading": "Loading...",
     "back": "Back",
+    "save": "Save",
+    "cancel": "Cancel",
+    "edit": "Edit",
     "backToProducts": "Back to Products",
     "readyToShop": "Ready to Start Shopping?",
     "shopNow": "Shop Now",
@@ -187,6 +200,7 @@
     "commitmentMessage": "We're committed to providing you with the best shopping experience",
     "freeShippingLabel": "FREE ✓",
     "availableOnly": "Available only in Maharashtra",
+    "whyShopWithUs": "Why Shop With Us",
     "availableInMaharashtra": "Available only in Maharashtra, India",
     "discoverLatest": "Discover the latest electronics and gadgets at unbeatable prices. Available exclusively in Maharashtra!",
     "browseProducts": "Browse our wide selection of electronics and gadgets",
@@ -232,7 +246,37 @@
     "verified": "Verified",
     "protected": "Protected",
     "maharashtra": "Maharashtra",
-    "startShopping": "Start shopping now and discover the latest electronics at unbeatable prices"
+    "startShopping": "Start shopping now and discover the latest electronics at unbeatable prices",
+    "profileTitle": "Profile",
+    "profilePersonalInfo": "Personal Information",
+    "profileAccountSettings": "Account Settings",
+    "profileChangePassword": "Change Password",
+    "profileUpdateSuccess": "Profile updated successfully",
+    "profileConfirmLogout": "Are you sure you want to logout?",
+    "profileAccountCreated": "Account created",
+    "profileUserID": "User ID",
+    "profileRoleAdmin": "Admin",
+    "profileRoleUser": "User",
+    "currentPassword": "Current Password",
+    "newPassword": "New Password",
+    "passwordChangeSuccess": "Password changed successfully!",
+    "emailChangeRequiresVerification": "Email changes require verification. Contact support to update.",
+    "emailUpdateInfo": "Email changes require verification. Contact support to update.",
+    "passwordStrength": "Password Strength",
+    "passwordWeak": "Weak",
+    "passwordMedium": "Medium",
+    "passwordStrong": "Strong",
+    "passwordRequirements": "Password Requirements:",
+    "oneUppercase": "One uppercase letter",
+    "oneNumber": "One number",
+    "passwordChangeInfo": "Enter your current password and choose a new secure password",
+    "profilePhotoUpdated": "Profile photo updated successfully",
+    "nameRequired": "Name is required",
+    "phoneRequired": "Phone is required",
+    "invalidPhone": "Invalid phone number",
+    "cityRequired": "City is required",
+    "addressRequired": "Address is required",
+    "invalidPincode": "Invalid pincode"
   },
   "footer": {
     "aboutDesc": "Your premier destination for authentic electronics and gadgets in Maharashtra.",
@@ -243,7 +287,8 @@
     "availability": "Availability",
     "available247": "24/7 Available",
     "connect": "Connect",
-    "allRightsReserved": "All Rights Reserved",
+    "servingMaharashtra": "Serving Maharashtra",
+    "allRightsReserved": "All rights reserved",
     "privacyPolicy": "Privacy Policy",
     "termsOfService": "Terms of Service",
     "returnPolicy": "Return Policy",
@@ -281,5 +326,20 @@
     "october": "October",
     "november": "November",
     "december": "December"
+  },
+  "states": {
+    "maharashtra": "Maharashtra"
+  },
+  "cities": {
+    "mumbai": "Mumbai",
+    "pune": "Pune",
+    "nagpur": "Nagpur",
+    "nashik": "Nashik",
+    "aurangabad": "Aurangabad",
+    "solapur": "Solapur",
+    "kolhapur": "Kolhapur",
+    "thane": "Thane",
+    "naviMumbai": "Navi Mumbai",
+    "other": "Other"
   }
 }

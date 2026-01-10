@@ -12,6 +12,8 @@ const CartPage = lazy(() => import('../pages/CartPage'))
 const CheckoutPage = lazy(() => import('../pages/CheckoutPage'))
 const OrdersPage = lazy(() => import('../pages/OrdersPage'))
 const OrderDetailPage = lazy(() => import('../pages/OrderDetailPage'))
+const ProfilePage = lazy(() => import('../pages/ProfilePage'))
+const ChangePasswordPage = lazy(() => import('../pages/ChangePasswordPage'))
 const LoginPage = lazy(() => import('../pages/auth/LoginPage'))
 const SignupPage = lazy(() => import('../pages/auth/SignupPage'))
 const AdminLayout = lazy(() => import('../components/layout/AdminLayout'))
@@ -99,6 +101,22 @@ const AppRoutes = () => {
           element={
             <PrivateRoute>
               <OrderDetailPage />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/profile"
+          element={
+            <PrivateRoute>
+              <ProfilePage />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/change-password"
+          element={
+            <PrivateRoute>
+              <ChangePasswordPage />
             </PrivateRoute>
           }
         />

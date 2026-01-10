@@ -12,17 +12,18 @@ import {
   Container,
   Button,
   Badge,
-  Select,
-  FormControl,
   TextField,
+  InputAdornment,
 } from '@mui/material'
 import {
   Menu as MenuIcon,
   ShoppingCart,
   AccountCircle,
+  Search,
 } from '@mui/icons-material'
 import { useAuth } from '../../context/AuthContext'
 import { useCart } from '../../context/CartContext'
+import LanguageSelector from '../common/LanguageSelector'
 
 const Navbar = () => {
   const { t, i18n } = useTranslation()
@@ -56,20 +57,24 @@ const Navbar = () => {
     navigate('/login')
   }
 
-  const changeLanguage = (lng: string) => {
-    i18n.changeLanguage(lng)
-  }
-
   return (
     <AppBar 
       position="sticky"
       sx={{
         background: 'linear-gradient(90deg, #1976d2 0%, #1565c0 100%)',
         boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
+        zIndex: 1100,
       }}
     >
-      <Container maxWidth="xl">
-        <Toolbar disableGutters>
+      <Container maxWidth="xl" sx={{ px: { xs: 0.5, sm: 2 } }}>
+        <Toolbar disableGutters sx={{ 
+          minHeight: { xs: 56, md: 64 }, 
+          gap: { xs: 0.5, md: 1 },
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          flexWrap: 'wrap',
+        }}>
           {/* Logo - Desktop */}
           <Typography
             variant="h6"
@@ -93,15 +98,15 @@ const Navbar = () => {
           </Typography>
 
           {/* Mobile menu */}
-          <Box sx={{ flexGrow: 1, display: { xs: 'flex', md: 'none' } }}>
+          <Box sx={{ display: { xs: 'flex', md: 'none' } }}>
             <IconButton
-              size="large"
+              size="small"
               aria-label="menu"
               onClick={handleOpenNavMenu}
               color="inherit"
-              sx={{ '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.1)' } }}
+              sx={{ p: 0.5, '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.1)' } }}
             >
-              <MenuIcon />
+              <MenuIcon sx={{ fontSize: '1.5rem' }} />
             </IconButton>
             <Menu
               anchorEl={anchorElNav}
@@ -111,16 +116,29 @@ const Navbar = () => {
               open={Boolean(anchorElNav)}
               onClose={handleCloseNavMenu}
               sx={{ display: { xs: 'block', md: 'none' } }}
+              PaperProps={{
+                sx: { 
+                  mt: 0.5,
+                  minWidth: 200,
+                  borderRadius: 1.5,
+                  zIndex: 1301,
+                }
+              }}
             >
-              <MenuItem onClick={() => { handleCloseNavMenu(); navigate('/') }}>
+              <MenuItem onClick={() => { handleCloseNavMenu(); navigate('/') }} sx={{ py: 1.2 }}>
                 <Typography textAlign="center" sx={{ fontWeight: 600 }}>🏠 {t('nav.home')}</Typography>
               </MenuItem>
-              <MenuItem onClick={() => { handleCloseNavMenu(); navigate('/products') }}>
+              <MenuItem onClick={() => { handleCloseNavMenu(); navigate('/products') }} sx={{ py: 1.2 }}>
                 <Typography textAlign="center" sx={{ fontWeight: 600 }}>📱 {t('nav.products')}</Typography>
               </MenuItem>
               {isAuthenticated && (
-                <MenuItem onClick={() => { handleCloseNavMenu(); navigate('/orders') }}>
+                <MenuItem onClick={() => { handleCloseNavMenu(); navigate('/orders') }} sx={{ py: 1.2 }}>
                   <Typography textAlign="center" sx={{ fontWeight: 600 }}>📦 {t('nav.orders')}</Typography>
+                </MenuItem>
+              )}
+              {isAdmin && (
+                <MenuItem onClick={() => { handleCloseNavMenu(); navigate('/admin') }} sx={{ py: 1.2, color: '#ff9800' }}>
+                  <Typography textAlign="center" sx={{ fontWeight: 700 }}>⚙️ {t('nav.admin')}</Typography>
                 </MenuItem>
               )}
             </Menu>
@@ -133,17 +151,16 @@ const Navbar = () => {
             component={Link}
             to="/"
             sx={{
-              mr: 2,
               display: { xs: 'flex', md: 'none' },
               flexGrow: 1,
               fontWeight: 900,
-              fontSize: '1.3rem',
+              fontSize: '1.2rem',
               color: 'inherit',
               textDecoration: 'none',
               letterSpacing: '0.5px',
             }}
           >
-            🛍️ {t('app.title')}
+            🛍️ Gadgify
           </Typography>
 
           {/* Desktop menu */}
@@ -264,81 +281,17 @@ const Navbar = () => {
             )}
           </Box>
 
-          {/* Search Bar */}
-          <TextField
-            placeholder={t('products.search')}
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            onKeyPress={(e) => {
-              if (e.key === 'Enter') {
-                navigate(`/products?search=${searchQuery}`)
-              }
-            }}
-            variant="outlined"
-            size="small"
-            sx={{
-              width: { xs: '100%', md: 280 },
-              mr: { xs: 0, md: 2 },
-              mb: { xs: 2, md: 0 },
-              backgroundColor: 'rgba(255, 255, 255, 0.95)',
-              borderRadius: 1.5,
-              '& .MuiOutlinedInput-root': {
-                color: '#333',
-                fontWeight: 500,
-                '& fieldset': {
-                  borderColor: 'rgba(0, 0, 0, 0.1)',
-                },
-                '&:hover fieldset': {
-                  borderColor: '#ff9800',
-                },
-                '&.Mui-focused fieldset': {
-                  borderColor: '#ff9800',
-                  borderWidth: 2,
-                },
-              },
-              '& .MuiOutlinedInput-input::placeholder': {
-                color: 'rgba(0, 0, 0, 0.5)',
-                opacity: 1,
-              },
-            }}
-          />
-
           {/* Language selector */}
-          <FormControl size="small" sx={{ mr: 2, minWidth: 60 }}>
-            <Select
-              value={i18n.language}
-              onChange={(e) => changeLanguage(e.target.value)}
-              sx={{
-                color: 'white',
-                fontWeight: 600,
-                backgroundColor: 'rgba(255, 255, 255, 0.2)',
-                borderRadius: 1,
-                '.MuiOutlinedInput-notchedOutline': { 
-                  borderColor: 'rgba(255, 255, 255, 0.5)',
-                },
-                '&:hover .MuiOutlinedInput-notchedOutline': { 
-                  borderColor: 'rgba(255, 255, 255, 0.9)',
-                },
-                '.MuiSvgIcon-root': { color: 'white' },
-                '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                  borderColor: '#ff9800',
-                }
-              }}
-            >
-              <MenuItem value="en" sx={{ fontWeight: 600 }}>EN</MenuItem>
-              <MenuItem value="mr" sx={{ fontWeight: 600 }}>मर</MenuItem>
-              <MenuItem value="hi" sx={{ fontWeight: 600 }}>हि</MenuItem>
-            </Select>
-          </FormControl>
+          <LanguageSelector variant="navbar" />
 
           {/* Cart icon */}
           {isAuthenticated && (
             <IconButton
-              size="large"
+              size="small"
               onClick={() => navigate('/cart')}
               color="inherit"
-              sx={{ 
-                mr: 2,
+              sx={{  mr: 2,
+                p: 0.5,
                 transition: 'all 0.3s',
                 '&:hover': {
                   transform: 'scale(1.1)',
@@ -346,8 +299,8 @@ const Navbar = () => {
                 }
               }}
             >
-              <Badge badgeContent={itemCount} color="error" sx={{ '& .MuiBadge-badge': { fontWeight: 700, fontSize: '0.75rem' } }}>
-                <ShoppingCart />
+              <Badge badgeContent={itemCount} color="error" sx={{ '& .MuiBadge-badge': { fontWeight: 700, fontSize: '0.65rem' } }}>
+                <ShoppingCart sx={{ fontSize: { xs: '1.3rem', md: '1.5rem' } }} />
               </Badge>
             </IconButton>
           )}
@@ -356,17 +309,18 @@ const Navbar = () => {
           {isAuthenticated ? (
             <Box>
               <IconButton
-                size="large"
+                size="small"
                 onClick={handleOpenUserMenu}
                 color="inherit"
                 sx={{
+                  p: 0.5,
                   transition: 'all 0.3s',
                   '&:hover': {
                     bgcolor: 'rgba(255, 255, 255, 0.1)',
                   }
                 }}
               >
-                <AccountCircle />
+                <AccountCircle sx={{ fontSize: { xs: '1.3rem', md: '1.5rem' } }} />
               </IconButton>
               <Menu
                 anchorEl={anchorElUser}
@@ -379,27 +333,33 @@ const Navbar = () => {
                   '& .MuiPaper-root': {
                     borderRadius: 1.5,
                     boxShadow: '0 4px 16px rgba(0, 0, 0, 0.15)',
+                    mt: 0.5,
+                    zIndex: 1301,
                   }
                 }}
               >
                 <MenuItem disabled sx={{ bgcolor: '#f5f5f5' }}>
-                  <Typography textAlign="center" sx={{ fontWeight: 700, color: 'text.primary' }}>👤 {user?.name}</Typography>
+                  <Typography textAlign="center" sx={{ fontWeight: 700, color: 'text.primary', fontSize: '0.9rem' }}>👤 {user?.name}</Typography>
                 </MenuItem>
-                <MenuItem onClick={() => { handleCloseUserMenu(); navigate('/orders') }} sx={{ fontWeight: 600 }}>
-                  <Typography textAlign="center">📦 {t('nav.orders')}</Typography>
+                <MenuItem onClick={() => { handleCloseUserMenu(); navigate('/profile') }} sx={{ fontWeight: 600, py: 1 }}>
+                  <Typography textAlign="center" sx={{ fontSize: '0.9rem' }}>👁️ {t('nav.profile')}</Typography>
                 </MenuItem>
-                <MenuItem onClick={handleLogout} sx={{ fontWeight: 600, color: '#d32f2f' }}>
-                  <Typography textAlign="center">🚪 {t('nav.logout')}</Typography>
+                <MenuItem onClick={handleLogout} sx={{ fontWeight: 600, color: '#d32f2f', py: 1 }}>
+                  <Typography textAlign="center" sx={{ fontSize: '0.9rem' }}>🚪 {t('nav.logout')}</Typography>
                 </MenuItem>
               </Menu>
             </Box>
           ) : (
-            <Box sx={{ display: 'flex', gap: 1 }}>
+            <Box sx={{ display: 'flex', gap: { xs: 0.5, md: 1 }, alignItems: 'center' }}>
               <Button
                 onClick={() => navigate('/login')}
+                size="small"
                 sx={{ 
                   color: 'white',
                   fontWeight: 700,
+                  fontSize: { xs: '0.75rem', md: '1rem' },
+                  px: { xs: 0.75, md: 1.5 },
+                  py: { xs: 0.5, md: 1 },
                   transition: 'all 0.3s',
                   '&:hover': {
                     bgcolor: 'rgba(255, 255, 255, 0.1)',
@@ -410,12 +370,15 @@ const Navbar = () => {
               </Button>
               <Button
                 onClick={() => navigate('/signup')}
+                size="small"
                 sx={{ 
                   color: 'white',
                   bgcolor: '#ff9800',
                   fontWeight: 700,
+                  fontSize: { xs: '0.75rem', md: '1rem' },
                   borderRadius: 1,
-                  px: 2,
+                  px: { xs: 0.75, md: 2 },
+                  py: { xs: 0.5, md: 1 },
                   transition: 'all 0.3s',
                   '&:hover': {
                     bgcolor: '#f57c00',

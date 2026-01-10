@@ -8,6 +8,7 @@ export interface User {
   city: string
   address: string
   pincode: string
+  profilePhoto?: string
   createdAt: string
 }
 
@@ -23,7 +24,6 @@ export interface Product {
   category: string
   hsnNo?: string
   gstPercentage?: number
-  gstPrice?: number
   createdAt: string
   updatedAt: string
   averageRating?: number
@@ -109,7 +109,6 @@ export interface CreateProductRequest {
   colors?: string
   hsnNo?: string
   gstPercentage?: number
-  gstPrice?: number
 }
 
 export type UpdateProductRequest = Partial<CreateProductRequest>

@@ -27,7 +27,6 @@ export const productSchema = Joi.object({
   category: Joi.string().min(2).required(),
   hsnNo: Joi.string().optional().allow(''),
   gstPercentage: Joi.number().min(0).max(100).optional(),
-  gstPrice: Joi.number().min(0).optional(),
 })
 
 export const addToCartSchema = Joi.object({
@@ -66,4 +65,17 @@ export const createOrderSchema = Joi.object({
 export const ratingSchema = Joi.object({
   rating: Joi.number().min(1).max(5).required(),
   comment: Joi.string().max(500).optional().allow(''),
+})
+
+export const updateProfileSchema = Joi.object({
+  name: Joi.string().min(2).required(),
+  phone: Joi.string().min(10).required(),
+  city: Joi.string().required(),
+  address: Joi.string().min(5).required(),
+  pincode: Joi.string().pattern(/^\d{6}$/).required(),
+})
+
+export const changePasswordSchema = Joi.object({
+  currentPassword: Joi.string().required(),
+  newPassword: Joi.string().min(6).required(),
 })

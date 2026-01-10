@@ -58,6 +58,7 @@ const AdminLayout = () => {
     { text: t('admin.orders'), icon: <ShoppingCart />, path: '/admin/orders' },
   ]
 
+  // Desktop drawer (collapsible)
   const drawer = (
     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', bgcolor: '#1a1a1a' }}>
       <Toolbar sx={{ justifyContent: open ? 'space-between' : 'center', bgcolor: '#0f1419', borderBottom: '1px solid #333' }}>
@@ -66,7 +67,13 @@ const AdminLayout = () => {
             {t('app.title')}
           </Typography>
         )}
-        <IconButton onClick={toggleDrawer} sx={{ color: '#ff9800' }}>
+        <IconButton 
+          onClick={toggleDrawer} 
+          sx={{ 
+            color: '#ff9800',
+            display: { xs: 'none', sm: 'block' }
+          }}
+        >
           <MenuIcon />
         </IconButton>
       </Toolbar>
@@ -134,6 +141,80 @@ const AdminLayout = () => {
     </Box>
   )
 
+  // Mobile drawer (always full width with text)
+  const mobileDrawer = (
+    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', bgcolor: '#1a1a1a' }}>
+      <Toolbar sx={{ justifyContent: 'space-between', bgcolor: '#0f1419', borderBottom: '1px solid #333' }}>
+        <Typography variant="h6" noWrap component="div" sx={{ fontWeight: 700, background: 'linear-gradient(135deg, #1976d2, #ff9800)', backgroundClip: 'text', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+          {t('app.title')}
+        </Typography>
+      </Toolbar>
+      <List sx={{ flex: 1, pt: 2 }}>
+        {menuItems.map((item) => (
+          <ListItem key={item.text} disablePadding sx={{ mb: 1 }}>
+            <ListItemButton 
+              component={Link} 
+              to={item.path}
+              onClick={handleDrawerToggle}
+              sx={{ 
+                px: 2,
+                mx: 1,
+                borderRadius: '8px',
+                color: '#a0a0a0',
+                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                '&:hover': {
+                  bgcolor: '#1976d2',
+                  color: '#fff',
+                  '& .MuiListItemIcon-root': { color: '#fff' },
+                  transform: 'translateX(4px)'
+                },
+                '&.active': {
+                  bgcolor: '#1976d2',
+                  color: '#fff',
+                  '& .MuiListItemIcon-root': { color: '#fff' }
+                }
+              }}
+            >
+              <ListItemIcon sx={{ minWidth: 0, mr: 3, justifyContent: 'center', color: 'inherit' }}>
+                {item.icon}
+              </ListItemIcon>
+              <ListItemText primary={item.text} />
+            </ListItemButton>
+          </ListItem>
+        ))}
+      </List>
+      <Divider sx={{ borderColor: '#333', my: 2 }} />
+      <List>
+        <ListItem disablePadding sx={{ mb: 1 }}>
+          <ListItemButton 
+            onClick={() => {
+              handleLogout()
+              handleDrawerToggle()
+            }}
+            sx={{ 
+              px: 2,
+              mx: 1,
+              borderRadius: '8px',
+              color: '#a0a0a0',
+              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+              '&:hover': {
+                bgcolor: '#ff5252',
+                color: '#fff',
+                '& .MuiListItemIcon-root': { color: '#fff' },
+                transform: 'translateX(4px)'
+              }
+            }}
+          >
+            <ListItemIcon sx={{ minWidth: 0, mr: 3, justifyContent: 'center', color: 'inherit' }}>
+              <ExitToApp />
+            </ListItemIcon>
+            <ListItemText primary={t('nav.logout')} />
+          </ListItemButton>
+        </ListItem>
+      </List>
+    </Box>
+  )
+
   return (
     <Box sx={{ display: 'flex' }}>
       <AppBar
@@ -151,7 +232,11 @@ const AdminLayout = () => {
             color="inherit"
             edge="start"
             onClick={handleDrawerToggle}
-            sx={{ mr: 2, display: { sm: 'none' } }}
+            sx={{ 
+              mr: 2, 
+              display: { sm: 'none' },
+              color: '#ff9800'
+            }}
           >
             <MenuIcon />
           </IconButton>
@@ -198,7 +283,7 @@ const AdminLayout = () => {
             },
           }}
         >
-          {drawer}
+          {mobileDrawer}
         </Drawer>
         <Drawer
           variant="permanent"
@@ -222,7 +307,7 @@ const AdminLayout = () => {
         component="main"
         sx={{
           flexGrow: 1,
-          p: 3,
+          p: { xs: 2, sm: 3, md: 4 },
           width: { sm: `calc(100% - ${open ? drawerWidth : collapsedWidth}px)` },
           transition: 'width 0.3s',
         }}

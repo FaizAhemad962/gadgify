@@ -8,15 +8,32 @@ const database_1 = __importDefault(require("../config/database"));
 const razorpay_1 = require("../config/razorpay");
 const config_1 = require("../config");
 const crypto_1 = __importDefault(require("crypto"));
+// Helper function to parse shippingAddress JSON
+const transformOrder = (order) => {
+    if (!order)
+        return order;
+    return {
+        ...order,
+        shippingAddress: typeof order.shippingAddress === 'string'
+            ? JSON.parse(order.shippingAddress)
+            : order.shippingAddress
+    };
+};
 const createOrder = async (req, res, next) => {
     try {
-        const { items, total, shippingAddress } = req.body;
+        console.log('--------- req body', req.body);
+        const { items, subtotal, shipping, total, shippingAddress } = req.body;
         const userId = req.user.id;
+        // Fetch all products
+        const productIds = items.map((item) => item.productId);
+        const products = await database_1.default.product.findMany({
+            where: { id: { in: productIds }, deletedAt: null },
+        });
+        // Create a map for quick lookup
+        const productMap = new Map(products.map(p => [p.id, p]));
         // Validate stock for all items
         for (const item of items) {
-            const product = await database_1.default.product.findUnique({
-                where: { id: item.productId },
-            });
+            const product = productMap.get(item.productId);
             if (!product) {
                 res.status(404).json({ message: `Product ${item.productId} not found` });
                 return;
@@ -32,8 +49,10 @@ const createOrder = async (req, res, next) => {
         const order = await database_1.default.order.create({
             data: {
                 userId,
-                total,
-                shippingAddress,
+                subtotal,
+                shipping,
+                total: subtotal + shipping,
+                shippingAddress: JSON.stringify(shippingAddress),
                 items: {
                     create: items.map((item) => ({
                         productId: item.productId,
@@ -78,7 +97,7 @@ const createOrder = async (req, res, next) => {
         if (cart) {
             await database_1.default.cartItem.deleteMany({ where: { cartId: cart.id } });
         }
-        res.status(201).json(order);
+        res.status(201).json(transformOrder(order));
     }
     catch (error) {
         next(error);
@@ -96,7 +115,7 @@ const getOrders = async (req, res, next) => {
             },
             orderBy: { createdAt: 'desc' },
         });
-        res.json(orders);
+        res.json(orders.map(transformOrder));
     }
     catch (error) {
         next(error);
@@ -137,7 +156,7 @@ const getOrderById = async (req, res, next) => {
             res.status(403).json({ message: 'Access denied' });
             return;
         }
-        res.json(order);
+        res.json(transformOrder(order));
     }
     catch (error) {
         next(error);
@@ -225,7 +244,7 @@ const confirmPayment = async (req, res, next) => {
             where: { id: orderId },
             data: {
                 paymentStatus: 'COMPLETED',
-                paymentId,
+                paymentId: razorpay_payment_id,
                 status: 'PROCESSING',
             },
             include: {
@@ -248,7 +267,7 @@ const confirmPayment = async (req, res, next) => {
                 },
             },
         });
-        res.json(updatedOrder);
+        res.json(transformOrder(updatedOrder));
     }
     catch (error) {
         next(error);
@@ -258,29 +277,52 @@ exports.confirmPayment = confirmPayment;
 // Admin routes
 const getAllOrders = async (req, res, next) => {
     try {
-        const orders = await database_1.default.order.findMany({
-            include: {
-                items: {
-                    include: { product: true },
-                },
-                user: {
-                    select: {
-                        id: true,
-                        email: true,
-                        name: true,
-                        phone: true,
-                        role: true,
-                        state: true,
-                        city: true,
-                        address: true,
-                        pincode: true,
-                        createdAt: true,
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 20;
+        const search = req.query.search || '';
+        const skip = (page - 1) * limit;
+        // Build search filter
+        const searchFilter = search
+            ? {
+                OR: [
+                    { id: { contains: search, mode: 'insensitive' } },
+                    { user: { name: { contains: search, mode: 'insensitive' } } },
+                    { user: { email: { contains: search, mode: 'insensitive' } } },
+                ],
+            }
+            : {};
+        const [orders, total] = await Promise.all([
+            database_1.default.order.findMany({
+                where: searchFilter,
+                include: {
+                    items: {
+                        include: { product: true },
+                    },
+                    user: {
+                        select: {
+                            id: true,
+                            email: true,
+                            name: true,
+                            phone: true,
+                            role: true,
+                            state: true,
+                            city: true,
+                            address: true,
+                            pincode: true,
+                            createdAt: true,
+                        },
                     },
                 },
-            },
-            orderBy: { createdAt: 'desc' },
+                orderBy: { createdAt: 'desc' },
+                skip,
+                take: limit,
+            }),
+            database_1.default.order.count({ where: searchFilter }),
+        ]);
+        res.json({
+            orders: orders.map(transformOrder),
+            total,
         });
-        res.json(orders);
     }
     catch (error) {
         next(error);
@@ -314,7 +356,7 @@ const updateOrderStatus = async (req, res, next) => {
                 },
             },
         });
-        res.json(order);
+        res.json(transformOrder(order));
     }
     catch (error) {
         next(error);

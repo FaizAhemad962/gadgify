@@ -31,6 +31,18 @@ export const productsApi = {
     return response.data
   },
 
+  // Admin APIs
+  getAllProducts: async (page = 1, limit = 25, search = ''): Promise<{ products: Product[]; total: number }> => {
+    const response = await apiClient.get<{ products: Product[]; total: number }>('/admin/products', {
+      params: {
+        page,
+        limit,
+        search,
+      },
+    })
+    return response.data
+  },
+
   uploadImage: async (file: File): Promise<{ imageUrl: string }> => {
     const formData = new FormData()
     formData.append('image', file)

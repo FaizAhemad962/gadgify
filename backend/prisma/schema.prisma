@@ -5,6 +5,7 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model User {
@@ -18,8 +19,10 @@ model User {
   city      String
   address   String
   pincode   String
+  profilePhoto String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  deletedAt DateTime?
   cart      Cart?
   orders    Order[]
   ratings   Rating[]
@@ -39,14 +42,15 @@ model Product {
   category    String
   hsnNo       String?
   gstPercentage Float?
-  gstPrice    Float?
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
+  deletedAt   DateTime?
   cartItems   CartItem[]
   orderItems  OrderItem[]
   ratings     Rating[]
 
   @@map("products")
+  @@index([deletedAt])
 }
 
 model Rating {
@@ -57,8 +61,9 @@ model Rating {
   userId    String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  deletedAt DateTime?
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Restrict)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Restrict)
 
   @@unique([productId, userId])
   @@map("ratings")
@@ -69,8 +74,9 @@ model Cart {
   userId    String     @unique
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
+  deletedAt DateTime?
   items     CartItem[]
-  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User       @relation(fields: [userId], references: [id], onDelete: Restrict)
 
   @@map("carts")
 }
@@ -82,8 +88,9 @@ model CartItem {
   quantity  Int
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  cart      Cart     @relation(fields: [cartId], references: [id], onDelete: Cascade)
-  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  deletedAt DateTime?
+  cart      Cart     @relation(fields: [cartId], references: [id], onDelete: Restrict)
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Restrict)
 
   @@map("cart_items")
 }
@@ -100,8 +107,9 @@ model Order {
   shippingAddress String
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
+  deletedAt       DateTime?
   items           OrderItem[]
-  user            User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user            User        @relation(fields: [userId], references: [id], onDelete: Restrict)
 
   @@map("orders")
 }
@@ -113,8 +121,9 @@ model OrderItem {
   quantity  Int
   price     Float
   createdAt DateTime @default(now())
-  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  product   Product  @relation(fields: [productId], references: [id])
+  deletedAt DateTime?
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Restrict)
 
   @@map("order_items")
 }

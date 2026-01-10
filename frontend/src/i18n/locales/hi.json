@@ -8,10 +8,16 @@
     "products": "उत्पाद",
     "cart": "कार्ट",
     "orders": "ऑर्डर",
+    "profile": "प्रोफ़ाइल",
     "login": "लॉगिन",
     "signup": "साइन अप",
     "logout": "लॉगआउट",
-    "admin": "एडमिन डैशबोर्ड"
+    "admin": "एडमिन डैशबोर्ड",
+    "searchProducts": "उत्पाद खोजें...",    "language": "भाषा",    "languages": {
+      "en": "English",
+      "mr": "मराठी",
+      "hi": "हिंदी"
+    }
   },
   "auth": {
     "login": "लॉगिन",
@@ -37,11 +43,11 @@
     "buyNow": "अभी खरीदें",
     "price": "कीमत",
     "stock": "स्टॉक में",
-    "outOfStock": "स्टॉक खत्म",
+    "outOfStock": "स्टॉक में नहीं",
     "viewDetails": "विवरण देखें",
     "category": "श्रेणी",
     "allProducts": "सभी उत्पाद",
-    "description": "हमारे इलेक्ट्रॉनिक्स और गैजेट्स के अद्भुत संग्रह की खोज करें",
+    "description": "इलेक्ट्रॉनिक्स और गैजेट्स का हमारा अद्भुत संग्रह खोजें",
     "availableColors": "उपलब्ध रंग",
     "securePayment": "सुरक्षित भुगतान",
     "safeCheckout": "सुरक्षित और एन्क्रिप्ट किया गया चेकआउट",
@@ -95,7 +101,9 @@
     "failedToDeleteRating": "रेटिंग हटाने में विफल",
     "paymentVerificationFailed": "भुगतान सत्यापन विफल",
     "paymentFailed": "भुगतान विफल। कृपया पुनः प्रयास करें।",
-    "failedToInitiatePayment": "भुगतान शुरू करने में विफल"
+    "failedToInitiatePayment": "भुगतान शुरू करने में विफल",
+    "invalidFileType": "कृपया एक वैध छवि फ़ाइल चुनें",
+    "fileTooLarge": "फ़ाइल का आकार 5MB से कम होना चाहिए"
   },
   "success": {
     "addedToCart": "उत्पाद कार्ट में जोड़ा गया",
@@ -165,6 +173,9 @@
   "common": {
     "loading": "लोड हो रहा है...",
     "back": "वापस",
+    "save": "सहेजें",
+    "cancel": "रद्द करें",
+    "edit": "संपादित करें",
     "backToProducts": "उत्पादों पर वापस जाएं",
     "readyToShop": "खरीदारी शुरू करने के लिए तैयार हैं?",
     "shopNow": "अभी खरीदें",
@@ -186,6 +197,7 @@
     "commitmentMessage": "हम आपको सर्वश्रेष्ठ खरीदारी अनुभव प्रदान करने के लिए प्रतिबद्ध हैं",
     "freeShippingLabel": "मुफ़्त ✓",
     "availableOnly": "केवल महाराष्ट्र में उपलब्ध",
+    "whyShopWithUs": "हमसे क्यों खरीदें",
     "availableInMaharashtra": "केवल महाराष्ट्र, भारत में उपलब्ध",
     "discoverLatest": "अतुलनीय कीमतों पर नवीनतम इलेक्ट्रॉनिक्स और गैजेट्स की खोज करें। विशेष रूप से महाराष्ट्र में उपलब्ध!",
     "browseProducts": "इलेक्ट्रॉनिक्स और गैजेट्स का हमारा विस्तृत संग्रह देखें",
@@ -231,7 +243,45 @@
     "verified": "सत्यापित",
     "protected": "संरक्षित",
     "maharashtra": "महाराष्ट्र",
-    "startShopping": "अभी खरीदारी शुरू करें और अतुलनीय कीमतों पर नवीनतम इलेक्ट्रॉनिक्स खोजें"
+    "startShopping": "अभी खरीदारी शुरू करें और अतुलनीय कीमतों पर नवीनतम इलेक्ट्रॉनिक्स खोजें",
+    "nameRequired": "नाम आवश्यक है",
+    "phoneRequired": "फोन आवश्यक है",
+    "invalidPhone": "मान्य 10 अंकों का फोन दर्ज करें",
+    "stateRequired": "राज्य आवश्यक है",
+    "cityRequired": "शहर आवश्यक है",
+    "addressRequired": "पता आवश्यक है",
+    "pincodeRequired": "पिनकोड आवश्यक है",
+    "invalidPincode": "मान्य 6 अंकों का पिनकोड दर्ज करें",
+    "profileTitle": "प्रोफ़ाइल",
+    "profilePersonalInfo": "व्यक्तिगत जानकारी",
+    "profileAccountSettings": "खाता सेटिंग्स",
+    "profileChangePassword": "पासवर्ड बदलें",
+    "profileUpdateSuccess": "प्रोफ़ाइल सफलतापूर्वक अपडेट की गई",
+    "profileConfirmLogout": "क्या आप वाकई लॉगआउट करना चाहते हैं?",
+    "profileAccountCreated": "खाता बनाया गया",
+    "profileUserID": "उपयोगकर्ता आईडी",
+    "profileRoleAdmin": "प्रशासन",
+    "profileRoleUser": "उपयोगकर्ता",
+    "currentPassword": "वर्तमान पासवर्ड",
+    "newPassword": "नया पासवर्ड",
+    "passwordChangeSuccess": "पासवर्ड सफलतापूर्वक बदला गया!",
+    "emailChangeRequiresVerification": "ईमेल परिवर्तन के लिए सत्यापन आवश्यक है। अपडेट करने के लिए समर्थन से संपर्क करें।",
+    "emailUpdateInfo": "ईमेल परिवर्तन के लिए सत्यापन आवश्यक है। अपडेट करने के लिए समर्थन से संपर्क करें।",
+    "passwordStrength": "पासवर्ड की मजबूती",
+    "passwordWeak": "कमजोर",
+    "passwordMedium": "मध्यम",
+    "passwordStrong": "मजबूत",
+    "passwordRequirements": "पासवर्ड की आवश्यकताएं:",
+    "oneUppercase": "एक बड़ा अक्षर",
+    "oneNumber": "एक संख्या",
+    "passwordChangeInfo": "अपना वर्तमान पासवर्ड दर्ज करें और एक नया सुरक्षित पासवर्ड चुनें",
+    "profilePhotoUpdated": "प्रोफाइल फोटो सफलतापूर्वक अपडेट हुआ",
+    "nameRequired": "नाम आवश्यक है",
+    "phoneRequired": "फोन आवश्यक है",
+    "invalidPhone": "अवैध फोन नंबर",
+    "cityRequired": "शहर आवश्यक है",
+    "addressRequired": "पता आवश्यक है",
+    "invalidPincode": "अवैध पिनकोड"
   },
   "footer": {
     "aboutDesc": "महाराष्ट्र में प्रामाणिक इलेक्ट्रॉनिक्स और गैजेट्स के लिए आपका प्रमुख गंतव्य।",
@@ -242,6 +292,7 @@
     "availability": "उपलब्धता",
     "available247": "24/7 उपलब्ध",
     "connect": "जुड़ें",
+    "servingMaharashtra": "महाराष्ट्र सेवा",
     "allRightsReserved": "सर्वाधिकार सुरक्षित",
     "privacyPolicy": "गोपनीयता नीति",
     "termsOfService": "सेवा की शर्तें",
@@ -280,5 +331,20 @@
     "october": "अक्टूबर",
     "november": "नवंबर",
     "december": "दिसंबर"
+  },
+  "states": {
+    "maharashtra": "महाराष्ट्र"
+  },
+  "cities": {
+    "mumbai": "मुंबई",
+    "pune": "पुणे",
+    "nagpur": "नागपुर",
+    "nashik": "नासिक",
+    "aurangabad": "औरंगाबाद",
+    "solapur": "सोलापुर",
+    "kolhapur": "कोल्हापुर",
+    "thane": "ठाणे",
+    "naviMumbai": "नवी मुंबई",
+    "other": "अन्य"
   }
 }

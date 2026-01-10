@@ -8,10 +8,16 @@
     "products": "उत्पादने",
     "cart": "कार्ट",
     "orders": "ऑर्डर",
+    "profile": "प्रोफाइल",
     "login": "लॉगिन",
     "signup": "साइन अप",
     "logout": "लॉगआउट",
-    "admin": "प्रशासन डॅशबोर्ड"
+    "admin": "प्रशासन डॅशबोर्ड",
+    "searchProducts": "उत्पादने शोधा...",    "language": "भाषा",    "languages": {
+      "en": "English",
+      "mr": "मराठी",
+      "hi": "हिंदी"
+    }
   },
   "auth": {
     "login": "लॉगिन",
@@ -80,9 +86,9 @@
     "moreItems": "अधिक वस्तू",
     "pending": "प्रलंबित",
     "processing": "प्रक्रिया केली जात आहे",
-    "shipped": "पाठविली",
+    "shipped": "पाठवले",
     "delivered": "वितरित",
-    "cancelled": "रद्द केली",
+    "cancelled": "रद्द केले",
     "paymentStatus": "पेमेंट"
   },
   "errors": {
@@ -96,7 +102,9 @@
     "failedToDeleteRating": "रेटिंग हटवण्यात अयशस्वी",
     "paymentVerificationFailed": "पेमेंट पडताळणी अयशस्वी",
     "paymentFailed": "पेमेंट अयशस्वी. कृपया पुन्हा प्रयत्न करा.",
-    "failedToInitiatePayment": "पेमेंट सुरू करण्यात अयशस्वी"
+    "failedToInitiatePayment": "पेमेंट सुरू करण्यात अयशस्वी",
+    "invalidFileType": "कृपया वैध प्रतिमा फाईल निवडा",
+    "fileTooLarge": "फाईलचा आकार 5MB पेक्षा कमी असावा"
   },
   "success": {
     "addedToCart": "उत्पादन कार्टमध्ये जोडले",
@@ -166,6 +174,9 @@
   "common": {
     "loading": "लोड करत आहे...",
     "back": "मागे",
+    "save": "जतन करा",
+    "cancel": "रद्द करा",
+    "edit": "संपादित करा",
     "backToProducts": "उत्पादनांकडे परत या",
     "readyToShop": "खरेदी सुरू करण्यास तयार आहात?",
     "shopNow": "आता खरेदी करा",
@@ -187,6 +198,7 @@
     "commitmentMessage": "हम आपको सर्वश्रेष्ठ खरीदारी अनुभव प्रदान करने के लिए प्रतिबद्ध हैं",
     "freeShippingLabel": "मोफत ✓",
     "availableOnly": "केवळ महाराष्ट्रात उपलब्ध",
+    "whyShopWithUs": "आमच्याकडून का खरेदी करावी",
     "availableInMaharashtra": "केवळ महाराष्ट्र, भारतात उपलब्ध",
     "discoverLatest": "अजोड किमतीत नवीनतम इलेक्ट्रॉनिक्स आणि गॅजेट्स शोधा. केवळ महाराष्ट्रात उपलब्ध!",
     "browseProducts": "इलेक्ट्रॉनिक्स आणि गॅजेट्सची आमची विस्तृत निवड पहा",
@@ -232,7 +244,45 @@
     "verified": "पडताळणी केली",
     "protected": "संरक्षित",
     "maharashtra": "महाराष्ट्र",
-    "startShopping": "आता खरेदी सुरू करा आणि अजोड किमतीत नवीनतम इलेक्ट्रॉनिक्स शोधा"
+    "startShopping": "आता खरेदी सुरू करा आणि अजोड किमतीत नवीनतम इलेक्ट्रॉनिक्स शोधा",
+    "nameRequired": "नाव आवश्यक आहे",
+    "phoneRequired": "फोन आवश्यक आहे",
+    "invalidPhone": "वैध 10 अंकी फोन टाका",
+    "stateRequired": "राज्य आवश्यक आहे",
+    "cityRequired": "शहर आवश्यक आहे",
+    "addressRequired": "पत्ता आवश्यक आहे",
+    "pincodeRequired": "पिनकोड आवश्यक आहे",
+    "invalidPincode": "वैध 6 अंकी पिनकोड टाका",
+    "profileTitle": "प्रोफाइल",
+    "profilePersonalInfo": "वैयक्तिक माहिती",
+    "profileAccountSettings": "खाते सेटिंग्ज",
+    "profileChangePassword": "पासवर्ड बदला",
+    "profileUpdateSuccess": "प्रोफाइल यशस्वीपणे अद्यतनित केले",
+    "profileConfirmLogout": "आपण लॉगआउट करू इच्छिता याची खात्री आहे?",
+    "profileAccountCreated": "खाते तयार केले",
+    "profileUserID": "वापरकर्ता आयडी",
+    "profileRoleAdmin": "प्रशासन",
+    "profileRoleUser": "वापरकर्ता",
+    "currentPassword": "सध्याचा पासवर्ड",
+    "newPassword": "नवीन पासवर्ड",
+    "passwordChangeSuccess": "पासवर्ड यशस्वीपणे बदलला!",
+    "emailChangeRequiresVerification": "ईमेल बदलण्यासाठी पडताळणी आवश्यक आहे. अपडेट करण्यासाठी समर्थनाशी संपर्क साधा.",
+    "emailUpdateInfo": "ईमेल बदलण्यासाठी पडताळणी आवश्यक आहे. अपडेट करण्यासाठी समर्थनाशी संपर्क साधा.",
+    "passwordStrength": "पासवर्ड शक्ती",
+    "passwordWeak": "कमकुवत",
+    "passwordMedium": "मध्यम",
+    "passwordStrong": "मजबूत",
+    "passwordRequirements": "पासवर्ड आवश्यकता:",
+    "oneUppercase": "एक मोठे अक्षर",
+    "oneNumber": "एक संख्या",
+    "passwordChangeInfo": "तुमचा वर्तमान पासवर्ड प्रविष्ट करा आणि नवीन सुरक्षित पासवर्ड निवडा",
+    "profilePhotoUpdated": "प्रोफाइल फोटो यशस्वीरित्या अपडेट केला",
+    "nameRequired": "नाव आवश्यक आहे",
+    "phoneRequired": "फोन आवश्यक आहे",
+    "invalidPhone": "अवैध फोन नंबर",
+    "cityRequired": "शहर आवश्यक आहे",
+    "addressRequired": "पत्ता आवश्यक आहे",
+    "invalidPincode": "अवैध पिनकोड"
   },
   "footer": {
     "aboutDesc": "महाराष्ट्रातील प्रामाणिक इलेक्ट्रॉनिक्स आणि गॅजेट्सचे आपले प्रमुख गंतव्य.",
@@ -243,6 +293,7 @@
     "availability": "उपलब्धता",
     "available247": "24/7 उपलब्ध",
     "connect": "जोडा",
+    "servingMaharashtra": "महाराष्ट्र सेवा",
     "allRightsReserved": "सर्व हक्क राखीव",
     "privacyPolicy": "गोपनीयता धोरण",
     "termsOfService": "सेवा अटी",
@@ -281,5 +332,20 @@
     "october": "ऑक्टोबर",
     "november": "नोव्हेंबर",
     "december": "डिसेंबर"
+  },
+  "states": {
+    "maharashtra": "महाराष्ट्र"
+  },
+  "cities": {
+    "mumbai": "मुंबई",
+    "pune": "पुणे",
+    "nagpur": "नागपूर",
+    "nashik": "नाशिक",
+    "aurangabad": "औरंगाबाद",
+    "solapur": "सोलापूर",
+    "kolhapur": "कोल्हापूर",
+    "thane": "ठाणे",
+    "naviMumbai": "नवी मुंबई",
+    "other": "इतर"
   }
 }

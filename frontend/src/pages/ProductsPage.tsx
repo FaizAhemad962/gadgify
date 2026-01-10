@@ -318,7 +318,7 @@ const ProductsPage = () => {
                   </CardContent>
 
                   {/* Action Buttons */}
-                  <CardActions sx={{ p: 2, gap: 1.5, display: 'flex', flexDirection: 'row' }}>
+                  <CardActions sx={{ p: 2, gap: 1.5, display: 'flex', flexWrap: 'wrap' }}>
                     <Button
                       variant="outlined"
                       size="small"
