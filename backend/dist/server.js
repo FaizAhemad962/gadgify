@@ -19,7 +19,10 @@ const cartRoutes_1 = __importDefault(require("./routes/cartRoutes"));
 const orderRoutes_1 = __importDefault(require("./routes/orderRoutes"));
 const adminRoutes_1 = __importDefault(require("./routes/adminRoutes"));
 const app = (0, express_1.default)();
-const uploadDir = '/var/data/uploads';
+// Upload directory configuration (Render persistent disk in production)
+const uploadDir = process.env.NODE_ENV === 'production'
+    ? '/var/data/uploads'
+    : './uploads';
 // Trust proxy (for rate limiting and logging)
 app.set('trust proxy', 1);
 // Security middleware

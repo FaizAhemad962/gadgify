@@ -17,6 +17,7 @@ import {
 } from '@mui/material'
 import { useCart } from '../context/CartContext'
 import { useAuth } from '../context/AuthContext'
+import { ErrorHandler } from '../utils/errorHandler'
 import { ordersApi } from '../api/orders'
 
 const shippingSchema = z.object({
@@ -77,7 +78,9 @@ const CheckoutPage = () => {
               clearCart()
               navigate(`/orders/${order.id}`)
             } catch (err) {
-              setError(t('errors.paymentVerificationFailed'))
+              const message = ErrorHandler.getUserFriendlyMessage(err, t('errors.paymentVerificationFailed'))
+              setError(message)
+              ErrorHandler.logError('Payment verification failed', err)
             }
           },
           prefill: {
@@ -96,12 +99,15 @@ const CheckoutPage = () => {
         })
         razorpay.open()
       } catch (err) {
-        setError(t('errors.failedToInitiatePayment'))
+        const message = ErrorHandler.getUserFriendlyMessage(err, t('errors.failedToInitiatePayment'))
+        setError(message)
+        ErrorHandler.logError('Payment initiation failed', err)
       }
     },
     onError: (error: Error) => {
-      setError(t('errors.somethingWrong'))
-      console.error('Order creation failed:', error)
+      const message = ErrorHandler.getUserFriendlyMessage(error, t('errors.somethingWrong'))
+      setError(message)
+      ErrorHandler.logError('Order creation failed', error)
     },
   })
 

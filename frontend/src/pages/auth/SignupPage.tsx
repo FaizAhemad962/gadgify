@@ -21,6 +21,7 @@ import {
 import { Visibility, VisibilityOff } from '@mui/icons-material'
 import { authApi } from '../../api/auth'
 import { useAuth } from '../../context/AuthContext'
+import { ErrorHandler } from '../../utils/errorHandler'
 import { getMaharashtraCities } from '../../constants/location'
 import LanguageSelector from '../../components/common/LanguageSelector'
 
@@ -69,7 +70,9 @@ const SignupPage = () => {
       navigate('/')
     },
     onError: (error: any) => {
-      setError(error.response?.data?.message || t('errors.somethingWrong'))
+      const message = ErrorHandler.getUserFriendlyMessage(error, t('errors.somethingWrong'))
+      setError(message)
+      ErrorHandler.logError('Signup failed', error)
     },
   })
 

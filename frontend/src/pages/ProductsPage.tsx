@@ -18,6 +18,7 @@ import { ShoppingCart } from '@mui/icons-material'
 import { productsApi } from '../api/products'
 import { useCart } from '../context/CartContext'
 import { useAuth } from '../context/AuthContext'
+import { ErrorHandler } from '../utils/errorHandler'
 import LazyImage from '../components/common/LazyImage'
 import { StarRating } from '../components/common/StarRating'
 
@@ -27,7 +28,7 @@ const ProductsPage = () => {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const { isAuthenticated } = useAuth()
-  const { addToCart } = useCart()
+  const { addToCart, cart, updateQuantity } = useCart()
   const [searchParams, setSearchParams] = useSearchParams()
   const [searchQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
@@ -87,25 +88,35 @@ const ProductsPage = () => {
     setDisplayCount(PRODUCTS_PER_PAGE)
   }, [searchQuery, selectedCategory])
 
-  const handleAddToCart = async (productId: string) => {
+  const handleAddToCart = async (productId: string, quantity: number = 1) => {
     if (!isAuthenticated) {
       navigate('/login')
       return
     }
     try {
-      await addToCart({ productId, quantity: 1 })
+      await addToCart({ productId, quantity })
       // Toast notification would go here
     } catch (error) {
+      ErrorHandler.logError('Add to cart failed', error)
       console.error('Failed to add to cart:', error)
     }
   }
 
-  const handleBuyNow = async (productId: string) => {
+  const handleBuyNow = async (productId: string, quantity: number = 1) => {
     if (!isAuthenticated) {
       navigate('/login')
       return
     }
-    await handleAddToCart(productId)
+    // Check if item is already in cart
+    const cartItem = cart?.items?.find(item => item.productId === productId)
+    if (cartItem) {
+      // If quantity is different, update it
+      if (cartItem.quantity !== quantity) {
+        await updateQuantity(cartItem.id, quantity)
+      }
+    } else {
+      await addToCart({ productId, quantity })
+    }
     navigate('/cart')
   }
 
@@ -113,7 +124,7 @@ const ProductsPage = () => {
   if (error) {
     return (
       <Container sx={{ py: 4 }}>
-        <Alert severity="error">{t('errors.somethingWrong')}</Alert>
+        <Alert severity="error">{ErrorHandler.getUserFriendlyMessage(error, t('errors.somethingWrong'))}</Alert>
       </Container>
     )
   }
@@ -323,7 +334,7 @@ const ProductsPage = () => {
                       variant="outlined"
                       size="small"
                       startIcon={<ShoppingCart sx={{ fontSize: '1.1rem' }} />}
-                      onClick={() => handleAddToCart(product.id)}
+                      onClick={() => handleAddToCart(product.id, 1)}
                       disabled={product.stock === 0}
                       sx={{ fontWeight: 600, py: 1.2, flex: 1 }}
                     >
@@ -332,7 +343,7 @@ const ProductsPage = () => {
                     <Button
                       variant="contained"
                       size="small"
-                      onClick={() => handleBuyNow(product.id)}
+                      onClick={() => handleBuyNow(product.id, 1)}
                       disabled={product.stock === 0}
                       sx={{ 
                         fontWeight: 600, 

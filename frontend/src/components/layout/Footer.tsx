@@ -321,7 +321,7 @@ const Footer = () => {
                 {t('footer.returnPolicy')}
               </Link>
             </Box>
-            <Typography variant="caption" sx={{ color: '#505050', fontSize: '0.8rem', textAlign: { xs: 'center', md: 'right' } }}>
+            <Typography variant="caption" sx={{ color: '#726f6fff', fontSize: '0.8rem', textAlign: { xs: 'center', md: 'right' } }}>
               {t('footer.madeWith')}
             </Typography>
           </Box>

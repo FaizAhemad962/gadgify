@@ -10,6 +10,7 @@ import {
   Divider
 } from '@mui/material'
 import { Add, Remove, Delete, ShoppingCartOutlined } from '@mui/icons-material'
+import QuantityInput from '../components/common/QuantityInput'
 import { useCart } from '../context/CartContext'
 
 const CartPage = () => {
@@ -129,27 +130,13 @@ const CartPage = () => {
 
                   {/* Quantity and Remove */}
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, justifyContent: 'space-between', mt: 2 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, border: '1px solid #ddd', borderRadius: 1, p: 0.5, bgcolor: '#f9f9f9' }}>
-                      <IconButton
-                        size="small"
-                        onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
-                        disabled={item.quantity <= 1}
-                        sx={{ '&:disabled': { opacity: 0.5 } }}
-                      >
-                        <Remove sx={{ fontSize: '1.2rem' }} />
-                      </IconButton>
-                      <Typography sx={{ minWidth: 35, textAlign: 'center', fontWeight: 600, color: 'text.primary' }}>
-                        {item.quantity}
-                      </Typography>
-                      <IconButton
-                        size="small"
-                        onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
-                        disabled={item.quantity >= item.product.stock}
-                        sx={{ '&:disabled': { opacity: 0.5 } }}
-                      >
-                        <Add sx={{ fontSize: '1.2rem' }} />
-                      </IconButton>
-                    </Box>
+                    <QuantityInput
+                      value={item.quantity}
+                      min={1}
+                      max={item.product.stock}
+                      onChange={q => handleQuantityChange(item.id, q)}
+                      disabled={isLoading}
+                    />
                     <Typography variant="body2" sx={{ fontWeight: 600, color: 'text.secondary' }}>
                       ₹{((item.product.price || 0) * item.quantity).toLocaleString()}
                     </Typography>

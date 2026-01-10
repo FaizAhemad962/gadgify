@@ -5,6 +5,7 @@ import { useMutation } from '@tanstack/react-query'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
+import { type AxiosError } from 'axios'
 import {
   Container,
   Paper,
@@ -20,6 +21,7 @@ import {
 import { Visibility, VisibilityOff } from '@mui/icons-material'
 import { authApi } from '../../api/auth'
 import { useAuth } from '../../context/AuthContext'
+import { ErrorHandler } from '../../utils/errorHandler'
 import LanguageSelector from '../../components/common/LanguageSelector'
 
 const loginSchema = z.object({
@@ -42,6 +44,8 @@ const LoginPage = () => {
     formState: { errors },
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
+    mode: 'onSubmit',
+    reValidateMode: 'onSubmit',
   })
 
   const loginMutation = useMutation({
@@ -50,18 +54,16 @@ const LoginPage = () => {
       login(data.token, data.user)
       navigate('/')
     },
-    onError: (error: any) => {
-      setError(error.response?.data?.message || t('errors.somethingWrong'))
+    onError: (error: AxiosError<{ message: string }>) => {
+      const message = ErrorHandler.getUserFriendlyMessage(error, t('errors.somethingWrong'))
+      setError(message)
+      ErrorHandler.logError('Login failed', error)
     },
   })
 
   const onSubmit = async (data: LoginFormData) => {
     setError('')
-    try {
-      await loginMutation.mutateAsync(data)
-    } catch (err: any) {
-      // Error is handled in onError callback
-    }
+    await loginMutation.mutateAsync(data)
   }
 
   return (

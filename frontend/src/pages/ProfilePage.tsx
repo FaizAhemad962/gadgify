@@ -19,6 +19,7 @@ import {
 } from '@mui/material'
 import { ArrowBack, Edit, Save, Cancel, CameraAlt } from '@mui/icons-material'
 import { useAuth } from '../context/AuthContext'
+import { ErrorHandler } from '../utils/errorHandler'
 import { getMaharashtraCities, getCurrentCityLabel, findCityKey } from '../constants/location'
 import { authApi } from '../api/auth'
 
@@ -133,7 +134,9 @@ const ProfilePage = () => {
         window.location.reload()
       }
     } catch (err: any) {
-      setError(err.response?.data?.message || err.message || t('errors.somethingWrong'))
+      const message = ErrorHandler.getUserFriendlyMessage(err, t('errors.somethingWrong'))
+      setError(message)
+      ErrorHandler.logError('Profile update failed', err)
     } finally {
       setIsLoading(false)
     }
@@ -173,7 +176,9 @@ const ProfilePage = () => {
         window.location.reload()
       }
     } catch (err: any) {
-      setError(err.response?.data?.message || err.message || t('errors.somethingWrong'))
+      const message = ErrorHandler.getUserFriendlyMessage(err, t('errors.somethingWrong'))
+      setError(message)
+      ErrorHandler.logError('Photo upload failed', err)
     } finally {
       setIsUploadingPhoto(false)
     }

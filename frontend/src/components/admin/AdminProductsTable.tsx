@@ -112,20 +112,26 @@ export const AdminProductsTable = ({
                 }}
               >
                 <TableCell sx={{ py: 1.5 }}>
-                  <Box
-                    component="img"
-                    src={product.imageUrl || 'https://via.placeholder.com/50'}
-                    alt={product.name}
-                    sx={{
-                      width: 50,
-                      height: 50,
-                      objectFit: 'cover',
-                      borderRadius: '6px',
-                    }}
-                    onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
-                      (e.currentTarget as HTMLImageElement).src = 'https://via.placeholder.com/50'
-                    }}
-                  />
+                  {product.imageUrl ? (
+                    <Box
+                      component="img"
+                      src={product.imageUrl}
+                      alt={product.name}
+                      sx={{
+                        width: 50,
+                        height: 50,
+                        objectFit: 'cover',
+                        borderRadius: '6px',
+                      }}
+                      onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
+                        (e.currentTarget as HTMLImageElement).style.display = 'none';
+                      }}
+                    />
+                  ) : (
+                    <Box sx={{ width: 50, height: 50 }}>
+                      <Skeleton variant="rectangular" width={50} height={50} />
+                    </Box>
+                  )}
                 </TableCell>
                 <TableCell sx={{ color: '#e0e0e0', fontWeight: '500' }}>
                   {product.name}

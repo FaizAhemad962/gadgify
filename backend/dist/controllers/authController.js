@@ -214,8 +214,8 @@ const updateProfilePhoto = async (req, res, next) => {
             res.status(400).json({ message: 'No image file provided' });
             return;
         }
-        // Get Cloudinary URL from multer upload
-        const profilePhotoUrl = req.file.path;
+        // Get file URL (relative path for serving via static middleware)
+        const profilePhotoUrl = `/uploads/${req.file.filename}`;
         // Update user profile photo
         const updatedUser = await database_1.default.user.update({
             where: { id: userId },

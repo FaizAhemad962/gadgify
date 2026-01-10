@@ -134,7 +134,8 @@ export const login = async (
     // Find user
     const user = await prisma.user.findUnique({ where: { email } })
     if (!user) {
-      // SECURITY: Don't reveal if email exists
+      // SECURITY: Don't reveal if email exists; log internally for debugging
+      logger.warn(`Login failed: user not found for ${email}`)
       recordFailedLoginAttempt(email)
       res.status(401).json({ message: 'Invalid credentials' })
       return
@@ -143,7 +144,8 @@ export const login = async (
     // Verify password
     const isValidPassword = await comparePassword(password, user.password)
     if (!isValidPassword) {
-      // SECURITY: Track failed attempt
+      // SECURITY: Track failed attempt; log internally for debugging
+      logger.warn(`Login failed: bad password for ${email}`)
       recordFailedLoginAttempt(email)
       res.status(401).json({ message: 'Invalid credentials' })
       return

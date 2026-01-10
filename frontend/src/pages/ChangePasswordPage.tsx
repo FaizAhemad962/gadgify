@@ -20,6 +20,7 @@ import {
 } from '@mui/material'
 import { ArrowBack, Visibility, VisibilityOff, LockReset, CheckCircle, Cancel } from '@mui/icons-material'
 import { authApi } from '../api/auth'
+import { ErrorHandler } from '../utils/errorHandler'
 
 const ChangePasswordPage = () => {
   const { t } = useTranslation()
@@ -117,7 +118,9 @@ const ChangePasswordPage = () => {
         navigate('/profile')
       }, 2000)
     } catch (err: any) {
-      setError(err.response?.data?.message || err.message || t('errors.somethingWrong'))
+      const message = ErrorHandler.getUserFriendlyMessage(err, t('errors.somethingWrong'))
+      setError(message)
+      ErrorHandler.logError('Change password failed', err)
     } finally {
       setIsLoading(false)
     }

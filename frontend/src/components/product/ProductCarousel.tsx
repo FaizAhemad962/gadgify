@@ -1,9 +1,13 @@
+
+
+
 import React, { useState } from 'react'
 import {
   Box,
   IconButton,
   Typography,
   Modal,
+  Skeleton,
 } from '@mui/material'
 import { ChevronLeft, ChevronRight, Close, PlayArrow } from '@mui/icons-material'
 
@@ -20,6 +24,8 @@ interface ProductCarouselProps {
 export const ProductCarousel: React.FC<ProductCarouselProps> = ({ items }) => {
   const [modalOpen, setModalOpen] = useState(false)
   const [modalActiveStep, setModalActiveStep] = useState(0)
+  const [imgLoaded, setImgLoaded] = useState<boolean[]>(items.map(() => false))
+  const [imgError, setImgError] = useState<boolean[]>(items.map(() => false))
 
   const handleThumbnailClick = (index: number) => {
     setModalActiveStep(index)
@@ -58,6 +64,40 @@ export const ProductCarousel: React.FC<ProductCarouselProps> = ({ items }) => {
       </Box>
     )
   }
+
+  // ...existing code...
+
+  // Example usage for main image/video rendering (replace your main render logic accordingly):
+  // For images:
+  // <Box sx={{ width: 350, height: 350, position: 'relative' }}>
+  //   {(!imgLoaded[modalActiveStep] && !imgError[modalActiveStep]) && (
+  //     <Skeleton variant="rectangular" width={350} height={350} />
+  //   )}
+  //   {items[modalActiveStep].type === 'image' && !imgError[modalActiveStep] && (
+  //     <img
+  //       src={items[modalActiveStep].url}
+  //       alt={items[modalActiveStep].alt || ''}
+  //       style={{ width: 350, height: 350, objectFit: 'cover', display: imgLoaded[modalActiveStep] ? 'block' : 'none' }}
+  //       onLoad={() => {
+  //         setImgLoaded((prev) => prev.map((v, i) => i === modalActiveStep ? true : v))
+  //       }}
+  //       onError={() => {
+  //         setImgError((prev) => prev.map((v, i) => i === modalActiveStep ? true : v))
+  //       }}
+  //     />
+  //   )}
+  //   {items[modalActiveStep].type === 'video' && (
+  //     <video width={350} height={350} controls>
+  //       <source src={items[modalActiveStep].url} type="video/mp4" />
+  //       Your browser does not support the video tag.
+  //     </video>
+  //   )}
+  //   {imgError[modalActiveStep] && (
+  //     <Box sx={{ width: 350, height: 350, display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: '#eee' }}>
+  //       <Typography color="text.secondary">Image not available</Typography>
+  //     </Box>
+  //   )}
+  // </Box>
 
   // Always show the first item as main image
   const mainItem = items[0]

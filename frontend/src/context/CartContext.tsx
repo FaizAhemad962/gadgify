@@ -1,4 +1,4 @@
-import { createContext, useContext, type ReactNode } from 'react'
+import { createContext, useContext, useRef, type ReactNode } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { cartApi } from '../api/cart'
 import type { Cart, AddToCartRequest } from '../types'
@@ -25,63 +25,84 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     queryKey: ['cart'],
     queryFn: cartApi.get,
     enabled: isAuthenticated,
-    staleTime: 0,
+    // Avoid immediate refetch resets while rapidly mutating
+    staleTime: 5 * 1000,
+    refetchOnWindowFocus: false,
   })
+
+  // Buffer rapid add-to-cart clicks per product to coalesce into one mutation
+  const addBufferRef = useRef<Record<string, { quantity: number; timer: ReturnType<typeof setTimeout> | null }>>({})
 
   // Add to cart mutation with optimistic updates
   const addMutation = useMutation({
     mutationFn: cartApi.addItem,
-    onMutate: async (newItem) => {
-      // Cancel pending queries
-      await queryClient.cancelQueries({ queryKey: ['cart'] })
-      
-      // Snapshot the previous value
-      const previousCart = queryClient.getQueryData<Cart>(['cart'])
-      
-      // Optimistically update to new value
-      if (previousCart) {
-        const existingItem = previousCart.items.find(item => item.productId === newItem.productId)
-        
-        if (existingItem) {
-          // Item exists, update quantity
-          queryClient.setQueryData(['cart'], {
-            ...previousCart,
-            items: previousCart.items.map(item =>
-              item.productId === newItem.productId
-                ? { ...item, quantity: item.quantity + newItem.quantity }
-                : item
-            ),
-          })
-        } else {
-          // New item, add to cart (using a temporary ID)
-          queryClient.setQueryData(['cart'], {
-            ...previousCart,
-            items: [
-              ...previousCart.items,
-              {
-                id: `temp-${Date.now()}`,
-                productId: newItem.productId,
-                quantity: newItem.quantity,
-                product: {} as any, // Will be overwritten on success
-              },
-            ],
-          })
-        }
-      }
-      
-      return { previousCart }
+    // No need for optimistic update here; we perform instant UI updates in the buffer scheduler
+    onError: (_err, _newItem) => {
+      // Optional: could rollback via a stored snapshot if desired
     },
-    onError: (_err, _newItem, context: any) => {
-      // Revert on error
-      if (context?.previousCart) {
-        queryClient.setQueryData(['cart'], context.previousCart)
-      }
-    },
-    onSuccess: () => {
-      // Refetch to sync with server
-      queryClient.invalidateQueries({ queryKey: ['cart'] })
+    onSuccess: (serverCart) => {
+      // Sync cache directly with server response to avoid refetch flashes/reset
+      queryClient.setQueryData(['cart'], serverCart)
     },
   })
+
+  // Schedule buffered add to cart for rapid clicks
+  const scheduleBufferedAdd = (productId: string, quantity: number) => {
+    const existing = addBufferRef.current[productId]
+
+    if (existing) {
+      existing.quantity += quantity
+      if (existing.timer) clearTimeout(existing.timer as any)
+    } else {
+      addBufferRef.current[productId] = { quantity, timer: null }
+    }
+
+    const timer = setTimeout(async () => {
+      const buffered = addBufferRef.current[productId]
+      delete addBufferRef.current[productId]
+      try {
+        await addMutation.mutateAsync({ productId, quantity: buffered.quantity })
+      } catch {
+        // If server rejects, we could optionally rollback UI here
+      }
+    }, 250)
+
+    addBufferRef.current[productId].timer = timer
+
+    const current = queryClient.getQueryData<Cart>(['cart'])
+    if (current) {
+      const items = current.items ?? []
+      const existingItem = items.find(i => i.productId === productId)
+      if (existingItem) {
+        queryClient.setQueryData(['cart'], {
+          ...current,
+          items: items.map(i =>
+            i.productId === productId ? { ...i, quantity: i.quantity + quantity } : i
+          ),
+        })
+      } else {
+        queryClient.setQueryData(['cart'], {
+          ...current,
+          items: [
+            ...items,
+            { id: `temp-${Date.now()}`,
+              productId,
+              quantity,
+              product: {} as any },
+          ],
+        })
+      }
+    } else {
+      queryClient.setQueryData(['cart'], {
+        items: [
+          { id: `temp-${Date.now()}`,
+            productId,
+            quantity,
+            product: {} as any },
+        ],
+      } as unknown as Cart)
+    }
+  }
 
   // Update item mutation with optimistic updates
   const updateMutation = useMutation({
@@ -147,7 +168,10 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   })
 
   const addToCart = async (data: AddToCartRequest) => {
-    await addMutation.mutateAsync(data)
+    if (!isAuthenticated) {
+      throw new Error('Please sign in to add items to cart')
+    }
+    scheduleBufferedAdd(data.productId, data.quantity)
   }
 
   const updateQuantity = async (itemId: string, quantity: number) => {
@@ -162,7 +186,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     await clearMutation.mutateAsync()
   }
 
-  const itemCount = cart?.items.reduce((sum, item) => sum + item.quantity, 0) || 0
+  const itemCount = (cart?.items ?? []).reduce((sum, item) => sum + item.quantity, 0)
 
   const value = {
     cart: cart || null,

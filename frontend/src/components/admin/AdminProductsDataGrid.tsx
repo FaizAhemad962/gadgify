@@ -38,17 +38,24 @@ export const AdminProductsDataGrid = ({
       sortable: false,
       filterable: false,
       renderCell: (params: GridRenderCellParams) => (
-        <Box
-          component="img"
-          src={params.value || 'https://via.placeholder.com/50'}
-          alt={params.row.name}
-          sx={{
-            width: 50,
-            height: 50,
-            objectFit: 'cover',
-            borderRadius: '6px',
-          }}
-        />
+        params.value ? (
+          <Box
+            component="img"
+            src={params.value}
+            alt={params.row.name}
+            sx={{
+              width: 50,
+              height: 50,
+              objectFit: 'cover',
+              borderRadius: '6px',
+            }}
+            onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
+              (e.currentTarget as HTMLImageElement).style.display = 'none';
+            }}
+          />
+        ) : (
+          <Skeleton variant="rectangular" width={50} height={50} />
+        )
       ),
     },
     {

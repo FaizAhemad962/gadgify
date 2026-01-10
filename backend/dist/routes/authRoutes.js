@@ -13,5 +13,5 @@ router.post('/login', rateLimiter_1.authLimiter, (0, validate_1.validate)(valida
 router.get('/profile', auth_1.authenticate, authController_1.getProfile);
 router.put('/profile', auth_1.authenticate, (0, validate_1.validate)(validators_1.updateProfileSchema), authController_1.updateProfile);
 router.post('/change-password', auth_1.authenticate, (0, validate_1.validate)(validators_1.changePasswordSchema), authController_1.changePassword);
-router.post('/profile-photo', auth_1.authenticate, upload_1.uploadSingle, authController_1.updateProfilePhoto);
+router.post('/profile-photo', auth_1.authenticate, upload_1.upload.single('image'), authController_1.updateProfilePhoto);
 exports.default = router;
