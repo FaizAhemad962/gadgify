@@ -1,11 +1,11 @@
-import { TextField, type TextFieldProps } from '@mui/material'
+import { TextField, type TextFieldProps, type SxProps, type Theme } from '@mui/material'
 
 type CustomTextFieldProps = TextFieldProps & {
   isDarkTheme?: boolean
 }
 
 export const CustomTextField = ({ isDarkTheme = true, ...props }: CustomTextFieldProps) => {
-  const darkThemeStyles = isDarkTheme ? {
+  const darkThemeStyles: SxProps<Theme> = isDarkTheme ? {
     '& .MuiOutlinedInput-root': {
       color: '#b0b0b0',
       bgcolor: '#242628',
@@ -21,10 +21,7 @@ export const CustomTextField = ({ isDarkTheme = true, ...props }: CustomTextFiel
   return (
     <TextField
       {...props}
-      sx={{
-        ...darkThemeStyles,
-        ...props.sx,
-      }}
+      sx={[darkThemeStyles, props.sx ?? {}] as SxProps<Theme>}
     />
   )
 }
