@@ -47,13 +47,18 @@ router.post(
   authenticate,
   authorize('ADMIN'),
   uploadLimiter,
-  videoUpload.single('video'),
-  (req: Request, res: Response) => {
-    if (!req.file) {
-      return res.status(400).json({ message: 'No video file uploaded' })
-    }
-    const videoUrl = `/uploads/${req.file.filename}`
-    res.json({ videoUrl })
+  (req: Request, res: Response, next) => {
+    videoUpload.single('video')(req, res, function (err) {
+      if (err instanceof Error) {
+        // Multer error (file too large, invalid type, etc.)
+        return res.status(400).json({ success: false, message: err.message })
+      }
+      if (!req.file) {
+        return res.status(400).json({ success: false, message: 'No video file uploaded' })
+      }
+      const videoUrl = `/uploads/${req.file.filename}`
+      res.json({ success: true, videoUrl })
+    })
   }
 )
 

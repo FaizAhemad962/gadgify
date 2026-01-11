@@ -47,7 +47,7 @@ const productSchema = z.object({
   imageUrl: z.string().optional(),
   videoUrl: z.string().optional(),
   colors: z.string().optional(),
-  category: z.string().min(2, 'Category is required'),
+  category: z.string().min(1, 'Category is required'),
   hsnNo: z.string().optional(),
   gstPercentage: z
     .string()
@@ -177,7 +177,7 @@ const AdminProducts = () => {
         imageUrl: '',
         videoUrl: '',
         colors: '',
-        category: '',
+        category: CATEGORIES[0],
         hsnNo: '',
         gstPercentage: undefined,
       })
@@ -244,9 +244,9 @@ const AdminProducts = () => {
   const handleVideoFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
-      // Check file size: 2MB limit
-      if (file.size > 2 * 1024 * 1024) {
-        setError('Video size should not exceed 2MB')
+      // Check file size: 50MB limit
+      if (file.size > 50 * 1024 * 1024) {
+        setError('Video size should not exceed 50MB')
         return
       }
       setVideoFile(file)
@@ -491,11 +491,10 @@ const AdminProducts = () => {
                   <Select
                     label={t('admin.category')}
                     {...register('category')}
-                    defaultValue={editingProduct?.category || ''}
+                    defaultValue={editingProduct?.category || CATEGORIES[0]}
                     onChange={(e) => {
                       setSelectedCategory(e.target.value)
                     }}
-                  
                     MenuProps={{
                       PaperProps: {
                         sx: {

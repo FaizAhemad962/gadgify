@@ -61,7 +61,7 @@ export const upload = multer({
 export const videoUpload = multer({
   storage,
   limits: {
-    fileSize: 2 * 1024 * 1024, // 2MB limit for videos
+    fileSize: 50 * 1024 * 1024, // 50MB limit for videos
   },
   fileFilter: videoFileFilter,
 })
