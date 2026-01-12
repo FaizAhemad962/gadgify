@@ -32,24 +32,23 @@ export const AdminProductsDataGrid = ({
 
   const columns: GridColDef[] = [
     {
-      field: 'mediaImage',
+      field: 'mediaImagePreview',
       headerName: t('admin.image'),
       minWidth: 80,
       sortable: false,
       filterable: false,
-      valueGetter: (params: any) => {
-        console.log(params)
-        if (!params || !params.row || !Array.isArray(params.row.media)) return '';
-        const media = params.row.media;
+      renderCell: (params: GridRenderCellParams) => {
+        if (!params || !params.row) return <Skeleton variant="rectangular" width={50} height={50} />;
+        const media = Array.isArray(params.row.media) ? params.row.media : [];
         const img = media.find((m: any) => m.type === 'image' && m.isPrimary) || media.find((m: any) => m.type === 'image');
-        return img ? img.url : '';
-      },
-      renderCell: (params: GridRenderCellParams) => (
-        params.value ? (
+        if (!img || !img.url) {
+          return <Skeleton variant="rectangular" width={50} height={50} />;
+        }
+        return (
           <Box
             component="img"
-            src={params.value}
-            alt={params.row.name}
+            src={img.url}
+            alt={params.row?.name || ''}
             sx={{
               width: 50,
               height: 50,
@@ -60,10 +59,8 @@ export const AdminProductsDataGrid = ({
               (e.currentTarget as HTMLImageElement).style.display = 'none';
             }}
           />
-        ) : (
-          <Skeleton variant="rectangular" width={50} height={50} />
-        )
-      ),
+        );
+      },
     },
     {
       field: 'name',

@@ -15,9 +15,10 @@ import {
   FormControl,
   InputLabel,
   Select,
-  MenuItem
+  MenuItem,
+  IconButton
 } from '@mui/material'
-import { Add, Upload, Search } from '@mui/icons-material'
+import { Add, Upload, Search, Star, Delete } from '@mui/icons-material'
 import { useForm, type SubmitHandler } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -43,16 +44,15 @@ const CATEGORIES = [
 const productSchema = z.object({
   name: z.string().min(2, 'Name is required'),
   description: z.string().min(10, 'Description must be at least 10 characters'),
-  price: z.number().min(1, 'Price must be greater than 0'),
-  stock: z.number().min(0, 'Stock cannot be negative'),
+  price: z.coerce.number({ error: 'Price is required' }).min(1, 'Price must be greater than 0'),
+  stock: z.coerce.number({ error: 'Stock is required' }).min(1, 'Stock must be greater than 0'),
   colors: z.string().optional(),
   category: z.string().min(1, 'Category is required'),
   hsnNo: z.string().optional(),
-  gstPercentage: z
-    .number()
-    .min(0, 'GST must be between 0 and 100')
-    .max(100, 'GST must be between 0 and 100')
-    .optional(),
+gstPercentage: z.coerce.number()
+  .min(0, 'GST must be between 0 and 100')
+  .max(100, 'GST must be between 0 and 100')
+  .optional(),
   media: z.array(z.object({ url: z.string(), type: z.enum(['image', 'video']), isPrimary: z.boolean().optional() })),
 })
 
@@ -160,8 +160,8 @@ const AdminProducts = () => {
       reset({
         name: '',
         description: '',
-        price: 0,
-        stock: 0,
+        price: undefined,
+        stock: undefined,
         media: [],
         colors: '',
         category: CATEGORIES[0],
@@ -607,24 +607,42 @@ const AdminProducts = () => {
                         alt={`Preview ${idx + 1}`}
                         sx={{ maxWidth: 120, maxHeight: 120, objectFit: 'contain', borderRadius: 1, border: '1px solid #3a3a3a' }}
                       />
-                      <Button
-                        size="small"
-                        variant={primaryImageIdx === idx ? 'contained' : 'outlined'}
-                        color={primaryImageIdx === idx ? 'primary' : 'inherit'}
-                        sx={{ position: 'absolute', top: 4, left: 4, zIndex: 2, fontSize: 10, px: 1, py: 0.2 }}
+                      {/* Primary Button */}
+                      <IconButton
                         onClick={() => setPrimaryImageIdx(idx)}
-                      >
-                        {primaryImageIdx === idx ? t('admin.primary') : t('admin.makePrimary')}
-                      </Button>
-                      <Button
+                        sx={{
+                          position: 'absolute',
+                          top: 6,
+                          left: 6,
+                          bgcolor: primaryImageIdx === idx ? 'warning.main' : 'white',
+                          color: primaryImageIdx === idx ? 'white' : 'grey.700',
+                          boxShadow: 2,
+                          '&:hover': { bgcolor: 'warning.dark' },
+                          zIndex: 2,
+                        }}
                         size="small"
-                        variant="outlined"
-                        color="error"
-                        sx={{ position: 'absolute', top: 4, right: 4, zIndex: 2, fontSize: 10, px: 1, py: 0.2 }}
-                        onClick={() => handleRemoveImage(idx)}
+                        title={primaryImageIdx === idx ? t('admin.primary') : t('admin.makePrimary')}
                       >
-                        {t('admin.remove')}
-                      </Button>
+                        <Star fontSize="small" />
+                      </IconButton>
+                      {/* Remove Button */}
+                      <IconButton
+                        onClick={() => handleRemoveImage(idx)}
+                        sx={{
+                          position: 'absolute',
+                          top: 6,
+                          right: 6,
+                          bgcolor: 'rgba(255,255,255,0.85)',
+                          color: 'error.main',
+                          boxShadow: 2,
+                          '&:hover': { bgcolor: 'error.main', color: 'white' },
+                          zIndex: 2,
+                        }}
+                        size="small"
+                        title={t('admin.remove')}
+                      >
+                        <Delete fontSize="small" />
+                      </IconButton>
                     </Box>
                   ))}
                 </Box>
