@@ -21,8 +21,16 @@ export const productSchema = Joi.object({
   description: Joi.string().min(10).required(),
   price: Joi.number().min(1).required(),
   stock: Joi.number().min(0).required(),
-  imageUrl: Joi.string().uri().required(),
-  videoUrl: Joi.string().uri().optional().allow(''),
+  media: Joi.array()
+    .items(
+      Joi.object({
+        url: Joi.string().uri().required(),
+        type: Joi.string().valid('image', 'video').required(),
+        isPrimary: Joi.boolean().optional(),
+      })
+    )
+    .min(1)
+    .required(),
   colors: Joi.string().optional().allow(''),
   category: Joi.string().min(2).required(),
   hsnNo: Joi.string().optional().allow(''),

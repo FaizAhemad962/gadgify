@@ -12,14 +12,19 @@ export interface User {
   createdAt: string
 }
 
+export interface ProductMedia {
+  id: string
+  url: string
+  type: 'image' | 'video'
+  isPrimary: boolean
+}
+
 export interface Product {
   id: string
   name: string
   description: string
   price: number
   stock: number
-  imageUrl: string
-  videoUrl?: string
   colors?: string
   category: string
   hsnNo?: string
@@ -28,6 +33,7 @@ export interface Product {
   updatedAt: string
   averageRating?: number
   totalRatings?: number
+  media: ProductMedia[]
 }
 
 export interface CartItem {
@@ -103,12 +109,11 @@ export interface CreateProductRequest {
   description: string
   price: number
   stock: number
-  imageUrl: string
   category: string
-  videoUrl?: string
   colors?: string
   hsnNo?: string
   gstPercentage?: number
+  media: { url: string; type: 'image' | 'video'; isPrimary?: boolean }[]
 }
 
 export type UpdateProductRequest = Partial<CreateProductRequest>

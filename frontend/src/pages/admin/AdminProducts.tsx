@@ -18,7 +18,7 @@ import {
   MenuItem
 } from '@mui/material'
 import { Add, Upload, Search } from '@mui/icons-material'
-import { useForm, type SubmitHandler, type Resolver } from 'react-hook-form'
+import { useForm, type SubmitHandler } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { productsApi } from '../../api/products'
@@ -39,27 +39,21 @@ const CATEGORIES = [
   'Wearables',
 ]
 
+
 const productSchema = z.object({
   name: z.string().min(2, 'Name is required'),
   description: z.string().min(10, 'Description must be at least 10 characters'),
   price: z.number().min(1, 'Price must be greater than 0'),
   stock: z.number().min(0, 'Stock cannot be negative'),
-  imageUrl: z.string().optional(),
-  videoUrl: z.string().optional(),
   colors: z.string().optional(),
   category: z.string().min(1, 'Category is required'),
   hsnNo: z.string().optional(),
   gstPercentage: z
-    .string()
-    .optional()
-    .transform((val) => {
-      if (val === undefined || val === '') return undefined
-      const num = Number(val)
-      return Number.isNaN(num) ? undefined : num
-    })
-    .refine((val) => val === undefined || (val >= 0 && val <= 100), {
-      message: 'GST must be between 0 and 100',
-    }),
+    .number()
+    .min(0, 'GST must be between 0 and 100')
+    .max(100, 'GST must be between 0 and 100')
+    .optional(),
+  media: z.array(z.object({ url: z.string(), type: z.enum(['image', 'video']), isPrimary: z.boolean().optional() })),
 })
 
 type ProductFormData = {
@@ -68,8 +62,7 @@ type ProductFormData = {
   price: number
   stock: number
   category: string
-  imageUrl?: string
-  videoUrl?: string
+  media: { url: string; type: 'image' | 'video'; isPrimary?: boolean }[]
   colors?: string
   hsnNo?: string
   gstPercentage?: number
@@ -81,10 +74,11 @@ const AdminProducts = () => {
   const [open, setOpen] = useState(false)
   const [editingProduct, setEditingProduct] = useState<Product | null>(null)
   const [error, setError] = useState('')
-  const [imageFile, setImageFile] = useState<File | null>(null)
-  const [imagePreview, setImagePreview] = useState('')
-  const [videoFile, setVideoFile] = useState<File | null>(null)
-  const [videoPreview, setVideoPreview] = useState('')
+  const [imageFiles, setImageFiles] = useState<File[]>([])
+  const [imagePreviews, setImagePreviews] = useState<string[]>([])
+  const [videoFiles, setVideoFiles] = useState<File[]>([])
+  const [videoPreviews, setVideoPreviews] = useState<string[]>([])
+  const [primaryImageIdx, setPrimaryImageIdx] = useState<number>(0)
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [_, setSelectedCategory] = useState('')
   const [page, setPage] = useState(0)
@@ -102,7 +96,7 @@ const AdminProducts = () => {
     reset,
     formState: { errors },
   } = useForm<ProductFormData>({
-    resolver: zodResolver(productSchema) as Resolver<ProductFormData>,
+    resolver: zodResolver(productSchema),
   })
 
   const createMutation = useMutation({
@@ -141,31 +135,25 @@ const AdminProducts = () => {
     if (product) {
       setEditingProduct(product)
       setSelectedCategory(product.category)
+      // If product.media exists, split into images/videos
+      const images = (product.media || []).filter((m) => m.type === 'image')
+      const videos = (product.media || []).filter((m) => m.type === 'video')
+      setImagePreviews(images.map((m) => m.url))
+      setVideoPreviews(videos.map((m) => m.url))
+      setImageFiles([])
+      setVideoFiles([])
+      setPrimaryImageIdx(images.findIndex((m) => m.isPrimary) >= 0 ? images.findIndex((m) => m.isPrimary) : 0)
       reset({
         name: product.name,
         description: product.description,
         price: product.price,
         stock: product.stock,
-        imageUrl: product.imageUrl,
-        videoUrl: product.videoUrl || '',
+        media: product.media || [],
         colors: product.colors || '',
         category: product.category,
         hsnNo: product.hsnNo || '',
         gstPercentage: product.gstPercentage ?? undefined,
       })
-      
-      // Set image preview
-      setImagePreview(product.imageUrl)
-      
-      // Set video preview - ensure full URL
-      if (product.videoUrl) {
-        // If it's already a full URL, use it; otherwise construct it
-        const videoUrl = product.videoUrl.startsWith('http') 
-          ? product.videoUrl 
-          : `http://localhost:5000${product.videoUrl}`
-        setVideoPreview(videoUrl)
-        console.log('Video preview URL:', videoUrl)
-      }
     } else {
       setEditingProduct(null)
       setSelectedCategory('')
@@ -174,143 +162,157 @@ const AdminProducts = () => {
         description: '',
         price: 0,
         stock: 0,
-        imageUrl: '',
-        videoUrl: '',
+        media: [],
         colors: '',
         category: CATEGORIES[0],
         hsnNo: '',
         gstPercentage: undefined,
       })
-      setImagePreview('')
-      setVideoPreview('')
+      setImagePreviews([])
+      setVideoPreviews([])
+      setImageFiles([])
+      setVideoFiles([])
+      setPrimaryImageIdx(0)
     }
     setOpen(true)
     setError('')
-    setImageFile(null)
-    setVideoFile(null)
   }
-
+          // Ensure productSchema includes media property to match ProductFormData
+          // Add this to your zod schema:
+          // media: z.array(z.object({ url: z.string(), type: z.string(), isPrimary: z.boolean().optional() })).optional(),
   const handleClose = () => {
     setOpen(false)
     setEditingProduct(null)
     reset()
     setError('')
-    setImageFile(null)
-    setVideoFile(null)
-    setImagePreview('')
-    setVideoPreview('')
+    setImageFiles([])
+    setVideoFiles([])
+    setImagePreviews([])
+    setVideoPreviews([])
   }
 
-  const handleRemoveImage = () => {
-    setImageFile(null)
-    setImagePreview('')
-    // Clear the imageUrl in the form
-    reset((formValues) => ({ ...formValues, imageUrl: '' }))
-    // If editing, clear the imageUrl from editingProduct
-    if (editingProduct) {
-      setEditingProduct({ ...editingProduct, imageUrl: '' })
-    }
+  const handleRemoveImage = (idx: number) => {
+    setImageFiles((prev) => prev.filter((_, i) => i !== idx))
+    setImagePreviews((prev) => prev.filter((_, i) => i !== idx))
+    if (primaryImageIdx === idx) setPrimaryImageIdx(0)
+    else if (primaryImageIdx > idx) setPrimaryImageIdx((prev) => prev - 1)
   }
 
-  const handleRemoveVideo = () => {
-    setVideoFile(null)
-    setVideoPreview('')
-    // Clear the videoUrl in the form
-    reset((formValues) => ({ ...formValues, videoUrl: '' }))
-    // If editing, clear the videoUrl from editingProduct
-    if (editingProduct) {
-      setEditingProduct({ ...editingProduct, videoUrl: '' })
-    }
+  const handleRemoveVideo = (idx: number) => {
+            media: z.array(z.object({ url: z.string(), type: z.string(), isPrimary: z.boolean().optional() })).optional(),
+    setVideoFiles((prev) => prev.filter((_, i) => i !== idx))
+    setVideoPreviews((prev) => prev.filter((_, i) => i !== idx))
   }
 
   const handleImageFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (file) {
-      // Check file size: 500KB limit
-      if (file.size > 500 * 1024) {
-        setError(t('admin.imageSizeError') || 'Image size should not exceed 500KB')
-        return
-      }
-      setImageFile(file)
-      // Show preview only - no need to convert to base64 for storage
+    const files = Array.from(e.target.files || [])
+    const validFiles = files.filter((file) => file.size <= 500 * 1024)
+    if (validFiles.length < files.length) {
+      setError(t('admin.imageSizeError') || 'Image size should not exceed 500KB')
+    }
+    setImageFiles((prev) => [...prev, ...validFiles])
+    validFiles.forEach((file) => {
       const reader = new FileReader()
       reader.onloadend = () => {
-        setImagePreview(reader.result as string)
+        setImagePreviews((prev) => [...prev, reader.result as string])
       }
       reader.readAsDataURL(file)
-    }
+    })
   }
 
   const handleVideoFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (file) {
-      // Check file size: 50MB limit
-      if (file.size > 50 * 1024 * 1024) {
-        setError('Video size should not exceed 50MB')
-        return
-      }
-      setVideoFile(file)
+    const files = Array.from(e.target.files || [])
+    const validFiles = files.filter((file) => file.size <= 50 * 1024 * 1024)
+    if (validFiles.length < files.length) {
+      setError('Video size should not exceed 50MB')
+    }
+    setVideoFiles((prev) => [...prev, ...validFiles])
+    validFiles.forEach((file) => {
       const reader = new FileReader()
       reader.onloadend = () => {
-        setVideoPreview(reader.result as string)
+        setVideoPreviews((prev) => [...prev, reader.result as string])
       }
       reader.readAsDataURL(file)
-    }
+    })
   }
 
   const onSubmit: SubmitHandler<ProductFormData> = async (data) => {
-    let finalImageUrl = data.imageUrl || ''
-    let finalVideoUrl = data.videoUrl || ''
-
-    // If user uploaded a new image file, upload it first and get the URL
-    if (imageFile) {
-      try {
-        const uploadResult = await productsApi.uploadImage(imageFile)
-        // uploadResult.imageUrl is like "/uploads/product-123456.jpg"
-        // We need the full URL for display
-        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
-        const baseUrl = apiUrl.replace('/api', '')
-        finalImageUrl = `${baseUrl}${uploadResult.imageUrl}`
-        console.log('Uploaded image URL:', finalImageUrl)
-      } catch (err) {
-        console.error('Upload error:', err)
-        setError('Failed to upload image. Please try again.')
-        return
-      }
-    } else if (editingProduct && !finalImageUrl) {
-      // When editing without uploading new image, keep existing image
-      finalImageUrl = editingProduct.imageUrl
-    }
-
-    // If user uploaded a new video file
-    if (videoFile) {
-      try {
-        const uploadResult = await productsApi.uploadVideo(videoFile)
-        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
-        const baseUrl = apiUrl.replace('/api', '')
-        finalVideoUrl = `${baseUrl}${uploadResult.videoUrl}`
-        console.log('Uploaded video URL:', finalVideoUrl)
-      } catch (err) {
-        console.error('Video upload error:', err)
-        setError('Failed to upload video. Please try again.')
-        return
-      }
-    } else if (editingProduct && !finalVideoUrl) {
-      // When editing without uploading new video, keep existing video
-      finalVideoUrl = editingProduct.videoUrl || ''
-    }
-
-    // Validate that we have an image
-    if (!finalImageUrl) {
+    // Manual image check before upload
+    if (imageFiles.length === 0 && !(editingProduct && editingProduct.media && editingProduct.media.some((m) => m.type === 'image'))) {
       setError(t('admin.imageRequired'))
       return
     }
+    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
+    const baseUrl = apiUrl.replace('/api', '')
+    let mediaArr: { url: string; type: 'image' | 'video'; isPrimary?: boolean }[] = []
+
+    // Upload new images
+    for (let i = 0; i < imageFiles.length; i++) {
+      try {
+        const uploadResult = await productsApi.uploadImage(imageFiles[i])
+        mediaArr.push({
+          url: `${baseUrl}${uploadResult.imageUrl}`,
+          type: 'image',
+          isPrimary: i === primaryImageIdx,
+        })
+      } catch (err) {
+        setError('Failed to upload image. Please try again.')
+        return
+      }
+    }
+    // Add existing image URLs (for edit)
+    if (editingProduct && editingProduct.media) {
+      const existingImages = editingProduct.media.filter((m) => m.type === 'image')
+      existingImages.forEach((img, idx) => {
+        mediaArr.push({
+          url: img.url,
+          type: 'image',
+          isPrimary: imageFiles.length === 0 && idx === primaryImageIdx,
+        })
+      })
+    }
+
+    // Upload new videos
+    for (let i = 0; i < videoFiles.length; i++) {
+      try {
+        const uploadResult = await productsApi.uploadVideo(videoFiles[i])
+        mediaArr.push({
+          url: `${baseUrl}${uploadResult.videoUrl}`,
+          type: 'video',
+        })
+      } catch (err) {
+        setError('Failed to upload video. Please try again.')
+        return
+      }
+    }
+    // Add existing video URLs (for edit)
+    if (editingProduct && editingProduct.media) {
+      const existingVideos = editingProduct.media.filter((m) => m.type === 'video')
+      existingVideos.forEach((vid) => {
+        mediaArr.push({
+          url: vid.url,
+          type: 'video',
+        })
+      })
+    }
+
+    // Ensure only one isPrimary
+    let foundPrimary = false
+    mediaArr = mediaArr.map((m) => {
+      if (m.type === 'image') {
+        if (!foundPrimary && (m.isPrimary || mediaArr.filter((x) => x.type === 'image').indexOf(m) === primaryImageIdx)) {
+          foundPrimary = true
+          return { ...m, isPrimary: true }
+        }
+        return { ...m, isPrimary: false }
+      }
+      return m
+    })
 
     const productData = {
       ...data,
       gstPercentage: data.gstPercentage ?? undefined,
-      imageUrl: finalImageUrl,
-      videoUrl: finalVideoUrl || undefined,
+      media: mediaArr,
     }
 
     if (editingProduct) {
@@ -571,10 +573,8 @@ const AdminProducts = () => {
 
               <Box>
                 <Typography variant="subtitle2" gutterBottom sx={{ color: '#b0b0b0', fontWeight: '600' }}>
-                  {t('admin.productImage')}
+                  {t('admin.productImages')}
                 </Typography>
-                {/* Hidden field to maintain imageUrl in form */}
-                <input type="hidden" {...register('imageUrl')} />
                 <Box sx={{ display: 'flex', gap: 1 }}>
                   <Button
                     variant="outlined"
@@ -588,64 +588,53 @@ const AdminProducts = () => {
                       '&:hover': { bgcolor: 'rgba(25, 118, 210, 0.1)', borderColor: '#42a5f5', color: '#42a5f5' }
                     }}
                   >
-                    {t('admin.chooseImage')}
+                    {t('admin.chooseImages')}
                     <input
                       type="file"
                       hidden
                       accept="image/*"
+                      multiple
                       onChange={handleImageFileChange}
-                      key={imageFile?.name || 'image-input'}
                     />
                   </Button>
-                  {(imageFile || imagePreview) && (
-                    <Button
-                      variant="outlined"
-                      color="error"
-                      onClick={handleRemoveImage}
-                      sx={{
-                        borderColor: '#ef5350',
-                        color: '#ef5350',
-                        transition: 'all 0.2s',
-                        '&:hover': { bgcolor: 'rgba(239, 83, 80, 0.1)', borderColor: '#f44336', color: '#f44336' }
-                      }}
-                    >
-                      {t('admin.remove')}
-                    </Button>
-                  )}
                 </Box>
-                {imageFile && (
-                  <Typography variant="caption" display="block" sx={{ mt: 1, color: '#b0b0b0' }}>
-                    {t('admin.selected')}: {imageFile.name}
-                  </Typography>
-                )}
-                {!imageFile && editingProduct?.imageUrl && (
-                  <Typography variant="caption" display="block" sx={{ mt: 1, color: '#707070' }}>
-                    {t('admin.current')}: {editingProduct.imageUrl.split('/').pop()}
-                  </Typography>
-                )}
-                
-                {imagePreview && (
-                  <Box sx={{ mt: 2, textAlign: 'center' }}>
-                    <Typography variant="caption" display="block" sx={{ mb: 1, color: '#b0b0b0' }}>
-                      {t('admin.preview')}:
-                    </Typography>
-                    <Box
-                      component="img"
-                      src={imagePreview}
-                      alt="Preview"
-                      sx={{ maxWidth: '100%', maxHeight: 200, objectFit: 'contain', borderRadius: 1, border: '1px solid #3a3a3a' }}
-                    />
-                  </Box>
-                )}
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mt: 2 }}>
+                  {imagePreviews.map((preview, idx) => (
+                    <Box key={idx} sx={{ position: 'relative', display: 'inline-block' }}>
+                      <Box
+                        component="img"
+                        src={preview}
+                        alt={`Preview ${idx + 1}`}
+                        sx={{ maxWidth: 120, maxHeight: 120, objectFit: 'contain', borderRadius: 1, border: '1px solid #3a3a3a' }}
+                      />
+                      <Button
+                        size="small"
+                        variant={primaryImageIdx === idx ? 'contained' : 'outlined'}
+                        color={primaryImageIdx === idx ? 'primary' : 'inherit'}
+                        sx={{ position: 'absolute', top: 4, left: 4, zIndex: 2, fontSize: 10, px: 1, py: 0.2 }}
+                        onClick={() => setPrimaryImageIdx(idx)}
+                      >
+                        {primaryImageIdx === idx ? t('admin.primary') : t('admin.makePrimary')}
+                      </Button>
+                      <Button
+                        size="small"
+                        variant="outlined"
+                        color="error"
+                        sx={{ position: 'absolute', top: 4, right: 4, zIndex: 2, fontSize: 10, px: 1, py: 0.2 }}
+                        onClick={() => handleRemoveImage(idx)}
+                      >
+                        {t('admin.remove')}
+                      </Button>
+                    </Box>
+                  ))}
+                </Box>
               </Box>
 
               {/* Video Upload Section */}
               <Box>
                 <Typography variant="subtitle2" gutterBottom sx={{ color: '#b0b0b0', fontWeight: '600' }}>
-                  {t('admin.productVideo')}
+                  {t('admin.productVideos')}
                 </Typography>
-                {/* Hidden field to maintain videoUrl in form */}
-                <input type="hidden" {...register('videoUrl')} />
                 <Box sx={{ display: 'flex', gap: 1 }}>
                   <Button
                     variant="outlined"
@@ -659,54 +648,37 @@ const AdminProducts = () => {
                       '&:hover': { bgcolor: 'rgba(25, 118, 210, 0.1)', borderColor: '#42a5f5', color: '#42a5f5' }
                     }}
                   >
-                    {t('admin.uploadVideo')}
+                    {t('admin.uploadVideos')}
                     <input
                       type="file"
                       hidden
                       accept="video/*"
+                      multiple
                       onChange={handleVideoFileChange}
-                      key={videoFile?.name || 'video-input'}
                     />
                   </Button>
-                  {(videoFile || videoPreview) && (
-                    <Button
-                      variant="outlined"
-                      color="error"
-                      onClick={handleRemoveVideo}
-                      sx={{
-                        borderColor: '#ef5350',
-                        color: '#ef5350',
-                        transition: 'all 0.2s',
-                        '&:hover': { bgcolor: 'rgba(239, 83, 80, 0.1)', borderColor: '#f44336', color: '#f44336' }
-                      }}
-                    >
-                      {t('admin.remove')}
-                    </Button>
-                  )}
                 </Box>
-                {videoFile && (
-                  <Typography variant="caption" display="block" sx={{ mt: 1, color: '#b0b0b0' }}>
-                    {t('admin.selected')}: {videoFile.name}
-                  </Typography>
-                )}
-                {!videoFile && editingProduct?.videoUrl && (
-                  <Typography variant="caption" display="block" sx={{ mt: 1, color: '#707070' }}>
-                    {t('admin.current')}: {editingProduct.videoUrl.split('/').pop()}
-                  </Typography>
-                )}
-                {videoPreview && (
-                  <Box sx={{ mt: 2, textAlign: 'center' }}>
-                    <Typography variant="caption" display="block" sx={{ mb: 1, color: '#b0b0b0' }}>
-                      {t('admin.videoPreview')}:
-                    </Typography>
-                    <Box
-                      component="video"
-                      src={videoPreview}
-                      controls
-                      sx={{ maxWidth: '100%', maxHeight: 200, borderRadius: 1, border: '1px solid #3a3a3a' }}
-                    />
-                  </Box>
-                )}
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mt: 2 }}>
+                  {videoPreviews.map((preview, idx) => (
+                    <Box key={idx} sx={{ position: 'relative', display: 'inline-block' }}>
+                      <Box
+                        component="video"
+                        src={preview}
+                        controls
+                        sx={{ maxWidth: 120, maxHeight: 120, borderRadius: 1, border: '1px solid #3a3a3a' }}
+                      />
+                      <Button
+                        size="small"
+                        variant="outlined"
+                        color="error"
+                        sx={{ position: 'absolute', top: 4, right: 4, zIndex: 2, fontSize: 10, px: 1, py: 0.2 }}
+                        onClick={() => handleRemoveVideo(idx)}
+                      >
+                        {t('admin.remove')}
+                      </Button>
+                    </Box>
+                  ))}
+                </Box>
               </Box>
 
               {/* Colors Section */}

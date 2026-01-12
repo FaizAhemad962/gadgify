@@ -10,6 +10,7 @@ import {
   IconButton,
   TablePagination,
   CircularProgress,
+  Skeleton,
 } from '@mui/material'
 import { Edit, Delete } from '@mui/icons-material'
 import { useTranslation } from 'react-i18next'
@@ -112,26 +113,29 @@ export const AdminProductsTable = ({
                 }}
               >
                 <TableCell sx={{ py: 1.5 }}>
-                  {product.imageUrl ? (
-                    <Box
-                      component="img"
-                      src={product.imageUrl}
-                      alt={product.name}
-                      sx={{
-                        width: 50,
-                        height: 50,
-                        objectFit: 'cover',
-                        borderRadius: '6px',
-                      }}
-                      onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
-                        (e.currentTarget as HTMLImageElement).style.display = 'none';
-                      }}
-                    />
-                  ) : (
-                    <Box sx={{ width: 50, height: 50 }}>
-                      <Skeleton variant="rectangular" width={50} height={50} />
-                    </Box>
-                  )}
+                  {(() => {
+                    const img = product.media?.find((m: any) => m.type === 'image' && m.isPrimary) || product.media?.find((m: any) => m.type === 'image');
+                    return img ? (
+                      <Box
+                        component="img"
+                        src={img.url}
+                        alt={product.name}
+                        sx={{
+                          width: 50,
+                          height: 50,
+                          objectFit: 'cover',
+                          borderRadius: '6px',
+                        }}
+                        onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
+                          (e.currentTarget as HTMLImageElement).style.display = 'none';
+                        }}
+                      />
+                    ) : (
+                      <Box sx={{ width: 50, height: 50 }}>
+                        <Skeleton variant="rectangular" width={50} height={50} />
+                      </Box>
+                    );
+                  })()}
                 </TableCell>
                 <TableCell sx={{ color: '#e0e0e0', fontWeight: '500' }}>
                   {product.name}

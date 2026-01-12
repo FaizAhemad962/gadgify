@@ -1,5 +1,5 @@
 import { type GridColDef, type GridRenderCellParams } from '@mui/x-data-grid'
-import { Box, IconButton } from '@mui/material'
+import { Box, IconButton, Skeleton } from '@mui/material'
 import { Edit, Delete } from '@mui/icons-material'
 import { useTranslation } from 'react-i18next'
 import { AdminDataGrid } from './AdminDataGrid'
@@ -32,11 +32,18 @@ export const AdminProductsDataGrid = ({
 
   const columns: GridColDef[] = [
     {
-      field: 'imageUrl',
+      field: 'mediaImage',
       headerName: t('admin.image'),
       minWidth: 80,
       sortable: false,
       filterable: false,
+      valueGetter: (params: any) => {
+        console.log(params)
+        if (!params || !params.row || !Array.isArray(params.row.media)) return '';
+        const media = params.row.media;
+        const img = media.find((m: any) => m.type === 'image' && m.isPrimary) || media.find((m: any) => m.type === 'image');
+        return img ? img.url : '';
+      },
       renderCell: (params: GridRenderCellParams) => (
         params.value ? (
           <Box

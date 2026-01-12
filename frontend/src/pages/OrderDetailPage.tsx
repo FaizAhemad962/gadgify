@@ -137,7 +137,10 @@ const OrderDetailPage = () => {
                     justifyContent: 'flex-start',
                   }}>
                     <img 
-                      src={item.product.imageUrl }
+                      src={
+                        (item.product.media && item.product.media.length > 0 && item.product.media[0].url) ||
+                        'https://via.placeholder.com/180'
+                      }
                       alt={item.product.name}
                       style={{ 
                         width: '130px',

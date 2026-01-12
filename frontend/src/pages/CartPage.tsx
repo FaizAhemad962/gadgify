@@ -9,7 +9,7 @@ import {
   IconButton,
   Divider
 } from '@mui/material'
-import { Add, Remove, Delete, ShoppingCartOutlined } from '@mui/icons-material'
+import { Delete, ShoppingCartOutlined } from '@mui/icons-material'
 import QuantityInput from '../components/common/QuantityInput'
 import { useCart } from '../context/CartContext'
 
@@ -90,7 +90,10 @@ const CartPage = () => {
                     }}
                   >
                     <img
-                      src={item.product.imageUrl || 'https://via.placeholder.com/180'}
+                      src={
+                        (item.product.media && item.product.media.length > 0 && item.product.media[0].url) ||
+                        'https://via.placeholder.com/180'
+                      }
                       alt={item.product.name}
                       style={{
                         width: '100%',

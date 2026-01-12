@@ -7,7 +7,6 @@ import {
   IconButton,
   Typography,
   Modal,
-  Skeleton,
 } from '@mui/material'
 import { ChevronLeft, ChevronRight, Close, PlayArrow } from '@mui/icons-material'
 
@@ -24,8 +23,6 @@ interface ProductCarouselProps {
 export const ProductCarousel: React.FC<ProductCarouselProps> = ({ items }) => {
   const [modalOpen, setModalOpen] = useState(false)
   const [modalActiveStep, setModalActiveStep] = useState(0)
-  const [imgLoaded, setImgLoaded] = useState<boolean[]>(items.map(() => false))
-  const [imgError, setImgError] = useState<boolean[]>(items.map(() => false))
 
   const handleThumbnailClick = (index: number) => {
     setModalActiveStep(index)
@@ -65,53 +62,16 @@ export const ProductCarousel: React.FC<ProductCarouselProps> = ({ items }) => {
     )
   }
 
-  // ...existing code...
-
-  // Example usage for main image/video rendering (replace your main render logic accordingly):
-  // For images:
-  // <Box sx={{ width: 350, height: 350, position: 'relative' }}>
-  //   {(!imgLoaded[modalActiveStep] && !imgError[modalActiveStep]) && (
-  //     <Skeleton variant="rectangular" width={350} height={350} />
-  //   )}
-  //   {items[modalActiveStep].type === 'image' && !imgError[modalActiveStep] && (
-  //     <img
-  //       src={items[modalActiveStep].url}
-  //       alt={items[modalActiveStep].alt || ''}
-  //       style={{ width: 350, height: 350, objectFit: 'cover', display: imgLoaded[modalActiveStep] ? 'block' : 'none' }}
-  //       onLoad={() => {
-  //         setImgLoaded((prev) => prev.map((v, i) => i === modalActiveStep ? true : v))
-  //       }}
-  //       onError={() => {
-  //         setImgError((prev) => prev.map((v, i) => i === modalActiveStep ? true : v))
-  //       }}
-  //     />
-  //   )}
-  //   {items[modalActiveStep].type === 'video' && (
-  //     <video width={350} height={350} controls>
-  //       <source src={items[modalActiveStep].url} type="video/mp4" />
-  //       Your browser does not support the video tag.
-  //     </video>
-  //   )}
-  //   {imgError[modalActiveStep] && (
-  //     <Box sx={{ width: 350, height: 350, display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: '#eee' }}>
-  //       <Typography color="text.secondary">Image not available</Typography>
-  //     </Box>
-  //   )}
-  // </Box>
-
   // Always show the first item as main image
   const mainItem = items[0]
   const currentModalItem = items[modalActiveStep]
 
   return (
-    <Box sx={{ maxWidth: 350, width: '100%' }}>
+    <Box sx={{ maxWidth: 630, width: '100%' }}>
       {/* Main Image Display - No Arrows */}
       <Box
         sx={{
           width: '100%',
-          height: 0,
-          paddingBottom: '130%',
-          position: 'relative',
           bgcolor: 'transparent',
         }}
       >
@@ -120,12 +80,6 @@ export const ProductCarousel: React.FC<ProductCarouselProps> = ({ items }) => {
             src={mainItem.url}
             alt={mainItem.alt || 'Product image'}
             style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              width: '100%',
-              height: '100%',
-              objectFit: 'contain',
             }}
           />
         ) : (
@@ -133,9 +87,6 @@ export const ProductCarousel: React.FC<ProductCarouselProps> = ({ items }) => {
             src={mainItem.url}
             controls
             style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
               width: '100%',
               height: '100%',
               objectFit: 'contain',
@@ -147,7 +98,6 @@ export const ProductCarousel: React.FC<ProductCarouselProps> = ({ items }) => {
       {/* Thumbnail Strip Below with Navigation Arrows */}
       {items.length > 1 && (
         <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', mt: 5 }}>
-          {/* Left Arrow for Thumbnails */}
           <IconButton
             onClick={() => handleThumbsScroll('left')}
             size="small"
@@ -161,7 +111,6 @@ export const ProductCarousel: React.FC<ProductCarouselProps> = ({ items }) => {
             <ChevronLeft />
           </IconButton>
 
-          {/* Thumbnails Container */}
           <Box
             ref={thumbsScrollRef}
             sx={{
@@ -170,7 +119,7 @@ export const ProductCarousel: React.FC<ProductCarouselProps> = ({ items }) => {
               overflowX: 'auto',
               pb: 1,
               flex: 1,
-              width: { xs: '240px', sm: '360px', md: '480px' },
+             
               '&::-webkit-scrollbar': {
                 height: '6px',
               },
@@ -188,9 +137,8 @@ export const ProductCarousel: React.FC<ProductCarouselProps> = ({ items }) => {
                 key={index}
                 onClick={() => handleThumbnailClick(index)}
                 sx={{
-                  minWidth: 100,
-                  width: 100,
-                  height: 100,
+                  minWidth:150,
+                  height: 150,
                   borderRadius: 1,
                   border: 'none',
                   cursor: 'pointer',
@@ -209,8 +157,6 @@ export const ProductCarousel: React.FC<ProductCarouselProps> = ({ items }) => {
                     style={{
                       width: '100%',
                       height: '100%',
-                      objectFit: 'contain',
-                      padding: '2px',
                     }}
                   />
                 ) : (
@@ -222,7 +168,7 @@ export const ProductCarousel: React.FC<ProductCarouselProps> = ({ items }) => {
                       alignItems: 'center',
                       justifyContent: 'center',
                       bgcolor: '#000',
-                      position: 'relative',
+                   
                     }}
                   >
                     <PlayArrow

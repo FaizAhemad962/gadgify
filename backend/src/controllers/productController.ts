@@ -16,6 +16,7 @@ export const getAllProducts = async (
             rating: true,
           },
         },
+        media: true,
       },
     })
 
@@ -48,7 +49,10 @@ export const getProductById = async (
 ): Promise<void> => {
   try {
     const { id } = req.params
-    const product = await prisma.product.findFirst({ where: { id, deletedAt: null } as any })
+    const product = await prisma.product.findFirst({
+      where: { id, deletedAt: null } as any,
+      include: { media: true },
+    })
 
     if (!product) {
       res.status(404).json({ message: 'Product not found' })
@@ -67,11 +71,27 @@ export const createProduct = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const { name, description, price, stock, imageUrl, videoUrl, colors, category, hsnNo, gstPercentage } = req.body
+    const { name, description, price, stock, media, colors, category, hsnNo, gstPercentage } = req.body
 
     const product = await prisma.product.create({
-      data: { name, description, price, stock, imageUrl, videoUrl, colors, category, hsnNo, gstPercentage },
+      data: { name, description, price, stock, colors, category, hsnNo, gstPercentage },
     })
+
+    // Create media records if provided
+    if (media && Array.isArray(media)) {
+      await Promise.all(
+        media.map((m: any) =>
+          prisma.productMedia.create({
+            data: {
+              url: m.url,
+              type: m.type,
+              isPrimary: !!m.isPrimary,
+              productId: product.id,
+            },
+          })
+        )
+      )
+    }
 
     res.status(201).json(product)
   } catch (error) {
@@ -86,12 +106,29 @@ export const updateProduct = async (
 ): Promise<void> => {
   try {
     const { id } = req.params
-    const { name, description, price, stock, imageUrl, videoUrl, colors, category, hsnNo, gstPercentage } = req.body
+    const { name, description, price, stock, media, colors, category, hsnNo, gstPercentage } = req.body
 
     const product = await prisma.product.update({
       where: { id },
-      data: { name, description, price, stock, imageUrl, videoUrl, colors, category, hsnNo, gstPercentage },
+      data: { name, description, price, stock, colors, category, hsnNo, gstPercentage },
     })
+
+    // Remove old media and add new
+    if (media && Array.isArray(media)) {
+      await prisma.productMedia.deleteMany({ where: { productId: id } })
+      await Promise.all(
+        media.map((m: any) =>
+          prisma.productMedia.create({
+            data: {
+              url: m.url,
+              type: m.type,
+              isPrimary: !!m.isPrimary,
+              productId: id,
+            },
+          })
+        )
+      )
+    }
 
     res.json(product)
   } catch (error) {
@@ -176,6 +213,7 @@ export const getAllProductsAdmin = async (
               rating: true,
             },
           },
+          media: true,
         },
       }),
       prisma.product.count({ where: { deletedAt: null, ...(searchFilter as any) } as any }),

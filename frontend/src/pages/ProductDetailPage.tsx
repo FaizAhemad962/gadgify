@@ -79,7 +79,7 @@ const ProductDetailPage = () => {
   }
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
+    <Container maxWidth="xl"  sx={{ py: 4 }}>
       <Button
         startIcon={<ArrowBack />}
         onClick={() => navigate('/products')}
@@ -92,22 +92,22 @@ const ProductDetailPage = () => {
         <Box sx={{ flex: 1, minWidth: 0 }}>
           {/* Product Carousel */}
           <ProductCarousel
-            items={[
-              {
-                type: 'image',
-                url: product.imageUrl || 'https://via.placeholder.com/400x400?text=Product',
-                alt: product.name,
-              },
-              ...(product.videoUrl
-                ? [
-                    {
-                      type: 'video' as const,
-                      url: product.videoUrl,
-                      alt: 'Product Video',
-                    },
-                  ]
-                : []),
-            ]}
+            items={(() => {
+              if (!product.media || product.media.length === 0) {
+                return [{ type: 'image', url: 'https://via.placeholder.com/400x400?text=Product', alt: product.name }];
+              }
+              // Primary image first, then other images, then videos
+              const images = product.media.filter((m: any) => m.type === 'image');
+              const videos = product.media.filter((m: any) => m.type === 'video');
+              const primary = images.find((m: any) => m.isPrimary);
+              const otherImages = images.filter((m: any) => !m.isPrimary);
+              const items = [
+                ...(primary ? [{ type: 'image' as const, url: primary.url, alt: product.name }] : []),
+                ...otherImages.map((img: any) => ({ type: 'image' as const, url: img.url, alt: product.name })),
+                ...videos.map((vid: any) => ({ type: 'video' as const, url: vid.url, alt: 'Product Video' })),
+              ];
+              return items.length > 0 ? items : [{ type: 'image' as const, url: 'https://via.placeholder.com/400x400?text=Product', alt: product.name }];
+            })()}
           />
         </Box>
 
