@@ -56,17 +56,7 @@ gstPercentage: z.coerce.number()
   media: z.array(z.object({ url: z.string(), type: z.enum(['image', 'video']), isPrimary: z.boolean().optional() })),
 })
 
-type ProductFormData = {
-  name: string
-  description: string
-  price: number
-  stock: number
-  category: string
-  media: { url: string; type: 'image' | 'video'; isPrimary?: boolean }[]
-  colors?: string
-  hsnNo?: string
-  gstPercentage?: number
-}
+type ProductFormData = z.infer<typeof productSchema>;
 
 const AdminProducts = () => {
   const { t } = useTranslation()
