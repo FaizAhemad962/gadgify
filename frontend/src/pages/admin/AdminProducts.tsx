@@ -41,22 +41,66 @@ const CATEGORIES = [
 ]
 
 
+// const productSchema = z.object({
+//   name: z.string().min(2, 'Name is required'),
+//   description: z.string().min(10, 'Description must be at least 10 characters'),
+//   price: z.coerce.number({ error: 'Price is required' }).min(1, 'Price must be greater than 0'),
+//   stock: z.coerce.number({ error: 'Stock is required' }).min(1, 'Stock must be greater than 0'),
+//   colors: z.string().optional(),
+//   category: z.string().min(1, 'Category is required'),
+//   hsnNo: z.string().optional(),
+// gstPercentage: z.coerce.number()
+//   .min(0, 'GST must be between 0 and 100')
+//   .max(100, 'GST must be between 0 and 100')
+//   .optional(),
+//   media: z.array(z.object({ url: z.string(), type: z.enum(['image', 'video']), isPrimary: z.boolean().optional() })),
+// })
+
 const productSchema = z.object({
   name: z.string().min(2, 'Name is required'),
   description: z.string().min(10, 'Description must be at least 10 characters'),
-  price: z.coerce.number({ error: 'Price is required' }).min(1, 'Price must be greater than 0'),
-  stock: z.coerce.number({ error: 'Stock is required' }).min(1, 'Stock must be greater than 0'),
+
+  price: z
+    .union([z.number(), z.string()])
+    .transform((val) => Number(val))
+    .refine((val) => !Number.isNaN(val) && val > 0, {
+      message: 'Price must be greater than 0',
+    }),
+
+  stock: z
+    .union([z.number(), z.string()])
+    .transform((val) => Number(val))
+    .refine((val) => !Number.isNaN(val) && val > 0, {
+      message: 'Stock must be greater than 0',
+    }),
+
   colors: z.string().optional(),
   category: z.string().min(1, 'Category is required'),
   hsnNo: z.string().optional(),
-gstPercentage: z.coerce.number()
-  .min(0, 'GST must be between 0 and 100')
-  .max(100, 'GST must be between 0 and 100')
-  .optional(),
-  media: z.array(z.object({ url: z.string(), type: z.enum(['image', 'video']), isPrimary: z.boolean().optional() })),
+
+  gstPercentage: z
+    .union([z.number(), z.string()])
+    .transform((val) =>
+      val === '' || val === undefined ? undefined : Number(val)
+    )
+    .refine(
+      (val) => val === undefined || (val >= 0 && val <= 100),
+      'GST must be between 0 and 100'
+    )
+    .optional(),
+
+  media: z.array(
+    z.object({
+      url: z.string(),
+      type: z.enum(['image', 'video']),
+      isPrimary: z.boolean().optional(),
+    })
+  ),
 })
 
-type ProductFormData = z.infer<typeof productSchema>;
+type ProductFormInput = z.input<typeof productSchema>
+type ProductFormData = z.output<typeof productSchema>
+
 
 const AdminProducts = () => {
   const { t } = useTranslation()
@@ -85,9 +129,9 @@ const AdminProducts = () => {
     handleSubmit,
     reset,
     formState: { errors },
-  } = useForm<ProductFormData>({
-    resolver: zodResolver(productSchema),
-  })
+  } = useForm<ProductFormInput, any, ProductFormData>({
+  resolver: zodResolver(productSchema),
+})
 
   const createMutation = useMutation({
     mutationFn: productsApi.create,
@@ -189,7 +233,6 @@ const AdminProducts = () => {
   }
 
   const handleRemoveVideo = (idx: number) => {
-            media: z.array(z.object({ url: z.string(), type: z.string(), isPrimary: z.boolean().optional() })).optional(),
     setVideoFiles((prev) => prev.filter((_, i) => i !== idx))
     setVideoPreviews((prev) => prev.filter((_, i) => i !== idx))
   }
@@ -245,7 +288,7 @@ const AdminProducts = () => {
           type: 'image',
           isPrimary: i === primaryImageIdx,
         })
-      } catch (err) {
+      } catch  {
         setError('Failed to upload image. Please try again.')
         return
       }
@@ -270,7 +313,7 @@ const AdminProducts = () => {
           url: `${baseUrl}${uploadResult.videoUrl}`,
           type: 'video',
         })
-      } catch (err) {
+      } catch {
         setError('Failed to upload video. Please try again.')
         return
       }
@@ -299,11 +342,16 @@ const AdminProducts = () => {
       return m
     })
 
-    const productData = {
-      ...data,
-      gstPercentage: data.gstPercentage ?? undefined,
-      media: mediaArr,
-    }
+const productData: ProductFormData = {
+  ...data,
+  price: Number(data.price),
+  stock: Number(data.stock),
+  gstPercentage:
+    data.gstPercentage === undefined
+      ? undefined
+      : Number(data.gstPercentage),
+  media: mediaArr,
+}
 
     if (editingProduct) {
       updateMutation.mutate({ id: editingProduct.id, data: productData })
@@ -458,7 +506,7 @@ const AdminProducts = () => {
                     fullWidth
                     label={t('products.price')}
                     type="number"
-                    {...register('price', { valueAsNumber: true })}
+                    {...register('price')}
                     error={!!errors.price}
                     helperText={errors.price?.message}
                    
@@ -469,7 +517,7 @@ const AdminProducts = () => {
                     fullWidth
                     label={t('products.stock')}
                     type="number"
-                    {...register('stock', { valueAsNumber: true })}
+                    {...register('stock')}
                     error={!!errors.stock}
                     helperText={errors.stock?.message}
                    
