@@ -35,6 +35,8 @@ export const AdminProductsDataGrid = ({
       field: 'mediaImagePreview',
       headerName: t('admin.image'),
       minWidth: 80,
+      maxWidth: 100,
+      flex: 0.5,
       sortable: false,
       filterable: false,
       renderCell: (params: GridRenderCellParams) => {
@@ -66,21 +68,29 @@ export const AdminProductsDataGrid = ({
       field: 'name',
       headerName: t('admin.name'),
       minWidth: 200,
-      flex: 1,
+      maxWidth: 300,
+      flex: 1.5,
       editable: false,
     },
     {
       field: 'category',
       headerName: t('admin.category'),
-      minWidth: 150,
+      minWidth: 120,
+      maxWidth: 160,
       flex: 1,
       editable: false,
+      renderCell: (params: GridRenderCellParams) => (
+        <span >
+          {t(`categories.${params.value}`)}
+        </span>
+      ),
     },
     {
       field: 'price',
       headerName: t('admin.price'),
-      minWidth: 120,
-      flex: 1,
+      minWidth: 100,
+      maxWidth: 130,
+      flex: 0.8,
       renderCell: (params: GridRenderCellParams) => (
         <span style={{ color: '#ff9800', fontWeight: '700' }}>
           ₹{params.value?.toLocaleString()}
@@ -90,7 +100,9 @@ export const AdminProductsDataGrid = ({
     {
       field: 'stock',
       headerName: t('admin.stock'),
-      minWidth: 100,
+      minWidth: 80,
+      maxWidth: 110,
+      flex: 0.6,
       renderCell: (params: GridRenderCellParams) => (
         <span style={{ color: params.value > 0 ? '#4caf50' : '#f44336', fontWeight: '600' }}>
           {params.value}
@@ -101,6 +113,8 @@ export const AdminProductsDataGrid = ({
       field: 'actions',
       headerName: t('admin.actions'),
       minWidth: 120,
+      maxWidth: 140,
+      flex: 0.8,
       sortable: false,
       filterable: false,
       align: 'right',

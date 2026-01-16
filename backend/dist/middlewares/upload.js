@@ -60,7 +60,7 @@ exports.upload = (0, multer_1.default)({
 exports.videoUpload = (0, multer_1.default)({
     storage,
     limits: {
-        fileSize: 2 * 1024 * 1024, // 2MB limit for videos
+        fileSize: 50 * 1024 * 1024, // 50MB limit for videos
     },
     fileFilter: videoFileFilter,
 });

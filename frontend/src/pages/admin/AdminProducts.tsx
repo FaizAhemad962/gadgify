@@ -27,17 +27,15 @@ import { AdminProductsDataGrid } from '../../components/admin/AdminProductsDataG
 import type { Product } from '../../types'
 
 const CATEGORIES = [
-  'Smartphones',
-  'Laptops',
-  'Tablets',
-  'Smartwatches',
-  'Headphones',
-  'Cameras',
-  'Gaming',
-  'Accessories',
-  'Home Appliances',
-  'Audio',
-  'Wearables',
+  'Home & Kitchen',
+  'Electronics',
+  'Beauty & Personal Care',
+  'Office & Storage',
+  'Sports & Outdoor',
+  'Jewelry & Accessories',
+  'Toys',
+  'Tools & Hardware',
+  'Lighting',
 ]
 
 
@@ -408,7 +406,7 @@ const productData: ProductFormData = {
       {/* Search Bar */}
       <Box sx={{ mb: 3 }}>
         <TextField
-          placeholder={t('admin.searchProducts')}
+          placeholder={t('nav.searchProducts')}
           value={searchQuery}
           onChange={(e) => {
             setSearchQuery(e.target.value)

@@ -37,31 +37,37 @@ export class ErrorHandler {
   static getUserFriendlyMessage(error: unknown, fallback = 'Something went wrong. Please try again.'): string {
     const message = this.getErrorMessage(error)
 
-    // Map common error messages to user-friendly versions
-    const errorMap: { [key: string]: string } = {
-      'ECONNREFUSED': 'Unable to connect to server. Please check your internet connection.',
-      'ETIMEDOUT': 'Request timed out. Please try again.',
-      'Network Error': 'Network connection failed. Please check your internet.',
-      'Invalid email address': 'Please enter a valid email address.',
-      'Password must be at least 6 characters': 'Password must be at least 6 characters long.',
-      'Passwords don\'t match': 'Passwords do not match.',
-      'already exists': 'This account already exists.',
-      'not found': 'Requested item not found.',
-      'unauthorized': 'You are not authorized to perform this action.',
-      'forbidden': 'Access denied.',
-      '401': 'Your session has expired. Please login again.',
-      '403': 'You do not have permission to access this resource.',
-      '404': 'The requested resource was not found.',
-      '500': 'Server error. Please try again later.',
-      '503': 'Service temporarily unavailable. Please try again later.',
-    }
-
-    // Check for matching error patterns
-    const lowerMessage = message.toLowerCase()
-    for (const [key, friendlyMsg] of Object.entries(errorMap)) {
-      if (lowerMessage.includes(key.toLowerCase())) {
-        return friendlyMsg
+    // If we got a meaningful message from the API, use it directly
+    if (message && message !== 'Network error occurred' && message !== 'An unknown error occurred') {
+      // Map common error messages to user-friendly versions
+      const errorMap: { [key: string]: string } = {
+        'ECONNREFUSED': 'Unable to connect to server. Please check your internet connection.',
+        'ETIMEDOUT': 'Request timed out. Please try again.',
+        'Network Error': 'Network connection failed. Please check your internet.',
+        'Invalid email address': 'Please enter a valid email address.',
+        'Password must be at least 6 characters': 'Password must be at least 6 characters long.',
+        'Passwords don\'t match': 'Passwords do not match.',
+        'already exists': 'This account already exists.',
+        'not found': 'Requested item not found.',
+        'unauthorized': 'You are not authorized to perform this action.',
+        'forbidden': 'Access denied.',
+        '401': 'Your session has expired. Please login again.',
+        '403': 'You do not have permission to access this resource.',
+        '404': 'The requested resource was not found.',
+        '500': 'Server error. Please try again later.',
+        '503': 'Service temporarily unavailable. Please try again later.',
       }
+
+      // Check for matching error patterns
+      const lowerMessage = message.toLowerCase()
+      for (const [key, friendlyMsg] of Object.entries(errorMap)) {
+        if (lowerMessage.includes(key.toLowerCase())) {
+          return friendlyMsg
+        }
+      }
+
+      // Return the original API message if no pattern matches
+      return message
     }
 
     return fallback

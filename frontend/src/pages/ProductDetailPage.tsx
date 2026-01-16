@@ -28,7 +28,7 @@ const ProductDetailPage = () => {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const { isAuthenticated } = useAuth()
-  const { addToCart } = useCart()
+  const { addToCart, isAddingToCart } = useCart()
   const [selectedColor, setSelectedColor] = useState<string>('')
 
   const { data: product, isLoading, error } = useQuery({
@@ -149,10 +149,10 @@ const ProductDetailPage = () => {
               size="large"
               startIcon={<ShoppingCart />}
               onClick={handleAddToCart}
-              disabled={product.stock === 0}
+              disabled={product.stock === 0 || isAddingToCart(product.id)}
               sx={{ flex: 1, fontWeight: 600, minHeight: 48 }}
             >
-              {t('products.addToCart')}
+              {isAddingToCart(product.id) ? 'Adding...' : t('products.addToCart')}
             </Button>
             <Button
               variant="contained"

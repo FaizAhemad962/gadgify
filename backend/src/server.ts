@@ -13,6 +13,7 @@ import productRoutes from './routes/productRoutes'
 import cartRoutes from './routes/cartRoutes'
 import orderRoutes from './routes/orderRoutes'
 import adminRoutes from './routes/adminRoutes'
+import wishlistRoutes from './routes/wishlistRoutes'
 
 const app: Application = express()
 
@@ -107,6 +108,7 @@ app.use('/api/products', productRoutes)
 app.use('/api/cart', cartRoutes)
 app.use('/api/orders', orderRoutes)
 app.use('/api/admin', adminRoutes)
+app.use('/api/wishlist', wishlistRoutes)
 
 // 404 handler
 app.use((req: Request, res: Response) => {

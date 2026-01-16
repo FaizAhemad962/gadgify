@@ -17,9 +17,11 @@ import {
   Menu as MenuIcon,
   ShoppingCart,
   AccountCircle,
+  Favorite,
 } from '@mui/icons-material'
 import { useAuth } from '../../context/AuthContext'
 import { useCart } from '../../context/CartContext'
+import { useWishlist } from '../../context/WishlistContext'
 import LanguageSelector from '../common/LanguageSelector'
 
 const Navbar = () => {
@@ -27,6 +29,7 @@ const Navbar = () => {
   const navigate = useNavigate()
   const { isAuthenticated, isAdmin, logout, user } = useAuth()
   const { itemCount } = useCart()
+  const { wishlistItems } = useWishlist()
 
   const [anchorElNav, setAnchorElNav] = useState<null | HTMLElement>(null)
   const [anchorElUser, setAnchorElUser] = useState<null | HTMLElement>(null)
@@ -279,6 +282,28 @@ const Navbar = () => {
 
           {/* Language selector */}
           <LanguageSelector variant="navbar" />
+
+          {/* Wishlist icon */}
+          {isAuthenticated && (
+            <IconButton
+              size="small"
+              onClick={() => navigate('/wishlist')}
+              color="inherit"
+              sx={{ 
+                mr: 1,
+                p: 0.5,
+                transition: 'all 0.3s',
+                '&:hover': {
+                  transform: 'scale(1.1)',
+                  bgcolor: 'rgba(255, 255, 255, 0.1)',
+                }
+              }}
+            >
+              <Badge badgeContent={wishlistItems.length} color="error" sx={{ '& .MuiBadge-badge': { fontWeight: 700, fontSize: '0.65rem' } }}>
+                <Favorite sx={{ fontSize: { xs: '1.3rem', md: '1.5rem' } }} />
+              </Badge>
+            </IconButton>
+          )}
 
           {/* Cart icon */}
           {isAuthenticated && (

@@ -16,6 +16,7 @@ const getAllProducts = async (req, res, next) => {
                         rating: true,
                     },
                 },
+                media: true,
             },
         });
         // Calculate average rating for each product
@@ -42,7 +43,10 @@ exports.getAllProducts = getAllProducts;
 const getProductById = async (req, res, next) => {
     try {
         const { id } = req.params;
-        const product = await database_1.default.product.findFirst({ where: { id, deletedAt: null } });
+        const product = await database_1.default.product.findFirst({
+            where: { id, deletedAt: null },
+            include: { media: true },
+        });
         if (!product) {
             res.status(404).json({ message: 'Product not found' });
             return;
@@ -56,10 +60,21 @@ const getProductById = async (req, res, next) => {
 exports.getProductById = getProductById;
 const createProduct = async (req, res, next) => {
     try {
-        const { name, description, price, stock, imageUrl, videoUrl, colors, category, hsnNo, gstPercentage } = req.body;
+        const { name, description, price, stock, media, colors, category, hsnNo, gstPercentage } = req.body;
         const product = await database_1.default.product.create({
-            data: { name, description, price, stock, imageUrl, videoUrl, colors, category, hsnNo, gstPercentage },
+            data: { name, description, price, stock, colors, category, hsnNo, gstPercentage },
         });
+        // Create media records if provided
+        if (media && Array.isArray(media)) {
+            await Promise.all(media.map((m) => database_1.default.productMedia.create({
+                data: {
+                    url: m.url,
+                    type: m.type,
+                    isPrimary: !!m.isPrimary,
+                    productId: product.id,
+                },
+            })));
+        }
         res.status(201).json(product);
     }
     catch (error) {
@@ -70,11 +85,23 @@ exports.createProduct = createProduct;
 const updateProduct = async (req, res, next) => {
     try {
         const { id } = req.params;
-        const { name, description, price, stock, imageUrl, videoUrl, colors, category, hsnNo, gstPercentage } = req.body;
+        const { name, description, price, stock, media, colors, category, hsnNo, gstPercentage } = req.body;
         const product = await database_1.default.product.update({
             where: { id },
-            data: { name, description, price, stock, imageUrl, videoUrl, colors, category, hsnNo, gstPercentage },
+            data: { name, description, price, stock, colors, category, hsnNo, gstPercentage },
         });
+        // Remove old media and add new
+        if (media && Array.isArray(media)) {
+            await database_1.default.productMedia.deleteMany({ where: { productId: id } });
+            await Promise.all(media.map((m) => database_1.default.productMedia.create({
+                data: {
+                    url: m.url,
+                    type: m.type,
+                    isPrimary: !!m.isPrimary,
+                    productId: id,
+                },
+            })));
+        }
         res.json(product);
     }
     catch (error) {
@@ -146,6 +173,7 @@ const getAllProductsAdmin = async (req, res, next) => {
                             rating: true,
                         },
                     },
+                    media: true,
                 },
             }),
             database_1.default.product.count({ where: { deletedAt: null, ...searchFilter } }),

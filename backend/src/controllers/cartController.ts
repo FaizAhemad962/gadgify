@@ -56,38 +56,48 @@ export const addToCart = async (
       return
     }
 
-    // Get or create cart
-    let cart = await prisma.cart.findUnique({ where: { userId } })
-    if (!cart) {
-      cart = await prisma.cart.create({ data: { userId } })
-    }
+    // Use transaction to handle concurrent add-to-cart requests safely
+    const updatedCart = await prisma.$transaction(async (tx) => {
+      // Get or create cart
+      let cart = await tx.cart.findUnique({ where: { userId } })
+      if (!cart) {
+        cart = await tx.cart.create({ data: { userId } })
+      }
 
-    // Check if item already in cart
-    const existingItem = await prisma.cartItem.findFirst({
-      where: { cartId: cart.id, productId },
-    })
-
-    if (existingItem) {
-      // Update quantity
-      await prisma.cartItem.update({
-        where: { id: existingItem.id },
-        data: { quantity: existingItem.quantity + quantity },
-      })
-    } else {
-      // Add new item
-      await prisma.cartItem.create({
-        data: { cartId: cart.id, productId, quantity },
-      })
-    }
-
-    // Return updated cart
-    const updatedCart = await prisma.cart.findUnique({
-      where: { id: cart.id },
-      include: {
-        items: {
-          include: { product: true },
+      // Upsert cart item - this is atomic and handles concurrent requests
+      const cartItem = await tx.cartItem.upsert({
+        where: {
+          cartId_productId: {
+            cartId: cart.id,
+            productId,
+          },
         },
-      },
+        update: {
+          quantity: {
+            increment: quantity,
+          },
+        },
+        create: {
+          cartId: cart.id,
+          productId,
+          quantity,
+        },
+      })
+
+      // Verify stock after potential quantity increase
+      if (cartItem.quantity > product.stock) {
+        throw new Error('Insufficient stock')
+      }
+
+      // Return updated cart
+      return await tx.cart.findUnique({
+        where: { id: cart.id },
+        include: {
+          items: {
+            include: { product: true },
+          },
+        },
+      })
     })
 
     res.json(updatedCart)

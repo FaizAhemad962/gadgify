@@ -34,7 +34,7 @@ const LazyImage = ({
           sx={{ position: 'absolute', top: 0, left: 0 }}
         />
       )}
-      {error ? (
+      {error || !src ? (
         <Box
           sx={{
             width: '100%',

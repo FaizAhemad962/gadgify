@@ -171,7 +171,24 @@
     "items": "Items",
     "total": "Total",
     "payment": "Payment",
-    "status": "Status"
+    "status": "Status",
+    "rowsPerPage": "Rows per page:",
+    "showing": "Showing",
+    "to": "to",
+    "of": "of",
+    "next": "Next",
+    "previous": "Previous",
+    "first": "First",
+    "last": "Last",
+    "searchOrders": "Search orders..."
+  },
+  "wishlist": {
+    "title": "My Wishlist",
+    "empty": "Your wishlist is empty",
+    "addToCart": "Add to Cart",
+    "remove": "Remove",
+    "viewDetails": "View Details",
+    "browseProducts": "Browse Products"
   },
   "common": {
     "loading": "Loading...",
@@ -276,7 +293,10 @@
     "invalidPhone": "Invalid phone number",
     "cityRequired": "City is required",
     "addressRequired": "Address is required",
-    "invalidPincode": "Invalid pincode"
+    "invalidPincode": "Invalid pincode",
+    "noData": "No data available",
+    "noResults": "No results found",
+    "error": "An error occurred"
   },
   "footer": {
     "aboutDesc": "Your premier destination for authentic electronics and gadgets in Maharashtra.",
@@ -295,17 +315,15 @@
     "madeWith": "Made with ❤️ in Maharashtra"
   },
   "categories": {
-    "Smartphones": "Smartphones",
-    "Laptops": "Laptops",
-    "Tablets": "Tablets",
-    "Smartwatches": "Smartwatches",
-    "Headphones": "Headphones",
-    "Cameras": "Cameras",
-    "Gaming": "Gaming",
-    "Accessories": "Accessories",
-    "Home Appliances": "Home Appliances",
-    "Audio": "Audio",
-    "Wearables": "Wearables"
+    "Home & Kitchen": "Home & Kitchen",
+    "Electronics": "Electronics",
+    "Beauty & Personal Care": "Beauty & Personal Care",
+    "Office & Storage": "Office & Storage",
+    "Sports & Outdoor": "Sports & Outdoor",
+    "Jewelry & Accessories": "Jewelry & Accessories",
+    "Toys": "Toys",
+    "Tools & Hardware": "Tools & Hardware",
+    "Lighting": "Lighting"
   },
   "payment": {
     "label": "Payment",

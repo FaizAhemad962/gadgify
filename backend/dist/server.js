@@ -18,6 +18,7 @@ const productRoutes_1 = __importDefault(require("./routes/productRoutes"));
 const cartRoutes_1 = __importDefault(require("./routes/cartRoutes"));
 const orderRoutes_1 = __importDefault(require("./routes/orderRoutes"));
 const adminRoutes_1 = __importDefault(require("./routes/adminRoutes"));
+const wishlistRoutes_1 = __importDefault(require("./routes/wishlistRoutes"));
 const app = (0, express_1.default)();
 // Upload directory configuration (Render persistent disk in production)
 const uploadDir = process.env.NODE_ENV === 'production'
@@ -87,6 +88,7 @@ app.use('/api/products', productRoutes_1.default);
 app.use('/api/cart', cartRoutes_1.default);
 app.use('/api/orders', orderRoutes_1.default);
 app.use('/api/admin', adminRoutes_1.default);
+app.use('/api/wishlist', wishlistRoutes_1.default);
 // 404 handler
 app.use((req, res) => {
     res.status(404).json({ message: 'Route not found' });

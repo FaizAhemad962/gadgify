@@ -51,6 +51,7 @@ const LoginPage = () => {
   const loginMutation = useMutation({
     mutationFn: authApi.login,
     onSuccess: (data) => {
+      setError('')
       login(data.token, data.user)
       navigate('/')
     },
@@ -63,7 +64,12 @@ const LoginPage = () => {
 
   const onSubmit = async (data: LoginFormData) => {
     setError('')
-    await loginMutation.mutateAsync(data)
+    try {
+      await loginMutation.mutateAsync(data)
+    } catch (error) {
+      // Error is handled by mutation error callback
+      console.error('Login error:', error)
+    }
   }
 
   return (
@@ -166,10 +172,7 @@ const LoginPage = () => {
             </Alert>
           )}
 
-          <form onSubmit={(e) => {
-            e.preventDefault()
-            handleSubmit(onSubmit)(e)
-          }}>
+          <form onSubmit={handleSubmit(onSubmit)}>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
               <TextField
                 fullWidth

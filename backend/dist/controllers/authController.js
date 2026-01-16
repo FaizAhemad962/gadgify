@@ -115,7 +115,8 @@ const login = async (req, res, next) => {
         // Find user
         const user = await database_1.default.user.findUnique({ where: { email } });
         if (!user) {
-            // SECURITY: Don't reveal if email exists
+            // SECURITY: Don't reveal if email exists; log internally for debugging
+            logger_1.default.warn(`Login failed: user not found for ${email}`);
             recordFailedLoginAttempt(email);
             res.status(401).json({ message: 'Invalid credentials' });
             return;
@@ -123,7 +124,8 @@ const login = async (req, res, next) => {
         // Verify password
         const isValidPassword = await (0, auth_1.comparePassword)(password, user.password);
         if (!isValidPassword) {
-            // SECURITY: Track failed attempt
+            // SECURITY: Track failed attempt; log internally for debugging
+            logger_1.default.warn(`Login failed: bad password for ${email}`);
             recordFailedLoginAttempt(email);
             res.status(401).json({ message: 'Invalid credentials' });
             return;

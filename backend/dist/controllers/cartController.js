@@ -47,36 +47,45 @@ const addToCart = async (req, res, next) => {
             res.status(400).json({ message: 'Insufficient stock' });
             return;
         }
-        // Get or create cart
-        let cart = await database_1.default.cart.findUnique({ where: { userId } });
-        if (!cart) {
-            cart = await database_1.default.cart.create({ data: { userId } });
-        }
-        // Check if item already in cart
-        const existingItem = await database_1.default.cartItem.findFirst({
-            where: { cartId: cart.id, productId },
-        });
-        if (existingItem) {
-            // Update quantity
-            await database_1.default.cartItem.update({
-                where: { id: existingItem.id },
-                data: { quantity: existingItem.quantity + quantity },
-            });
-        }
-        else {
-            // Add new item
-            await database_1.default.cartItem.create({
-                data: { cartId: cart.id, productId, quantity },
-            });
-        }
-        // Return updated cart
-        const updatedCart = await database_1.default.cart.findUnique({
-            where: { id: cart.id },
-            include: {
-                items: {
-                    include: { product: true },
+        // Use transaction to handle concurrent add-to-cart requests safely
+        const updatedCart = await database_1.default.$transaction(async (tx) => {
+            // Get or create cart
+            let cart = await tx.cart.findUnique({ where: { userId } });
+            if (!cart) {
+                cart = await tx.cart.create({ data: { userId } });
+            }
+            // Upsert cart item - this is atomic and handles concurrent requests
+            const cartItem = await tx.cartItem.upsert({
+                where: {
+                    cartId_productId: {
+                        cartId: cart.id,
+                        productId,
+                    },
                 },
-            },
+                update: {
+                    quantity: {
+                        increment: quantity,
+                    },
+                },
+                create: {
+                    cartId: cart.id,
+                    productId,
+                    quantity,
+                },
+            });
+            // Verify stock after potential quantity increase
+            if (cartItem.quantity > product.stock) {
+                throw new Error('Insufficient stock');
+            }
+            // Return updated cart
+            return await tx.cart.findUnique({
+                where: { id: cart.id },
+                include: {
+                    items: {
+                        include: { product: true },
+                    },
+                },
+            });
         });
         res.json(updatedCart);
     }

@@ -5,6 +5,7 @@ import CssBaseline from '@mui/material/CssBaseline'
 import { theme } from './theme/theme'
 import { AuthProvider } from './context/AuthContext'
 import { CartProvider } from './context/CartContext'
+import { WishlistProvider } from './context/WishlistContext'
 import AppRoutes from './routes/AppRoutes'
 import ScrollToTop from './components/ScrollToTop'
 
@@ -27,7 +28,9 @@ function App() {
           <ScrollToTop />
           <AuthProvider>
             <CartProvider>
-              <AppRoutes />
+              <WishlistProvider>
+                <AppRoutes />
+              </WishlistProvider>
             </CartProvider>
           </AuthProvider>
         </BrowserRouter>

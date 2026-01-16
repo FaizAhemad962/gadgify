@@ -7,6 +7,7 @@ import {
 } from '@mui/x-data-grid'
 import { Box } from '@mui/material'
 import { useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 
 interface AdminDataGridProps {
   rows: any[]
@@ -33,7 +34,8 @@ export const AdminDataGrid = ({
   onSortModelChange,
   onFilterModelChange,
 }: AdminDataGridProps) => {
-  // Handle pagination model change
+  const { t } = useTranslation()
+
   const handlePaginationModelChange = (newModel: GridPaginationModel) => {
     if (newModel.pageSize !== rowsPerPage) {
       onRowsPerPageChange(newModel.pageSize)
@@ -43,33 +45,42 @@ export const AdminDataGrid = ({
     }
   }
 
-  // Memoize rows with index for DataGrid
-  const rowsWithId = useMemo(() => {
-    return rows.map((row, index) => ({
-      ...row,
-      id: row.id || `row-${index}`,
-    }))
-  }, [rows])
+  const rowsWithId = useMemo(
+    () =>
+      rows.map((row, index) => ({
+        ...row,
+        id: row.id || `row-${index}`,
+      })),
+    [rows]
+  )
+
+  const localeText = {
+    MuiTablePagination: {
+      labelRowsPerPage: t('admin.rowsPerPage'),
+      labelDisplayedRows: ({ from, to, count }: any) =>
+        `${t('admin.showing')} ${from}-${to} ${t('admin.of')} ${count}`,
+    },
+    noRowsLabel: t('common.noData'),
+    noResultsOverlayLabel: t('common.noResults'),
+    errorOverlayDefaultLabel: t('common.error'),
+  }
 
   return (
     <Box
       sx={{
         width: '100%',
         height: 'calc(100vh - 280px)',
-        minHeight: '500px',
+        minHeight: 500,
+        overflow: 'hidden', // ⬅️ IMPORTANT
       }}
     >
       <DataGrid
-      disableVirtualization
-      disableColumnMenu
         rows={rowsWithId}
         columns={columns}
         loading={isLoading}
+        disableColumnMenu
         pageSizeOptions={[10, 25, 50, 100]}
-        paginationModel={{
-          pageSize: rowsPerPage,
-          page,
-        }}
+        paginationModel={{ pageSize: rowsPerPage, page }}
         onPaginationModelChange={handlePaginationModelChange}
         onSortModelChange={onSortModelChange}
         onFilterModelChange={onFilterModelChange}
@@ -78,7 +89,15 @@ export const AdminDataGrid = ({
         sortingMode="server"
         filterMode="server"
         disableRowSelectionOnClick
+        localeText={localeText}
+        sx={{
+          width: '100%', // ✅ NOT minWidth
+          '& .MuiDataGrid-virtualScroller': {
+            overflowX: 'auto', // ✅ horizontal scroll lives here
+          },
+        }}
       />
     </Box>
   )
 }
+

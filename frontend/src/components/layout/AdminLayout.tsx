@@ -14,9 +14,6 @@ import {
   ListItemButton,
   ListItemIcon,
   ListItemText,
-  FormControl,
-  Select,
-  MenuItem,
 } from '@mui/material'
 import {
   Menu as MenuIcon,
@@ -27,12 +24,13 @@ import {
   Home,
 } from '@mui/icons-material'
 import { useAuth } from '../../context/AuthContext'
+import LanguageSelector from '../common/LanguageSelector'
 
 const drawerWidth = 240
 const collapsedWidth = 70
 
 const AdminLayout = () => {
-  const { t, i18n } = useTranslation()
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const { logout } = useAuth()
   const [mobileOpen, setMobileOpen] = useState(false)
@@ -246,22 +244,7 @@ const AdminLayout = () => {
             </Typography>
           )}
           {open && <Box sx={{ flexGrow: 1 }} />}
-          <FormControl size="small" sx={{ minWidth: 70 }}>
-            <Select
-              value={i18n.language || 'mr'}
-              onChange={(e) => i18n.changeLanguage(e.target.value)}
-              sx={{
-                color: 'white',
-                '.MuiOutlinedInput-notchedOutline': { borderColor: 'white' },
-                '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: 'white' },
-                '.MuiSvgIcon-root': { color: 'white' },
-              }}
-            >
-              <MenuItem value="en">EN</MenuItem>
-              <MenuItem value="mr">मर</MenuItem>
-              <MenuItem value="hi">हि</MenuItem>
-            </Select>
-          </FormControl>
+          <LanguageSelector variant="navbar" />
         </Toolbar>
       </AppBar>
       <Box

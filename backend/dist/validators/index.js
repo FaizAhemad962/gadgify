@@ -24,8 +24,14 @@ exports.productSchema = joi_1.default.object({
     description: joi_1.default.string().min(10).required(),
     price: joi_1.default.number().min(1).required(),
     stock: joi_1.default.number().min(0).required(),
-    imageUrl: joi_1.default.string().uri().required(),
-    videoUrl: joi_1.default.string().uri().optional().allow(''),
+    media: joi_1.default.array()
+        .items(joi_1.default.object({
+        url: joi_1.default.string().uri().required(),
+        type: joi_1.default.string().valid('image', 'video').required(),
+        isPrimary: joi_1.default.boolean().optional(),
+    }))
+        .min(1)
+        .required(),
     colors: joi_1.default.string().optional().allow(''),
     category: joi_1.default.string().min(2).required(),
     hsnNo: joi_1.default.string().optional().allow(''),

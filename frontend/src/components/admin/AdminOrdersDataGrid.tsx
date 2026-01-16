@@ -53,6 +53,8 @@ export const AdminOrdersDataGrid = ({
       field: 'id',
       headerName: t('admin.orderId'),
       minWidth: 100,
+      maxWidth: 120,
+      flex: 0.8,
       renderCell: (params: GridRenderCellParams) => (
         <span style={{ color: '#42a5f5', fontWeight: '600' }}>
           #{params.value?.substring(0, 8)}
@@ -62,7 +64,8 @@ export const AdminOrdersDataGrid = ({
     {
       field: 'user',
       headerName: t('admin.customer'),
-      minWidth: 180,
+      minWidth: 140,
+      maxWidth: 220,
       flex: 1,
       sortable: false,
       renderCell: (params: GridRenderCellParams) => (
@@ -74,8 +77,9 @@ export const AdminOrdersDataGrid = ({
     {
       field: 'createdAt',
       headerName: t('admin.date'),
-      minWidth: 120,
-      flex: 1,
+      minWidth: 100,
+      maxWidth: 130,
+      flex: 0.8,
       renderCell: (params: GridRenderCellParams) => (
         <span style={{ color: '#b0b0b0' }}>
           {formatDate(params.value, t)}
@@ -85,7 +89,9 @@ export const AdminOrdersDataGrid = ({
     {
       field: 'items',
       headerName: t('admin.items'),
-      minWidth: 80,
+      minWidth: 70,
+      maxWidth: 90,
+      flex: 0.5,
       sortable: false,
       renderCell: (params: GridRenderCellParams) => (
         <span style={{ color: '#b0b0b0', fontWeight: '500' }}>
@@ -96,7 +102,9 @@ export const AdminOrdersDataGrid = ({
     {
       field: 'total',
       headerName: t('admin.total'),
-      minWidth: 110,
+      minWidth: 100,
+      maxWidth: 120,
+      flex: 0.7,
       renderCell: (params: GridRenderCellParams) => (
         <span style={{ color: '#ff9800', fontWeight: '700' }}>
           ₹{params.value?.toLocaleString()}
@@ -106,7 +114,9 @@ export const AdminOrdersDataGrid = ({
     {
       field: 'hsn',
       headerName: 'HSN',
-      minWidth: 100,
+      minWidth: 80,
+      maxWidth: 100,
+      flex: 0.6,
       renderCell: (params: GridRenderCellParams) => (
         <span style={{ color: '#a0a0a0' }}>
           {params.row.hsn || 'N/A'}
@@ -116,7 +126,9 @@ export const AdminOrdersDataGrid = ({
     {
       field: 'gst',
       headerName: 'GST',
-      minWidth: 80,
+      minWidth: 70,
+      maxWidth: 90,
+      flex: 0.5,
       renderCell: (params: GridRenderCellParams) => (
         <span style={{ color: '#a0a0a0' }}>
           {params.row.gst ? `${params.row.gst}%` : 'N/A'}
@@ -127,6 +139,8 @@ export const AdminOrdersDataGrid = ({
       field: 'paymentStatus',
       headerName: t('admin.payment'),
       minWidth: 120,
+      maxWidth: 140,
+      flex: 0.9,
       sortable: false,
       renderCell: (params: GridRenderCellParams) => (
         <Chip
@@ -140,7 +154,9 @@ export const AdminOrdersDataGrid = ({
     {
       field: 'status',
       headerName: t('admin.status'),
-      minWidth: 120,
+      minWidth: 140,
+      maxWidth: 220,
+      flex: 1,
       sortable: false,
       renderCell: (params: GridRenderCellParams) => (
         <Select

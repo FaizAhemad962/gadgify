@@ -13,38 +13,26 @@ import {
 
 
 } from "@mui/material";
-// Dummy wishlist state for demonstration. Replace with real wishlist logic/context as needed.
-const useWishlist = () => {
-  const [wishlist, setWishlist] = useState<string[]>([]);
-  const isInWishlist = (productId: string) => wishlist.includes(productId);
-  const toggleWishlist = (productId: string) => {
-    setWishlist((prev) =>
-      prev.includes(productId)
-        ? prev.filter((id) => id !== productId)
-        : [...prev, productId]
-    );
-  };
-  return { wishlist, isInWishlist, toggleWishlist };
-};
 import { productsApi } from "../api/products";
 import { useCart } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
+import { useWishlist } from "../context/WishlistContext";
 import { ErrorHandler } from "../utils/errorHandler";
 import ProductCard from "../components/ProductCard";
 
 const PRODUCTS_PER_PAGE = 12;
 
 const ProductsPage = () => {
-  const { isInWishlist, toggleWishlist } = useWishlist();
+  const { isInWishlist, toggleWishlist, isToggling } = useWishlist();
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
-  const { addToCart, cart, updateQuantity } = useCart();
   const [searchParams, setSearchParams] = useSearchParams();
   const [searchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [displayCount, setDisplayCount] = useState(PRODUCTS_PER_PAGE);
   const loaderRef = useRef<HTMLDivElement>(null);
+  const { cart, addToCart, isAddingToCart } = useCart()
 
   const {
     data: products,
@@ -111,35 +99,18 @@ const ProductsPage = () => {
     setDisplayCount(PRODUCTS_PER_PAGE);
   }, [searchQuery, selectedCategory]);
 
-  const handleAddToCart = async (productId: string, quantity: number = 1) => {
-    if (!isAuthenticated) {
-      navigate("/login");
-      return;
-    }
-    try {
-      await addToCart({ productId, quantity });
-      // Toast notification would go here
-    } catch (error) {
-      ErrorHandler.logError("Add to cart failed", error);
-      console.error("Failed to add to cart:", error);
-    }
-  };
-
-  const handleBuyNow = async (productId: string, quantity: number = 1) => {
+  const handleBuyNow = async (productId: string) => {
     if (!isAuthenticated) {
       navigate("/login");
       return;
     }
     // Check if item is already in cart
     const cartItem = cart?.items?.find((item) => item.productId === productId);
-    if (cartItem) {
-      // If quantity is different, update it
-      if (cartItem.quantity !== quantity) {
-        await updateQuantity(cartItem.id, quantity);
-      }
-    } else {
-      await addToCart({ productId, quantity });
+    if (!cartItem) {
+      // Only add if not in cart
+      await addToCart({ productId, quantity: 1 });
     }
+    // Don't modify existing cart items, just navigate to cart
     navigate("/cart");
   };
 
@@ -247,10 +218,12 @@ const ProductsPage = () => {
                   product={product}
                   isInWishlist={isInWishlist}
                   toggleWishlist={toggleWishlist}
-                  onAddToCart={(id) => handleAddToCart(id, 1)}
-                  onBuyNow={(id) => handleBuyNow(id, 1)}
+                  isToggling={isToggling}
+                  onAddToCart={(id) => addToCart({productId:id, quantity:1})}
+                  onBuyNow={(id) => handleBuyNow(id)}
                   onNavigate={(id) => navigate(`/products/${id}`)}
                   t={t}
+                  isAddingToCart={isAddingToCart(product.id)}
                 />
               ))
             ) : (

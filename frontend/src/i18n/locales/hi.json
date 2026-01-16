@@ -168,7 +168,24 @@
     "total": "कुल",
     "payment": "भुगतान",
     "status": "स्थिति",
-    "deleteSuccess": "उत्पाद सफलतापूर्वक हटाया गया"
+    "rowsPerPage": "प्रति पृष्ठ पंक्तियाँ:",
+    "showing": "दिखा रहा है",
+    "to": "से",
+    "of": "का",
+    "next": "अगला",
+    "previous": "पिछला",
+    "first": "पहला",
+    "last": "अंतिम",
+    "deleteSuccess": "उत्पाद सफलतापूर्वक हटाया गया",
+    "searchOrders": "ऑर्डर खोजें..."
+  },
+  "wishlist": {
+    "title": "मेरी विशलिस्ट",
+    "empty": "आपकी विशलिस्ट खाली है",
+    "addToCart": "कार्ट में जोड़ें",
+    "remove": "हटाएं",
+    "viewDetails": "विवरण देखें",
+    "browseProducts": "उत्पाद ब्राउज़ करें"
   },
   "common": {
     "loading": "लोड हो रहा है...",
@@ -281,7 +298,10 @@
     "invalidPhone": "अवैध फोन नंबर",
     "cityRequired": "शहर आवश्यक है",
     "addressRequired": "पता आवश्यक है",
-    "invalidPincode": "अवैध पिनकोड"
+    "invalidPincode": "अवैध पिनकोड",
+    "noData": "कोई डेटा उपलब्ध नहीं",
+    "noResults": "कोई परिणाम नहीं मिला",
+    "error": "एक त्रुटि हुई"
   },
   "footer": {
     "aboutDesc": "महाराष्ट्र में प्रामाणिक इलेक्ट्रॉनिक्स और गैजेट्स के लिए आपका प्रमुख गंतव्य।",
@@ -300,17 +320,15 @@
     "madeWith": "महाराष्ट्र में ❤️ के साथ बनाया गया"
   },
   "categories": {
-    "Smartphones": "स्मार्टफ़ोन",
-    "Laptops": "लैपटॉप",
-    "Tablets": "टैबलेट",
-    "Smartwatches": "स्मार्टवॉच",
-    "Headphones": "हेडफ़ोन",
-    "Cameras": "कैमरे",
-    "Gaming": "गेमिंग",
-    "Accessories": "एक्सेसरीज़",
-    "Home Appliances": "घरेलू उपकरण",
-    "Audio": "ऑडियो",
-    "Wearables": "वियरेबल्स"
+    "Home & Kitchen": "घर और रसोई",
+    "Electronics": "इलेक्ट्रॉनिक्स",
+    "Beauty & Personal Care": "सौंदर्य और व्यक्तिगत देखभाल",
+    "Office & Storage": "कार्यालय और भंडारण",
+    "Sports & Outdoor": "खेल और आउटडोर",
+    "Jewelry & Accessories": "गहने और सहायक उपकरण",
+    "Toys": "खिलौने",
+    "Tools & Hardware": "उपकरण और हार्डवेयर",
+    "Lighting": "लाइटिंग"
   },
   "payment": {
     "label": "भुगतान",

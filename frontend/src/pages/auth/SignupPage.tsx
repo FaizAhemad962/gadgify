@@ -60,6 +60,7 @@ const SignupPage = () => {
     resolver: zodResolver(signupSchema),
     defaultValues: {
       state: t('states.maharashtra'),
+      city: '',
     },
   })
 

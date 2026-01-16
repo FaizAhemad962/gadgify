@@ -21,12 +21,18 @@ router.post('/upload-image', auth_1.authenticate, (0, auth_1.authorize)('ADMIN')
     res.json({ imageUrl });
 });
 // Video upload endpoint (Admin only)
-router.post('/upload-video', auth_1.authenticate, (0, auth_1.authorize)('ADMIN'), rateLimiter_1.uploadLimiter, upload_1.videoUpload.single('video'), (req, res) => {
-    if (!req.file) {
-        return res.status(400).json({ message: 'No video file uploaded' });
-    }
-    const videoUrl = `/uploads/${req.file.filename}`;
-    res.json({ videoUrl });
+router.post('/upload-video', auth_1.authenticate, (0, auth_1.authorize)('ADMIN'), rateLimiter_1.uploadLimiter, (req, res, next) => {
+    upload_1.videoUpload.single('video')(req, res, function (err) {
+        if (err instanceof Error) {
+            // Multer error (file too large, invalid type, etc.)
+            return res.status(400).json({ success: false, message: err.message });
+        }
+        if (!req.file) {
+            return res.status(400).json({ success: false, message: 'No video file uploaded' });
+        }
+        const videoUrl = `/uploads/${req.file.filename}`;
+        res.json({ success: true, videoUrl });
+    });
 });
 // Admin only
 router.post('/', auth_1.authenticate, (0, auth_1.authorize)('ADMIN'), (0, validate_1.validate)(validators_1.productSchema), productController_1.createProduct);

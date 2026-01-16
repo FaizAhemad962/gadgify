@@ -8,6 +8,7 @@ import {
   Chip,
   IconButton,
   Typography,
+  CircularProgress,
 } from "@mui/material";
 import { ShoppingCart, Favorite, FavoriteBorder } from "@mui/icons-material";
 import LazyImage from "../components/common/LazyImage";
@@ -22,21 +23,25 @@ interface ProductMedia {
 interface ProductCardProps {
   product: any;
   isInWishlist: (id: string) => boolean;
-  toggleWishlist: (id: string) => void;
+  isToggling: (id: string) => boolean;
+  toggleWishlist: (id: string) => Promise<void>;
   onAddToCart: (id: string) => void;
   onBuyNow: (id: string) => void;
   onNavigate: (id: string) => void;
   t: (key: string) => string;
+  isAddingToCart?: boolean;
 }
 
 const ProductCard: React.FC<ProductCardProps> = ({
   product,
   isInWishlist,
+  isToggling,
   toggleWishlist,
   onAddToCart,
   onBuyNow,
   onNavigate,
   t,
+  isAddingToCart = false,
 }) => {
   return (
     <Card
@@ -123,14 +128,21 @@ const ProductCard: React.FC<ProductCardProps> = ({
                 ? t("products.removeFromWishlist")
                 : t("products.addToWishlist")
             }
-            onClick={(e) => {
+            onClick={async (e) => {
               e.stopPropagation();
-              toggleWishlist(product.id);
+              await toggleWishlist(product.id);
             }}
+            disabled={isToggling(product.id)}
             color={isInWishlist(product.id) ? "error" : "default"}
             size="large"
           >
-            {isInWishlist(product.id) ? <Favorite /> : <FavoriteBorder />}
+            {isToggling(product.id) ? (
+              <CircularProgress size={24} color="inherit" />
+            ) : isInWishlist(product.id) ? (
+              <Favorite />
+            ) : (
+              <FavoriteBorder />
+            )}
           </IconButton>
         </Box>
         <Typography
@@ -195,18 +207,20 @@ const ProductCard: React.FC<ProductCardProps> = ({
             >
               ₹{product.price.toLocaleString()}
             </Typography>
-            <Typography variant="caption">
-              M.R.P:{" "}
-              <Typography
-                variant="caption"
-                sx={{ textDecoration: "line-through", flex: 1 }}
-              >
-                5000/-
-              </Typography>{" "}
-              <Typography variant="caption" sx={{ fontWeight: 600 }}>
-                ( 90% ) OFF
+            {product.originalPrice && product.originalPrice > product.price ? (
+              <Typography variant="caption">
+                M.R.P:{" "}
+                <Typography
+                  variant="caption"
+                  sx={{ textDecoration: "line-through", flex: 1 }}
+                >
+                  ₹{product.originalPrice.toLocaleString()}
+                </Typography>{" "}
+                <Typography variant="caption" sx={{ fontWeight: 600, color: '#f44336' }}>
+                  ( {Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}% ) OFF
+                </Typography>
               </Typography>
-            </Typography>
+            ) : null}
           </Box>
         </Box>
       </CardContent>
@@ -216,7 +230,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
           variant="outlined"
           size="small"
           onClick={() => onAddToCart(product.id)}
-          disabled={product.stock === 0}
+          disabled={product.stock === 0 || isAddingToCart}
           startIcon={<ShoppingCart />}
           sx={{
             fontWeight: 600,
@@ -224,7 +238,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
             flex: 1,
           }}
         >
-          {t("products.addToCart")}
+          {isAddingToCart ? "Adding..." : t("products.addToCart")}
         </Button>
         <Button
           variant="contained"

@@ -4,6 +4,9 @@ import { Paper, Typography, Box } from '@mui/material'
 import { Inventory, ShoppingCart, People, CurrencyRupee } from '@mui/icons-material'
 import { productsApi } from '../../api/products'
 import { ordersApi } from '../../api/orders'
+import { AdminDataGrid } from '../../components/admin/AdminDataGrid'
+import type { GridColDef } from '@mui/x-data-grid'
+import { formatDate } from '@/utils/dateFormatter'
 
 const AdminDashboard = () => {
   const { t } = useTranslation()
@@ -13,8 +16,8 @@ const AdminDashboard = () => {
   })
 
   const { data: ordersData } = useQuery({
-    queryKey: ['admin-orders'],
-    queryFn: () => ordersApi.getAllOrders(),
+    queryKey: ['admin-orders-dashboard'],
+    queryFn: () => ordersApi.getAllOrders(1, 50), // Get more orders for dashboard
   })
 
   const orders = ordersData?.orders || []
@@ -46,22 +49,100 @@ const AdminDashboard = () => {
     },
   ]
 
+  // DataGrid columns for recent orders
+  const orderColumns: GridColDef[] = [
+    {
+      field: 'id',
+      headerName: t('admin.orderId'),
+      minWidth: 120,
+      maxWidth: 150,
+      flex: 0.8,
+      renderCell: (params) => (
+        <span style={{ color: '#42a5f5', fontWeight: '600' }}>
+          #{params.value?.substring(0, 8)}
+        </span>
+      ),
+    },
+    {
+      field: 'user',
+      headerName: t('admin.customer'),
+      minWidth: 150,
+      maxWidth: 200,
+      flex: 1.2,
+      renderCell: (params) => (
+        <span style={{ color: '#666666' }}>
+          {params.row.user?.name || 'N/A'}
+        </span>
+      ),
+    },
+    {
+      field: 'total',
+      headerName: t('admin.total'),
+      minWidth: 100,
+      maxWidth: 130,
+      flex: 0.8,
+      renderCell: (params) => (
+        <span style={{ color: '#ff9800', fontWeight: '700' }}>
+          ₹{params.value?.toLocaleString()}
+        </span>
+      ),
+    },
+    {
+      field: 'status',
+      headerName: t('admin.status'),
+      minWidth: 120,
+      maxWidth: 150,
+      flex: 1,
+      renderCell: (params) => {
+        const statusColors = {
+          PENDING: '#ed6c02',
+          PROCESSING: '#1976d2',
+          SHIPPED: '#2e7d32',
+          DELIVERED: '#9c27b0',
+          CANCELLED: '#d32f2f',
+        }
+        return (
+          <span style={{ 
+            color: statusColors[params.value as keyof typeof statusColors] || '#666666', 
+            fontWeight: '600',
+            textTransform: 'capitalize'
+          }}>
+            {t(`orders.${params.value?.toLowerCase()}`)}
+          </span>
+        )
+      },
+    },
+    {
+      field: 'createdAt',
+      headerName: t('admin.date'),
+      minWidth: 120,
+      maxWidth: 150,
+      flex: 0.8,
+      renderCell: (params) => (
+        <span style={{ color: '#666666' }}>
+          {formatDate(params.value, t)}
+          
+        </span>
+      ),
+    }
+  ]
+
   return (
     <Box>
-      <Typography variant="h4" gutterBottom fontWeight="600" sx={{ color: '#fff', mb: 4, background: 'linear-gradient(135deg, #1976d2, #ff9800)', backgroundClip: 'text', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+      <Typography variant="h4" gutterBottom fontWeight="600" sx={{ color: '#1976d2', mb: 4 }}>
         {t('admin.dashboard')}
       </Typography>
 
       <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', mb: 4 }}>
         {stats.map((stat, index) => (
           <Box sx={{ flex: { xs: '1 1 100%', sm: '1 1 45%', md: '1 1 22%' }, minWidth: 200 }} key={index}>
-            <Paper
+            <Paper  
               sx={{
                 p: 3,
                 display: 'flex',
                 alignItems: 'center',
                 gap: 2.5,
-                backgroundColor: '#242628',
+                backgroundColor: '#f8f9fa',
                 border: `2px solid ${stat.color}`,
                 borderRadius: '12px',
                 transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
@@ -69,6 +150,7 @@ const AdminDashboard = () => {
                 '&:hover': {
                   transform: 'translateY(-4px)',
                   boxShadow: `0 8px 24px ${stat.color}40`,
+                  backgroundColor: '#ffffff',
                 },
               }}
             >
@@ -76,51 +158,30 @@ const AdminDashboard = () => {
                 {stat.icon}
               </Box>
               <Box>
-                <Typography variant="h5" fontWeight="700" sx={{ color: '#ff9800' }}>
+                <Typography variant="h5" fontWeight="700" sx={{ color: '#1976d2' }}>
                   {stat.value}
                 </Typography>
-                <Typography variant="body2" sx={{ color: '#b0b0b0' }}>{stat.title}</Typography>
+                <Typography variant="body2" sx={{ color: '#666666' }}>{stat.title}</Typography>
               </Box>
             </Paper>
           </Box>
         ))}
       </Box>
 
-      <Paper sx={{ p: 3, bgcolor: '#242628', border: '1px solid #3a3a3a', borderRadius: '12px' }}>
-        <Typography variant="h6" gutterBottom sx={{ color: '#ff9800', fontWeight: '600', mb: 2.5 }}>
+      <Paper sx={{ p: 3, bgcolor: '#f8f9fa', border: '1px solid #e0e0e0', borderRadius: '12px' }}>
+        <Typography variant="h6" gutterBottom sx={{ color: '#1976d2', fontWeight: '600', mb: 2.5 }}>
           {t('admin.recentOrders')}
         </Typography>
-        {orders.length > 0 ? (
-          <Box>
-            {orders.slice(0, 5).map((order) => (
-              <Box
-                key={order.id}
-                sx={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  py: 2,
-                  px: 1,
-                  borderBottom: '1px solid #3a3a3a',
-                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                  borderRadius: '6px',
-                  '&:hover': {
-                    bgcolor: '#1e1e1e',
-                  },
-                  '&:last-child': {
-                    borderBottom: 'none',
-                  }
-                }}
-              >
-                <Typography sx={{ color: '#b0b0b0' }}>Order #{order.id.slice(0, 8)}</Typography>
-                <Typography sx={{ color: '#ff9800', fontWeight: '600' }}>₹{order.total.toLocaleString()}</Typography>
-                <Typography sx={{ color: '#1976d2', fontWeight: '600' }}>{order.status}</Typography>
-              </Box>
-            ))}
-          </Box>
-        ) : (
-          <Typography sx={{ color: '#707070' }}>{t('admin.noOrders')}</Typography>
-        )}
+        <AdminDataGrid
+          rows={orders.slice(0, 10)} // Show last 10 orders
+          columns={orderColumns}
+          isLoading={false}
+          total={orders.length}
+          page={0}
+          rowsPerPage={10}
+          onPageChange={() => {}} // Dashboard doesn't need pagination
+          onRowsPerPageChange={() => {}}
+        />
       </Paper>
     </Box>
   )
