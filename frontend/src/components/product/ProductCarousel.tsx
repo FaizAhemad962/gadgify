@@ -71,8 +71,13 @@ export const ProductCarousel: React.FC<ProductCarouselProps> = ({ items }) => {
       {/* Main Image Display - No Arrows */}
       <Box
         sx={{
-          width: '100%',
-          bgcolor: 'transparent',
+            width: '100%',
+    height: 420,                 // 🔥 FIXED HEIGHT
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    bgcolor: '#fafafa',
+    borderRadius: 2,
         }}
       >
         {mainItem.type === 'image' ? (
@@ -80,6 +85,9 @@ export const ProductCarousel: React.FC<ProductCarouselProps> = ({ items }) => {
             src={mainItem.url}
             alt={mainItem.alt || 'Product image'}
             style={{
+                width: '100%',
+    height: '100%',
+               objectFit: 'contain',
             }}
           />
         ) : (
@@ -157,6 +165,7 @@ export const ProductCarousel: React.FC<ProductCarouselProps> = ({ items }) => {
                     style={{
                       width: '100%',
                       height: '100%',
+                      objectFit: 'contain',
                     }}
                   />
                 ) : (
