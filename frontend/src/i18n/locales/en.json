@@ -180,7 +180,12 @@
     "previous": "Previous",
     "first": "First",
     "last": "Last",
-    "searchOrders": "Search orders..."
+    "searchOrders": "Search orders...",
+    "productImages": "Product Images",
+    "productVideos": "Product Videos",
+    "chooseImages": "Choose Images",
+    "chooseVideos": "Choose Videos",
+    "uploadVideos" : "Upload Videos"
   },
   "wishlist": {
     "title": "My Wishlist",
@@ -296,7 +301,8 @@
     "invalidPincode": "Invalid pincode",
     "noData": "No data available",
     "noResults": "No results found",
-    "error": "An error occurred"
+    "error": "An error occurred",
+    "Optional": "Optional"
   },
   "footer": {
     "aboutDesc": "Your premier destination for authentic electronics and gadgets in Maharashtra.",

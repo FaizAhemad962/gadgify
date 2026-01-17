@@ -13,7 +13,7 @@ async function seed() {
   await prisma.cart.deleteMany({})
   await prisma.productMedia.deleteMany({})
   await prisma.product.deleteMany({})
-  await prisma.user.deleteMany({})
+  // await prisma.user.deleteMany({})
   console.log('✅ Data cleared')
 
   // Create sample products with categories and original prices
@@ -98,80 +98,80 @@ async function seed() {
   // Create sample users - 3 regular users and 1 admin
   console.log('👥 Adding sample users...')
   
-  const users = [
-    {
-      email: 'user1@example.com',
-      password: 'hashedPassword123',
-      name: 'Raj Kumar',
-      phone: '9876543210',
-      role: 'USER',
-      state: 'Maharashtra',
-      city: 'Mumbai',
-      address: '123 MG Road, Mumbai',
-      pincode: '400001',
-    },
-    {
-      email: 'user2@example.com',
-      password: 'hashedPassword123',
-      name: 'Priya Sharma',
-      phone: '8765432109',
-      role: 'USER',
-      state: 'Maharashtra',
-      city: 'Pune',
-      address: '456 FC Road, Pune',
-      pincode: '411001',
-    },
-    {
-      email: 'user3@example.com',
-      password: 'hashedPassword123',
-      name: 'Anil Patel',
-      phone: '7654321098',
-      role: 'USER',
-      state: 'Maharashtra',
-      city: 'Nagpur',
-      address: '789 Dharampeth, Nagpur',
-      pincode: '440001',
-    },
-    {
-      email: 'admin@example.com',
-      password: 'hashedPassword123',
-      name: 'Admin User',
-      phone: '9999999999',
-      role: 'ADMIN',
-      state: 'Maharashtra',
-      city: 'Mumbai',
-      address: '999 Admin Tower, Mumbai',
-      pincode: '400050',
-    },
-  ]
+  // const users = [
+  //   {
+  //     email: 'user1@example.com',
+  //     password: 'hashedPassword123',
+  //     name: 'Raj Kumar',
+  //     phone: '9876543210',
+  //     role: 'USER',
+  //     state: 'Maharashtra',
+  //     city: 'Mumbai',
+  //     address: '123 MG Road, Mumbai',
+  //     pincode: '400001',
+  //   },
+  //   {
+  //     email: 'user2@example.com',
+  //     password: 'hashedPassword123',
+  //     name: 'Priya Sharma',
+  //     phone: '8765432109',
+  //     role: 'USER',
+  //     state: 'Maharashtra',
+  //     city: 'Pune',
+  //     address: '456 FC Road, Pune',
+  //     pincode: '411001',
+  //   },
+  //   {
+  //     email: 'user3@example.com',
+  //     password: 'hashedPassword123',
+  //     name: 'Anil Patel',
+  //     phone: '7654321098',
+  //     role: 'USER',
+  //     state: 'Maharashtra',
+  //     city: 'Nagpur',
+  //     address: '789 Dharampeth, Nagpur',
+  //     pincode: '440001',
+  //   },
+  //   {
+  //     email: 'admin@example.com',
+  //     password: 'hashedPassword123',
+  //     name: 'Admin User',
+  //     phone: '9999999999',
+  //     role: 'ADMIN',
+  //     state: 'Maharashtra',
+  //     city: 'Mumbai',
+  //     address: '999 Admin Tower, Mumbai',
+  //     pincode: '400050',
+  //   },
+  // ]
 
-  const createdUsers = await prisma.user.createMany({
-    data: users,
-  })
+  // const createdUsers = await prisma.user.createMany({
+  //   data: users,
+  // })
 
-  console.log(`✅ Created ${createdUsers.count} users (3 regular + 1 admin)`)
+  // console.log(`✅ Created ${createdUsers.count} users (3 regular + 1 admin)`)
 
   // Create carts for regular users
-  console.log('🛒 Creating carts for users...')
-  const regularUsers = await prisma.user.findMany({
-    where: { role: 'USER' },
-    take: 3,
-  })
+  // console.log('🛒 Creating carts for users...')
+  // const regularUsers = await prisma.user.findMany({
+  //   where: { role: 'USER' },
+  //   take: 3,
+  // })
 
-  for (const user of regularUsers) {
-    await prisma.cart.create({
-      data: {
-        userId: user.id,
-      },
-    })
-  }
+  // for (const user of regularUsers) {
+  //   await prisma.cart.create({
+  //     data: {
+  //       userId: user.id,
+  //     },
+  //   })
+  // }
 
-  console.log(`✅ Created carts for ${regularUsers.length} users`)
+  // console.log(`✅ Created carts for ${regularUsers.length} users`)
 
   console.log('🎉 Seeding completed!')
   console.log('📊 Summary:')
   console.log(`   - Products: ${createdProducts.count}`)
-  console.log(`   - Users: ${createdUsers.count} (3 regular users + 1 admin)`)
+  // console.log(`   - Users: ${createdUsers.count} (3 regular users + 1 admin)`)
   console.log(`   - Categories: 10 (Home & Kitchen, Electronics, Beauty & Personal Care, Office & Storage, Sports & Outdoor, Jewelry & Accessories, Toys, Tools & Hardware, Lighting)`)
   console.log('ℹ️  Admin login: admin@example.com / hashedPassword123')
 }

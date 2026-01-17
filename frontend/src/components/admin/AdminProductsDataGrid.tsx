@@ -134,24 +134,20 @@ export const AdminProductsDataGrid = ({
           >
             <Edit fontSize="small" />
           </IconButton>
-          <IconButton
-            size="small"
-            onClick={() => {
-              if (window.confirm(t('admin.confirmDelete'))) {
-                onDelete(params.row.id)
-              }
-            }}
-            sx={{
-              width: '32px',
-              height: '32px',
-              color: '#f44336',
-              '&:hover': {
-                bgcolor: 'rgba(244, 67, 54, 0.1)',
-              },
-            }}
-          >
-            <Delete fontSize="small" />
-          </IconButton>
+<IconButton
+  size="small"
+  onClick={(e) => {
+    e.stopPropagation()
+    onDelete(params.row.id)
+  }}
+  sx={{
+    width: '32px',
+    height: '32px',
+    color: '#f44336',
+  }}
+>
+  <Delete fontSize="small" />
+</IconButton>
         </Box>
       ),
     },

@@ -134,7 +134,7 @@ const AdminProducts = () => {
   const createMutation = useMutation({
     mutationFn: productsApi.create,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['products'] })
+      queryClient.invalidateQueries({ queryKey: ['admin-products'] })
       handleClose()
     },
     onError: (error: Error) => {
@@ -147,7 +147,7 @@ const AdminProducts = () => {
     mutationFn: ({ id, data }: { id: string; data: ProductFormData }) =>
       productsApi.update(id, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['products'] })
+      queryClient.invalidateQueries({ queryKey: ['admin-products'] })
       handleClose()
     },
     onError: (error: Error) => {
@@ -159,7 +159,7 @@ const AdminProducts = () => {
   const deleteMutation = useMutation({
     mutationFn: productsApi.delete,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['products'] })
+      queryClient.invalidateQueries({ queryKey: ['admin-products'] })
     },
   })
 
@@ -578,7 +578,7 @@ const productData: ProductFormData = {
                     inputProps={{ step: '0.01', min: '0', max: '100' }}
                     {...register('gstPercentage')}
                     error={!!errors.gstPercentage}
-                    helperText={errors.gstPercentage?.message || '(0-100) Optional'}
+                    helperText={errors.gstPercentage?.message || `${t('common.Optional')} (0-100)`}
                    
                   />
                 </Box>

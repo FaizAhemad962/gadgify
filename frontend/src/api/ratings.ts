@@ -1,3 +1,4 @@
+// src/api/ratings.ts
 import { apiClient } from './client'
 
 export interface Rating {
@@ -25,18 +26,39 @@ export interface CreateRatingData {
   comment?: string
 }
 
+/**
+ * Centralized query keys
+ */
+export const ratingsKeys = {
+  all: ['ratings'] as const,
+  byProduct: (productId: string) => ['ratings', productId] as const,
+}
+
 export const ratingsApi = {
   getRatings: async (productId: string): Promise<RatingResponse> => {
-    const response = await apiClient.get(`/products/${productId}/ratings`)
-    return response.data
+    const { data } = await apiClient.get(
+      `/products/${productId}/ratings`
+    )
+    return data
   },
 
-  createRating: async (productId: string, data: CreateRatingData): Promise<Rating> => {
-    const response = await apiClient.post(`/products/${productId}/ratings`, data)
-    return response.data
+  createRating: async (
+    productId: string,
+    payload: CreateRatingData
+  ): Promise<Rating> => {
+    const { data } = await apiClient.post(
+      `/products/${productId}/ratings`,
+      payload
+    )
+    return data
   },
 
-  deleteRating: async (productId: string): Promise<void> => {
-    await apiClient.delete(`/products/${productId}/ratings`)
+  deleteRating: async (
+    productId: string,
+    ratingId: string
+  ): Promise<void> => {
+    await apiClient.delete(
+      `/products/${productId}/ratings/${ratingId}`
+    )
   },
 }

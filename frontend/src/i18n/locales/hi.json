@@ -177,7 +177,13 @@
     "first": "पहला",
     "last": "अंतिम",
     "deleteSuccess": "उत्पाद सफलतापूर्वक हटाया गया",
-    "searchOrders": "ऑर्डर खोजें..."
+    "searchOrders": "ऑर्डर खोजें...",
+    "productImages": "उत्पाद छवियाँ",
+    "productVideos": "उत्पाद वीडियो",
+    "chooseImages": "छवियाँ चुनें",
+    "chooseVideos": "वीडियो चुनें",
+    "uploadVideos" : "वीडियो अपलोड करें"
+
   },
   "wishlist": {
     "title": "मेरी विशलिस्ट",
@@ -293,15 +299,10 @@
     "oneNumber": "एक संख्या",
     "passwordChangeInfo": "अपना वर्तमान पासवर्ड दर्ज करें और एक नया सुरक्षित पासवर्ड चुनें",
     "profilePhotoUpdated": "प्रोफाइल फोटो सफलतापूर्वक अपडेट हुआ",
-    "nameRequired": "नाम आवश्यक है",
-    "phoneRequired": "फोन आवश्यक है",
-    "invalidPhone": "अवैध फोन नंबर",
-    "cityRequired": "शहर आवश्यक है",
-    "addressRequired": "पता आवश्यक है",
-    "invalidPincode": "अवैध पिनकोड",
     "noData": "कोई डेटा उपलब्ध नहीं",
     "noResults": "कोई परिणाम नहीं मिला",
-    "error": "एक त्रुटि हुई"
+    "error": "एक त्रुटि हुई",
+    "Optional": "वैकल्पिक"
   },
   "footer": {
     "aboutDesc": "महाराष्ट्र में प्रामाणिक इलेक्ट्रॉनिक्स और गैजेट्स के लिए आपका प्रमुख गंतव्य।",
