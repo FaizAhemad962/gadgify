@@ -127,7 +127,7 @@ const SignupPage = () => {
       }}
     >
       {/* Language Selector */}
-      <LanguageSelector variant="auth" />
+      <LanguageSelector  />
 
       <Container maxWidth="md" sx={{ position: 'relative', zIndex: 1 }}>
         <Paper

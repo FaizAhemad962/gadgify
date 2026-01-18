@@ -12,7 +12,13 @@ import {
   Container,
   Button,
   Badge,
+  useMediaQuery,
+  Stack,
 } from '@mui/material'
+import LanguageIcon from "@mui/icons-material/Language";
+
+import BrandIcon from '../../assets/brand-icon.png'
+
 import {
   Menu as MenuIcon,
   ShoppingCart,
@@ -23,20 +29,20 @@ import { useAuth } from '../../context/AuthContext'
 import { useCart } from '../../context/CartContext'
 import { useWishlist } from '../../context/WishlistContext'
 import LanguageSelector from '../common/LanguageSelector'
+import { theme } from '@/theme/theme'
+import { AppDrawer, type DrawerItem } from '../ui/Drawer'
 
 const Navbar = () => {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const { isAuthenticated, isAdmin, logout, user } = useAuth()
   const { itemCount } = useCart()
-  const { wishlistItems } = useWishlist()
+  const { wishlistItems } = useWishlist();
+  // check width using mui breakpoints
+ const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
   const [anchorElNav, setAnchorElNav] = useState<null | HTMLElement>(null)
   const [anchorElUser, setAnchorElUser] = useState<null | HTMLElement>(null)
-
-  const handleOpenNavMenu = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorElNav(event.currentTarget)
-  }
 
   const handleOpenUserMenu = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorElUser(event.currentTarget)
@@ -55,6 +61,84 @@ const Navbar = () => {
     handleCloseUserMenu()
     navigate('/login')
   }
+  
+const drawerItems: DrawerItem[] = [
+  {
+    id: 'home',
+    label: t('nav.home'),
+    icon: '🏠',
+    position: 'center',
+    onClick: () => navigate('/'),
+  } satisfies DrawerItem,
+
+  ...(isAdmin
+    ? [
+        {
+          id: 'admin',
+          label: 'Dashboard',
+          icon: '⚙️',
+          position: 'center',
+          onClick: () => navigate('/admin'),
+        } satisfies DrawerItem,
+      ]
+    : []),
+
+  {
+    id: 'products',
+    label: t('nav.products'),
+    icon: '📱',
+    position: 'center',
+    onClick: () => navigate('/products'),
+  } satisfies DrawerItem,
+
+  ...(isAuthenticated
+    ? [
+        {
+          id: 'orders',
+          label: 'My Orders',
+          icon: '📦',
+          position: 'center',
+          onClick: () => navigate('/orders'),
+        } satisfies DrawerItem,
+      ]
+    : []),
+
+  ...(isAuthenticated
+    ? [
+        {
+          id: 'wishlist',
+          label: 'My Wishlist',
+          icon: (
+            <Favorite
+              color="error"
+              sx={{ fontSize: { xs: '1.3rem', md: '1.5rem' } }}
+            />
+          ),
+          position: 'center',
+          onClick: () => navigate('/wishlist'),
+        } satisfies DrawerItem,
+      ]
+    : []),
+
+  ...(isAuthenticated
+    ? [
+        {
+          id: 'cart',
+          label: 'My Cart',
+          icon: (
+            <ShoppingCart
+              color="success"
+              sx={{ fontSize: { xs: '1.3rem', md: '1.5rem' } }}
+            />
+          ),
+          position: 'center',
+          onClick: () => navigate('/cart'),
+        } satisfies DrawerItem,
+      ]
+    : []),
+];
+
+
 
   return (
     <AppBar 
@@ -63,6 +147,7 @@ const Navbar = () => {
         background: 'linear-gradient(90deg, #1976d2 0%, #1565c0 100%)',
         boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
         zIndex: 1100,
+        ...(isMobile ? { padding: '8px' } : {}),
       }}
     >
       <Container maxWidth="xl" sx={{ px: { xs: 0.5, sm: 2 } }}>
@@ -82,7 +167,7 @@ const Navbar = () => {
             to="/"
             sx={{
               mr: 3,
-              display: { xs: 'none', md: 'flex' },
+              display: { xs: 'none', md: 'flex',alignItems:'center' },
               fontWeight: 900,
               fontSize: '1.5rem',
               color: 'inherit',
@@ -93,27 +178,26 @@ const Navbar = () => {
               },
             }}
           >
-            🛍️ {t('app.title')}
+             <img alt='gadgify' style={{width:'80px', height:'100px'}} src={BrandIcon} />  {t('app.title')}
           </Typography>
 
           {/* Mobile menu */}
           <Box sx={{ display: { xs: 'flex', md: 'none' } }}>
-            <IconButton
+            
+      <AppDrawer endContent = {<Stack  px={2} direction={"row"} alignItems={'center'}><LanguageIcon sx={{ fontSize: '1.2rem' }} /> <LanguageSelector /></Stack>} items={drawerItems} brand={{ icon:  <img alt='gadgify' style={{width:'80px', height:'100px'}} src={BrandIcon} />  , title: 'Gadgify', onClick: () => navigate('/') }} trigger ={<IconButton
               size="small"
               aria-label="menu"
-              onClick={handleOpenNavMenu}
-              color="inherit"
-              sx={{ p: 0.5, '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.1)' } }}
             >
-              <MenuIcon sx={{ fontSize: '1.5rem' }} />
-            </IconButton>
+              <MenuIcon sx={{ fontSize: '1.5rem' ,color:'white'}} />
+            </IconButton>} />
+
             <Menu
+            disableScrollLock
               anchorEl={anchorElNav}
               anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
               keepMounted
               transformOrigin={{ vertical: 'top', horizontal: 'left' }}
               open={Boolean(anchorElNav)}
-              onClose={handleCloseNavMenu}
               sx={{ display: { xs: 'block', md: 'none' } }}
               PaperProps={{
                 sx: { 
@@ -150,7 +234,8 @@ const Navbar = () => {
             component={Link}
             to="/"
             sx={{
-              display: { xs: 'flex', md: 'none' },
+              visibility: { xs: 'hidden', md: 'hidden' },
+              // display: { xs: 'none', md: 'none',alignItems:'center' },
               flexGrow: 1,
               fontWeight: 900,
               fontSize: '1.2rem',
@@ -159,7 +244,7 @@ const Navbar = () => {
               letterSpacing: '0.5px',
             }}
           >
-            🛍️ Gadgify
+            <img alt='gadgify' style={{width:'80px', height:'30px'}} src={BrandIcon} /> 
           </Typography>
 
           {/* Desktop menu */}
@@ -281,7 +366,9 @@ const Navbar = () => {
           </Box>
 
           {/* Language selector */}
-          <LanguageSelector variant="navbar" />
+          <Box sx={{display: { xs: 'none', md: 'flex' }}}>
+            <LanguageSelector  color='white' bgcolor='' />
+          </Box>
 
           {/* Wishlist icon */}
           {isAuthenticated && (
@@ -290,8 +377,6 @@ const Navbar = () => {
               onClick={() => navigate('/wishlist')}
               color="inherit"
               sx={{ 
-                mr: 1,
-                p: 0.5,
                 transition: 'all 0.3s',
                 '&:hover': {
                   transform: 'scale(1.1)',
@@ -311,8 +396,7 @@ const Navbar = () => {
               size="small"
               onClick={() => navigate('/cart')}
               color="inherit"
-              sx={{  mr: 2,
-                p: 0.5,
+              sx={{  
                 transition: 'all 0.3s',
                 '&:hover': {
                   transform: 'scale(1.1)',
@@ -334,7 +418,6 @@ const Navbar = () => {
                 onClick={handleOpenUserMenu}
                 color="inherit"
                 sx={{
-                  p: 0.5,
                   transition: 'all 0.3s',
                   '&:hover': {
                     bgcolor: 'rgba(255, 255, 255, 0.1)',
@@ -344,6 +427,7 @@ const Navbar = () => {
                 <AccountCircle sx={{ fontSize: { xs: '1.3rem', md: '1.5rem' } }} />
               </IconButton>
               <Menu
+              disableScrollLock
                 anchorEl={anchorElUser}
                 anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
                 keepMounted

@@ -16,7 +16,7 @@ const Footer = () => {
       }}
     >
       <Container maxWidth="lg">
-        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: '1fr 1fr 1fr 1fr' }, gap: { xs: 4, md: 5 }, py: 8 }}>
+        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: '1fr 1fr 1fr 1fr' }, gap: { xs: 4, md: 5 }, py: 4 }}>
           {/* About Section */}
           <Box>
             <Typography variant="h6" gutterBottom fontWeight="800" sx={{ color: '#fff', mb: 3, fontSize: '1.1rem' }}>
@@ -267,14 +267,13 @@ const Footer = () => {
         <Divider sx={{ backgroundColor: '#222', my: 4 }} />
 
         {/* Bottom Footer */}
-        <Box sx={{ py: 5 }}>
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'auto 1fr auto' }, gap: 4, mb: 4, alignItems: 'center' }}>
+          <Box sx={{ display: 'flex', gap: 4, mb: 4, alignItems: {xs:'center', md:'flex-start'}, justifyContent: 'space-between', flexWrap: 'wrap', flexDirection: { xs: 'column', md: 'row' } }}>
             <Typography variant="body2" sx={{ color: '#707070', fontSize: '0.9rem', fontWeight: 600 }}>
               © {new Date().getFullYear()} Gadgify • {t('footer.allRightsReserved')}
             </Typography>
-            <Box sx={{ display: 'flex', justifyContent: 'center', gap: 3, flexWrap: 'wrap' }}>
+            <Box sx={{ display: 'flex', justifyContent: 'center',alignItems:'center', gap: 1, flexWrap: 'wrap' }}>
               <Link 
-                href="#" 
+                href="/privacy-policy" 
                 sx={{ 
                   color: '#707070', 
                   textDecoration: 'none', 
@@ -290,7 +289,7 @@ const Footer = () => {
               </Link>
               <Typography sx={{ color: '#404040' }}>|</Typography>
               <Link 
-                href="#" 
+                href="/terms-conditions" 
                 sx={{ 
                   color: '#707070', 
                   textDecoration: 'none', 
@@ -306,7 +305,7 @@ const Footer = () => {
               </Link>
               <Typography sx={{ color: '#404040' }}>|</Typography>
               <Link 
-                href="#" 
+                href="/refund-policy" 
                 sx={{ 
                   color: '#707070', 
                   textDecoration: 'none', 
@@ -320,12 +319,27 @@ const Footer = () => {
               >
                 {t('footer.returnPolicy')}
               </Link>
+              <Typography sx={{ color: '#404040' }}>|</Typography>
+              <Link 
+                href="/shipping-policy" 
+                sx={{ 
+                  color: '#707070', 
+                  textDecoration: 'none', 
+                  fontSize: '0.9rem', 
+                  fontWeight: 500,
+                  transition: 'all 0.3s', 
+                  '&:hover': { 
+                    color: '#ff9800', 
+                  } 
+                }}
+              >
+                {t('footer.shippingPolicy')}
+              </Link>
             </Box>
             <Typography variant="caption" sx={{ color: '#726f6fff', fontSize: '0.8rem', textAlign: { xs: 'center', md: 'right' } }}>
               {t('footer.madeWith')}
             </Typography>
           </Box>
-        </Box>
       </Container>
     </Box>
   )

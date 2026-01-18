@@ -106,7 +106,7 @@ const LoginPage = () => {
       }}
     >
       {/* Language Selector */}
-      <LanguageSelector variant="auth" />
+      <LanguageSelector  />
 
       <Container maxWidth="sm" sx={{ position: 'relative', zIndex: 1 }}>
         <Paper

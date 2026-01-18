@@ -22,6 +22,12 @@ const AdminDashboard = lazy(() => import('../pages/admin/AdminDashboard'))
 const AdminProducts = lazy(() => import('../pages/admin/AdminProducts'))
 const AdminOrders = lazy(() => import('../pages/admin/AdminOrders'))
 const NotFoundPage = lazy(() => import('../pages/NotFoundPage'))
+const PrivacyPolicy = lazy(() => import('../pages/legal/PrivacyPolicy'))
+const TermsConditions = lazy(() => import('../pages/legal/TermsConditions'))
+const RefundPolicy = lazy(() => import('../pages/legal/RefundPolicy'))
+const ShippingPolicy = lazy(() => import('../pages/legal/ShippingPolicy'))
+
+
 
 // Loading fallback component
 const PageLoader = () => (
@@ -65,6 +71,10 @@ const AppRoutes = () => {
       {/* Public routes */}
       <Route path="/login" element={<LoginPage />} />
       <Route path="/signup" element={<SignupPage />} />
+      <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+      <Route path="/terms-conditions" element={<TermsConditions />} />
+      <Route path="/refund-policy" element={<RefundPolicy />} />
+      <Route path="/shipping-policy" element={<ShippingPolicy />} />
 
       {/* User routes */}
       <Route element={<Layout />}>

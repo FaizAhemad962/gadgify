@@ -244,7 +244,7 @@ const AdminLayout = () => {
             </Typography>
           )}
           {open && <Box sx={{ flexGrow: 1 }} />}
-          <LanguageSelector variant="navbar" />
+          <LanguageSelector />
         </Toolbar>
       </AppBar>
       <Box

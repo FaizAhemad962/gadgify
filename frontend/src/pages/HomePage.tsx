@@ -2,10 +2,12 @@ import { Container, Typography, Box, Button, Card, CardContent, Divider } from '
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { ShoppingCart, LocalShipping, Security, Support, Rocket } from '@mui/icons-material'
+import { useAuth } from '@/context/AuthContext'
 
 const HomePage = () => {
   const { t } = useTranslation()
   const navigate = useNavigate()
+  const { isAuthenticated } = useAuth()
 
   // const features = [
   //   { icon: <ShoppingCart fontSize="large" />, title: t('common.wideSelection'), desc: t('common.latestGadgets') },
@@ -78,12 +80,14 @@ const HomePage = () => {
             >
               🛍️ {t('products.title')}
             </Button>
-            <Button
-              variant="outlined"
-              size="large"
-              sx={{ 
-                color: 'white', 
-                borderColor: 'white',
+
+            {!isAuthenticated && (
+              <Button
+                variant="outlined"
+                size="large"
+                sx={{ 
+                  color: 'white', 
+                  borderColor: 'white',
                 fontWeight: 700,
                 py: 1.5,
                 px: 4,
@@ -95,7 +99,7 @@ const HomePage = () => {
               onClick={() => navigate('/signup')}
             >
               {t('nav.signup')}
-            </Button>
+            </Button>)}
           </Box>
         </Container>
       </Box>
@@ -122,7 +126,7 @@ const HomePage = () => {
       </Container>
 
       {/* Features Section */}
-      <Container maxWidth="lg" sx={{ py: 8 }}>
+      <Container maxWidth="lg" >
         <Typography 
           variant="h4" 
           align="center" 
