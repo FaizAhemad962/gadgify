@@ -1,70 +1,67 @@
-import { useTranslation } from 'react-i18next'
-import i18n from 'i18next'
-import { Box, TextField, MenuItem, Typography } from '@mui/material'
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import { useTranslation } from "react-i18next";
+import i18n from "i18next";
+import { Box, TextField, MenuItem } from "@mui/material";
 
-import LanguageIcon from "@mui/icons-material/Language";
 
-const LanguageSelector = ({color, bgcolor}:{color?:string, bgcolor?:string}) => {
-  const { t } = useTranslation()
+const LanguageSelector = ({
+  color,
+  bgcolor,
+  showLanguageLabel = true,
+  showLanguageIcon = true,
+}: {
+  color?: string;
+  bgcolor?: string;
+  showLanguageLabel?: boolean;
+  showLanguageIcon?: boolean;
+}) => {
+  const { t } = useTranslation();
 
   const changeLanguage = (lng: string) => {
-    i18n.changeLanguage(lng)
-  }
+    i18n.changeLanguage(lng);
+  };
 
   return (
-    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-      <Typography
-        variant="body2"
-        sx={{
-          alignItems: 'center',
-          color: color,
-          fontWeight: 600,
-          gap:{ xs: 0, sm: 1 },
-          display: { xs: 'none', md: 'flex' },
-        }}
-      >
-        <LanguageIcon sx={{ fontSize: '1.2rem' }} /> {t('nav.language')}  
-      </Typography>
+    <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
       <TextField
         select
         size="small"
-        margin='dense'
         value={i18n.language}
         onChange={(e) => changeLanguage(e.target.value)}
         sx={{
           minWidth: { xs: 80, sm: 100 },
-          '& .MuiOutlinedInput-root': {
+          "& .MuiOutlinedInput-root": {
             color: color,
             fontWeight: 600,
             backgroundColor: bgcolor,
             borderRadius: 1,
-            '.MuiOutlinedInput-notchedOutline': {
-              borderColor: 'rgba(255, 255, 255, 0.5)',
+            ".MuiOutlinedInput-notchedOutline": {
+              borderColor: "rgba(255, 255, 255, 0.5)",
             },
-            '&:hover .MuiOutlinedInput-notchedOutline': {
-              borderColor: 'rgba(255, 255, 255, 0.9)',
+            "&:hover .MuiOutlinedInput-notchedOutline": {
+              borderColor: "rgba(255, 255, 255, 0.9)",
             },
-            '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-              borderColor: '#ff9800',
+            "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+              borderColor: "#ff9800",
             },
           },
-         '& .MuiSvgIcon-root': {
-            color: color
+          "& .MuiSvgIcon-root": {
+            color: color,
           },
         }}
       >
         <MenuItem value="en" sx={{ fontWeight: 600 }}>
-          {t('nav.languages.en')}
+          {t("nav.languages.en")}
         </MenuItem>
         <MenuItem value="mr" sx={{ fontWeight: 600 }}>
-          {t('nav.languages.mr')}
+          {t("nav.languages.mr")}
         </MenuItem>
         <MenuItem value="hi" sx={{ fontWeight: 600 }}>
-          {t('nav.languages.hi')}
+          {t("nav.languages.hi")}
         </MenuItem>
       </TextField>
     </Box>
-  )
-}
+  );
+};
 
-export default LanguageSelector
+export default LanguageSelector;

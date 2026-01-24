@@ -8,11 +8,15 @@ import {
   ListItemIcon,
   ListItemText,
   Divider,
+  IconButton,
 } from "@mui/material";
+import brandIcon from "../../assets/brand-icon.png";
+import { useTranslation } from "react-i18next";
+import {CloseSharp } from "@mui/icons-material";
 
 /* ---------- Types ---------- */
 
-export type DrawerItemPosition = "top" | "center" | "end";  
+export type DrawerItemPosition = "top" | "center" | "end";
 
 export type DrawerItem = {
   id: string;
@@ -36,13 +40,11 @@ export interface AppDrawerProps {
   trigger?: React.ReactNode;
   closeOnItemClick?: boolean;
   endContent?: React.ReactNode;
-
 }
 
 /* ---------- Component ---------- */
 
 export const AppDrawer: React.FC<AppDrawerProps> = ({
-  brand,
   items,
   width = 280,
   anchor = "left",
@@ -50,10 +52,10 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
   onOpenChange,
   trigger,
   closeOnItemClick = true,
-  endContent
+  endContent,
 }) => {
   const [internalOpen, setInternalOpen] = React.useState(false);
-
+  const { t } = useTranslation();
   const isControlled = controlledOpen !== undefined;
   const open = isControlled ? controlledOpen : internalOpen;
 
@@ -82,7 +84,7 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
 
   const topItems = items.filter((i) => i.position === "top");
   const centerItems = items.filter(
-    (i) => !i.position || i.position === "center"
+    (i) => !i.position || i.position === "center",
   );
   const endItems = items.filter((i) => i.position === "end");
 
@@ -94,7 +96,13 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
         </Box>
       )}
 
-      <Drawer disableScrollLock open={open} anchor={anchor} onClose={() => setOpen(false)}>
+      <Drawer
+        closeAfterTransition
+        disableScrollLock
+        open={open}
+        anchor={anchor}
+        onClose={() => setOpen(false)}
+      >
         <Box
           sx={{
             width,
@@ -104,29 +112,31 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
           }}
         >
           {/* ---------- BRAND ---------- */}
-          {brand && (
-            <>
-              <Box
-                onClick={brand.onClick}
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 1.5,
-                  px: 2,
-                  py: 2,
-                  cursor: brand.onClick ? "pointer" : "default",
-                }}
-              >
-                {brand.icon}
-                {brand.title && (
-                  <Box sx={{ fontWeight: 600, fontSize: 18 }}>
-                    {brand.title}
-                  </Box>
-                )}
-              </Box>
-              <Divider />
-            </>
-          )}
+          <>
+            <Box
+              sx={{
+                height: 120,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                px: 2,
+                py: 2,
+              }}
+            >
+              <IconButton>
+                <img
+                  alt={t("app.title")}
+                  height={130}
+                  width={100}
+                  src={brandIcon}
+                ></img>
+              </IconButton>
+              <IconButton onClick={() => setOpen(false)} aria-label="menu">
+                <CloseSharp />
+              </IconButton>
+            </Box>
+            <Divider />
+          </>
 
           {/* ---------- TOP ITEMS ---------- */}
           {topItems.length > 0 && (
@@ -142,13 +152,13 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
           </Box>
 
           {/* ---------- END ITEMS ---------- */}
-         {(endItems.length > 0 || endContent) && (
-  <Box sx={{mt:'auto'}}>
-    <Divider />
-    {endItems.length > 0 && renderItems(endItems)}
-    {endContent}
-  </Box>
-)}
+          {(endItems.length > 0 || endContent) && (
+            <Box sx={{ mt: "auto" }}>
+              <Divider />
+              {endItems.length > 0 && renderItems(endItems)}
+              {endContent}
+            </Box>
+          )}
         </Box>
       </Drawer>
     </>

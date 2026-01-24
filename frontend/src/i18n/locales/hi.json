@@ -103,7 +103,8 @@
     "paymentFailed": "भुगतान विफल। कृपया पुनः प्रयास करें।",
     "failedToInitiatePayment": "भुगतान शुरू करने में विफल",
     "invalidFileType": "कृपया एक वैध छवि फ़ाइल चुनें",
-    "fileTooLarge": "फ़ाइल का आकार 5MB से कम होना चाहिए"
+    "fileTooLarge": "फ़ाइल का आकार 5MB से कम होना चाहिए",
+    "passwordTooShort": "पासवर्ड कम से कम 6 वर्ण लंबा होना चाहिए"
   },
   "success": {
     "addedToCart": "उत्पाद कार्ट में जोड़ा गया",
@@ -318,7 +319,8 @@
     "privacyPolicy": "गोपनीयता नीति",
     "termsOfService": "सेवा की शर्तें",
     "returnPolicy": "रिटर्न नीति",
-    "madeWith": "महाराष्ट्र में ❤️ के साथ बनाया गया"
+    "madeWith": "महाराष्ट्र में ❤️ के साथ बनाया गया",
+    "shippingPolicy": "शिपिंग नीति"
   },
   "categories": {
     "Home & Kitchen": "घर और रसोई",

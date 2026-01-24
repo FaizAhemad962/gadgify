@@ -269,14 +269,14 @@ const Footer = () => {
         {/* Bottom Footer */}
           <Box sx={{ display: 'flex', gap: 4, mb: 4, alignItems: {xs:'center', md:'flex-start'}, justifyContent: 'space-between', flexWrap: 'wrap', flexDirection: { xs: 'column', md: 'row' } }}>
             <Typography variant="body2" sx={{ color: '#707070', fontSize: '0.9rem', fontWeight: 600 }}>
-              © {new Date().getFullYear()} Gadgify • {t('footer.allRightsReserved')}
+              © {new Date().getFullYear()} {t('app.title')} • {t('footer.allRightsReserved')}
             </Typography>
             <Box sx={{ display: 'flex', justifyContent: 'center',alignItems:'center', gap: 1, flexWrap: 'wrap' }}>
               <Link 
                 href="/privacy-policy" 
                 sx={{ 
                   color: '#707070', 
-                  textDecoration: 'none', 
+                  textDecoration: 'none',   
                   fontSize: '0.9rem', 
                   fontWeight: 500,
                   transition: 'all 0.3s', 

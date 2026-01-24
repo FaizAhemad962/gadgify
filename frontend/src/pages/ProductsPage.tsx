@@ -8,9 +8,7 @@ import {
   Button,
   Box,
   CircularProgress,
-  Alert,
-  Chip
-
+  Alert
 
 } from "@mui/material";
 import { productsApi } from "../api/products";
@@ -27,6 +25,7 @@ const ProductsPage = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [searchParams, setSearchParams] = useSearchParams();
   const [searchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -55,22 +54,11 @@ const ProductsPage = () => {
   });
 
   const handleClearCategory = () => {
+    setDisplayCount(PRODUCTS_PER_PAGE);
     setSelectedCategory(null);
     setSearchParams({});
   };
 
-  // Get unique categories from products
-  const categories = Array.from(
-    new Set(products?.map((p) => p.category) || [])
-  );
-
-  // Read category from URL on mount
-  useEffect(() => {
-    const category = searchParams.get("category");
-    if (category) {
-      setSelectedCategory(category);
-    }
-  }, [searchParams]);
 
   // Infinite scroll observer
   useEffect(() => {
@@ -93,11 +81,6 @@ const ProductsPage = () => {
 
     return () => observer.disconnect();
   }, [displayCount, filteredProducts]);
-
-  // Reset display count when filters change
-  useEffect(() => {
-    setDisplayCount(PRODUCTS_PER_PAGE);
-  }, [searchQuery, selectedCategory]);
 
   const handleBuyNow = async (productId: string) => {
     if (!isAuthenticated) {
@@ -143,43 +126,8 @@ const ProductsPage = () => {
           {t("products.description")}
         </Typography>
 
-        {/* Categories Filter */}
-        <Box sx={{ display: "flex", gap: 1.5, flexWrap: "wrap", mt: 3 }}>
-          <Chip
-            label={t("products.allProducts")}
-            onClick={handleClearCategory}
-            variant={!selectedCategory ? "filled" : "outlined"}
-            color={!selectedCategory ? "primary" : "default"}
-            sx={{ cursor: "pointer", fontWeight: 600 }}
-          />
-          {categories.map((category) => (
-            <Chip
-              key={category}
-              label={t(`categories.${category}`)}
-              onClick={() => {
-                setSelectedCategory(category);
-                setSearchParams({ category });
-              }}
-              variant={selectedCategory === category ? "filled" : "outlined"}
-              color={selectedCategory === category ? "primary" : "default"}
-              sx={{ cursor: "pointer", fontWeight: 500 }}
-            />
-          ))}
-        </Box>
       </Box>
 
-      {/* Active Category Badge */}
-      {selectedCategory && (
-        <Box sx={{ mb: 3 }}>
-          <Chip
-            label={`📁 ${t(`categories.${selectedCategory}`)}`}
-            onDelete={handleClearCategory}
-            color="primary"
-            variant="filled"
-            sx={{ fontWeight: 600 }}
-          />
-        </Box>
-      )}
 
       {isLoading ? (
         <Box
@@ -213,12 +161,12 @@ const ProductsPage = () => {
           >
             {filteredProducts && filteredProducts.length > 0 ? (
               filteredProducts.slice(0, displayCount).map((product) => (
-                <ProductCard
-                  key={product.id}
-                  product={product}
-                  isInWishlist={isInWishlist}
-                  toggleWishlist={toggleWishlist}
-                  isToggling={isToggling}
+                  <ProductCard
+                    key={product.id}
+                    product={product}
+                    isInWishlist={isInWishlist}
+                    toggleWishlist={toggleWishlist}
+                    isToggling={isToggling}
                   onAddToCart={(id) => addToCart({productId:id, quantity:1})}
                   onBuyNow={(id) => handleBuyNow(id)}
                   onNavigate={(id) => navigate(`/products/${id}`)}

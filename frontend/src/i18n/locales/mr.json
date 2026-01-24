@@ -104,7 +104,8 @@
     "paymentFailed": "पेमेंट अयशस्वी. कृपया पुन्हा प्रयत्न करा.",
     "failedToInitiatePayment": "पेमेंट सुरू करण्यात अयशस्वी",
     "invalidFileType": "कृपया वैध प्रतिमा फाईल निवडा",
-    "fileTooLarge": "फाईलचा आकार 5MB पेक्षा कमी असावा"
+    "fileTooLarge": "फाईलचा आकार 5MB पेक्षा कमी असावा",
+    "passwordTooShort": "पासवर्ड किमान 6 वर्णांचा असावा"
   },
   "success": {
     "addedToCart": "उत्पादन कार्टमध्ये जोडले",
@@ -299,12 +300,6 @@
     "oneNumber": "एक संख्या",
     "passwordChangeInfo": "तुमचा वर्तमान पासवर्ड प्रविष्ट करा आणि नवीन सुरक्षित पासवर्ड निवडा",
     "profilePhotoUpdated": "प्रोफाइल फोटो यशस्वीरित्या अपडेट केला",
-    "nameRequired": "नाव आवश्यक आहे",
-    "phoneRequired": "फोन आवश्यक आहे",
-    "invalidPhone": "अवैध फोन नंबर",
-    "cityRequired": "शहर आवश्यक आहे",
-    "addressRequired": "पत्ता आवश्यक आहे",
-    "invalidPincode": "अवैध पिनकोड",
     "noData": "डेटा उपलब्ध नाही",
     "noResults": "कोणतेही परिणाम आढळले नाहीत",
     "error": "एक त्रुटी आली",
@@ -324,7 +319,8 @@
     "privacyPolicy": "गोपनीयता धोरण",
     "termsOfService": "सेवा अटी",
     "returnPolicy": "परत करण्याचे धोरण",
-    "madeWith": "महाराष्ट्रात ❤️ सह तयार"
+    "madeWith": "महाराष्ट्रात ❤️ सह तयार",
+    "shippingPolicy": "शिपिंग धोरण"
   },
    "categories": {
     "Home & Kitchen": "घर आणि स्वयंपाकघर",

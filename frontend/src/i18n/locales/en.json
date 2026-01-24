@@ -106,7 +106,8 @@
     "paymentFailed": "Payment failed. Please try again.",
     "failedToInitiatePayment": "Failed to initiate payment",
     "invalidFileType": "Please select a valid image file",
-    "fileTooLarge": "File size must be less than 5MB"
+    "fileTooLarge": "File size must be less than 5MB",
+    "passwordTooShort": "Password must be at least 6 characters long"
   },
   "success": {
     "addedToCart": "Product added to cart",
@@ -297,8 +298,9 @@
     "phoneRequired": "Phone is required",
     "invalidPhone": "Invalid phone number",
     "cityRequired": "City is required",
+    "stateRequired": "State is required",
     "addressRequired": "Address is required",
-    "invalidPincode": "Invalid pincode",
+    "invalidPincode": "Invalid pin code",
     "noData": "No data available",
     "noResults": "No results found",
     "error": "An error occurred",
@@ -318,7 +320,8 @@
     "privacyPolicy": "Privacy Policy",
     "termsOfService": "Terms of Service",
     "returnPolicy": "Return Policy",
-    "madeWith": "Made with ❤️ in Maharashtra"
+    "madeWith": "Made with ❤️ in Maharashtra",
+    "shippingPolicy": "Shipping Policy"
   },
   "categories": {
     "Home & Kitchen": "Home & Kitchen",

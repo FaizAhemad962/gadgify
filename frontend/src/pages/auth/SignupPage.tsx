@@ -1,10 +1,10 @@
-import { useState } from 'react'
-import { useNavigate, Link as RouterLink } from 'react-router-dom'
-import { useTranslation } from 'react-i18next'
-import { useMutation } from '@tanstack/react-query'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
+import { useState } from "react";
+import { useNavigate, Link as RouterLink } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { useMutation } from "@tanstack/react-query";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import {
   Container,
   Paper,
@@ -17,138 +17,145 @@ import {
   InputAdornment,
   IconButton,
   MenuItem,
-} from '@mui/material'
-import { Visibility, VisibilityOff } from '@mui/icons-material'
-import { authApi } from '../../api/auth'
-import { useAuth } from '../../context/AuthContext'
-import { ErrorHandler } from '../../utils/errorHandler'
-import { getMaharashtraCities } from '../../constants/location'
-import LanguageSelector from '../../components/common/LanguageSelector'
-
-const signupSchema = z.object({
-  email: z.string().email('Invalid email address'),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
-  confirmPassword: z.string(),
-  name: z.string().min(2, 'Name is required'),
-  phone: z.string().min(10, 'Valid phone number required'),
-  state: z.string().min(2, 'State is required'),
-  city: z.string().min(2, 'City is required'),
-  address: z.string().min(5, 'Address is required'),
-  pincode: z.string().regex(/^\d{6}$/, 'Valid 6-digit pincode required'),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: "Passwords don't match",
-  path: ['confirmPassword'],
-})
-
-type SignupFormData = z.infer<typeof signupSchema>
+} from "@mui/material";
+import { Visibility, VisibilityOff } from "@mui/icons-material";
+import { authApi } from "../../api/auth";
+import { useAuth } from "../../context/AuthContext";
+import { ErrorHandler } from "../../utils/errorHandler";
+import { getMaharashtraCities } from "../../constants/location";
+import LanguageSelector from "../../components/common/LanguageSelector";
 
 const SignupPage = () => {
-  const { t } = useTranslation()
-  const navigate = useNavigate()
-  const { login } = useAuth()
-  const [showPassword, setShowPassword] = useState(false)
+  const { t } = useTranslation();
 
-  const MAHARASHTRA_CITIES = getMaharashtraCities()
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
-  const [error, setError] = useState('')
+  const signupSchema = z
+    .object({
+      email: z.string().email(t("errors.invalidEmail")),
+      password: z.string().min(6, t("errors.passwordTooShort")),
+      confirmPassword: z.string(),
+      name: z.string().min(2, t("common.nameRequired")),
+      phone: z.string().min(10, t("common.invalidPhone")),
+      state: z.string().min(2, t("common.stateRequired")),
+      city: z.string().min(2, t("common.cityRequired")),
+      address: z.string().min(5, t("common.addressRequired")),
+      pincode: z.string().regex(/^\d{6}$/, t("common.invalidPincode")),
+    })
+    .refine((data) => data.password === data.confirmPassword, {
+      message: "Passwords don't match",
+      path: ["confirmPassword"],
+    });
+
+  type SignupFormData = z.infer<typeof signupSchema>;
+
+  const navigate = useNavigate();
+  const { login, isAuthenticated } = useAuth();
+  const [showPassword, setShowPassword] = useState(false);
+
+  const MAHARASHTRA_CITIES = getMaharashtraCities();
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [error, setError] = useState("");
 
   const {
     register,
     handleSubmit,
-    formState: { errors }
+    formState: { errors },
   } = useForm<SignupFormData>({
     resolver: zodResolver(signupSchema),
     defaultValues: {
-      state: t('states.maharashtra'),
-      city: '',
+      state: t("states.maharashtra"),
+      city: "",
     },
-  })
-
+  });
+  if (isAuthenticated) {
+    navigate("/");
+  }
   const signupMutation = useMutation({
     mutationFn: authApi.signup,
     onSuccess: (data) => {
-      login(data.token, data.user)
-      navigate('/')
+      login(data.token, data.user);
+      navigate("/");
     },
     onError: (error: any) => {
-      const message = ErrorHandler.getUserFriendlyMessage(error, t('errors.somethingWrong'))
-      setError(message)
-      ErrorHandler.logError('Signup failed', error)
+      const message = ErrorHandler.getUserFriendlyMessage(
+        error,
+        t("errors.somethingWrong"),
+      );
+      setError(message);
+      ErrorHandler.logError("Signup failed", error);
     },
-  })
+  });
 
   const onSubmit = async (data: SignupFormData) => {
     // Validate Maharashtra only
-    if (data.state.toLowerCase() !== 'maharashtra') {
-      setError(t('errors.maharashtraOnly'))
-      return
+    if (data.state.toLowerCase() !== "maharashtra") {
+      setError(t("errors.maharashtraOnly"));
+      return;
     }
 
-    setError('')
-    const { confirmPassword, ...signupData } = data
+    setError("");
+    const { confirmPassword, ...signupData } = data;
     try {
-      await signupMutation.mutateAsync(signupData)
+      await signupMutation.mutateAsync(signupData);
     } catch (err: any) {
       // Error is handled in onError callback
     }
-  }
+  };
 
   return (
     <Box
       sx={{
-        minHeight: '100vh',
-        background: 'linear-gradient(135deg, #1976d2 0%, #1565c0 100%)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
+        minHeight: "100vh",
+        background: "linear-gradient(135deg, #1976d2 0%, #1565c0 100%)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
         py: 4,
-        position: 'relative',
-        overflow: 'hidden',
-        '&::before': {
+        position: "relative",
+        overflow: "hidden",
+        "&::before": {
           content: '""',
-          position: 'absolute',
-          width: '400px',
-          height: '400px',
-          background: 'radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%)',
-          borderRadius: '50%',
-          top: '-100px',
-          right: '-100px',
+          position: "absolute",
+          width: "400px",
+          height: "400px",
+          background:
+            "radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%)",
+          borderRadius: "50%",
+          top: "-100px",
+          right: "-100px",
         },
-        '&::after': {
+        "&::after": {
           content: '""',
-          position: 'absolute',
-          width: '300px',
-          height: '300px',
-          background: 'radial-gradient(circle, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0) 70%)',
-          borderRadius: '50%',
-          bottom: '-50px',
-          left: '-50px',
+          position: "absolute",
+          width: "300px",
+          height: "300px",
+          background:
+            "radial-gradient(circle, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0) 70%)",
+          borderRadius: "50%",
+          bottom: "-50px",
+          left: "-50px",
         },
       }}
     >
-      {/* Language Selector */}
-      <LanguageSelector  />
-
-      <Container maxWidth="md" sx={{ position: 'relative', zIndex: 1 }}>
+      <Container maxWidth="md" sx={{ position: "relative", zIndex: 1 }}>
         <Paper
           elevation={0}
           sx={{
             p: { xs: 3, sm: 4 },
             borderRadius: 2,
-            background: '#ffffff',
-            backdropFilter: 'blur(10px)',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
+            background: "#ffffff",
+            backdropFilter: "blur(10px)",
+            border: "1px solid rgba(255, 255, 255, 0.1)",
           }}
         >
           {/* Header */}
-          <Box sx={{ textAlign: 'center', mb: 3 }}>
+          <Box sx={{ textAlign: "center", mb: 3 }}>
             <Typography
               variant="h3"
               sx={{
                 fontWeight: 900,
-                color: '#1976d2',
+                color: "#1976d2",
                 mb: 1,
-                fontSize: { xs: '2rem', sm: '2.5rem' },
+                fontSize: { xs: "2rem", sm: "2.5rem" },
               }}
             >
               🛍️
@@ -157,20 +164,20 @@ const SignupPage = () => {
               variant="h5"
               sx={{
                 fontWeight: 700,
-                color: '#1a1a1a',
+                color: "#1a1a1a",
                 mb: 1,
               }}
             >
-              {t('auth.signup')}
+              {t("auth.signup")}
             </Typography>
             <Typography
               variant="body2"
               sx={{
-                color: '#707070',
-                fontSize: '0.95rem',
+                color: "#707070",
+                fontSize: "0.95rem",
               }}
             >
-              {t('common.availableOnly')}
+              {t("common.availableOnly")}
             </Typography>
           </Box>
 
@@ -179,120 +186,134 @@ const SignupPage = () => {
               severity="error"
               sx={{
                 mb: 3,
-                background: '#ffebee',
-                color: '#c62828',
-                border: '1px solid #ef5350',
+                background: "#ffebee",
+                color: "#c62828",
+                border: "1px solid #ef5350",
                 borderRadius: 1,
-                '& .MuiAlert-icon': {
-                  color: '#c62828',
+                "& .MuiAlert-icon": {
+                  color: "#c62828",
                 },
               }}
-              onClose={() => setError('')}
+              onClose={() => setError("")}
             >
               {error}
             </Alert>
           )}
 
-          <form onSubmit={(e) => {
-            e.preventDefault()
-            handleSubmit(onSubmit)(e)
-          }}>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleSubmit(onSubmit)(e);
+            }}
+          >
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
               {/* Name */}
               <TextField
                 fullWidth
-                label={t('auth.name')}
+                label={t("auth.name")}
                 size="small"
-                placeholder={t('common.enterFullName')}
-                {...register('name')}
+                placeholder={t("common.enterFullName")}
+                {...register("name")}
                 error={!!errors.name}
                 helperText={errors.name?.message}
                 sx={{
-                  '& .MuiOutlinedInput-root': {
-                    backgroundColor: '#f9f9f9',
-                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                    '&:hover': {
-                      backgroundColor: '#f0f0f0',
-                      borderColor: '#1976d2',
+                  "& .MuiOutlinedInput-root": {
+                    backgroundColor: "#f9f9f9",
+                    transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                    "&:hover": {
+                      backgroundColor: "#f0f0f0",
+                      borderColor: "#1976d2",
                     },
-                    '&.Mui-focused': {
-                      backgroundColor: '#ffffff',
-                      boxShadow: '0 0 0 3px rgba(25, 118, 210, 0.1)',
+                    "&.Mui-focused": {
+                      backgroundColor: "#ffffff",
+                      boxShadow: "0 0 0 3px rgba(25, 118, 210, 0.1)",
                     },
                   },
-                  '& .MuiOutlinedInput-notchedOutline': {
-                    borderColor: '#e0e0e0',
+                  "& .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#e0e0e0",
                   },
                 }}
               />
 
               {/* Email & Phone */}
-              <Box sx={{ display: 'flex', gap: 2, flexDirection: { xs: 'column', sm: 'row' } }}>
+              <Box
+                sx={{
+                  display: "flex",
+                  gap: 2,
+                  flexDirection: { xs: "column", sm: "row" },
+                }}
+              >
                 <TextField
                   fullWidth
-                  label={t('auth.email')}
+                  label={t("auth.email")}
                   type="email"
                   size="small"
-                  placeholder={t('common.emailPlaceholder')}
-                  {...register('email')}
+                  placeholder={t("common.emailPlaceholder")}
+                  {...register("email")}
                   error={!!errors.email}
                   helperText={errors.email?.message}
                   sx={{
-                    '& .MuiOutlinedInput-root': {
-                      backgroundColor: '#f9f9f9',
-                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                      '&:hover': {
-                        backgroundColor: '#f0f0f0',
-                        borderColor: '#1976d2',
+                    "& .MuiOutlinedInput-root": {
+                      backgroundColor: "#f9f9f9",
+                      transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                      "&:hover": {
+                        backgroundColor: "#f0f0f0",
+                        borderColor: "#1976d2",
                       },
-                      '&.Mui-focused': {
-                        backgroundColor: '#ffffff',
-                        boxShadow: '0 0 0 3px rgba(25, 118, 210, 0.1)',
+                      "&.Mui-focused": {
+                        backgroundColor: "#ffffff",
+                        boxShadow: "0 0 0 3px rgba(25, 118, 210, 0.1)",
                       },
                     },
-                    '& .MuiOutlinedInput-notchedOutline': {
-                      borderColor: '#e0e0e0',
+                    "& .MuiOutlinedInput-notchedOutline": {
+                      borderColor: "#e0e0e0",
                     },
                   }}
                 />
 
                 <TextField
                   fullWidth
-                  label={t('auth.phone')}
+                  label={t("auth.phone")}
                   size="small"
-                  placeholder={t('common.tenDigitNumber')}
-                  {...register('phone')}
+                  placeholder={t("common.tenDigitNumber")}
+                  {...register("phone")}
                   error={!!errors.phone}
                   helperText={errors.phone?.message}
                   sx={{
-                    '& .MuiOutlinedInput-root': {
-                      backgroundColor: '#f9f9f9',
-                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                      '&:hover': {
-                        backgroundColor: '#f0f0f0',
-                        borderColor: '#1976d2',
+                    "& .MuiOutlinedInput-root": {
+                      backgroundColor: "#f9f9f9",
+                      transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                      "&:hover": {
+                        backgroundColor: "#f0f0f0",
+                        borderColor: "#1976d2",
                       },
-                      '&.Mui-focused': {
-                        backgroundColor: '#ffffff',
-                        boxShadow: '0 0 0 3px rgba(25, 118, 210, 0.1)',
+                      "&.Mui-focused": {
+                        backgroundColor: "#ffffff",
+                        boxShadow: "0 0 0 3px rgba(25, 118, 210, 0.1)",
                       },
                     },
-                    '& .MuiOutlinedInput-notchedOutline': {
-                      borderColor: '#e0e0e0',
+                    "& .MuiOutlinedInput-notchedOutline": {
+                      borderColor: "#e0e0e0",
                     },
                   }}
                 />
               </Box>
 
               {/* Password & Confirm Password */}
-              <Box sx={{ display: 'flex', gap: 2, flexDirection: { xs: 'column', sm: 'row' } }}>
+              <Box
+                sx={{
+                  display: "flex",
+                  gap: 2,
+                  flexDirection: { xs: "column", sm: "row" },
+                }}
+              >
                 <TextField
                   fullWidth
-                  label={t('auth.password')}
-                  type={showPassword ? 'text' : 'password'}
+                  label={t("auth.password")}
+                  type={showPassword ? "text" : "password"}
                   size="small"
-                  placeholder={t('common.minSixCharacters')}
-                  {...register('password')}
+                  placeholder={t("common.minSixCharacters")}
+                  {...register("password")}
                   error={!!errors.password}
                   helperText={errors.password?.message}
                   InputProps={{
@@ -303,79 +324,89 @@ const SignupPage = () => {
                           edge="end"
                           size="small"
                           sx={{
-                            color: '#707070',
-                            '&:hover': {
-                              color: '#1976d2',
+                            color: "#707070",
+                            "&:hover": {
+                              color: "#1976d2",
                             },
                           }}
                         >
-                          {showPassword ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
+                          {showPassword ? (
+                            <VisibilityOff fontSize="small" />
+                          ) : (
+                            <Visibility fontSize="small" />
+                          )}
                         </IconButton>
                       </InputAdornment>
                     ),
                   }}
                   sx={{
-                    '& .MuiOutlinedInput-root': {
-                      backgroundColor: '#f9f9f9',
-                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                      '&:hover': {
-                        backgroundColor: '#f0f0f0',
-                        borderColor: '#1976d2',
+                    "& .MuiOutlinedInput-root": {
+                      backgroundColor: "#f9f9f9",
+                      transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                      "&:hover": {
+                        backgroundColor: "#f0f0f0",
+                        borderColor: "#1976d2",
                       },
-                      '&.Mui-focused': {
-                        backgroundColor: '#ffffff',
-                        boxShadow: '0 0 0 3px rgba(25, 118, 210, 0.1)',
+                      "&.Mui-focused": {
+                        backgroundColor: "#ffffff",
+                        boxShadow: "0 0 0 3px rgba(25, 118, 210, 0.1)",
                       },
                     },
-                    '& .MuiOutlinedInput-notchedOutline': {
-                      borderColor: '#e0e0e0',
+                    "& .MuiOutlinedInput-notchedOutline": {
+                      borderColor: "#e0e0e0",
                     },
                   }}
                 />
 
                 <TextField
                   fullWidth
-                  label={t('auth.confirmPassword')}
-                  type={showConfirmPassword ? 'text' : 'password'}
+                  label={t("auth.confirmPassword")}
+                  type={showConfirmPassword ? "text" : "password"}
                   size="small"
-                  placeholder={t('common.reEnterPassword')}
-                  {...register('confirmPassword')}
+                  placeholder={t("common.reEnterPassword")}
+                  {...register("confirmPassword")}
                   error={!!errors.confirmPassword}
                   helperText={errors.confirmPassword?.message}
                   InputProps={{
                     endAdornment: (
                       <InputAdornment position="end">
                         <IconButton
-                          onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                          onClick={() =>
+                            setShowConfirmPassword(!showConfirmPassword)
+                          }
                           edge="end"
                           size="small"
                           sx={{
-                            color: '#707070',
-                            '&:hover': {
-                              color: '#1976d2',
+                            color: "#707070",
+                            "&:hover": {
+                              color: "#1976d2",
                             },
                           }}
                         >
-                          {showConfirmPassword ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
+                          {showConfirmPassword ? (
+                            <VisibilityOff fontSize="small" />
+                          ) : (
+                            <Visibility fontSize="small" />
+                          )}
                         </IconButton>
                       </InputAdornment>
                     ),
                   }}
                   sx={{
-                    '& .MuiOutlinedInput-root': {
-                      backgroundColor: '#f9f9f9',
-                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                      '&:hover': {
-                        backgroundColor: '#f0f0f0',
-                        borderColor: '#1976d2',
+                    "& .MuiOutlinedInput-root": {
+                      backgroundColor: "#f9f9f9",
+                      transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                      "&:hover": {
+                        backgroundColor: "#f0f0f0",
+                        borderColor: "#1976d2",
                       },
-                      '&.Mui-focused': {
-                        backgroundColor: '#ffffff',
-                        boxShadow: '0 0 0 3px rgba(25, 118, 210, 0.1)',
+                      "&.Mui-focused": {
+                        backgroundColor: "#ffffff",
+                        boxShadow: "0 0 0 3px rgba(25, 118, 210, 0.1)",
                       },
                     },
-                    '& .MuiOutlinedInput-notchedOutline': {
-                      borderColor: '#e0e0e0',
+                    "& .MuiOutlinedInput-notchedOutline": {
+                      borderColor: "#e0e0e0",
                     },
                   }}
                 />
@@ -386,49 +417,57 @@ const SignupPage = () => {
                 fullWidth
                 multiline
                 rows={2}
-                label={t('auth.address')}
+                label={t("auth.address")}
                 size="small"
-                placeholder={t('common.streetAddress')}
-                {...register('address')}
+                placeholder={t("common.streetAddress")}
+                {...register("address")}
                 error={!!errors.address}
                 helperText={errors.address?.message}
                 sx={{
-                  '& .MuiOutlinedInput-root': {
-                    backgroundColor: '#f9f9f9',
-                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                    '&:hover': {
-                      backgroundColor: '#f0f0f0',
-                      borderColor: '#1976d2',
+                  "& .MuiOutlinedInput-root": {
+                    backgroundColor: "#f9f9f9",
+                    transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                    "&:hover": {
+                      backgroundColor: "#f0f0f0",
+                      borderColor: "#1976d2",
                     },
-                    '&.Mui-focused': {
-                      backgroundColor: '#ffffff',
-                      boxShadow: '0 0 0 3px rgba(25, 118, 210, 0.1)',
+                    "&.Mui-focused": {
+                      backgroundColor: "#ffffff",
+                      boxShadow: "0 0 0 3px rgba(25, 118, 210, 0.1)",
                     },
                   },
-                  '& .MuiOutlinedInput-notchedOutline': {
-                    borderColor: '#e0e0e0',
+                  "& .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#e0e0e0",
                   },
                 }}
               />
 
               {/* State, City, Pincode */}
-              <Box sx={{ display: 'flex', gap: 2, flexDirection: { xs: 'column', sm: 'row' } }}>
+              <Box
+                sx={{
+                  display: "flex",
+                  gap: 2,
+                  flexDirection: { xs: "column", sm: "row" },
+                }}
+              >
                 <TextField
                   fullWidth
-                  label={t('auth.state')}
+                  label={t("auth.state")}
                   size="small"
-                  {...register('state')}
+                  {...register("state")}
                   error={!!errors.state}
-                  helperText={errors.state?.message || t('common.mustBeMaharashtra')}
+                  helperText={
+                    errors.state?.message || t("common.mustBeMaharashtra")
+                  }
                   InputProps={{
                     readOnly: true,
                   }}
                   sx={{
-                    '& .MuiOutlinedInput-root': {
-                      backgroundColor: '#f0f0f0',
+                    "& .MuiOutlinedInput-root": {
+                      backgroundColor: "#f0f0f0",
                     },
-                    '& .MuiOutlinedInput-notchedOutline': {
-                      borderColor: '#e0e0e0',
+                    "& .MuiOutlinedInput-notchedOutline": {
+                      borderColor: "#e0e0e0",
                     },
                   }}
                 />
@@ -436,34 +475,34 @@ const SignupPage = () => {
                 <TextField
                   fullWidth
                   select
-                  label={t('auth.city')}
+                  label={t("auth.city")}
                   size="small"
-                  {...register('city')}
+                  {...register("city")}
                   error={!!errors.city}
                   helperText={errors.city?.message}
                   SelectProps={{
                     displayEmpty: true,
                   }}
                   sx={{
-                    '& .MuiOutlinedInput-root': {
-                      backgroundColor: '#f9f9f9',
-                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                      '&:hover': {
-                        backgroundColor: '#f0f0f0',
-                        borderColor: '#1976d2',
+                    "& .MuiOutlinedInput-root": {
+                      backgroundColor: "#f9f9f9",
+                      transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                      "&:hover": {
+                        backgroundColor: "#f0f0f0",
+                        borderColor: "#1976d2",
                       },
-                      '&.Mui-focused': {
-                        backgroundColor: '#ffffff',
-                        boxShadow: '0 0 0 3px rgba(25, 118, 210, 0.1)',
+                      "&.Mui-focused": {
+                        backgroundColor: "#ffffff",
+                        boxShadow: "0 0 0 3px rgba(25, 118, 210, 0.1)",
                       },
                     },
-                    '& .MuiOutlinedInput-notchedOutline': {
-                      borderColor: '#e0e0e0',
+                    "& .MuiOutlinedInput-notchedOutline": {
+                      borderColor: "#e0e0e0",
                     },
                   }}
                 >
                   <MenuItem value="" disabled>
-                    {t('common.selectCity')}
+                    {t("common.selectCity")}
                   </MenuItem>
                   {MAHARASHTRA_CITIES.map((city) => (
                     <MenuItem key={city.key} value={city.label}>
@@ -474,27 +513,27 @@ const SignupPage = () => {
 
                 <TextField
                   fullWidth
-                  label={t('auth.pincode')}
+                  label={t("auth.pincode")}
                   size="small"
-                  placeholder={t('common.sixDigitCode')}
-                  {...register('pincode')}
+                  placeholder={t("common.sixDigitCode")}
+                  {...register("pincode")}
                   error={!!errors.pincode}
                   helperText={errors.pincode?.message}
                   sx={{
-                    '& .MuiOutlinedInput-root': {
-                      backgroundColor: '#f9f9f9',
-                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                      '&:hover': {
-                        backgroundColor: '#f0f0f0',
-                        borderColor: '#1976d2',
+                    "& .MuiOutlinedInput-root": {
+                      backgroundColor: "#f9f9f9",
+                      transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                      "&:hover": {
+                        backgroundColor: "#f0f0f0",
+                        borderColor: "#1976d2",
                       },
-                      '&.Mui-focused': {
-                        backgroundColor: '#ffffff',
-                        boxShadow: '0 0 0 3px rgba(25, 118, 210, 0.1)',
+                      "&.Mui-focused": {
+                        backgroundColor: "#ffffff",
+                        boxShadow: "0 0 0 3px rgba(25, 118, 210, 0.1)",
                       },
                     },
-                    '& .MuiOutlinedInput-notchedOutline': {
-                      borderColor: '#e0e0e0',
+                    "& .MuiOutlinedInput-notchedOutline": {
+                      borderColor: "#e0e0e0",
                     },
                   }}
                 />
@@ -508,69 +547,69 @@ const SignupPage = () => {
                 type="submit"
                 disabled={signupMutation.isPending}
                 sx={{
-                  background: '#ff9800',
-                  color: '#ffffff',
+                  background: "#ff9800",
+                  color: "#ffffff",
                   fontWeight: 700,
-                  fontSize: '1rem',
+                  fontSize: "1rem",
                   py: 1.5,
                   mt: 1,
-                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                  '&:hover': {
-                    background: '#f57c00',
-                    transform: 'translateY(-2px)',
-                    boxShadow: '0 8px 16px rgba(255, 152, 0, 0.3)',
+                  transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                  "&:hover": {
+                    background: "#f57c00",
+                    transform: "translateY(-2px)",
+                    boxShadow: "0 8px 16px rgba(255, 152, 0, 0.3)",
                   },
-                  '&:active': {
-                    transform: 'translateY(0)',
+                  "&:active": {
+                    transform: "translateY(0)",
                   },
-                  '&.Mui-disabled': {
-                    background: '#ccc',
-                    color: '#666',
+                  "&.Mui-disabled": {
+                    background: "#ccc",
+                    color: "#666",
                   },
                 }}
               >
                 {signupMutation.isPending ? (
                   <>
                     <Typography variant="body2" component="span">
-                      {t('common.creatingAccount')}...
+                      {t("common.creatingAccount")}...
                     </Typography>
                   </>
                 ) : (
-                  `✨ ${t('auth.signupButton')}`
+                  `✨ ${t("auth.signupButton")}`
                 )}
               </Button>
             </Box>
 
             {/* Divider */}
-            <Box sx={{ my: 3, display: 'flex', alignItems: 'center', gap: 2 }}>
-              <Box sx={{ flex: 1, height: '1px', background: '#e0e0e0' }} />
-              <Typography variant="caption" sx={{ color: '#a0a0a0' }}>
-                {t('common.or')}
+            <Box sx={{ my: 3, display: "flex", alignItems: "center", gap: 2 }}>
+              <Box sx={{ flex: 1, height: "1px", background: "#e0e0e0" }} />
+              <Typography variant="caption" sx={{ color: "#a0a0a0" }}>
+                {t("common.or")}
               </Typography>
-              <Box sx={{ flex: 1, height: '1px', background: '#e0e0e0' }} />
+              <Box sx={{ flex: 1, height: "1px", background: "#e0e0e0" }} />
             </Box>
 
             {/* Login Link */}
-            <Box sx={{ textAlign: 'center' }}>
-              <Typography variant="body2" sx={{ color: '#707070', mb: 1 }}>
-                {t('auth.alreadyHaveAccount')}
+            <Box sx={{ textAlign: "center" }}>
+              <Typography variant="body2" sx={{ color: "#707070", mb: 1 }}>
+                {t("auth.alreadyHaveAccount")}
               </Typography>
               <Link
                 component={RouterLink}
                 to="/login"
                 sx={{
-                  color: '#ff9800',
-                  textDecoration: 'none',
+                  color: "#ff9800",
+                  textDecoration: "none",
                   fontWeight: 700,
-                  fontSize: '0.95rem',
-                  transition: 'all 0.3s ease',
-                  '&:hover': {
-                    color: '#f57c00',
-                    textDecoration: 'underline',
+                  fontSize: "0.95rem",
+                  transition: "all 0.3s ease",
+                  "&:hover": {
+                    color: "#f57c00",
+                    textDecoration: "underline",
                   },
                 }}
               >
-                {t('auth.login')} →
+                {t("auth.login")} →
               </Link>
             </Box>
           </form>
@@ -580,37 +619,54 @@ const SignupPage = () => {
             sx={{
               mt: 3,
               pt: 3,
-              borderTop: '1px solid #e0e0e0',
-              display: 'flex',
-              justifyContent: 'space-around',
-              alignItems: 'center',
+              borderTop: "1px solid #e0e0e0",
+              display: "flex",
+              justifyContent: "space-around",
+              alignItems: "center",
             }}
           >
-            <Box sx={{ textAlign: 'center', flex: 1 }}>
-              <Typography sx={{ fontSize: '1.2rem', mb: 0.5 }}>📍</Typography>
-              <Typography variant="caption" sx={{ color: '#707070', fontSize: '0.75rem' }}>
-                {t('common.maharashtra')}
+            <Box sx={{ textAlign: "center", flex: 1 }}>
+              <Typography sx={{ fontSize: "1.2rem", mb: 0.5 }}>📍</Typography>
+              <Typography
+                variant="caption"
+                sx={{ color: "#707070", fontSize: "0.75rem" }}
+              >
+                {t("common.maharashtra")}
               </Typography>
             </Box>
-            <Box sx={{ width: '1px', height: '30px', background: '#e0e0e0' }} />
-            <Box sx={{ textAlign: 'center', flex: 1 }}>
-              <Typography sx={{ fontSize: '1.2rem', mb: 0.5 }}>🔒</Typography>
-              <Typography variant="caption" sx={{ color: '#707070', fontSize: '0.75rem' }}>
-                {t('common.secure')}
+            <Box sx={{ width: "1px", height: "30px", background: "#e0e0e0" }} />
+            <Box sx={{ textAlign: "center", flex: 1 }}>
+              <Typography sx={{ fontSize: "1.2rem", mb: 0.5 }}>🔒</Typography>
+              <Typography
+                variant="caption"
+                sx={{ color: "#707070", fontSize: "0.75rem" }}
+              >
+                {t("common.secure")}
               </Typography>
             </Box>
-            <Box sx={{ width: '1px', height: '30px', background: '#e0e0e0' }} />
-            <Box sx={{ textAlign: 'center', flex: 1 }}>
-              <Typography sx={{ fontSize: '1.2rem', mb: 0.5 }}>✓</Typography>
-              <Typography variant="caption" sx={{ color: '#707070', fontSize: '0.75rem' }}>
-                {t('common.verified')}
+            <Box sx={{ width: "1px", height: "30px", background: "#e0e0e0" }} />
+            <Box sx={{ textAlign: "center", flex: 1 }}>
+              <Typography sx={{ fontSize: "1.2rem", mb: 0.5 }}>✓</Typography>
+              <Typography
+                variant="caption"
+                sx={{ color: "#707070", fontSize: "0.75rem" }}
+              >
+                {t("common.verified")}
               </Typography>
             </Box>
+          </Box>
+          <Box sx={{ pt: 3 }}>
+            {/* Language Selector */}
+            <LanguageSelector
+              color="rgb(34, 97, 124)"
+              showLanguageIcon
+              showLanguageLabel={false}
+            />
           </Box>
         </Paper>
       </Container>
     </Box>
-  )
-}
+  );
+};
 
-export default SignupPage
+export default SignupPage;

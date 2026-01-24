@@ -236,7 +236,7 @@ const AdminProducts = () => {
   }
 
   const handleImageFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || [])
+    const files = Array.from(e.target.files || []).filter(file =>file.type.startsWith("image/"))
     const validFiles = files.filter((file) => file.size <= 500 * 1024)
     if (validFiles.length < files.length) {
       setError(t('admin.imageSizeError') || 'Image size should not exceed 500KB')
@@ -252,7 +252,7 @@ const AdminProducts = () => {
   }
 
   const handleVideoFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || [])
+    const files = Array.from(e.target.files || []).filter(file =>file.type.startsWith("video/"))
     const validFiles = files.filter((file) => file.size <= 50 * 1024 * 1024)
     if (validFiles.length < files.length) {
       setError('Video size should not exceed 50MB')
@@ -628,7 +628,7 @@ const productData: ProductFormData = {
                     <input
                       type="file"
                       hidden
-                      accept="image/*"
+                      accept="*/*"
                       multiple
                       onChange={handleImageFileChange}
                     />
@@ -706,7 +706,7 @@ const productData: ProductFormData = {
                     <input
                       type="file"
                       hidden
-                      accept="video/*"
+                      accept="*/*"
                       multiple
                       onChange={handleVideoFileChange}
                     />
