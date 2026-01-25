@@ -34,7 +34,9 @@
     "alreadyHaveAccount": "आधीच खाते आहे?",
     "dontHaveAccount": "खाते नाही?",
     "loginButton": "लॉगिन करा",
-    "signupButton": "साइन अप करा"
+    "signupButton": "साइन अप करा",
+    "loginToReview": "रेटिंग लिहिण्यासाठी लॉगिन करा"
+
   },
   "products": {
     "title": "आमची उत्पादने",
