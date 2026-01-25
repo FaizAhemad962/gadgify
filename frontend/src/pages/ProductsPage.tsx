@@ -25,7 +25,6 @@ const ProductsPage = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [searchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [displayCount, setDisplayCount] = useState(PRODUCTS_PER_PAGE);

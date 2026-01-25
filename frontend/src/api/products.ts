@@ -8,8 +8,15 @@ import type {
 export const productsApi = {
   // ---------------- PUBLIC ----------------
   getAll: async (): Promise<Product[]> => {
-    const { data } = await apiClient.get('/products')
-    return data
+    const { data } = await apiClient.get('/products');
+    console.log(data)
+     return data.sort((a:Product, b:Product) => {
+      const aHasPrimary = a.media?.some(m => m.isPrimary)
+      const bHasPrimary = b.media?.some(m => m.isPrimary)
+
+      return Number(bHasPrimary) - Number(aHasPrimary)
+    })
+   
   },
 
   getById: async (id: string): Promise<Product> => {
