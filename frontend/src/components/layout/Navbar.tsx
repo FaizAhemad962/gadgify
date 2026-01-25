@@ -203,7 +203,7 @@ const Navbar = () => {
         ...(isMobile ? { padding: "8px" } : {}),
       }}
     >
-      <Container maxWidth="xxl" sx={{ px: { xs: 0.5, sm: 2 } }}>
+      <Container maxWidth={false} sx={{ px: { xs: 0.5, sm: 2 } }}>
         <Toolbar
           disableGutters
           sx={{

@@ -15,7 +15,7 @@ const Footer = () => {
         borderTop: '1px solid #222',
       }}
     >
-      <Container maxWidth="xxl">
+      <Container maxWidth={false}>
         <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: '1fr 1fr 1fr 1fr' }, gap: { xs: 4, md: 5 }, py: 4 }}>
           {/* About Section */}
           <Box>

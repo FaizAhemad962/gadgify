@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
   Container,
@@ -26,7 +26,6 @@ const ProductsPage = () => {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [searchParams, setSearchParams] = useSearchParams();
   const [searchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [displayCount, setDisplayCount] = useState(PRODUCTS_PER_PAGE);
@@ -56,7 +55,6 @@ const ProductsPage = () => {
   const handleClearCategory = () => {
     setDisplayCount(PRODUCTS_PER_PAGE);
     setSelectedCategory(null);
-    setSearchParams({});
   };
 
 
@@ -111,7 +109,7 @@ const ProductsPage = () => {
   }
 
   return (
-    <Container maxWidth="xxl" sx={{ py: 4 }}>
+    <Container maxWidth={false} sx={{ py: 4 }}>
       {/* Header Section */}
       <Box sx={{ mb: 5 }}>
         <Typography

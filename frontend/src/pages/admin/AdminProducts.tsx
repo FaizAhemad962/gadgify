@@ -19,12 +19,10 @@ import {
   IconButton,
 } from "@mui/material";
 import {
-  Add,
   Upload,
   Search,
   Star,
   Delete,
-  HdrPlus,
   AddSharp,
 } from "@mui/icons-material";
 import { useForm, type SubmitHandler } from "react-hook-form";

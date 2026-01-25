@@ -1,9 +1,8 @@
 import { lazy, Suspense } from "react";
-import { Routes, Route, Navigate, Outlet } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import { Box, CircularProgress } from "@mui/material";
 import { useAuth } from "../context/AuthContext";
 import Layout from "../components/layout/Layout";
-import Navbar from "@/components/layout/Navbar";
 
 // Lazy load all page components
 const HomePage = lazy(() => import("../pages/HomePage"));

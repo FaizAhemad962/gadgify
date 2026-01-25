@@ -20,7 +20,7 @@ import {
   InputAdornment,
   IconButton,
 } from "@mui/material";
-import { Language, Visibility, VisibilityOff } from "@mui/icons-material";
+import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { authApi } from "../../api/auth";
 import { useAuth } from "../../context/AuthContext";
 import { ErrorHandler } from "../../utils/errorHandler";
