@@ -18,7 +18,7 @@ interface RatingFormProps {
 
 export const RatingForm: React.FC<RatingFormProps> = ({ productId }) => {
   const { t } = useTranslation()
-  const [rating, setRating] = useState<number>(5)
+  const [rating, setRating] = useState<number>(0)
   const [comment, setComment] = useState('')
   const queryClient = useQueryClient()
 

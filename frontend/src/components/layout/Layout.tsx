@@ -14,8 +14,7 @@ const Layout = () => {
           display: "flex",
           flexDirection: "column",
           minHeight: "100vh",
-          px: { xs: 2, sm: 3, md: 4 },
-          py: { xs: 2, sm: 3 },
+         p:2
         }}
       >
         <Outlet />

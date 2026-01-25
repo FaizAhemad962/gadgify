@@ -111,7 +111,7 @@ const ProductsPage = () => {
   }
 
   return (
-    <Container maxWidth="xl" sx={{ py: 4 }}>
+    <Container maxWidth="xxl" sx={{ py: 4 }}>
       {/* Header Section */}
       <Box sx={{ mb: 5 }}>
         <Typography
