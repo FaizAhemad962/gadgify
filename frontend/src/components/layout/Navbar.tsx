@@ -28,7 +28,8 @@ import {
   ShoppingBag,
   Settings,
   ExitToApp,
-  Language,
+  Dashboard,
+  ShoppingBasket,
 } from "@mui/icons-material";
 import { useAuth } from "../../context/AuthContext";
 import { useCart } from "../../context/CartContext";
@@ -75,23 +76,43 @@ const Navbar = () => {
       position: "center",
       onClick: () => navigate("/"),
     } satisfies DrawerItem,
-
     ...(isAdmin
       ? [
           {
-            id: "admin",
-            label: "Dashboard",
+            id: "adminDashboard",
+            label: "Admin Dashboard",
+            icon: (
+              <IconButton>
+                <Dashboard />
+              </IconButton>
+            ),
+            position: "center",
+            onClick: () => navigate("/admin"),
+          } satisfies DrawerItem,
+          {
+            id: "adminProducts",
+            label: "Manage Products",
             icon: (
               <IconButton>
                 <Settings />
               </IconButton>
             ),
             position: "center",
-            onClick: () => navigate("/admin"),
+            onClick: () => navigate("/admin/products"),
+          } satisfies DrawerItem,
+          {
+            id: "admin",
+            label: "Manage Orders",
+            icon: (
+              <IconButton>
+                <Settings />
+              </IconButton>
+            ),
+            position: "center",
+            onClick: () => navigate("/admin/orders"),
           } satisfies DrawerItem,
         ]
       : []),
-
     {
       id: "products",
       label: t("nav.products"),
@@ -103,7 +124,6 @@ const Navbar = () => {
       position: "center",
       onClick: () => navigate("/products"),
     } satisfies DrawerItem,
-
     ...(isAuthenticated
       ? [
           {
@@ -183,7 +203,7 @@ const Navbar = () => {
         ...(isMobile ? { padding: "8px" } : {}),
       }}
     >
-      <Container maxWidth="xl" sx={{ px: { xs: 0.5, sm: 2 } }}>
+      <Container maxWidth="xxl" sx={{ px: { xs: 0.5, sm: 2 } }}>
         <Toolbar
           disableGutters
           sx={{
@@ -245,7 +265,9 @@ const Navbar = () => {
               sx={{
                 py: 2,
                 color: "white",
-                display: "block",
+                display: "flex",
+                alignItems: "center",
+                gap: 1,
                 fontWeight: 600,
                 fontSize: "0.95rem",
                 transition: "all 0.3s",
@@ -269,14 +291,16 @@ const Navbar = () => {
                 },
               }}
             >
-              {t("nav.home")}
+              <Home /> {t("nav.home")}
             </Button>
             <Button
               onClick={() => navigate("/products")}
               sx={{
                 py: 2,
                 color: "white",
-                display: "block",
+                display: "flex",
+                alignItems: "center",
+                gap: 1,
                 fontWeight: 600,
                 fontSize: "0.95rem",
                 transition: "all 0.3s",
@@ -300,7 +324,7 @@ const Navbar = () => {
                 },
               }}
             >
-              {t("nav.products")}
+              <ShoppingBasket /> {t("nav.products")}
             </Button>
             {isAuthenticated && (
               <Button
@@ -308,7 +332,9 @@ const Navbar = () => {
                 sx={{
                   py: 2,
                   color: "white",
-                  display: "block",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 1,
                   fontWeight: 600,
                   fontSize: "0.95rem",
                   transition: "all 0.3s",
@@ -332,27 +358,113 @@ const Navbar = () => {
                   },
                 }}
               >
-                {t("nav.orders")}
+                <ShoppingBag /> {t("nav.orders")}
               </Button>
             )}
             {isAdmin && (
-              <Button
-                onClick={() => navigate("/admin")}
-                sx={{
-                  py: 2,
-                  color: "#ff9800",
-                  display: "block",
-                  fontWeight: 700,
-                  fontSize: "0.95rem",
-                  transition: "all 0.3s",
-                  "&:hover": {
-                    color: "#fff",
-                    bgcolor: "rgba(255, 152, 0, 0.2)",
-                  },
-                }}
-              >
-                ⚙️ {t("nav.admin")}
-              </Button>
+              <>
+                <Button
+                  onClick={() => navigate("/admin")}
+                  sx={{
+                    py: 2,
+                    color: "white",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 1,
+                    fontWeight: 600,
+                    fontSize: "0.95rem",
+                    transition: "all 0.3s",
+                    position: "relative",
+                    "&:hover": {
+                      color: "#fff",
+                      "&::after": {
+                        width: "100%",
+                      },
+                    },
+                    "&::after": {
+                      content: '""',
+                      position: "absolute",
+                      bottom: 10,
+                      left: 0,
+                      width: 0,
+                      height: 3,
+                      bgcolor: "#ff9800",
+                      borderRadius: "2px",
+                      transition: "width 0.3s",
+                    },
+                  }}
+                >
+                  <Dashboard /> Admin Dashboard
+                </Button>
+
+                <Button
+                  onClick={() => navigate("/admin/products")}
+                  sx={{
+                    py: 2,
+                    color: "white",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 1,
+                    fontWeight: 600,
+                    fontSize: "0.95rem",
+                    transition: "all 0.3s",
+                    position: "relative",
+                    "&:hover": {
+                      color: "#fff",
+                      "&::after": {
+                        width: "100%",
+                      },
+                    },
+                    "&::after": {
+                      content: '""',
+                      position: "absolute",
+                      bottom: 10,
+                      left: 0,
+                      width: 0,
+                      height: 3,
+                      bgcolor: "#ff9800",
+                      borderRadius: "2px",
+                      transition: "width 0.3s",
+                    },
+                  }}
+                >
+                  <Settings /> Manage Products
+                </Button>
+
+                <Button
+                  onClick={() => navigate("/admin/orders")}
+                  sx={{
+                    py: 2,
+                    color: "white",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 1,
+                    fontWeight: 600,
+                    fontSize: "0.95rem",
+                    transition: "all 0.3s",
+                    position: "relative",
+                    "&:hover": {
+                      color: "#fff",
+                      "&::after": {
+                        width: "100%",
+                      },
+                    },
+                    "&::after": {
+                      content: '""',
+                      position: "absolute",
+                      bottom: 10,
+                      left: 0,
+                      width: 0,
+                      height: 3,
+                      bgcolor: "#ff9800",
+                      borderRadius: "2px",
+                      transition: "width 0.3s",
+                    },
+                  }}
+                >
+                  <Settings /> Manage Orders
+                </Button>
+              </>
             )}
           </Box>
           <Box
