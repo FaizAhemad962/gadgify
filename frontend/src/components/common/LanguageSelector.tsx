@@ -1,19 +1,15 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { useTranslation } from "react-i18next";
 import i18n from "i18next";
-import { Box, TextField, MenuItem } from "@mui/material";
-
+import { Box, TextField, MenuItem, IconButton } from "@mui/material";
+import { Language } from "@mui/icons-material";
 
 const LanguageSelector = ({
   color,
   bgcolor,
-  showLanguageLabel = true,
-  showLanguageIcon = true,
 }: {
   color?: string;
   bgcolor?: string;
-  showLanguageLabel?: boolean;
-  showLanguageIcon?: boolean;
 }) => {
   const { t } = useTranslation();
 
@@ -22,7 +18,10 @@ const LanguageSelector = ({
   };
 
   return (
-    <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+    <Box sx={{ display: "flex", alignItems: "center" }}>
+      <IconButton style={{ color }} sx={{ p: 0, mr: 1 }}>
+        <Language fontSize="small"></Language>
+      </IconButton>
       <TextField
         select
         size="small"

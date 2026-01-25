@@ -53,7 +53,6 @@ const Navbar = () => {
     setAnchorElUser(event.currentTarget);
   };
 
-
   const handleCloseUserMenu = () => {
     setAnchorElUser(null);
   };
@@ -167,7 +166,7 @@ const Navbar = () => {
             justifyContent: "flex-start",
           }}
         >
-          <Language fontSize="small" /> <LanguageSelector bgcolor="" />
+          <LanguageSelector bgcolor="" />
         </Box>
       ),
       position: "end",
@@ -186,7 +185,7 @@ const Navbar = () => {
     >
       <Container maxWidth="xl" sx={{ px: { xs: 0.5, sm: 2 } }}>
         <Toolbar
-        disableGutters
+          disableGutters
           sx={{
             minHeight: { xs: 56, md: 64 },
             gap: { xs: 0.5, md: 1 },
@@ -356,8 +355,7 @@ const Navbar = () => {
               </Button>
             )}
           </Box>
-          <IconButton
-            disableRipple
+          <Box
             sx={{
               gap: 1,
               color: "#fff",
@@ -365,9 +363,8 @@ const Navbar = () => {
               display: { xs: "none", md: "flex" },
             }}
           >
-            <Language fontSize="small" />{" "}
             <LanguageSelector color="white" bgcolor="" />
-          </IconButton>
+          </Box>
 
           {isAuthenticated && (
             <Stack direction="row" gap={2}>

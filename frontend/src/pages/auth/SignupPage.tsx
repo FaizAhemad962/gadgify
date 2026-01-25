@@ -656,12 +656,7 @@ const SignupPage = () => {
             </Box>
           </Box>
           <Box sx={{ pt: 3 }}>
-            {/* Language Selector */}
-            <LanguageSelector
-              color="rgb(34, 97, 124)"
-              showLanguageIcon
-              showLanguageLabel={false}
-            />
+            <LanguageSelector color="rgb(34, 97, 124)" />
           </Box>
         </Paper>
       </Container>

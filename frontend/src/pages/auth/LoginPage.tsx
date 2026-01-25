@@ -366,9 +366,6 @@ const LoginPage = () => {
           </Box>
 
           <Box sx={{ pt: 3, display: "flex", alignItems: "center" }}>
-            <IconButton color="primary" sx={{ p: 0, mr: 1 }}>
-              <Language fontSize="small"></Language>
-            </IconButton>
             <LanguageSelector color={theme.palette.primary.main} />
           </Box>
         </Paper>

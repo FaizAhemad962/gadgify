@@ -320,7 +320,7 @@ const ProductDetailPage = () => {
           )}
         </Box>
       </Box>
-      <Box sx={{ width: "630px", maxWidth: 630, my: 4, position: "relative" }}>
+      <Box sx={{  maxWidth: 630, my: 4, position: "relative" }}>
         <Swiper
           slidesPerView={2}
           navigation
