@@ -17,6 +17,7 @@ export interface ProductMedia {
   url: string
   type: 'image' | 'video'
   isPrimary: boolean
+  productId: string
 }
 
 export interface Product {

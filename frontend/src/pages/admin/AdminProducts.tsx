@@ -18,13 +18,7 @@ import {
   MenuItem,
   IconButton,
 } from "@mui/material";
-import {
-  Upload,
-  Search,
-  Star,
-  Delete,
-  AddSharp,
-} from "@mui/icons-material";
+import { Upload, Search, Star, Delete, AddSharp } from "@mui/icons-material";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -43,21 +37,6 @@ const CATEGORIES = [
   "Tools & Hardware",
   "Lighting",
 ];
-
-// const productSchema = z.object({
-//   name: z.string().min(2, 'Name is required'),
-//   description: z.string().min(10, 'Description must be at least 10 characters'),
-//   price: z.coerce.number({ error: 'Price is required' }).min(1, 'Price must be greater than 0'),
-//   stock: z.coerce.number({ error: 'Stock is required' }).min(1, 'Stock must be greater than 0'),
-//   colors: z.string().optional(),
-//   category: z.string().min(1, 'Category is required'),
-//   hsnNo: z.string().optional(),
-// gstPercentage: z.coerce.number()
-//   .min(0, 'GST must be between 0 and 100')
-//   .max(100, 'GST must be between 0 and 100')
-//   .optional(),
-//   media: z.array(z.object({ url: z.string(), type: z.enum(['image', 'video']), isPrimary: z.boolean().optional() })),
-// })
 
 const productSchema = z.object({
   name: z.string().min(2, "Name is required"),
@@ -111,9 +90,9 @@ const AdminProducts = () => {
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [error, setError] = useState("");
   const [imageFiles, setImageFiles] = useState<File[]>([]);
-  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+  const [imagePreviews, setImagePreviews] = useState<ProductMedia[]>([]);
   const [videoFiles, setVideoFiles] = useState<File[]>([]);
-  const [videoPreviews, setVideoPreviews] = useState<string[]>([]);
+  const [videoPreviews, setVideoPreviews] = useState<ProductMedia[]>([]);
   const [primaryImageIdx, setPrimaryImageIdx] = useState<number>(0);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [_, setSelectedCategory] = useState("");
@@ -163,6 +142,13 @@ const AdminProducts = () => {
     },
   });
 
+  const deleteMediaByUrlAndProductId = async (
+    productId: string,
+    url: string,
+  ): Promise<void> => {
+    await productsApi.deleteMediaByUrlAndProductId(productId, url);
+  };
+
   const deleteMutation = useMutation({
     mutationFn: productsApi.delete,
     onSuccess: () => {
@@ -177,8 +163,17 @@ const AdminProducts = () => {
       // If product.media exists, split into images/videos
       const images = (product.media || []).filter((m) => m.type === "image");
       const videos = (product.media || []).filter((m) => m.type === "video");
-      setImagePreviews(images.map((m) => m.url));
-      setVideoPreviews(videos.map((m) => m.url));
+      setImagePreviews(
+        images.map((m) => ({
+          id: m.id,
+          url: m.url,
+          media: m,
+          productId: m.productId,
+        })),
+      );
+      setVideoPreviews(
+        videos.map((m) => ({ url: m.url, id: m.id, productId: m.productId })),
+      );
       setImageFiles([]);
       setVideoFiles([]);
       setPrimaryImageIdx(
@@ -234,16 +229,37 @@ const AdminProducts = () => {
     setVideoPreviews([]);
   };
 
-  const handleRemoveImage = (idx: number) => {
+  const handleRemoveImage = async (idx: number) => {
+    const image = imagePreviews[idx];
+
+    // 1️⃣ Optimistic UI update
     setImageFiles((prev) => prev.filter((_, i) => i !== idx));
     setImagePreviews((prev) => prev.filter((_, i) => i !== idx));
-    if (primaryImageIdx === idx) setPrimaryImageIdx(0);
-    else if (primaryImageIdx > idx) setPrimaryImageIdx((prev) => prev - 1);
+
+    // 2️⃣ Primary image correction
+    setPrimaryImageIdx((prev) => {
+      if (prev === idx) return 0;
+      if (prev > idx) return prev - 1;
+      return prev;
+    });
+
+    // 3️⃣ Delete from backend if already saved
+    if (image?.url) {
+      deleteMediaByUrlAndProductId(image.productId, image.url);
+    }
   };
 
-  const handleRemoveVideo = (idx: number) => {
+  const handleRemoveVideo = async (idx: number) => {
+    const video = videoPreviews[idx];
+
+    // 1️⃣ Optimistic UI update
     setVideoFiles((prev) => prev.filter((_, i) => i !== idx));
     setVideoPreviews((prev) => prev.filter((_, i) => i !== idx));
+
+    // 2️⃣ Delete from backend if already saved
+    if (video?.url) {
+      deleteMediaByUrlAndProductId(video.productId, video.url);
+    }
   };
 
   const handleImageFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
