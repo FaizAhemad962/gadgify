@@ -1,0 +1,45 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "chrome",
+      "request": "launch",
+      "name": "Frontend - Chrome",
+      "url": "http://localhost:3000",
+      "webRoot": "${workspaceFolder}/frontend/src",
+      "sourceMaps": true,
+      "sourceMapPathOverride": {
+        "/src/*": "${webspaceRoot}/*"
+      },
+      "runtimeArgs": ["--remote-debugging-port=9222"]
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Backend - Node",
+      "program": "${workspaceFolder}/backend/src/server.ts",
+      "restart": true,
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "cwd": "${workspaceFolder}/backend",
+      "runtimeArgs": ["-r", "ts-node/register"],
+      "env": {
+        "NODE_ENV": "development"
+      }
+    }
+  ],
+  "compounds": [
+    {
+      "name": "🚀 Full Stack Debug (Frontend + Backend)",
+      "configurations": ["Frontend - Chrome", "Backend - Node"]
+    },
+    {
+      "name": "⚡ Frontend Only",
+      "configurations": ["Frontend - Chrome"]
+    },
+    {
+      "name": "🔧 Backend Only",
+      "configurations": ["Backend - Node"]
+    }
+  ]
+}
