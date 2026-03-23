@@ -9,16 +9,10 @@ import {
   Box,
   CircularProgress,
   Alert,
-  Slider,
-  FormControlLabel,
-  Checkbox,
-  Select,
-  MenuItem,
   Drawer,
   IconButton,
   useMediaQuery,
   useTheme,
-  Divider,
   Chip,
   ToggleButtonGroup,
   ToggleButton,
@@ -36,17 +30,11 @@ import { useWishlist } from "../context/WishlistContext";
 import { useSearch } from "../context/SearchContext";
 import { ErrorHandler } from "../utils/errorHandler";
 import ProductCard from "../components/ProductCard";
-// FilterSidebar is defined inline below
+import FilterSidebar from "../components/FilterSidebar";
+import type { SortOption } from "../components/FilterSidebar";
 import { tokens } from "@/theme/theme";
 
 const PRODUCTS_PER_PAGE = 12;
-
-type SortOption =
-  | "popularity"
-  | "price-low"
-  | "price-high"
-  | "newest"
-  | "rating";
 
 const ProductsPage = () => {
   const { isInWishlist, toggleWishlist, isToggling } = useWishlist();
@@ -201,207 +189,38 @@ const ProductsPage = () => {
     navigate("/cart");
   };
 
-  // Debounced price commit — waits 400ms after the user stops dragging
-  const priceCommitTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const handlePriceChange = useCallback(
-    (_: Event, newValue: number | number[]) => {
-      setTempPriceRange(newValue as [number, number]);
-    },
-    [],
-  );
-  const handlePriceCommitted = useCallback(
-    (_: Event | React.SyntheticEvent, newValue: number | number[]) => {
-      if (priceCommitTimer.current) clearTimeout(priceCommitTimer.current);
-      priceCommitTimer.current = setTimeout(() => {
-        setPriceRange(newValue as [number, number]);
-        setDisplayCount(PRODUCTS_PER_PAGE);
-      }, 300);
-    },
-    [],
-  );
+  const handlePriceCommit = useCallback((range: [number, number]) => {
+    setPriceRange(range);
+    setDisplayCount(PRODUCTS_PER_PAGE);
+  }, []);
 
-  // Filter sidebar as plain JSX (NOT a component function — avoids remount on every render)
+  const handleRatingsChange = useCallback((ratings: number[]) => {
+    setSelectedRatings(ratings);
+    setDisplayCount(PRODUCTS_PER_PAGE);
+  }, []);
+
+  const handleCategoriesChange = useCallback((cats: string[]) => {
+    setSelectedCategories(cats);
+    setDisplayCount(PRODUCTS_PER_PAGE);
+  }, []);
+
   const filterSidebar = (
-    <Box
-      sx={{
-        display: "flex",
-        flexDirection: "column",
-        gap: "20px",
-        padding: "20px",
-        backgroundColor: tokens.white,
-        borderRadius: "8px",
-        border: `1px solid ${tokens.gray200}`,
-        height: "fit-content",
-        position: "sticky",
-        top: 20,
-      }}
-    >
-      <Typography variant="h6" fontWeight={700} fontSize="16px">
-        {t("common.filters") || "Filters"}
-      </Typography>
-
-      {/* Sort Dropdown */}
-      <Box>
-        <Typography variant="body2" fontWeight={600} sx={{ mb: 1 }}>
-          {t("common.sortBy") || "Sort By"}
-        </Typography>
-        <Select
-          value={sortBy}
-          onChange={(e) => setSortBy(e.target.value as SortOption)}
-          fullWidth
-          size="small"
-          sx={{
-            borderRadius: 2,
-            "& .MuiOutlinedInput-notchedOutline": {
-              borderColor: tokens.gray200,
-            },
-          }}
-        >
-          <MenuItem value="popularity">
-            {t("common.popularity") || "Popularity"}
-          </MenuItem>
-          <MenuItem value="price-low">
-            {t("common.priceLowToHigh") || "Price: Low to High"}
-          </MenuItem>
-          <MenuItem value="price-high">
-            {t("common.priceHighToLow") || "Price: High to Low"}
-          </MenuItem>
-          <MenuItem value="newest">
-            {t("common.newestFirst") || "Newest First"}
-          </MenuItem>
-          <MenuItem value="rating">
-            {t("common.bestRatings") || "Best Ratings"}
-          </MenuItem>
-        </Select>
-      </Box>
-
-      <Divider />
-
-      {/* Price Range Filter */}
-      <Box>
-        <Typography variant="body2" fontWeight={600} sx={{ mb: 2 }}>
-          {t("common.priceRange") || "Price Range"}
-        </Typography>
-        <Slider
-          value={tempPriceRange}
-          onChange={handlePriceChange}
-          onChangeCommitted={handlePriceCommitted}
-          valueLabelDisplay="auto"
-          min={0}
-          max={10000}
-          step={100}
-          marks={[
-            { value: 0, label: "₹0" },
-            { value: 10000, label: "₹10K" },
-          ]}
-          sx={{
-            "& .MuiSlider-thumb": { backgroundColor: tokens.accent },
-            "& .MuiSlider-track": { backgroundColor: tokens.accent },
-            "& .MuiSlider-rail": { backgroundColor: tokens.gray200 },
-          }}
-        />
-        <Box sx={{ display: "flex", gap: 1, mt: 2, fontSize: "12px" }}>
-          <Typography variant="body2">
-            ₹{tempPriceRange[0].toLocaleString()}
-          </Typography>
-          <Typography variant="body2">-</Typography>
-          <Typography variant="body2">
-            ₹{tempPriceRange[1].toLocaleString()}
-          </Typography>
-        </Box>
-      </Box>
-
-      <Divider />
-
-      {/* Rating Filter */}
-      <Box>
-        <Typography variant="body2" fontWeight={600} sx={{ mb: 1.5 }}>
-          {t("common.rating") || "Rating"}
-        </Typography>
-        {[5, 4, 3, 2, 1].map((rating) => (
-          <FormControlLabel
-            key={rating}
-            control={
-              <Checkbox
-                checked={selectedRatings.includes(rating)}
-                onChange={(e) => {
-                  setSelectedRatings((prev) =>
-                    e.target.checked
-                      ? [...prev, rating]
-                      : prev.filter((r) => r !== rating),
-                  );
-                  setDisplayCount(PRODUCTS_PER_PAGE);
-                }}
-                size="small"
-              />
-            }
-            label={
-              <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-                <Typography variant="body2">
-                  {rating} Star{rating > 1 ? "s" : ""} & above
-                </Typography>
-              </Box>
-            }
-          />
-        ))}
-      </Box>
-
-      <Divider />
-
-      {/* Category Filter */}
-      {categories.length > 0 && (
-        <Box>
-          <Typography variant="body2" fontWeight={600} sx={{ mb: 1.5 }}>
-            {t("common.category") || "Category"}
-          </Typography>
-          {categories.map((category) => (
-            <FormControlLabel
-              key={category}
-              control={
-                <Checkbox
-                  checked={selectedCategories.includes(category as string)}
-                  onChange={(e) => {
-                    const cat = category as string;
-                    setSelectedCategories((prev) =>
-                      e.target.checked
-                        ? [...prev, cat]
-                        : prev.filter((c) => c !== cat),
-                    );
-                    setDisplayCount(PRODUCTS_PER_PAGE);
-                  }}
-                  size="small"
-                />
-              }
-              label={<Typography variant="body2">{category}</Typography>}
-            />
-          ))}
-        </Box>
-      )}
-
-      <Divider />
-
-      {/* Clear Filters Button */}
-      {isFiltersActive && (
-        <Button
-          variant="outlined"
-          fullWidth
-          onClick={handleClearFilters}
-          sx={{
-            borderColor: tokens.accent,
-            color: tokens.accent,
-            fontWeight: 600,
-            borderRadius: 2,
-            transition: "all 0.3s ease",
-            "&:hover": {
-              backgroundColor: "#FFF3E0",
-              borderColor: tokens.accent,
-            },
-          }}
-        >
-          {t("common.clearAllFilters") || "Clear All Filters"}
-        </Button>
-      )}
-    </Box>
+    <FilterSidebar
+      sortBy={sortBy}
+      onSortChange={setSortBy}
+      tempPriceRange={tempPriceRange}
+      priceRange={priceRange}
+      onTempPriceChange={setTempPriceRange}
+      onPriceCommit={handlePriceCommit}
+      selectedRatings={selectedRatings}
+      onRatingsChange={handleRatingsChange}
+      selectedCategories={selectedCategories}
+      onCategoriesChange={handleCategoriesChange}
+      categories={categories as string[]}
+      isFiltersActive={isFiltersActive}
+      onClearFilters={handleClearFilters}
+      t={t}
+    />
   );
 
   if (error) {
