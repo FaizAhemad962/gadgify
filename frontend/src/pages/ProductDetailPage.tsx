@@ -12,18 +12,30 @@ import {
   Chip,
   Paper,
   Divider,
+  IconButton,
+  Tooltip,
+  Snackbar,
 } from "@mui/material";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Pagination, Navigation } from "swiper/modules";
 
-import { ShoppingCart, ArrowBack } from "@mui/icons-material";
+import {
+  ShoppingCart,
+  ArrowBack,
+  Share,
+  Add,
+  Remove,
+} from "@mui/icons-material";
 import { productsApi } from "../api/products";
 import { ratingsApi } from "../api/ratings";
 import { useCart } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
+import { useWishlist } from "../context/WishlistContext";
 import { StarRating } from "../components/common/StarRating";
 import { RatingForm } from "../components/product/RatingForm";
 import { RatingsList } from "../components/product/RatingsList";
+import ProductCard from "../components/ProductCard";
+import { tokens } from "@/theme/theme";
 
 const ProductDetailPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -31,7 +43,10 @@ const ProductDetailPage = () => {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
   const { addToCart, isAddingToCart } = useCart();
+  const { isInWishlist, toggleWishlist, isToggling } = useWishlist();
   const [selectedColor, setSelectedColor] = useState<string>("");
+  const [quantity, setQuantity] = useState(1);
+  const [shareSnackbar, setShareSnackbar] = useState(false);
 
   const {
     data: product,
@@ -49,13 +64,24 @@ const ProductDetailPage = () => {
     enabled: !!id,
   });
 
+  // Fetch related products (same category)
+  const { data: relatedData } = useQuery({
+    queryKey: ["related-products", product?.category],
+    queryFn: () =>
+      productsApi.getAll({ category: product!.category, limit: 4 }),
+    enabled: !!product?.category,
+  });
+  const relatedProducts = (relatedData?.products || [])
+    .filter((p: any) => p.id !== id)
+    .slice(0, 4);
+
   const handleAddToCart = async () => {
     if (!isAuthenticated) {
       navigate("/login");
       return;
     }
     if (product) {
-      await addToCart({ productId: product.id, quantity: 1 });
+      await addToCart({ productId: product.id, quantity });
     }
   };
 
@@ -66,6 +92,17 @@ const ProductDetailPage = () => {
     }
     await handleAddToCart();
     navigate("/cart");
+  };
+
+  const handleShare = async () => {
+    const url = window.location.href;
+    try {
+      await navigator.clipboard.writeText(url);
+      setShareSnackbar(true);
+    } catch {
+      // Fallback for older browsers
+      setShareSnackbar(true);
+    }
   };
 
   if (isLoading) {
@@ -201,11 +238,55 @@ const ProductDetailPage = () => {
             {product.description}
           </Typography>
 
+          {/* Quantity Selector */}
+          <Box>
+            <Typography
+              variant="subtitle2"
+              sx={{ fontWeight: 600, color: "text.primary", mb: 1 }}
+            >
+              {t("common.quantity")}
+            </Typography>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+              <IconButton
+                size="small"
+                onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                disabled={quantity <= 1}
+                sx={{ border: `1px solid ${tokens.gray200}` }}
+              >
+                <Remove fontSize="small" />
+              </IconButton>
+              <Typography
+                sx={{ minWidth: 40, textAlign: "center", fontWeight: 700 }}
+              >
+                {quantity}
+              </Typography>
+              <IconButton
+                size="small"
+                onClick={() =>
+                  setQuantity((q) => Math.min(product.stock, q + 1))
+                }
+                disabled={quantity >= product.stock}
+                sx={{ border: `1px solid ${tokens.gray200}` }}
+              >
+                <Add fontSize="small" />
+              </IconButton>
+              {product.stock <= 5 && product.stock > 0 && (
+                <Typography
+                  variant="caption"
+                  sx={{ color: tokens.error, fontWeight: 600, ml: 1 }}
+                >
+                  {t("common.onlyXLeft", { count: product.stock })}
+                </Typography>
+              )}
+            </Box>
+          </Box>
+
           <Box
             sx={{
               display: "flex",
               gap: 2,
               flexDirection: { xs: "column", sm: "row" },
+              alignItems: "stretch",
             }}
           >
             <Button
@@ -229,12 +310,20 @@ const ProductDetailPage = () => {
                 flex: 1,
                 fontWeight: 600,
                 minHeight: 48,
-                bgcolor: "#ff9800",
-                "&:hover": { bgcolor: "#f57c00" },
+                bgcolor: tokens.accent,
+                "&:hover": { bgcolor: tokens.accentDark },
               }}
             >
               {t("products.buyNow")}
             </Button>
+            <Tooltip title={t("common.shareProduct")}>
+              <IconButton
+                onClick={handleShare}
+                sx={{ border: `1px solid ${tokens.gray200}`, borderRadius: 2 }}
+              >
+                <Share />
+              </IconButton>
+            </Tooltip>
           </Box>
 
           {/* Product Info Sections */}
@@ -320,7 +409,7 @@ const ProductDetailPage = () => {
           )}
         </Box>
       </Box>
-      <Box sx={{  maxWidth: 630, my: 4, position: "relative" }}>
+      <Box sx={{ maxWidth: 630, my: 4, position: "relative" }}>
         <Swiper
           slidesPerView={2}
           navigation
@@ -381,6 +470,54 @@ const ProductDetailPage = () => {
 
         <RatingsList productId={id!} />
       </Box>
+
+      {/* Related Products */}
+      {relatedProducts.length > 0 && (
+        <Box sx={{ mt: 8 }}>
+          <Divider sx={{ mb: 6, borderColor: "#ddd" }} />
+          <Typography
+            variant="h5"
+            gutterBottom
+            fontWeight="700"
+            sx={{ color: "text.primary", mb: 4 }}
+          >
+            {t("common.relatedProducts")}
+          </Typography>
+          <Box
+            sx={{
+              display: "grid",
+              gridTemplateColumns: { xs: "1fr 1fr", md: "1fr 1fr 1fr 1fr" },
+              gap: 3,
+            }}
+          >
+            {relatedProducts.map((rp: any) => (
+              <ProductCard
+                key={rp.id}
+                product={rp}
+                isInWishlist={isInWishlist}
+                isToggling={isToggling}
+                toggleWishlist={toggleWishlist}
+                onAddToCart={(pid) =>
+                  addToCart({ productId: pid, quantity: 1 })
+                }
+                onBuyNow={(pid) => {
+                  addToCart({ productId: pid, quantity: 1 });
+                  navigate("/cart");
+                }}
+                onNavigate={(pid) => navigate(`/products/${pid}`)}
+                t={t}
+              />
+            ))}
+          </Box>
+        </Box>
+      )}
+
+      <Snackbar
+        open={shareSnackbar}
+        autoHideDuration={2000}
+        onClose={() => setShareSnackbar(false)}
+        message={t("common.linkCopied")}
+      />
     </Container>
   );
 };

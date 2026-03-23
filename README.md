@@ -382,12 +382,21 @@ Namespace convention: `admin.*`, `common.*`, `orders.*`, `payment.*`, `categorie
 
 ---
 
+## Recently Implemented Features (2025)
+
+- [x] **Dynamic HomePage** — Trending products, new arrivals, shop-by-category grid, deal-of-the-day countdown, customer testimonials, newsletter signup
+- [x] **Product listing enhancements** — Desktop filter sidebar restored, grid/list view toggle, "Showing X of Y" product counter, URL-driven category/sort filters
+- [x] **Product detail enhancements** — Quantity selector, share-product button (copy link), low-stock warnings, related products section ("You May Also Like")
+- [x] **Cart improvements** — Coupon/promo code input field, per-item low-stock alerts
+- [x] **Order management UX** — Status filter chips (All/Pending/Processing/Shipped/Delivered/Cancelled), order search, "Buy Again" reorder button for delivered orders
+- [x] **Full i18n coverage** — 60+ new translation keys across English, Hindi, and Marathi for all new features
+
 ## Future Enhancements
 
 - [ ] **Real-time notifications** — WebSocket/SSE for order status updates
 - [ ] **Product reviews with images** — Allow users to upload photos in reviews
 - [ ] **Advanced search** — Elasticsearch or full-text search with auto-suggestions
-- [ ] **Coupon & discount system** — Admin-managed promo codes and campaign discounts
+- [ ] **Coupon & discount system (backend)** — Admin-managed promo codes, campaign discounts, and backend validation
 - [ ] **Inventory alerts** — Low-stock email/push notifications for admins
 - [ ] **Multi-vendor support** — Allow third-party sellers on the platform
 - [ ] **Analytics dashboard** — Sales trends, customer insights, revenue charts (Chart.js / Recharts)
@@ -404,6 +413,11 @@ Namespace convention: `admin.*`, `common.*`, `orders.*`, `payment.*`, `categorie
 - [ ] **Return & refund flow** — Customer-initiated returns with admin approval workflow
 - [ ] **SEO optimization** — SSR/SSG with Next.js or meta tags for better discoverability
 - [ ] **Accessibility audit** — Full WCAG 2.1 AA compliance pass
+- [ ] **AI-powered recommendations** — Personalized product suggestions based on browsing/purchase history
+- [ ] **Wishlist sharing** — Share wishlist via link or social media
+- [ ] **Order tracking map** — Live delivery tracking with map integration
+- [ ] **Voice search** — Speech-to-text product search
+- [ ] **A/B testing framework** — Experiment with homepage layouts, CTAs, pricing display
 
 ---
 

@@ -46,15 +46,35 @@ export const getAllProducts = async (
       ];
     }
 
-    // Add category filter if provided
+    // Add category filter if provided (supports comma-separated for multi-select)
     if (category) {
-      if (whereClause.AND) {
+      const categoryStr = category as string;
+      const categoryList = categoryStr.includes(",")
+        ? categoryStr
+            .split(",")
+            .map((c) => c.trim())
+            .filter(Boolean)
+        : null;
+
+      if (categoryList && categoryList.length > 1) {
+        // Multiple categories: use OR with contains for each
+        const categoryCondition = {
+          OR: categoryList.map((c) => ({
+            category: { contains: c, mode: "insensitive" as const },
+          })),
+        };
+        if (whereClause.AND) {
+          whereClause.AND.push(categoryCondition);
+        } else {
+          whereClause.AND = [categoryCondition];
+        }
+      } else if (whereClause.AND) {
         whereClause.AND.push({
-          category: { contains: category as string, mode: "insensitive" },
+          category: { contains: categoryStr, mode: "insensitive" },
         });
       } else {
         whereClause.category = {
-          contains: category as string,
+          contains: categoryStr,
           mode: "insensitive",
         };
       }

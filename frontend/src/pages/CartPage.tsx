@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { tokens } from "@/theme/theme";
@@ -9,8 +10,10 @@ import {
   Paper,
   IconButton,
   Divider,
+  TextField,
+  InputAdornment,
 } from "@mui/material";
-import { Delete, ShoppingCartOutlined } from "@mui/icons-material";
+import { Delete, ShoppingCartOutlined, LocalOffer } from "@mui/icons-material";
 import QuantityInput from "../components/common/QuantityInput";
 import { useCart } from "../context/CartContext";
 
@@ -18,6 +21,15 @@ const CartPage = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { cart, updateQuantity, removeFromCart, isLoading } = useCart();
+  const [couponCode, setCouponCode] = useState("");
+  const [couponApplied, setCouponApplied] = useState(false);
+
+  const handleApplyCoupon = () => {
+    if (couponCode.trim()) {
+      // Placeholder — integrate with backend coupon API when available
+      setCouponApplied(true);
+    }
+  };
 
   const calculateSubtotal = () => {
     if (!cart?.items) return 0;
@@ -205,6 +217,20 @@ const CartPage = () => {
                       <Delete />
                     </IconButton>
                   </Box>
+                  {/* Low stock warning */}
+                  {item.product.stock <= 5 && item.product.stock > 0 && (
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        color: tokens.error,
+                        fontWeight: 600,
+                        mt: 0.5,
+                        display: "block",
+                      }}
+                    >
+                      {t("common.onlyXLeft", { count: item.product.stock })}
+                    </Typography>
+                  )}
                 </Box>
               </Box>
             </Paper>
@@ -297,6 +323,68 @@ const CartPage = () => {
                 ₹{total.toLocaleString()}
               </Typography>
             </Box>
+
+            {/* Coupon Code */}
+            <Box sx={{ mb: 2.5 }}>
+              <Typography
+                variant="body2"
+                sx={{ fontWeight: 600, color: "text.primary", mb: 1 }}
+              >
+                {t("common.applyCoupon")}
+              </Typography>
+              <Box sx={{ display: "flex", gap: 1 }}>
+                <TextField
+                  size="small"
+                  placeholder={t("common.couponPlaceholder")}
+                  value={couponCode}
+                  onChange={(e) => {
+                    setCouponCode(e.target.value);
+                    setCouponApplied(false);
+                  }}
+                  fullWidth
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <LocalOffer
+                          sx={{ fontSize: 18, color: tokens.gray400 }}
+                        />
+                      </InputAdornment>
+                    ),
+                  }}
+                  sx={{
+                    "& .MuiOutlinedInput-root": { borderRadius: 2 },
+                  }}
+                />
+                <Button
+                  variant="outlined"
+                  onClick={handleApplyCoupon}
+                  disabled={!couponCode.trim()}
+                  sx={{
+                    minWidth: 80,
+                    fontWeight: 600,
+                    borderColor: tokens.accent,
+                    color: tokens.accent,
+                    borderRadius: 2,
+                    textTransform: "none",
+                    "&:hover": {
+                      borderColor: tokens.accentDark,
+                      bgcolor: "#FFF3E0",
+                    },
+                  }}
+                >
+                  {t("common.apply")}
+                </Button>
+              </Box>
+              {couponApplied && (
+                <Typography
+                  variant="caption"
+                  sx={{ color: tokens.success, mt: 0.5, display: "block" }}
+                >
+                  {t("common.couponApplied")}
+                </Typography>
+              )}
+            </Box>
+            <Divider sx={{ mb: 2.5 }} />
 
             {/* Checkout Button */}
             <Button

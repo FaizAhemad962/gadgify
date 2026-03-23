@@ -38,8 +38,6 @@ import { useWishlist } from "../../context/WishlistContext";
 import LanguageSelector from "../common/LanguageSelector";
 import { AppDrawer } from "../ui/Drawer";
 import { tokens } from "@/theme/theme";
-import { useThemeMode } from "@/context/useThemeMode";
-import { DarkMode, LightMode } from "@mui/icons-material";
 
 const Navbar = () => {
   const { t } = useTranslation();
@@ -47,7 +45,7 @@ const Navbar = () => {
   const { isAuthenticated, isAdmin, logout, user } = useAuth();
   const { itemCount } = useCart();
   const { wishlistItems } = useWishlist();
-  const { mode, toggleTheme } = useThemeMode();
+  // const { mode, toggleTheme } = useThemeMode();
 
   const [anchorElUser, setAnchorElUser] = useState<null | HTMLElement>(null);
 
@@ -259,7 +257,7 @@ const Navbar = () => {
             </Box>
 
             {/* Dark mode toggle */}
-            <IconButton
+            {/* <IconButton
               size="small"
               onClick={toggleTheme}
               color="inherit"
@@ -271,7 +269,7 @@ const Navbar = () => {
               ) : (
                 <DarkMode sx={{ fontSize: 20 }} />
               )}
-            </IconButton>
+            </IconButton> */}
 
             {isAuthenticated ? (
               <>
