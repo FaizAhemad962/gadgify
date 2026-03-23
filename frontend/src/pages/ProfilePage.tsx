@@ -19,6 +19,7 @@ import {
 } from "@mui/material";
 import { ArrowBack, Edit, Save, Cancel, CameraAlt } from "@mui/icons-material";
 import { useAuth } from "../context/AuthContext";
+import { tokens } from "@/theme/theme";
 import { ErrorHandler } from "../utils/errorHandler";
 import {
   getMaharashtraCities,
@@ -219,7 +220,7 @@ const ProfilePage = () => {
         <Button
           startIcon={<ArrowBack />}
           onClick={() => navigate(-1)}
-          sx={{ color: "#1976d2" }}
+          sx={{ color: tokens.primary }}
         >
           {t("common.back")}
         </Button>
@@ -267,7 +268,7 @@ const ProfilePage = () => {
             gap: { xs: 2, sm: 0 },
             mb: 4,
             pb: 3,
-            borderBottom: "1px solid #e0e0e0",
+            borderBottom: `1px solid ${tokens.gray200}`,
           }}
         >
           <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
@@ -279,12 +280,12 @@ const ProfilePage = () => {
                   size="small"
                   onClick={handlePhotoClick}
                   sx={{
-                    backgroundColor: "#ff9800",
+                    backgroundColor: tokens.accent,
                     color: "white",
                     width: 32,
                     height: 32,
                     "&:hover": {
-                      backgroundColor: "#f57c00",
+                      backgroundColor: tokens.accentDark,
                     },
                   }}
                 >
@@ -304,7 +305,7 @@ const ProfilePage = () => {
                   height: 80,
                   fontSize: "2rem",
                   fontWeight: 700,
-                  backgroundColor: "#1976d2",
+                  backgroundColor: tokens.primary,
                   border: "3px solid white",
                   boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
                 }}
@@ -336,7 +337,7 @@ const ProfilePage = () => {
                 sx={{
                   mt: 1,
                   backgroundColor:
-                    user.role === "ADMIN" ? "#ff9800" : "#1976d2",
+                    user.role === "ADMIN" ? tokens.accent : tokens.primary,
                   color: "white",
                   fontWeight: 600,
                 }}
@@ -376,7 +377,7 @@ const ProfilePage = () => {
                   flex: "1 1 calc(50% - 8px)",
                   minWidth: "250px",
                   "& .MuiFilledInput-root": {
-                    backgroundColor: "#fafafa",
+                    backgroundColor: tokens.gray50,
                   },
                 }}
               />
@@ -392,10 +393,10 @@ const ProfilePage = () => {
                   flex: "1 1 calc(50% - 8px)",
                   minWidth: "250px",
                   "& .MuiFilledInput-root": {
-                    backgroundColor: "#fafafa",
+                    backgroundColor: tokens.gray50,
                     cursor: "not-allowed",
                     "&:hover": {
-                      backgroundColor: "#fafafa",
+                      backgroundColor: tokens.gray50,
                     },
                   },
                   "& .Mui-disabled": {
@@ -420,7 +421,7 @@ const ProfilePage = () => {
                   flex: "1 1 calc(50% - 8px)",
                   minWidth: "250px",
                   "& .MuiFilledInput-root": {
-                    backgroundColor: "#fafafa",
+                    backgroundColor: tokens.gray50,
                   },
                 }}
               />
@@ -434,10 +435,10 @@ const ProfilePage = () => {
                   flex: "1 1 calc(50% - 8px)",
                   minWidth: "250px",
                   "& .MuiFilledInput-root": {
-                    backgroundColor: "#fafafa",
+                    backgroundColor: tokens.gray50,
                     cursor: "not-allowed",
                     "&:hover": {
-                      backgroundColor: "#fafafa",
+                      backgroundColor: tokens.gray50,
                     },
                   },
                   "& .Mui-disabled": {
@@ -472,7 +473,7 @@ const ProfilePage = () => {
                   flex: "1 1 calc(50% - 8px)",
                   minWidth: "250px",
                   "& .MuiFilledInput-root": {
-                    backgroundColor: "#fafafa",
+                    backgroundColor: tokens.gray50,
                   },
                 }}
               >
@@ -494,7 +495,7 @@ const ProfilePage = () => {
                   flex: "1 1 calc(50% - 8px)",
                   minWidth: "250px",
                   "& .MuiFilledInput-root": {
-                    backgroundColor: "#fafafa",
+                    backgroundColor: tokens.gray50,
                   },
                 }}
               />
@@ -512,7 +513,7 @@ const ProfilePage = () => {
               rows={3}
               sx={{
                 "& .MuiFilledInput-root": {
-                  backgroundColor: "#fafafa",
+                  backgroundColor: tokens.gray50,
                 },
               }}
             />

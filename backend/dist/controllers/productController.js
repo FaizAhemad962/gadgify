@@ -9,7 +9,7 @@ const getAllProducts = async (req, res, next) => {
     try {
         const products = await database_1.default.product.findMany({
             where: { deletedAt: null },
-            orderBy: { createdAt: 'desc' },
+            orderBy: { createdAt: "desc" },
             include: {
                 ratings: {
                     select: {
@@ -48,7 +48,7 @@ const getProductById = async (req, res, next) => {
             include: { media: true },
         });
         if (!product) {
-            res.status(404).json({ message: 'Product not found' });
+            res.status(404).json({ message: "Product not found" });
             return;
         }
         res.json(product);
@@ -60,9 +60,18 @@ const getProductById = async (req, res, next) => {
 exports.getProductById = getProductById;
 const createProduct = async (req, res, next) => {
     try {
-        const { name, description, price, stock, media, colors, category, hsnNo, gstPercentage } = req.body;
+        const { name, description, price, stock, media, colors, category, hsnNo, gstPercentage, } = req.body;
         const product = await database_1.default.product.create({
-            data: { name, description, price, stock, colors, category, hsnNo, gstPercentage },
+            data: {
+                name,
+                description,
+                price,
+                stock,
+                colors,
+                category,
+                hsnNo,
+                gstPercentage,
+            },
         });
         // Create media records if provided
         if (media && Array.isArray(media)) {
@@ -85,10 +94,19 @@ exports.createProduct = createProduct;
 const updateProduct = async (req, res, next) => {
     try {
         const { id } = req.params;
-        const { name, description, price, stock, media, colors, category, hsnNo, gstPercentage } = req.body;
+        const { name, description, price, stock, media, colors, category, hsnNo, gstPercentage, } = req.body;
         const product = await database_1.default.product.update({
             where: { id },
-            data: { name, description, price, stock, colors, category, hsnNo, gstPercentage },
+            data: {
+                name,
+                description,
+                price,
+                stock,
+                colors,
+                category,
+                hsnNo,
+                gstPercentage,
+            },
         });
         // Remove old media and add new
         if (media && Array.isArray(media)) {
@@ -114,11 +132,14 @@ const deleteProduct = async (req, res, next) => {
         const { id } = req.params;
         const existing = await database_1.default.product.findUnique({ where: { id } });
         if (!existing) {
-            res.status(404).json({ message: 'Product not found' });
+            res.status(404).json({ message: "Product not found" });
             return;
         }
-        await database_1.default.product.update({ where: { id }, data: { deletedAt: new Date() } });
-        res.status(200).json({ message: 'Product archived' });
+        await database_1.default.product.update({
+            where: { id },
+            data: { deletedAt: new Date() },
+        });
+        res.status(200).json({ message: "Product archived" });
     }
     catch (error) {
         next(error);
@@ -149,22 +170,22 @@ const getAllProductsAdmin = async (req, res, next) => {
     try {
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 25;
-        const search = req.query.search || '';
+        const search = req.query.search || "";
         const skip = (page - 1) * limit;
         // Build search filter
         const searchFilter = search
             ? {
                 OR: [
-                    { name: { contains: search, mode: 'insensitive' } },
-                    { category: { contains: search, mode: 'insensitive' } },
-                    { description: { contains: search, mode: 'insensitive' } },
+                    { name: { contains: search, mode: "insensitive" } },
+                    { category: { contains: search, mode: "insensitive" } },
+                    { description: { contains: search, mode: "insensitive" } },
                 ],
             }
             : {};
         const [products, total] = await Promise.all([
             database_1.default.product.findMany({
                 where: { deletedAt: null, ...searchFilter },
-                orderBy: { createdAt: 'desc' },
+                orderBy: { createdAt: "desc" },
                 skip,
                 take: limit,
                 include: {
@@ -176,7 +197,9 @@ const getAllProductsAdmin = async (req, res, next) => {
                     media: true,
                 },
             }),
-            database_1.default.product.count({ where: { deletedAt: null, ...searchFilter } }),
+            database_1.default.product.count({
+                where: { deletedAt: null, ...searchFilter },
+            }),
         ]);
         // Calculate average rating for each product
         const productsWithRatings = products.map((product) => {

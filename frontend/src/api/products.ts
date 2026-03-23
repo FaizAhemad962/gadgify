@@ -7,15 +7,45 @@ import type {
 
 export const productsApi = {
   // ---------------- PUBLIC ----------------
-  getAll: async (): Promise<Product[]> => {
-    const { data } = await apiClient.get("/products");
-    console.log(data);
-    return data.sort((a: Product, b: Product) => {
-      const aHasPrimary = a.media?.some((m) => m.isPrimary);
-      const bHasPrimary = b.media?.some((m) => m.isPrimary);
+  getAll: async (filters?: {
+    search?: string;
+    minPrice?: number;
+    maxPrice?: number;
+    minRating?: number;
+    category?: string;
+    sortBy?: string;
+    page?: number;
+    limit?: number;
+  }): Promise<{
+    products: Product[];
+    total: number;
+    page: number;
+    limit: number;
+  }> => {
+    const params = {
+      search: filters?.search || "",
+      minPrice: filters?.minPrice ?? 0,
+      maxPrice: filters?.maxPrice ?? 100000,
+      minRating: filters?.minRating ?? 0,
+      category: filters?.category || "",
+      sortBy: filters?.sortBy || "popularity",
+      page: filters?.page ?? 1,
+      limit: filters?.limit ?? 12,
+    };
 
-      return Number(bHasPrimary) - Number(aHasPrimary);
-    });
+    const { data } = await apiClient.get("/products", { params });
+    console.log(data);
+
+    // Sort by primary image
+    if (data.products) {
+      data.products.sort((a: Product, b: Product) => {
+        const aHasPrimary = a.media?.some((m) => m.isPrimary);
+        const bHasPrimary = b.media?.some((m) => m.isPrimary);
+        return Number(bHasPrimary) - Number(aHasPrimary);
+      });
+    }
+
+    return data;
   },
 
   getById: async (id: string): Promise<Product> => {

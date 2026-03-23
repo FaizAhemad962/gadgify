@@ -2,6 +2,7 @@ import { Outlet } from "react-router-dom";
 import { Box } from "@mui/material";
 import Navbar from "./Navbar";
 import Footer from "./Footer";
+import PageContainer from "./PageContainer";
 
 const Layout = () => {
   return (
@@ -14,10 +15,11 @@ const Layout = () => {
           display: "flex",
           flexDirection: "column",
           minHeight: "100vh",
-         p:2
         }}
       >
-        <Outlet />
+        <PageContainer>
+          <Outlet />
+        </PageContainer>
       </Box>
       <Footer />
     </Box>

@@ -1,13 +1,12 @@
-import { BrowserRouter } from 'react-router-dom'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { ThemeProvider } from '@mui/material/styles'
-import CssBaseline from '@mui/material/CssBaseline'
-import { theme } from './theme/theme'
-import { AuthProvider } from './context/AuthContext'
-import { CartProvider } from './context/CartContext'
-import { WishlistProvider } from './context/WishlistContext'
-import AppRoutes from './routes/AppRoutes'
-import ScrollToTop from './components/ScrollToTop'
+import { BrowserRouter } from "react-router-dom";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { ThemeContextProvider } from "./context/ThemeContext";
+import { AuthProvider } from "./context/AuthContext";
+import { CartProvider } from "./context/CartContext";
+import { WishlistProvider } from "./context/WishlistContext";
+import { SearchProvider } from "./context/SearchContext";
+import AppRoutes from "./routes/AppRoutes";
+import ScrollToTop from "./components/ScrollToTop";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -17,26 +16,27 @@ const queryClient = new QueryClient({
       staleTime: 5 * 60 * 1000, // 5 minutes
     },
   },
-})
+});
 
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider theme={theme}>
-        <CssBaseline />
+      <ThemeContextProvider>
         <BrowserRouter>
           <ScrollToTop />
           <AuthProvider>
             <CartProvider>
               <WishlistProvider>
-                <AppRoutes />
+                <SearchProvider>
+                  <AppRoutes />
+                </SearchProvider>
               </WishlistProvider>
             </CartProvider>
           </AuthProvider>
         </BrowserRouter>
-      </ThemeProvider>
+      </ThemeContextProvider>
     </QueryClientProvider>
-  )
+  );
 }
 
-export default App
+export default App;

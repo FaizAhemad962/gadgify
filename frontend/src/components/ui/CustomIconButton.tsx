@@ -1,17 +1,13 @@
-import { IconButton, type IconButtonProps } from '@mui/material'
+import { IconButton, type IconButtonProps } from "@mui/material";
 
-interface CustomIconButtonProps extends IconButtonProps {
-  isDarkTheme?: boolean
-}
-
-export const CustomIconButton = ({ isDarkTheme = true, ...props }: CustomIconButtonProps) => {
+export const CustomIconButton = (props: IconButtonProps) => {
   return (
     <IconButton
       {...props}
       sx={{
-        transition: 'all 0.2s',
+        transition: "all 0.2s",
         ...props.sx,
       }}
     />
-  )
-}
+  );
+};

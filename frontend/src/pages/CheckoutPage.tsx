@@ -1,10 +1,10 @@
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { useTranslation } from 'react-i18next'
-import { useMutation } from '@tanstack/react-query'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { useMutation } from "@tanstack/react-query";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import {
   Container,
   Typography,
@@ -14,29 +14,30 @@ import {
   Button,
   Divider,
   Alert,
-} from '@mui/material'
-import { useCart } from '../context/CartContext'
-import { useAuth } from '../context/AuthContext'
-import { ErrorHandler } from '../utils/errorHandler'
-import { ordersApi } from '../api/orders'
+} from "@mui/material";
+import { useCart } from "../context/CartContext";
+import { useAuth } from "../context/AuthContext";
+import { tokens } from "@/theme/theme";
+import { ErrorHandler } from "../utils/errorHandler";
+import { ordersApi } from "../api/orders";
 
 const shippingSchema = z.object({
-  name: z.string().min(2, 'Name is required'),
-  phone: z.string().min(10, 'Valid phone number required'),
-  address: z.string().min(5, 'Address is required'),
-  city: z.string().min(2, 'City is required'),
-  state: z.string().min(2, 'State is required'),
-  pincode: z.string().regex(/^\d{6}$/, 'Valid 6-digit pincode required'),
-})
+  name: z.string().min(2, "Name is required"),
+  phone: z.string().min(10, "Valid phone number required"),
+  address: z.string().min(5, "Address is required"),
+  city: z.string().min(2, "City is required"),
+  state: z.string().min(2, "State is required"),
+  pincode: z.string().regex(/^\d{6}$/, "Valid 6-digit pincode required"),
+});
 
-type ShippingFormData = z.infer<typeof shippingSchema>
+type ShippingFormData = z.infer<typeof shippingSchema>;
 
 const CheckoutPage = () => {
-  const { t } = useTranslation()
-  const navigate = useNavigate()
-  const { cart, clearCart } = useCart()
-  const { user } = useAuth()
-  const [error, setError] = useState('')
+  const { t } = useTranslation();
+  const navigate = useNavigate();
+  const { cart, clearCart } = useCart();
+  const { user } = useAuth();
+  const [error, setError] = useState("");
 
   const {
     register,
@@ -45,28 +46,28 @@ const CheckoutPage = () => {
   } = useForm<ShippingFormData>({
     resolver: zodResolver(shippingSchema),
     defaultValues: {
-      name: user?.name || '',
-      phone: user?.phone || '',
-      address: user?.address || '',
-      city: user?.city || '',
-      state: user?.state || t('states.maharashtra'),
-      pincode: user?.pincode || '',
+      name: user?.name || "",
+      phone: user?.phone || "",
+      address: user?.address || "",
+      city: user?.city || "",
+      state: user?.state || t("states.maharashtra"),
+      pincode: user?.pincode || "",
     },
-  })
+  });
 
   const createOrderMutation = useMutation({
     mutationFn: ordersApi.create,
     onSuccess: async (order) => {
       // Create Razorpay payment
       try {
-        const paymentData = await ordersApi.createPaymentIntent(order.id)
-        
+        const paymentData = await ordersApi.createPaymentIntent(order.id);
+
         const options = {
           key: paymentData.keyId,
           amount: paymentData.amount,
           currency: paymentData.currency,
-          name: 'Gadgify',
-          description: 'Order Payment',
+          name: "Gadgify",
+          description: "Order Payment",
           order_id: paymentData.razorpayOrderId,
           handler: async function (response: any) {
             try {
@@ -74,13 +75,16 @@ const CheckoutPage = () => {
                 razorpay_order_id: response.razorpay_order_id,
                 razorpay_payment_id: response.razorpay_payment_id,
                 razorpay_signature: response.razorpay_signature,
-              })
-              clearCart()
-              navigate(`/orders/${order.id}`)
+              });
+              clearCart();
+              navigate(`/orders/${order.id}`);
             } catch (err) {
-              const message = ErrorHandler.getUserFriendlyMessage(err, t('errors.paymentVerificationFailed'))
-              setError(message)
-              ErrorHandler.logError('Payment verification failed', err)
+              const message = ErrorHandler.getUserFriendlyMessage(
+                err,
+                t("errors.paymentVerificationFailed"),
+              );
+              setError(message);
+              ErrorHandler.logError("Payment verification failed", err);
             }
           },
           prefill: {
@@ -89,53 +93,62 @@ const CheckoutPage = () => {
             contact: user?.phone,
           },
           theme: {
-            color: '#1976d2',
+            color: tokens.primary,
           },
-        }
-        
-        const razorpay = new (window as any).Razorpay(options)
-        razorpay.on('payment.failed', function () {
-          setError(t('errors.paymentFailed'))
-        })
-        razorpay.open()
+        };
+
+        const razorpay = new (window as any).Razorpay(options);
+        razorpay.on("payment.failed", function () {
+          setError(t("errors.paymentFailed"));
+        });
+        razorpay.open();
       } catch (err) {
-        const message = ErrorHandler.getUserFriendlyMessage(err, t('errors.failedToInitiatePayment'))
-        setError(message)
-        ErrorHandler.logError('Payment initiation failed', err)
+        const message = ErrorHandler.getUserFriendlyMessage(
+          err,
+          t("errors.failedToInitiatePayment"),
+        );
+        setError(message);
+        ErrorHandler.logError("Payment initiation failed", err);
       }
     },
     onError: (error: Error) => {
-      const message = ErrorHandler.getUserFriendlyMessage(error, t('errors.somethingWrong'))
-      setError(message)
-      ErrorHandler.logError('Order creation failed', error)
+      const message = ErrorHandler.getUserFriendlyMessage(
+        error,
+        t("errors.somethingWrong"),
+      );
+      setError(message);
+      ErrorHandler.logError("Order creation failed", error);
     },
-  })
+  });
 
   const calculateSubtotal = () => {
-    if (!cart?.items) return 0
-    return cart.items.reduce((sum, item) => sum + item.product.price * item.quantity, 0)
-  }
+    if (!cart?.items) return 0;
+    return cart.items.reduce(
+      (sum, item) => sum + item.product.price * item.quantity,
+      0,
+    );
+  };
 
   const calculateShipping = () => {
     // Fixed shipping rate of ₹50
-    return 50
-  }
+    return 50;
+  };
 
   const onSubmit = async (data: ShippingFormData) => {
     // Check Maharashtra restriction
-    if (data.state.toLowerCase() !== 'maharashtra') {
-      setError(t('errors.maharashtraOnly'))
-      return
+    if (data.state.toLowerCase() !== "maharashtra") {
+      setError(t("errors.maharashtraOnly"));
+      return;
     }
 
     if (!cart?.items || cart.items.length === 0) {
-      setError('Cart is empty')
-      return
+      setError("Cart is empty");
+      return;
     }
 
-    const subtotal = calculateSubtotal()
-    const shipping = calculateShipping()
-    const total = subtotal + shipping
+    const subtotal = calculateSubtotal();
+    const shipping = calculateShipping();
+    const total = subtotal + shipping;
 
     const orderData = {
       items: cart.items.map((item) => ({
@@ -147,149 +160,176 @@ const CheckoutPage = () => {
       shipping,
       total,
       shippingAddress: data,
-    }
+    };
 
-    createOrderMutation.mutate(orderData)
-  }
+    createOrderMutation.mutate(orderData);
+  };
 
   if (!cart?.items || cart.items.length === 0) {
-    navigate('/cart')
-    return null
+    navigate("/cart");
+    return null;
   }
 
-  const subtotal = calculateSubtotal()
-  const shipping = calculateShipping()
-  const total = subtotal + shipping
+  const subtotal = calculateSubtotal();
+  const shipping = calculateShipping();
+  const total = subtotal + shipping;
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
-      <Typography variant="h4" gutterBottom fontWeight="700" sx={{ mb: 4, color: 'text.primary' }}>
-        {t('checkout.title')}
+      <Typography
+        variant="h4"
+        gutterBottom
+        fontWeight="700"
+        sx={{ mb: 4, color: "text.primary" }}
+      >
+        {t("checkout.title")}
       </Typography>
 
       {error && (
-        <Alert severity="error" sx={{ mb: 3 }} onClose={() => setError('')}>
+        <Alert severity="error" sx={{ mb: 3 }} onClose={() => setError("")}>
           {error}
         </Alert>
       )}
 
       <form onSubmit={handleSubmit(onSubmit)}>
-        <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 4 }}>
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: { xs: "column", md: "row" },
+            gap: 4,
+          }}
+        >
           {/* Shipping Form */}
           <Box sx={{ flex: { md: 2 } }}>
-            <Paper sx={{ p: 4, border: '1px solid #eee' }}>
-              <Typography variant="h6" gutterBottom sx={{ fontWeight: 700, mb: 3, color: 'text.primary' }}>
-                📍 {t('checkout.shippingAddress')}
+            <Paper sx={{ p: 4, border: "1px solid #eee" }}>
+              <Typography
+                variant="h6"
+                gutterBottom
+                sx={{ fontWeight: 700, mb: 3, color: "text.primary" }}
+              >
+                📍 {t("checkout.shippingAddress")}
               </Typography>
               <Divider sx={{ mb: 3 }} />
-              
-              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2.5 }}>
-                <Box sx={{ flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 6px)' } }}>
+
+              <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2.5 }}>
+                <Box
+                  sx={{ flex: { xs: "1 1 100%", sm: "1 1 calc(50% - 6px)" } }}
+                >
                   <TextField
                     fullWidth
-                    label={t('auth.name')}
-                    {...register('name')}
+                    label={t("auth.name")}
+                    {...register("name")}
                     error={!!errors.name}
                     helperText={errors.name?.message}
                     variant="outlined"
                     size="small"
                     sx={{
-                      '& .MuiOutlinedInput-root': {
-                        '&:hover fieldset': {
-                          borderColor: '#1976d2',
+                      "& .MuiOutlinedInput-root": {
+                        "&:hover fieldset": {
+                          borderColor: tokens.primary,
                         },
                       },
                     }}
                   />
                 </Box>
-                <Box sx={{ flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 6px)' } }}>
+                <Box
+                  sx={{ flex: { xs: "1 1 100%", sm: "1 1 calc(50% - 6px)" } }}
+                >
                   <TextField
                     fullWidth
-                    label={t('auth.phone')}
-                    {...register('phone')}
+                    label={t("auth.phone")}
+                    {...register("phone")}
                     error={!!errors.phone}
                     helperText={errors.phone?.message}
                     variant="outlined"
                     size="small"
                     sx={{
-                      '& .MuiOutlinedInput-root': {
-                        '&:hover fieldset': {
-                          borderColor: '#1976d2',
+                      "& .MuiOutlinedInput-root": {
+                        "&:hover fieldset": {
+                          borderColor: tokens.primary,
                         },
                       },
                     }}
                   />
                 </Box>
-                <Box sx={{ flex: '1 1 100%' }}>
+                <Box sx={{ flex: "1 1 100%" }}>
                   <TextField
                     fullWidth
                     multiline
                     rows={3}
-                    label={t('auth.address')}
-                    {...register('address')}
+                    label={t("auth.address")}
+                    {...register("address")}
                     error={!!errors.address}
                     helperText={errors.address?.message}
                     variant="outlined"
                     size="small"
                     sx={{
-                      '& .MuiOutlinedInput-root': {
-                        '&:hover fieldset': {
-                          borderColor: '#1976d2',
+                      "& .MuiOutlinedInput-root": {
+                        "&:hover fieldset": {
+                          borderColor: tokens.primary,
                         },
                       },
                     }}
                   />
                 </Box>
-                <Box sx={{ flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 6px)' } }}>
+                <Box
+                  sx={{ flex: { xs: "1 1 100%", sm: "1 1 calc(50% - 6px)" } }}
+                >
                   <TextField
                     fullWidth
-                    label={t('auth.city')}
-                    {...register('city')}
+                    label={t("auth.city")}
+                    {...register("city")}
                     error={!!errors.city}
                     helperText={errors.city?.message}
                     variant="outlined"
                     size="small"
                     sx={{
-                      '& .MuiOutlinedInput-root': {
-                        '&:hover fieldset': {
-                          borderColor: '#1976d2',
+                      "& .MuiOutlinedInput-root": {
+                        "&:hover fieldset": {
+                          borderColor: tokens.primary,
                         },
                       },
                     }}
                   />
                 </Box>
-                <Box sx={{ flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 6px)' } }}>
+                <Box
+                  sx={{ flex: { xs: "1 1 100%", sm: "1 1 calc(50% - 6px)" } }}
+                >
                   <TextField
                     fullWidth
-                    label={t('auth.state')}
-                    {...register('state')}
+                    label={t("auth.state")}
+                    {...register("state")}
                     error={!!errors.state}
-                    helperText={errors.state?.message || t('common.mustBeMaharashtra')}
+                    helperText={
+                      errors.state?.message || t("common.mustBeMaharashtra")
+                    }
                     variant="outlined"
                     size="small"
                     InputProps={{
                       readOnly: true,
                     }}
                     sx={{
-                      '& .MuiOutlinedInput-root': {
-                        backgroundColor: '#f5f5f5',
+                      "& .MuiOutlinedInput-root": {
+                        backgroundColor: tokens.gray50,
                       },
                     }}
                   />
                 </Box>
-                <Box sx={{ flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 6px)' } }}>
+                <Box
+                  sx={{ flex: { xs: "1 1 100%", sm: "1 1 calc(50% - 6px)" } }}
+                >
                   <TextField
                     fullWidth
-                    label={t('auth.pincode')}
-                    {...register('pincode')}
+                    label={t("auth.pincode")}
+                    {...register("pincode")}
                     error={!!errors.pincode}
                     helperText={errors.pincode?.message}
                     variant="outlined"
                     size="small"
                     sx={{
-                      '& .MuiOutlinedInput-root': {
-                        '&:hover fieldset': {
-                          borderColor: '#1976d2',
+                      "& .MuiOutlinedInput-root": {
+                        "&:hover fieldset": {
+                          borderColor: tokens.primary,
                         },
                       },
                     }}
@@ -301,26 +341,65 @@ const CheckoutPage = () => {
 
           {/* Order Summary & Payment */}
           <Box sx={{ flex: { md: 1 } }}>
-            <Paper sx={{ p: 3.5, position: 'sticky', top: 20, border: '1px solid #eee' }}>
-              <Typography variant="h6" gutterBottom sx={{ fontWeight: 700, mb: 2.5, color: 'text.primary' }}>
-                📦 {t('checkout.orderSummary')}
+            <Paper
+              sx={{
+                p: 3.5,
+                position: "sticky",
+                top: 20,
+                border: "1px solid #eee",
+              }}
+            >
+              <Typography
+                variant="h6"
+                gutterBottom
+                sx={{ fontWeight: 700, mb: 2.5, color: "text.primary" }}
+              >
+                📦 {t("checkout.orderSummary")}
               </Typography>
               <Divider sx={{ mb: 2.5 }} />
 
               {/* Cart Items */}
-              <Box sx={{ maxHeight: 300, overflowY: 'auto', mb: 2.5 }}>
+              <Box sx={{ maxHeight: 300, overflowY: "auto", mb: 2.5 }}>
                 {cart.items.map((item) => (
-                  <Box key={item.id} sx={{ mb: 2, pb: 2, borderBottom: '1px solid #f0f0f0' }}>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', gap: 2 }}>
+                  <Box
+                    key={item.id}
+                    sx={{ mb: 2, pb: 2, borderBottom: "1px solid #f0f0f0" }}
+                  >
+                    <Box
+                      sx={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "start",
+                        gap: 2,
+                      }}
+                    >
                       <Box sx={{ flex: 1, minWidth: 0 }}>
-                        <Typography variant="body2" sx={{ fontWeight: 600, color: 'text.primary', mb: 0.5 }}>
+                        <Typography
+                          variant="body2"
+                          sx={{
+                            fontWeight: 600,
+                            color: "text.primary",
+                            mb: 0.5,
+                          }}
+                        >
                           {item.product.name}
                         </Typography>
-                        <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                          Qty: {item.quantity} × ₹{item.product.price.toLocaleString()}
+                        <Typography
+                          variant="caption"
+                          sx={{ color: "text.secondary" }}
+                        >
+                          Qty: {item.quantity} × ₹
+                          {item.product.price.toLocaleString()}
                         </Typography>
                       </Box>
-                      <Typography variant="body2" sx={{ fontWeight: 700, color: 'text.primary', whiteSpace: 'nowrap' }}>
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          fontWeight: 700,
+                          color: "text.primary",
+                          whiteSpace: "nowrap",
+                        }}
+                      >
                         ₹{(item.product.price * item.quantity).toLocaleString()}
                       </Typography>
                     </Box>
@@ -332,40 +411,89 @@ const CheckoutPage = () => {
 
               {/* Price Details */}
               <Box sx={{ mb: 2.5 }}>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1.5, alignItems: 'center' }}>
-                  <Typography sx={{ color: 'text.secondary', fontWeight: 500 }}>{t('cart.subtotal')}</Typography>
-                  <Typography sx={{ fontWeight: 600, color: 'text.primary' }}>₹{subtotal.toLocaleString()}</Typography>
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    mb: 1.5,
+                    alignItems: "center",
+                  }}
+                >
+                  <Typography sx={{ color: "text.secondary", fontWeight: 500 }}>
+                    {t("cart.subtotal")}
+                  </Typography>
+                  <Typography sx={{ fontWeight: 600, color: "text.primary" }}>
+                    ₹{subtotal.toLocaleString()}
+                  </Typography>
                 </Box>
-                
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <Typography sx={{ color: 'text.secondary', fontWeight: 500 }}>{t('checkout.shipping')}</Typography>
-                  <Typography sx={{ fontWeight: 600, color: 'text.primary' }}>₹{shipping.toLocaleString()}</Typography>
+
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                  }}
+                >
+                  <Typography sx={{ color: "text.secondary", fontWeight: 500 }}>
+                    {t("checkout.shipping")}
+                  </Typography>
+                  <Typography sx={{ fontWeight: 600, color: "text.primary" }}>
+                    ₹{shipping.toLocaleString()}
+                  </Typography>
                 </Box>
               </Box>
 
               <Divider sx={{ my: 2.5 }} />
 
               {/* Total */}
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3.5, alignItems: 'center' }}>
-                <Typography variant="h6" sx={{ fontWeight: 700, color: 'text.primary' }}>{t('cart.total')}</Typography>
-                <Typography variant="h5" sx={{ fontWeight: 700, color: 'primary' }}>
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  mb: 3.5,
+                  alignItems: "center",
+                }}
+              >
+                <Typography
+                  variant="h6"
+                  sx={{ fontWeight: 700, color: "text.primary" }}
+                >
+                  {t("cart.total")}
+                </Typography>
+                <Typography
+                  variant="h5"
+                  sx={{ fontWeight: 700, color: "primary" }}
+                >
                   ₹{total.toLocaleString()}
                 </Typography>
               </Box>
 
               {/* Payment Method Info */}
-              <Box sx={{ 
-                p: 2, 
-                bgcolor: '#f0f7ff', 
-                borderLeft: '4px solid #1976d2', 
-                borderRadius: 1, 
-                mb: 3 
-              }}>
-                <Typography variant="caption" sx={{ fontWeight: 600, color: '#1976d2', display: 'block', mb: 0.5 }}>
-                  💳 {t('checkout.paymentMethod')}
+              <Box
+                sx={{
+                  p: 2,
+                  bgcolor: "#f0f7ff",
+                  borderLeft: `4px solid ${tokens.primary}`,
+                  borderRadius: 1,
+                  mb: 3,
+                }}
+              >
+                <Typography
+                  variant="caption"
+                  sx={{
+                    fontWeight: 600,
+                    color: tokens.primary,
+                    display: "block",
+                    mb: 0.5,
+                  }}
+                >
+                  💳 {t("checkout.paymentMethod")}
                 </Typography>
-                <Typography variant="body2" sx={{ color: 'text.secondary', fontSize: '0.85rem' }}>
-                  {t('checkout.paymentMethodInfo')}
+                <Typography
+                  variant="body2"
+                  sx={{ color: "text.secondary", fontSize: "0.85rem" }}
+                >
+                  {t("checkout.paymentMethodInfo")}
                 </Typography>
               </Box>
 
@@ -380,22 +508,29 @@ const CheckoutPage = () => {
                   mb: 2,
                   fontWeight: 700,
                   py: 1.5,
-                  bgcolor: '#ff9800',
-                  '&:hover': {
-                    bgcolor: '#f57c00',
+                  bgcolor: tokens.accent,
+                  "&:hover": {
+                    bgcolor: tokens.accentDark,
                   },
-                  '&:disabled': {
-                    bgcolor: '#ccc',
+                  "&:disabled": {
+                    bgcolor: "#ccc",
                   },
                 }}
               >
-                {createOrderMutation.isPending ? t('common.processingPayment') : `🔒 ${t('common.completeOrderAndPay')}`}
+                {createOrderMutation.isPending
+                  ? t("common.processingPayment")
+                  : `🔒 ${t("common.completeOrderAndPay")}`}
               </Button>
 
               {/* Security Info */}
-              <Box sx={{ textAlign: 'center', pt: 2, borderTop: '1px solid #eee' }}>
-                <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.8rem' }}>
-                  ✓ {t('common.sslSecured')} • ✓ {t('common.encryptedPayment')}
+              <Box
+                sx={{ textAlign: "center", pt: 2, borderTop: "1px solid #eee" }}
+              >
+                <Typography
+                  variant="caption"
+                  sx={{ color: "text.secondary", fontSize: "0.8rem" }}
+                >
+                  ✓ {t("common.sslSecured")} • ✓ {t("common.encryptedPayment")}
                 </Typography>
               </Box>
             </Paper>
@@ -403,7 +538,7 @@ const CheckoutPage = () => {
         </Box>
       </form>
     </Container>
-  )
-}
+  );
+};
 
-export default CheckoutPage
+export default CheckoutPage;

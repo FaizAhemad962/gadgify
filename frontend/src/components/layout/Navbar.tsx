@@ -12,8 +12,10 @@ import {
   Container,
   Button,
   Badge,
-  useMediaQuery,
   Stack,
+  Avatar,
+  ListItemIcon,
+  ListItemText,
 } from "@mui/material";
 
 import BrandIcon from "../../assets/brand-icon.png";
@@ -21,22 +23,23 @@ import BrandIcon from "../../assets/brand-icon.png";
 import {
   Menu as MenuIcon,
   ShoppingCart,
-  AccountCircle,
   Favorite,
   Home,
   ShoppingBagSharp,
   ShoppingBag,
   Settings,
-  ExitToApp,
   Dashboard,
-  ShoppingBasket,
+  Person,
+  Logout,
 } from "@mui/icons-material";
 import { useAuth } from "../../context/AuthContext";
 import { useCart } from "../../context/CartContext";
 import { useWishlist } from "../../context/WishlistContext";
 import LanguageSelector from "../common/LanguageSelector";
-import { theme } from "@/theme/theme";
-import { AppDrawer, type DrawerItem } from "../ui/Drawer";
+import { AppDrawer } from "../ui/Drawer";
+import { tokens } from "@/theme/theme";
+import { useThemeMode } from "@/context/useThemeMode";
+import { DarkMode, LightMode } from "@mui/icons-material";
 
 const Navbar = () => {
   const { t } = useTranslation();
@@ -44,10 +47,8 @@ const Navbar = () => {
   const { isAuthenticated, isAdmin, logout, user } = useAuth();
   const { itemCount } = useCart();
   const { wishlistItems } = useWishlist();
-  // check width using mui breakpoints
-  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const { mode, toggleTheme } = useThemeMode();
 
-  const [anchorElNav] = useState<null | HTMLElement>(null);
   const [anchorElUser, setAnchorElUser] = useState<null | HTMLElement>(null);
 
   const handleOpenUserMenu = (event: React.MouseEvent<HTMLElement>) => {
@@ -64,584 +65,378 @@ const Navbar = () => {
     navigate("/login");
   };
 
-  const drawerItems: DrawerItem[] = [
-    {
-      id: "home",
-      label: t("nav.home"),
-      icon: (
-        <IconButton>
-          <Home />
-        </IconButton>
-      ),
-      position: "center",
-      onClick: () => navigate("/"),
-    } satisfies DrawerItem,
-    ...(isAdmin
-      ? [
-          {
-            id: "adminDashboard",
-            label: "Admin Dashboard",
-            icon: (
-              <IconButton>
-                <Dashboard />
-              </IconButton>
-            ),
-            position: "center",
-            onClick: () => navigate("/admin"),
-          } satisfies DrawerItem,
-          {
-            id: "adminProducts",
-            label: "Manage Products",
-            icon: (
-              <IconButton>
-                <Settings />
-              </IconButton>
-            ),
-            position: "center",
-            onClick: () => navigate("/admin/products"),
-          } satisfies DrawerItem,
-          {
-            id: "admin",
-            label: "Manage Orders",
-            icon: (
-              <IconButton>
-                <Settings />
-              </IconButton>
-            ),
-            position: "center",
-            onClick: () => navigate("/admin/orders"),
-          } satisfies DrawerItem,
-        ]
-      : []),
+  // Unified navigation items
+  const navItems = [
+    { id: "home", label: t("nav.home"), to: "/", icon: <Home /> },
     {
       id: "products",
       label: t("nav.products"),
-      icon: (
-        <IconButton>
-          <ShoppingBag />
-        </IconButton>
-      ),
-      position: "center",
-      onClick: () => navigate("/products"),
-    } satisfies DrawerItem,
+      to: "/products",
+      icon: <ShoppingBag />,
+    },
     ...(isAuthenticated
       ? [
           {
             id: "orders",
-            label: "My Orders",
-            icon: (
-              <IconButton>
-                <ShoppingBagSharp />
-              </IconButton>
-            ),
-            position: "center",
-            onClick: () => navigate("/orders"),
-          } satisfies DrawerItem,
-          {
-            id: "wishlist",
-            label: "My Wishlist",
-            icon: (
-              <IconButton>
-                <Favorite sx={{ fontSize: { xs: "1.3rem", md: "1.5rem" } }} />
-              </IconButton>
-            ),
-            position: "center",
-            onClick: () => navigate("/wishlist"),
-          } satisfies DrawerItem,
-          {
-            id: "cart",
-            label: "My Cart",
-            icon: (
-              <IconButton>
-                <ShoppingCart
-                  sx={{ fontSize: { xs: "1.3rem", md: "1.5rem" } }}
-                />
-              </IconButton>
-            ),
-            position: "center",
-            onClick: () => navigate("/cart"),
-          } satisfies DrawerItem,
+            label: t("nav.orders"),
+            to: "/orders",
+            icon: <ShoppingBagSharp />,
+          },
         ]
-      : [
+      : []),
+    ...(isAdmin
+      ? [
           {
-            id: "login",
-            label: t("nav.login"),
-            icon: (
-              <IconButton>
-                <ExitToApp />
-              </IconButton>
-            ),
-            position: "end",
-            onClick: () => navigate("/login"),
-          } satisfies DrawerItem,
-        ]),
-    {
-      id: "language",
-      label: "",
-      icon: (
-        <Box
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "flex-start",
-          }}
-        >
-          <LanguageSelector bgcolor="" />
-        </Box>
-      ),
-      position: "end",
-      onClick: () => {},
-    },
+            id: "adminDashboard",
+            label: t("nav.adminDashboard", "Dashboard"),
+            to: "/admin",
+            icon: <Dashboard />,
+          },
+          {
+            id: "adminProducts",
+            label: t("nav.adminProducts", "Products"),
+            to: "/admin/products",
+            icon: <Settings />,
+          },
+          {
+            id: "adminOrders",
+            label: t("nav.adminOrders", "Orders"),
+            to: "/admin/orders",
+            icon: <Settings />,
+          },
+        ]
+      : []),
   ];
+
+  // Common button styles for nav links
+  const navBtnSx = {
+    color: "rgba(255,255,255,0.85)",
+    fontWeight: 500,
+    fontSize: "0.875rem",
+    borderRadius: 2,
+    px: 1.5,
+    py: 1,
+    transition: "all 0.2s cubic-bezier(.4,0,.2,1)",
+    "&:hover": {
+      bgcolor: "rgba(255,255,255,0.1)",
+      color: "#fff",
+    },
+  };
+
+  const adminBtnSx = {
+    ...navBtnSx,
+    color: tokens.accent,
+    bgcolor: "rgba(255,255,255,0.95)",
+    fontWeight: 600,
+    "&:hover": {
+      bgcolor: "#fff",
+      color: tokens.accentDark,
+    },
+  };
 
   return (
     <AppBar
       position="sticky"
+      elevation={0}
       sx={{
-        boxShadow: "0 2px 8px rgba(0, 0, 0, 0.15)",
+        bgcolor: tokens.primary,
+        color: "#fff",
         zIndex: 1100,
-        ...(isMobile ? { padding: "8px" } : {}),
       }}
     >
-      <Container maxWidth={false} sx={{ px: { xs: 0.5, sm: 2 } }}>
+      <Container
+        maxWidth={false}
+        sx={{ px: { xs: 2, sm: 3, md: 4 }, maxWidth: 1400, mx: "auto" }}
+      >
         <Toolbar
           disableGutters
           sx={{
             minHeight: { xs: 56, md: 64 },
-            gap: { xs: 0.5, md: 1 },
+            gap: 1,
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
-            flexWrap: "wrap",
           }}
         >
-          <Typography
-            variant="h6"
-            noWrap
-            component={Link}
-            to="/"
-            sx={{
-              mr: 3,
-              display: { xs: "none", md: "flex", alignItems: "center" },
-              fontWeight: 900,
-              fontSize: "1.5rem",
-              color: "inherit",
-              textDecoration: "none",
-              letterSpacing: "0.5px",
-              "&:hover": {
-                opacity: 0.9,
-              },
-            }}
+          {/* ── Brand ── */}
+          <Box
+            sx={{ display: "flex", alignItems: "center", mr: { xs: 0, md: 3 } }}
           >
-            <img alt="gadgify" height={130} width={100} src={BrandIcon} />{" "}
-          </Typography>
+            <Link
+              to="/"
+              style={{
+                display: "flex",
+                alignItems: "center",
+                textDecoration: "none",
+              }}
+            >
+              <img
+                alt="Gadgify"
+                height={40}
+                width={40}
+                src={BrandIcon}
+                style={{ marginRight: 10 }}
+              />
+              <Typography
+                variant="h6"
+                sx={{
+                  fontWeight: 800,
+                  fontSize: "1.25rem",
+                  color: "#fff",
+                  letterSpacing: "-0.02em",
+                  display: { xs: "none", sm: "block" },
+                }}
+              >
+                Gadgify
+              </Typography>
+            </Link>
+          </Box>
 
-          {/* Mobile menu */}
-          <Box sx={{ display: { xs: "flex", md: "none" } }}>
+          {/* ── Mobile menu ── */}
+          <Box sx={{ display: { xs: "flex", md: "none" }, ml: "auto" }}>
             <AppDrawer
-              items={drawerItems}
+              items={navItems}
               trigger={
-                <IconButton size="small" aria-label="menu">
+                <IconButton size="small" aria-label="Open navigation menu">
                   <MenuIcon sx={{ fontSize: "1.5rem", color: "white" }} />
                 </IconButton>
               }
             />
-            <Menu
-              disableScrollLock
-              anchorEl={anchorElNav}
-              anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
-              keepMounted
-              transformOrigin={{ vertical: "top", horizontal: "left" }}
-              open={Boolean(anchorElNav)}
-              sx={{ display: { xs: "block", md: "none" } }}
-            />
           </Box>
 
+          {/* ── Desktop nav links ── */}
           <Box
             sx={{ flexGrow: 1, display: { xs: "none", md: "flex" }, gap: 0.5 }}
           >
-            <Button
-              onClick={() => navigate("/")}
-              sx={{
-                py: 2,
-                color: "white",
-                display: "flex",
-                alignItems: "center",
-                gap: 1,
-                fontWeight: 600,
-                fontSize: "0.95rem",
-                transition: "all 0.3s",
-                position: "relative",
-                "&:hover": {
-                  color: "#fff",
-                  "&::after": {
-                    width: "100%",
-                  },
-                },
-                "&::after": {
-                  content: '""',
-                  position: "absolute",
-                  bottom: 10,
-                  left: 0,
-                  width: 0,
-                  height: 3,
-                  bgcolor: "#ff9800",
-                  borderRadius: "2px",
-                  transition: "width 0.3s",
-                },
-              }}
-            >
-              <Home /> {t("nav.home")}
-            </Button>
-            <Button
-              onClick={() => navigate("/products")}
-              sx={{
-                py: 2,
-                color: "white",
-                display: "flex",
-                alignItems: "center",
-                gap: 1,
-                fontWeight: 600,
-                fontSize: "0.95rem",
-                transition: "all 0.3s",
-                position: "relative",
-                "&:hover": {
-                  color: "#fff",
-                  "&::after": {
-                    width: "100%",
-                  },
-                },
-                "&::after": {
-                  content: '""',
-                  position: "absolute",
-                  bottom: 10,
-                  left: 0,
-                  width: 0,
-                  height: 3,
-                  bgcolor: "#ff9800",
-                  borderRadius: "2px",
-                  transition: "width 0.3s",
-                },
-              }}
-            >
-              <ShoppingBasket /> {t("nav.products")}
-            </Button>
-            {isAuthenticated && (
-              <Button
-                onClick={() => navigate("/orders")}
-                sx={{
-                  py: 2,
-                  color: "white",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 1,
-                  fontWeight: 600,
-                  fontSize: "0.95rem",
-                  transition: "all 0.3s",
-                  position: "relative",
-                  "&:hover": {
-                    color: "#fff",
-                    "&::after": {
-                      width: "100%",
-                    },
-                  },
-                  "&::after": {
-                    content: '""',
-                    position: "absolute",
-                    bottom: 10,
-                    left: 0,
-                    width: 0,
-                    height: 3,
-                    bgcolor: "#ff9800",
-                    borderRadius: "2px",
-                    transition: "width 0.3s",
-                  },
-                }}
-              >
-                <ShoppingBag /> {t("nav.orders")}
-              </Button>
-            )}
+            {navItems
+              .filter((item) => !item.id.startsWith("admin"))
+              .map((item) => (
+                <Button
+                  key={item.id}
+                  onClick={() => navigate(item.to)}
+                  aria-label={item.label}
+                  startIcon={item.icon}
+                  sx={navBtnSx}
+                >
+                  {item.label}
+                </Button>
+              ))}
+
+            {/* Admin links with visual distinction */}
             {isAdmin && (
-              <>
-                <Button
-                  onClick={() => navigate("/admin")}
-                  sx={{
-                    py: 2,
-                    color: "white",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 1,
-                    fontWeight: 600,
-                    fontSize: "0.95rem",
-                    transition: "all 0.3s",
-                    position: "relative",
-                    "&:hover": {
-                      color: "#fff",
-                      "&::after": {
-                        width: "100%",
-                      },
-                    },
-                    "&::after": {
-                      content: '""',
-                      position: "absolute",
-                      bottom: 10,
-                      left: 0,
-                      width: 0,
-                      height: 3,
-                      bgcolor: "#ff9800",
-                      borderRadius: "2px",
-                      transition: "width 0.3s",
-                    },
-                  }}
-                >
-                  <Dashboard /> Admin Dashboard
-                </Button>
-
-                <Button
-                  onClick={() => navigate("/admin/products")}
-                  sx={{
-                    py: 2,
-                    color: "white",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 1,
-                    fontWeight: 600,
-                    fontSize: "0.95rem",
-                    transition: "all 0.3s",
-                    position: "relative",
-                    "&:hover": {
-                      color: "#fff",
-                      "&::after": {
-                        width: "100%",
-                      },
-                    },
-                    "&::after": {
-                      content: '""',
-                      position: "absolute",
-                      bottom: 10,
-                      left: 0,
-                      width: 0,
-                      height: 3,
-                      bgcolor: "#ff9800",
-                      borderRadius: "2px",
-                      transition: "width 0.3s",
-                    },
-                  }}
-                >
-                  <Settings /> Manage Products
-                </Button>
-
-                <Button
-                  onClick={() => navigate("/admin/orders")}
-                  sx={{
-                    py: 2,
-                    color: "white",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 1,
-                    fontWeight: 600,
-                    fontSize: "0.95rem",
-                    transition: "all 0.3s",
-                    position: "relative",
-                    "&:hover": {
-                      color: "#fff",
-                      "&::after": {
-                        width: "100%",
-                      },
-                    },
-                    "&::after": {
-                      content: '""',
-                      position: "absolute",
-                      bottom: 10,
-                      left: 0,
-                      width: 0,
-                      height: 3,
-                      bgcolor: "#ff9800",
-                      borderRadius: "2px",
-                      transition: "width 0.3s",
-                    },
-                  }}
-                >
-                  <Settings /> Manage Orders
-                </Button>
-              </>
+              <Box
+                sx={{
+                  display: "flex",
+                  gap: 0.5,
+                  ml: 1.5,
+                  pl: 1.5,
+                  borderLeft: "1px solid rgba(255,255,255,0.15)",
+                }}
+              >
+                {navItems
+                  .filter((item) => item.id.startsWith("admin"))
+                  .map((item) => (
+                    <Button
+                      key={item.id}
+                      onClick={() => navigate(item.to)}
+                      aria-label={item.label}
+                      startIcon={item.icon}
+                      size="small"
+                      sx={adminBtnSx}
+                    >
+                      {item.label}
+                    </Button>
+                  ))}
+              </Box>
             )}
           </Box>
-          <Box
-            sx={{
-              gap: 1,
-              color: "#fff",
-              fontWeight: 100,
-              display: { xs: "none", md: "flex" },
-            }}
-          >
-            <LanguageSelector color="white" bgcolor="" />
-          </Box>
 
-          {isAuthenticated && (
-            <Stack direction="row" gap={2}>
-              <IconButton
-                size="small"
-                onClick={() => navigate("/wishlist")}
-                color="inherit"
-                sx={{
-                  transition: "all 0.3s",
-                  "&:hover": {
-                    transform: "scale(1.1)",
-                    bgcolor: "rgba(255, 255, 255, 0.1)",
-                  },
-                }}
-              >
-                <Badge
-                  badgeContent={wishlistItems.length}
-                  color="error"
+          {/* ── Right actions ── */}
+          <Stack direction="row" alignItems="center" gap={0.5}>
+            {/* Language selector — desktop only */}
+            <Box sx={{ display: { xs: "none", md: "flex" } }}>
+              <LanguageSelector color="#fff" bgcolor={tokens.primary} />
+            </Box>
+
+            {/* Dark mode toggle */}
+            <IconButton
+              size="small"
+              onClick={toggleTheme}
+              color="inherit"
+              aria-label="Toggle dark mode"
+              sx={{ ml: 0.5 }}
+            >
+              {mode === "dark" ? (
+                <LightMode sx={{ fontSize: 20 }} />
+              ) : (
+                <DarkMode sx={{ fontSize: 20 }} />
+              )}
+            </IconButton>
+
+            {isAuthenticated ? (
+              <>
+                {/* Wishlist */}
+                <IconButton
+                  size="small"
+                  onClick={() => navigate("/wishlist")}
+                  color="inherit"
+                  aria-label="Wishlist"
                   sx={{
-                    "& .MuiBadge-badge": {
-                      fontWeight: 700,
-                      fontSize: "0.65rem",
+                    transition: "all 0.2s",
+                    "&:hover": {
+                      bgcolor: "rgba(255,255,255,0.1)",
+                      transform: "scale(1.08)",
                     },
                   }}
                 >
-                  <Favorite sx={{ fontSize: { xs: "1.3rem", md: "1.5rem" } }} />
-                </Badge>
-              </IconButton>
+                  <Badge badgeContent={wishlistItems.length} color="error">
+                    <Favorite sx={{ fontSize: "1.35rem" }} />
+                  </Badge>
+                </IconButton>
 
-              <IconButton
-                size="small"
-                onClick={() => navigate("/cart")}
-                color="inherit"
-                sx={{
-                  transition: "all 0.3s",
-                  "&:hover": {
-                    transform: "scale(1.1)",
-                    bgcolor: "rgba(255, 255, 255, 0.1)",
-                  },
-                }}
-              >
-                <Badge
-                  badgeContent={itemCount}
-                  color="error"
+                {/* Cart */}
+                <IconButton
+                  size="small"
+                  onClick={() => navigate("/cart")}
+                  color="inherit"
+                  aria-label="Shopping cart"
                   sx={{
-                    "& .MuiBadge-badge": {
-                      fontWeight: 700,
-                      fontSize: "0.65rem",
+                    transition: "all 0.2s",
+                    "&:hover": {
+                      bgcolor: "rgba(255,255,255,0.1)",
+                      transform: "scale(1.08)",
                     },
                   }}
                 >
-                  <ShoppingCart
-                    sx={{ fontSize: { xs: "1.3rem", md: "1.5rem" } }}
-                  />
-                </Badge>
-              </IconButton>
-              <Box>
+                  <Badge badgeContent={itemCount} color="error">
+                    <ShoppingCart sx={{ fontSize: "1.35rem" }} />
+                  </Badge>
+                </IconButton>
+
+                {/* User avatar / menu trigger */}
                 <IconButton
                   size="small"
                   onClick={handleOpenUserMenu}
-                  color="inherit"
+                  aria-label="Account menu"
                   sx={{
-                    transition: "all 0.3s",
-                    "&:hover": {
-                      bgcolor: "rgba(255, 255, 255, 0.1)",
-                    },
+                    ml: 0.5,
+                    transition: "all 0.2s",
+                    "&:hover": { bgcolor: "rgba(255,255,255,0.1)" },
                   }}
                 >
-                  <AccountCircle
-                    sx={{ fontSize: { xs: "1.3rem", md: "1.5rem" } }}
-                  />
+                  <Avatar
+                    sx={{
+                      width: 32,
+                      height: 32,
+                      bgcolor: tokens.accent,
+                      fontSize: "0.85rem",
+                      fontWeight: 700,
+                    }}
+                  >
+                    {user?.name?.charAt(0)?.toUpperCase() || "U"}
+                  </Avatar>
                 </IconButton>
+
+                {/* User dropdown menu */}
                 <Menu
-                  disableScrollLock
                   anchorEl={anchorElUser}
-                  anchorOrigin={{ vertical: "top", horizontal: "right" }}
-                  keepMounted
-                  transformOrigin={{ vertical: "top", horizontal: "right" }}
                   open={Boolean(anchorElUser)}
                   onClose={handleCloseUserMenu}
-                  sx={{
-                    "& .MuiPaper-root": {
-                      borderRadius: 1.5,
-                      boxShadow: "0 4px 16px rgba(0, 0, 0, 0.15)",
-                      mt: 0.5,
-                      zIndex: 1301,
+                  transformOrigin={{ horizontal: "right", vertical: "top" }}
+                  anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
+                  slotProps={{
+                    paper: {
+                      sx: {
+                        borderRadius: 3,
+                        boxShadow: "0 10px 40px rgba(0,0,0,0.12)",
+                        mt: 1,
+                        minWidth: 200,
+                        border: `1px solid ${tokens.gray200}`,
+                      },
                     },
                   }}
                 >
-                  <MenuItem disabled sx={{ bgcolor: "#f5f5f5" }}>
+                  <Box
+                    sx={{
+                      px: 2,
+                      py: 1.5,
+                      borderBottom: `1px solid ${tokens.gray200}`,
+                    }}
+                  >
                     <Typography
-                      textAlign="center"
-                      sx={{
-                        fontWeight: 700,
-                        color: "text.primary",
-                        fontSize: "0.9rem",
-                      }}
+                      variant="body2"
+                      fontWeight={700}
+                      color="text.primary"
                     >
-                      👤 {user?.name}
+                      {user?.name}
                     </Typography>
-                  </MenuItem>
+                    <Typography variant="caption" color="text.secondary">
+                      {user?.email || ""}
+                    </Typography>
+                  </Box>
                   <MenuItem
                     onClick={() => {
                       handleCloseUserMenu();
                       navigate("/profile");
                     }}
-                    sx={{ fontWeight: 600, py: 1 }}
+                    sx={{ py: 1.25 }}
                   >
-                    <Typography textAlign="center" sx={{ fontSize: "0.9rem" }}>
-                      👁️ {t("nav.profile")}
-                    </Typography>
+                    <ListItemIcon>
+                      <Person fontSize="small" />
+                    </ListItemIcon>
+                    <ListItemText>{t("nav.profile")}</ListItemText>
                   </MenuItem>
                   <MenuItem
                     onClick={handleLogout}
-                    sx={{ fontWeight: 600, color: "#d32f2f", py: 1 }}
+                    sx={{ py: 1.25, color: tokens.error }}
                   >
-                    <Typography textAlign="center" sx={{ fontSize: "0.9rem" }}>
-                      🚪 {t("nav.logout")}
-                    </Typography>
+                    <ListItemIcon>
+                      <Logout fontSize="small" sx={{ color: tokens.error }} />
+                    </ListItemIcon>
+                    <ListItemText>{t("nav.logout")}</ListItemText>
                   </MenuItem>
                 </Menu>
-              </Box>
-            </Stack>
-          )}
-          {!isAuthenticated && (
-            <>
-              <Button
-                onClick={() => navigate("/login")}
-                size="small"
-                sx={{
-                  color: "white",
-                  fontWeight: 700,
-                  fontSize: { xs: "0.75rem", md: "1rem" },
-                  px: { xs: 0.75, md: 1.5 },
-                  py: { xs: 0.5, md: 1 },
-                  transition: "all 0.3s",
-                  "&:hover": {
-                    bgcolor: "rgba(255, 255, 255, 0.1)",
-                  },
-                }}
-              >
-                {t("nav.login")}
-              </Button>
-              <Button
-                onClick={() => navigate("/signup")}
-                size="small"
-                sx={{
-                  color: "white",
-                  bgcolor: "#ff9800",
-                  fontWeight: 700,
-                  fontSize: { xs: "0.75rem", md: "1rem" },
-                  borderRadius: 1,
-                  px: { xs: 0.75, md: 2 },
-                  py: { xs: 0.5, md: 1 },
-                  transition: "all 0.3s",
-                  "&:hover": {
-                    bgcolor: "#f57c00",
-                    transform: "translateY(-2px)",
-                  },
-                }}
-              >
-                {t("nav.signup")}
-              </Button>
-            </>
-          )}
+              </>
+            ) : (
+              /* ── Logged-out CTA buttons ── */
+              <Stack direction="row" gap={1} sx={{ ml: 1 }}>
+                <Button
+                  onClick={() => navigate("/login")}
+                  size="small"
+                  sx={{
+                    color: "rgba(255,255,255,0.9)",
+                    fontWeight: 600,
+                    fontSize: "0.8125rem",
+                    "&:hover": {
+                      bgcolor: "rgba(255,255,255,0.1)",
+                      color: "#fff",
+                    },
+                  }}
+                >
+                  {t("nav.login")}
+                </Button>
+                <Button
+                  onClick={() => navigate("/signup")}
+                  size="small"
+                  variant="contained"
+                  sx={{
+                    bgcolor: tokens.accent,
+                    color: "#fff",
+                    fontWeight: 700,
+                    fontSize: "0.8125rem",
+                    borderRadius: 2,
+                    px: 2.5,
+                    "&:hover": {
+                      bgcolor: tokens.accentDark,
+                      boxShadow: "0 4px 14px rgba(255,107,44,0.35)",
+                    },
+                  }}
+                >
+                  {t("nav.signup")}
+                </Button>
+              </Stack>
+            )}
+          </Stack>
         </Toolbar>
       </Container>
     </AppBar>

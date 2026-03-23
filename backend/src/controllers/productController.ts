@@ -7,9 +7,62 @@ export const getAllProducts = async (
   next: NextFunction,
 ): Promise<void> => {
   try {
+    // Extract query parameters for filtering and sorting
+    const {
+      search = "",
+      minPrice = 0,
+      maxPrice = 100000,
+      minRating = 0,
+      category = "",
+      sortBy = "popularity",
+      page = 1,
+      limit = 12,
+    } = req.query;
+
+    const skip = (parseInt(page as string) - 1) * parseInt(limit as string);
+    const pageLimit = parseInt(limit as string);
+
+    // Build where clause for filtering
+    const whereClause: any = {
+      deletedAt: null,
+      price: {
+        gte: parseInt(minPrice as string),
+        lte: parseInt(maxPrice as string),
+      },
+    };
+
+    // Add search filter if provided - use AND with other filters
+    if (search) {
+      whereClause.AND = [
+        {
+          OR: [
+            { name: { contains: search as string, mode: "insensitive" } },
+            {
+              description: { contains: search as string, mode: "insensitive" },
+            },
+            { category: { contains: search as string, mode: "insensitive" } },
+          ],
+        },
+      ];
+    }
+
+    // Add category filter if provided
+    if (category) {
+      if (whereClause.AND) {
+        whereClause.AND.push({
+          category: { contains: category as string, mode: "insensitive" },
+        });
+      } else {
+        whereClause.category = {
+          contains: category as string,
+          mode: "insensitive",
+        };
+      }
+    }
+
+    // Fetch products with filters
     const products = await prisma.product.findMany({
-      where: { deletedAt: null } as any,
-      orderBy: { createdAt: "desc" },
+      where: whereClause,
       include: {
         ratings: {
           select: {
@@ -18,10 +71,12 @@ export const getAllProducts = async (
         },
         media: true,
       },
+      skip,
+      take: pageLimit,
     });
 
-    // Calculate average rating for each product
-    const productsWithRatings = (products as any[]).map((product) => {
+    // Calculate average rating and filter by minimum rating
+    let productsWithRatings = (products as any[]).map((product) => {
       const ratings = product.ratings;
       const averageRating =
         ratings.length > 0
@@ -40,7 +95,44 @@ export const getAllProducts = async (
       };
     });
 
-    res.json(productsWithRatings);
+    // Filter by minimum rating
+    if (parseInt(minRating as string) > 0) {
+      productsWithRatings = productsWithRatings.filter(
+        (p) => p.averageRating >= parseInt(minRating as string),
+      );
+    }
+
+    // Sort products based on sortBy parameter
+    productsWithRatings.sort((a, b) => {
+      switch (sortBy) {
+        case "price-low":
+          return a.price - b.price;
+        case "price-high":
+          return b.price - a.price;
+        case "rating":
+          return b.averageRating - a.averageRating;
+        case "newest":
+          return (
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          );
+        case "popularity":
+        default:
+          // Sort by total ratings as a proxy for popularity
+          return b.totalRatings - a.totalRatings;
+      }
+    });
+
+    // Get total count for pagination
+    const total = await prisma.product.count({
+      where: whereClause,
+    });
+
+    res.json({
+      products: productsWithRatings,
+      total,
+      page: parseInt(page as string),
+      limit: pageLimit,
+    });
   } catch (error) {
     next(error);
   }

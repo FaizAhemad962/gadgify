@@ -5,21 +5,20 @@ import {
   DialogContent,
   DialogActions,
   Box,
-} from '@mui/material'
+} from "@mui/material";
+import { tokens } from "@/theme/theme";
 
-interface CustomDialogProps extends Omit<DialogProps, 'children'> {
-  title: string
-  contentNode: React.ReactNode
-  actions?: React.ReactNode
-  isDarkTheme?: boolean
-  onClose: () => void
+interface CustomDialogProps extends Omit<DialogProps, "children"> {
+  title: string;
+  contentNode: React.ReactNode;
+  actions?: React.ReactNode;
+  onClose: () => void;
 }
 
 export const CustomDialog = ({
   title,
   contentNode,
   actions,
-  isDarkTheme = false,
   onClose,
   ...props
 }: CustomDialogProps) => {
@@ -29,39 +28,35 @@ export const CustomDialog = ({
       onClose={onClose}
       PaperProps={{
         sx: {
-          bgcolor: isDarkTheme ? '#242628' : '#ffffff',
-          backgroundImage: 'none',
-          border: isDarkTheme ? '1px solid #3a3a3a' : '1px solid #e0e0e0',
-          borderRadius: '12px',
+          bgcolor: tokens.white,
+          backgroundImage: "none",
+          border: `1px solid ${tokens.gray200}`,
+          borderRadius: 3,
         },
       }}
     >
       <DialogTitle
         sx={{
-          color: isDarkTheme ? '#ff9800' : '#1976d2',
-          fontWeight: '600',
-          borderBottom: isDarkTheme ? '1px solid #3a3a3a' : '1px solid #e0e0e0',
-          fontSize: '1.3rem',
+          color: tokens.primary,
+          fontWeight: 600,
+          borderBottom: `1px solid ${tokens.gray200}`,
+          fontSize: "1.25rem",
         }}
       >
         {title}
       </DialogTitle>
       <DialogContent
         sx={{
-          bgcolor: isDarkTheme ? '#242628' : '#ffffff',
-          backgroundImage: 'none',
-          color: isDarkTheme ? '#b0b0b0' : '#000000',
+          bgcolor: tokens.white,
+          backgroundImage: "none",
         }}
       >
-        <Box sx={{ mt: 2 }}>
-          {contentNode}
-        </Box>
+        <Box sx={{ mt: 2 }}>{contentNode}</Box>
       </DialogContent>
       {actions && (
         <DialogActions
           sx={{
-            bgcolor: isDarkTheme ? '#242628' : '#ffffff',
-            borderTop: isDarkTheme ? '1px solid #3a3a3a' : '1px solid #e0e0e0',
+            borderTop: `1px solid ${tokens.gray200}`,
             p: 2,
             gap: 1,
           }}
@@ -70,5 +65,5 @@ export const CustomDialog = ({
         </DialogActions>
       )}
     </Dialog>
-  )
-}
+  );
+};

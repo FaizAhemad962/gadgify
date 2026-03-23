@@ -308,11 +308,26 @@ const products = [
   },
 ];
 
-  const createdProducts = await prisma.product.createMany({
-    data: products,
-  })
+  const createdProducts = await Promise.all(
+    products.map((product) =>
+      prisma.product.create({
+        data: {
+          ...product,
+          media: {
+            create: [
+              {
+                url: '/uploads/product-1767471801486-579409941.jpeg',
+                type: 'image',
+                isPrimary: true,
+              },
+            ],
+          },
+        },
+      })
+    )
+  )
 
-  console.log(`✅ Created ${createdProducts.count} products`)
+  console.log(`✅ Created ${createdProducts.length} products with images`)
 
   // Create sample users - 3 regular users and 1 admin
   console.log('👥 Adding sample users...')
@@ -389,20 +404,12 @@ const products = [
 
   console.log('🎉 Seeding completed!')
   console.log('📊 Summary:')
-  console.log(`   - Products: ${createdProducts.count}`)
-  // console.log(`   - Users: ${createdUsers.count} (3 regular users + 1 admin)`)
-  console.log(`   - Categories: 10 (Home & Kitchen, Electronics, Beauty & Personal Care, Office & Storage, Sports & Outdoor, Jewelry & Accessories, Toys, Tools & Hardware, Lighting)`)
+  console.log(`   - Products: ${createdProducts.length} (with images)`)
+  console.log(`   - Images added: 1 primary image per product`)
+  console.log(`   - Categories: 15+ (Accessories, Travel, Bags, Home Utility, Personal Care, Electronics, Home Gadgets, Kitchen, Storage, Toys & Collectibles, Stationery, Tools, Eco Products, Cleaning, Footwear Care, Baby Care, Travel Accessories)`)
+  console.log('🖼️  Product images linked from: /uploads/product-*.jpeg')
   console.log('ℹ️  Admin login: admin@example.com / hashedPassword123')
 }
-
-seed()
-  .catch((e) => {
-    console.error('❌ Seeding error:', e)
-    process.exit(1)
-  })
-  .finally(async () => {
-    await prisma.$disconnect()
-  })
 
 seed()
   .catch((e) => {

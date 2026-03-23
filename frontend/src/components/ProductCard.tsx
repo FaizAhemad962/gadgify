@@ -13,6 +13,7 @@ import {
 import { ShoppingCart, Favorite, FavoriteBorder } from "@mui/icons-material";
 import LazyImage from "../components/common/LazyImage";
 import { StarRating } from "../components/common/StarRating";
+import { tokens } from "@/theme/theme";
 
 interface ProductMedia {
   url: string;
@@ -43,6 +44,15 @@ const ProductCard: React.FC<ProductCardProps> = ({
   t,
   isAddingToCart = false,
 }) => {
+  // Calculate discount percentage
+  const discountPercent =
+    product.originalPrice && product.originalPrice > product.price
+      ? Math.round(
+          ((product.originalPrice - product.price) / product.originalPrice) *
+            100,
+        )
+      : 0;
+
   return (
     <Card
       sx={{
@@ -50,24 +60,28 @@ const ProductCard: React.FC<ProductCardProps> = ({
         flexDirection: "column",
         overflow: "hidden",
         height: "100%",
-        border: "1px solid #eee",
-        transition: "all 0.3s ease",
+        border: `1px solid ${tokens.gray200}`,
+        borderRadius: 4,
+        transition: "all 0.25s cubic-bezier(.4,0,.2,1)",
         position: "relative",
+        bgcolor: tokens.white,
         "&:hover": {
-          boxShadow: "0 8px 24px rgba(0, 0, 0, 0.12)",
-          transform: "translateY(-4px)",
+          boxShadow: "0 12px 32px rgba(0,0,0,0.1)",
+          transform: "translateY(-6px)",
+          borderColor: tokens.gray300,
         },
       }}
     >
-      {/* Product Image */}
+      {/* Product Image Container */}
       <Box
         sx={{
+          position: "relative",
           cursor: "pointer",
-          m: 0,
+          overflow: "hidden",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          overflow: "hidden",
+          bgcolor: tokens.gray50,
         }}
         onClick={() => onNavigate(product.id)}
       >
@@ -75,7 +89,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
           src={
             (product.media &&
               product.media.find(
-                (m: ProductMedia) => m.type === "image" && m.isPrimary
+                (m: ProductMedia) => m.type === "image" && m.isPrimary,
               )?.url) ||
             (product.media &&
               product.media.find((m: ProductMedia) => m.type === "image")
@@ -86,176 +100,216 @@ const ProductCard: React.FC<ProductCardProps> = ({
           height={320}
           objectFit="cover"
         />
+
+        {/* Discount badge */}
+        {discountPercent > 0 && (
+          <Chip
+            label={`${discountPercent}% OFF`}
+            size="small"
+            sx={{
+              position: "absolute",
+              top: 12,
+              left: 12,
+              bgcolor: tokens.error,
+              color: "#fff",
+              fontWeight: 700,
+              fontSize: "0.7rem",
+              height: 24,
+              borderRadius: 1.5,
+            }}
+          />
+        )}
+
+        {/* Wishlist toggle */}
+        <IconButton
+          aria-label={
+            isInWishlist(product.id)
+              ? t("products.removeFromWishlist")
+              : t("products.addToWishlist")
+          }
+          onClick={async (e) => {
+            e.stopPropagation();
+            await toggleWishlist(product.id);
+          }}
+          disabled={isToggling(product.id)}
+          sx={{
+            position: "absolute",
+            top: 10,
+            right: 10,
+            bgcolor: "rgba(255,255,255,0.9)",
+            backdropFilter: "blur(4px)",
+            boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+            p: 1,
+            transition: "all 0.2s",
+            "&:hover": { bgcolor: "#fff", transform: "scale(1.1)" },
+          }}
+        >
+          {isToggling(product.id) ? (
+            <CircularProgress size={18} color="inherit" />
+          ) : isInWishlist(product.id) ? (
+            <Favorite sx={{ fontSize: 20, color: tokens.error }} />
+          ) : (
+            <FavoriteBorder sx={{ fontSize: 20, color: tokens.gray500 }} />
+          )}
+        </IconButton>
       </Box>
+
+      {/* Content */}
       <CardContent
         sx={{
           flexGrow: 1,
           display: "flex",
           flexDirection: "column",
-          gap: 2,
+          gap: 1,
+          p: 2,
         }}
       >
-        <Box
-          onClick={() => onNavigate(product.id)}
-          sx={{
-            cursor: "pointer",
-            transition: "opacity 0.2s",
-            "&:hover": { opacity: 0.7 },
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            gap: 4,
-          }}
-        >
-          <Typography
-            variant="h6"
-            sx={{
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-              display: "-webkit-box",
-              WebkitLineClamp: 2,
-              WebkitBoxOrient: "vertical",
-              fontWeight: 700,
-              color: "text.primary",
-              lineHeight: 1.4,
-            }}
-          >
-            {product.name}
-          </Typography>
-          <IconButton
-            aria-label={
-              isInWishlist(product.id)
-                ? t("products.removeFromWishlist")
-                : t("products.addToWishlist")
-            }
-            onClick={async (e) => {
-              e.stopPropagation();
-              await toggleWishlist(product.id);
-            }}
-            disabled={isToggling(product.id)}
-            color={isInWishlist(product.id) ? "error" : "default"}
-            size="large"
-          >
-            {isToggling(product.id) ? (
-              <CircularProgress size={24} color="inherit" />
-            ) : isInWishlist(product.id) ? (
-              <Favorite />
-            ) : (
-              <FavoriteBorder />
-            )}
-          </IconButton>
-        </Box>
+        {/* Title */}
         <Typography
-          variant="body2"
-          color="text.secondary"
+          onClick={() => onNavigate(product.id)}
           sx={{
             overflow: "hidden",
             textOverflow: "ellipsis",
             display: "-webkit-box",
             WebkitLineClamp: 2,
             WebkitBoxOrient: "vertical",
-            lineHeight: 1.6,
-            fontSize: "0.9rem",
+            fontWeight: 600,
+            fontSize: "0.9375rem",
+            color: tokens.gray900,
+            lineHeight: 1.4,
+            cursor: "pointer",
+            transition: "color 0.15s",
+            "&:hover": { color: tokens.accent },
           }}
         >
-          {product.description}
+          {product.name}
         </Typography>
-        <Box
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            gap: 1,
-          }}
-        >
+
+        {/* Rating */}
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
           <StarRating
             rating={product.averageRating || 0}
             totalRatings={product.totalRatings}
             size="small"
           />
+          <Typography variant="caption" color="text.secondary">
+            {product.totalRatings > 0
+              ? `(${product.totalRatings})`
+              : "No reviews"}
+          </Typography>
+        </Box>
+
+        {/* Price */}
+        <Box sx={{ display: "flex", alignItems: "baseline", gap: 1, mt: 0.5 }}>
+          <Typography
+            sx={{ fontSize: "1.25rem", fontWeight: 800, color: tokens.gray900 }}
+          >
+            ₹{product.price.toLocaleString()}
+          </Typography>
+          {product.originalPrice && product.originalPrice > product.price && (
+            <Typography
+              variant="body2"
+              sx={{ textDecoration: "line-through", color: tokens.gray400 }}
+            >
+              ₹{product.originalPrice.toLocaleString()}
+            </Typography>
+          )}
+        </Box>
+
+        {/* Stock chip */}
+        <Box sx={{ mt: "auto", pt: 0.5 }}>
           {product.stock > 0 ? (
             <Chip
-              label={t("products.stock")}
-              sx={{
-                bgcolor: "#4caf50",
-                color: "white",
-                fontWeight: 600,
-                height: 28,
-                width: 100,
-              }}
+              label={
+                product.stock > 10 ? "In Stock" : `Only ${product.stock} left`
+              }
               size="small"
+              sx={{
+                bgcolor:
+                  product.stock > 10
+                    ? tokens.successLight
+                    : tokens.warningLight,
+                color: product.stock > 10 ? tokens.success : tokens.warning,
+                fontWeight: 600,
+                fontSize: "0.7rem",
+                height: 24,
+              }}
             />
           ) : (
             <Chip
-              label={t("products.outOfStock")}
-              sx={{
-                bgcolor: "#f44336",
-                color: "white",
-                fontWeight: 600,
-                height: 28,
-                width: 100,
-              }}
+              label="Out of Stock"
               size="small"
+              sx={{
+                bgcolor: tokens.errorLight,
+                color: tokens.error,
+                fontWeight: 600,
+                fontSize: "0.7rem",
+                height: 24,
+              }}
             />
           )}
         </Box>
-        <Box>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 2.5 }}>
-            <Typography
-              variant="body1"
-              sx={{ fontSize: "2.5rem", fontWeight: 100 }}
-            >
-              ₹{product.price.toLocaleString()}
-            </Typography>
-            {product.originalPrice && product.originalPrice > product.price ? (
-              <Typography variant="caption">
-                M.R.P:{" "}
-                <Typography
-                  variant="caption"
-                  sx={{ textDecoration: "line-through", flex: 1 }}
-                >
-                  ₹{product.originalPrice.toLocaleString()}
-                </Typography>{" "}
-                <Typography variant="caption" sx={{ fontWeight: 600, color: '#f44336' }}>
-                  ( {Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}% ) OFF
-                </Typography>
-              </Typography>
-            ) : null}
-          </Box>
-        </Box>
       </CardContent>
-      {/* Action Buttons */}
-      <CardActions sx={{ display: "flex", flexWrap: "wrap" }}>
-        <Button
-          variant="outlined"
-          size="small"
-          onClick={() => onAddToCart(product.id)}
-          disabled={product.stock === 0 || isAddingToCart}
-          startIcon={<ShoppingCart />}
-          sx={{
-            fontWeight: 600,
-            py: 1,
-            flex: 1,
-          }}
-        >
-          {isAddingToCart ? "Adding..." : t("products.addToCart")}
-        </Button>
+
+      {/* Actions */}
+      <CardActions
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          gap: 1,
+          px: 2,
+          pb: 2,
+          pt: 0,
+          "& > :not(style) + :not(style)": { ml: 0 },
+        }}
+      >
         <Button
           variant="contained"
+          fullWidth
           size="small"
           onClick={() => onBuyNow(product.id)}
           disabled={product.stock === 0}
           sx={{
-            fontWeight: 600,
+            fontWeight: 700,
+            fontSize: "0.8125rem",
+            bgcolor: tokens.accent,
+            color: "#fff",
             py: 1,
-            flex: 1,
-            bgcolor: "#ff9800",
+            borderRadius: 2,
+            textTransform: "none",
+            transition: "all 0.2s",
             "&:hover": {
-              bgcolor: "#f57c00",
+              bgcolor: tokens.accentDark,
+              transform: "translateY(-1px)",
+              boxShadow: `0 4px 14px ${tokens.accent}44`,
             },
           }}
         >
           {t("products.buyNow")}
+        </Button>
+        <Button
+          variant="outlined"
+          fullWidth
+          size="small"
+          onClick={() => onAddToCart(product.id)}
+          disabled={product.stock === 0 || isAddingToCart}
+          startIcon={<ShoppingCart sx={{ fontSize: 18 }} />}
+          sx={{
+            fontWeight: 600,
+            fontSize: "0.8125rem",
+            borderColor: tokens.accent,
+            color: tokens.accent,
+            py: 1,
+            borderRadius: 2,
+            textTransform: "none",
+            transition: "all 0.2s",
+            "&:hover": {
+              bgcolor: `${tokens.accent}0A`,
+              borderColor: tokens.accent,
+            },
+          }}
+        >
+          {isAddingToCart ? "Adding..." : t("products.addToCart")}
         </Button>
       </CardActions>
     </Card>

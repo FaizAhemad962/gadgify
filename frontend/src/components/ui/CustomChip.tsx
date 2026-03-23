@@ -1,18 +1,16 @@
-import { Chip, type ChipProps } from '@mui/material'
+import { Chip, type ChipProps } from "@mui/material";
+import { tokens } from "@/theme/theme";
 
-interface CustomChipProps extends ChipProps {
-  isDarkTheme?: boolean
-}
-
-export const CustomChip = ({ isDarkTheme = true, ...props }: CustomChipProps) => {
+export const CustomChip = (props: ChipProps) => {
   return (
     <Chip
       {...props}
       sx={{
-        bgcolor: isDarkTheme ? '#1976d2' : '#e3f2fd',
-        color: isDarkTheme ? '#fff' : '#1976d2',
+        bgcolor: `${tokens.primary}14`,
+        color: tokens.primary,
+        fontWeight: 600,
         ...props.sx,
       }}
     />
-  )
-}
+  );
+};

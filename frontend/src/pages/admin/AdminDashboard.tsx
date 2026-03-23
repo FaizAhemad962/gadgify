@@ -9,9 +9,10 @@ import {
 } from "@mui/icons-material";
 import { productsApi } from "../../api/products";
 import { ordersApi } from "../../api/orders";
-import { AdminDataGrid } from "../../components/admin/AdminDataGrid";
+import { AppDataGrid } from "../../components/ui/AppDataGrid";
 import type { GridColDef } from "@mui/x-data-grid";
 import { formatDate } from "@/utils/dateFormatter";
+import { tokens } from "@/theme/theme";
 
 const AdminDashboard = () => {
   const { t } = useTranslation();
@@ -32,25 +33,25 @@ const AdminDashboard = () => {
       title: t("admin.totalProducts"),
       value: products?.length || 0,
       icon: <Inventory sx={{ fontSize: 40 }} />,
-      color: "#1976d2",
+      color: tokens.primary,
     },
     {
       title: t("admin.totalOrders"),
       value: orders.length,
       icon: <ShoppingCart sx={{ fontSize: 40 }} />,
-      color: "#2e7d32",
+      color: tokens.success,
     },
     {
       title: t("admin.pendingOrders"),
       value: orders.filter((o) => o.status === "PENDING").length,
       icon: <People sx={{ fontSize: 40 }} />,
-      color: "#ed6c02",
+      color: tokens.warning,
     },
     {
       title: t("admin.totalRevenue"),
       value: `₹${orders.reduce((sum, o) => sum + o.total, 0).toLocaleString()}`,
       icon: <CurrencyRupee sx={{ fontSize: 40 }} />,
-      color: "#9c27b0",
+      color: tokens.secondary,
     },
   ];
 
@@ -63,7 +64,7 @@ const AdminDashboard = () => {
       maxWidth: 150,
       flex: 0.8,
       renderCell: (params) => (
-        <span style={{ color: "#42a5f5", fontWeight: "600" }}>
+        <span style={{ color: tokens.primary, fontWeight: "600" }}>
           #{params.value?.substring(0, 8)}
         </span>
       ),
@@ -75,7 +76,7 @@ const AdminDashboard = () => {
       maxWidth: 200,
       flex: 1.2,
       renderCell: (params) => (
-        <span style={{ color: "#666666" }}>
+        <span style={{ color: tokens.gray500 }}>
           {params.row.user?.name || "N/A"}
         </span>
       ),
@@ -87,7 +88,7 @@ const AdminDashboard = () => {
       maxWidth: 130,
       flex: 0.8,
       renderCell: (params) => (
-        <span style={{ color: "#ff9800", fontWeight: "700" }}>
+        <span style={{ color: tokens.accent, fontWeight: "700" }}>
           ₹{params.value?.toLocaleString()}
         </span>
       ),
@@ -100,18 +101,18 @@ const AdminDashboard = () => {
       flex: 1,
       renderCell: (params) => {
         const statusColors = {
-          PENDING: "#ed6c02",
-          PROCESSING: "#1976d2",
-          SHIPPED: "#2e7d32",
-          DELIVERED: "#9c27b0",
-          CANCELLED: "#d32f2f",
+          PENDING: tokens.warning,
+          PROCESSING: tokens.primary,
+          SHIPPED: tokens.success,
+          DELIVERED: tokens.secondary,
+          CANCELLED: tokens.error,
         };
         return (
           <span
             style={{
               color:
                 statusColors[params.value as keyof typeof statusColors] ||
-                "#666666",
+                tokens.gray500,
               fontWeight: "600",
               textTransform: "capitalize",
             }}
@@ -128,7 +129,9 @@ const AdminDashboard = () => {
       maxWidth: 150,
       flex: 0.8,
       renderCell: (params) => (
-        <span style={{ color: "#666666" }}>{formatDate(params.value, t)}</span>
+        <span style={{ color: tokens.gray500 }}>
+          {formatDate(params.value, t)}
+        </span>
       ),
     },
   ];
@@ -138,8 +141,8 @@ const AdminDashboard = () => {
       <Typography
         variant="h4"
         gutterBottom
-        fontWeight="600"
-        sx={{ color: "#1976d2", mb: 4 }}
+        fontWeight="700"
+        sx={{ color: tokens.gray900, mb: 4 }}
       >
         {t("admin.dashboard")}
       </Typography>
@@ -159,15 +162,27 @@ const AdminDashboard = () => {
                 display: "flex",
                 alignItems: "center",
                 gap: 2.5,
-                backgroundColor: "#f8f9fa",
-                border: `2px solid ${stat.color}`,
-                borderRadius: "12px",
-                transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                bgcolor: tokens.white,
+                border: `1px solid ${tokens.gray200}`,
+                borderRadius: 3,
+                transition: "all 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
                 cursor: "pointer",
+                position: "relative",
+                overflow: "hidden",
+                "&::before": {
+                  content: '""',
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  width: 4,
+                  height: "100%",
+                  bgcolor: stat.color,
+                  borderRadius: "4px 0 0 4px",
+                },
                 "&:hover": {
                   transform: "translateY(-4px)",
-                  boxShadow: `0 8px 24px ${stat.color}40`,
-                  backgroundColor: "#ffffff",
+                  boxShadow: `0 8px 24px ${stat.color}20`,
+                  borderColor: stat.color,
                 },
               }}
             >
@@ -177,6 +192,9 @@ const AdminDashboard = () => {
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
+                  bgcolor: `${stat.color}12`,
+                  borderRadius: 2,
+                  p: 1.5,
                 }}
               >
                 {stat.icon}
@@ -185,11 +203,11 @@ const AdminDashboard = () => {
                 <Typography
                   variant="h5"
                   fontWeight="700"
-                  sx={{ color: "#1976d2" }}
+                  sx={{ color: tokens.gray900 }}
                 >
                   {stat.value}
                 </Typography>
-                <Typography variant="body2" sx={{ color: "#666666" }}>
+                <Typography variant="body2" sx={{ color: tokens.gray500 }}>
                   {stat.title}
                 </Typography>
               </Box>
@@ -197,15 +215,15 @@ const AdminDashboard = () => {
           </Box>
         ))}
       </Box>
-      <Box sx={{ width: '100%' }}>
+      <Box sx={{ width: "100%" }}>
         <Typography
           variant="h6"
           gutterBottom
-          sx={{ color: "#1976d2", fontWeight: "600", mb: 2.5 }}
+          sx={{ color: tokens.gray900, fontWeight: "700", mb: 2.5 }}
         >
           {t("admin.recentOrders")}
         </Typography>
-        <AdminDataGrid
+        <AppDataGrid
           rows={orders.slice(0, 10)} // Show last 10 orders
           columns={orderColumns}
           isLoading={false}

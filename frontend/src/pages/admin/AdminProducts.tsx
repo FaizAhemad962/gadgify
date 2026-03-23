@@ -25,6 +25,7 @@ import { z } from "zod";
 import { productsApi } from "../../api/products";
 import { AdminProductsDataGrid } from "../../components/admin/AdminProductsDataGrid";
 import type { Product } from "../../types";
+import { tokens } from "@/theme/theme";
 
 const CATEGORIES = [
   "Home & Kitchen",
@@ -438,13 +439,9 @@ const AdminProducts = () => {
       >
         <Typography
           variant="h4"
-          fontWeight="600"
+          fontWeight="700"
           sx={{
-            color: "#fff",
-            background: "linear-gradient(135deg, #1976d2, #ff9800)",
-            backgroundClip: "text",
-            WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent",
+            color: tokens.gray900,
           }}
         >
           {t("admin.products")}
@@ -453,18 +450,18 @@ const AdminProducts = () => {
           size="small"
           onClick={() => handleOpen()}
           sx={{
-            bgcolor: "#1976d2",
-            color: "#fff",
+            bgcolor: tokens.primary,
+            color: tokens.white,
             textTransform: "none",
             fontWeight: "600",
             px: 3,
             py: 1.2,
-            borderRadius: "8px",
-            transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+            borderRadius: 2,
+            transition: "all 0.2s",
             "&:hover": {
-              bgcolor: "#1565c0",
+              bgcolor: tokens.primaryDark,
               transform: "translateY(-2px)",
-              boxShadow: "0 6px 16px rgba(25, 118, 210, 0.3)",
+              boxShadow: `0 6px 16px ${tokens.primary}30`,
             },
           }}
         >
@@ -489,24 +486,23 @@ const AdminProducts = () => {
           InputProps={{
             endAdornment: (
               <InputAdornment position="end">
-                <Search sx={{ color: "#666" }} />
+                <Search sx={{ color: tokens.gray400 }} />
               </InputAdornment>
             ),
           }}
           sx={{
             width: 300,
-            backgroundColor: "#fff",
-            borderRadius: 1.5,
+            bgcolor: tokens.white,
+            borderRadius: 2,
             "& .MuiOutlinedInput-root": {
-              color: "#333",
               "& fieldset": {
-                borderColor: "rgba(0, 0, 0, 0.1)",
+                borderColor: tokens.gray200,
               },
               "&:hover fieldset": {
-                borderColor: "#1976d2",
+                borderColor: tokens.primary,
               },
               "&.Mui-focused fieldset": {
-                borderColor: "#1976d2",
+                borderColor: tokens.primary,
                 borderWidth: 2,
               },
             },
@@ -534,25 +530,27 @@ const AdminProducts = () => {
         fullWidth
         PaperProps={{
           sx: {
-            bgcolor: "#ffffff",
+            bgcolor: tokens.white,
             backgroundImage: "none",
-            border: "1px solid #e0e0e0",
-            borderRadius: "12px",
+            border: `1px solid ${tokens.gray200}`,
+            borderRadius: 3,
           },
         }}
       >
         <form onSubmit={handleSubmit(onSubmit)}>
           <DialogTitle
             sx={{
-              color: "#1976d2",
-              fontWeight: "600",
-              borderBottom: "1px solid #e0e0e0",
+              color: tokens.primary,
+              fontWeight: "700",
+              borderBottom: `1px solid ${tokens.gray200}`,
               fontSize: "1.3rem",
             }}
           >
             {editingProduct ? t("admin.editProduct") : t("admin.addNewProduct")}
           </DialogTitle>
-          <DialogContent sx={{ bgcolor: "#ffffff", backgroundImage: "none" }}>
+          <DialogContent
+            sx={{ bgcolor: tokens.white, backgroundImage: "none" }}
+          >
             {error && (
               <Alert
                 severity="error"
@@ -621,7 +619,7 @@ const AdminProducts = () => {
 
               <Box>
                 <FormControl fullWidth error={!!errors.category}>
-                  <InputLabel sx={{ color: "#b0b0b0" }}>
+                  <InputLabel sx={{ color: tokens.gray500 }}>
                     {t("admin.category")}
                   </InputLabel>
                   <Select
@@ -634,9 +632,9 @@ const AdminProducts = () => {
                     MenuProps={{
                       PaperProps: {
                         sx: {
-                          bgcolor: "#1e1e1e",
-                          border: "1px solid #3a3a3a",
-                          boxShadow: "0 4px 16px rgba(0, 0, 0, 0.4)",
+                          bgcolor: tokens.white,
+                          border: `1px solid ${tokens.gray200}`,
+                          boxShadow: "0 4px 16px rgba(0, 0, 0, 0.08)",
                         },
                       },
                     }}
@@ -646,18 +644,9 @@ const AdminProducts = () => {
                         key={category}
                         value={category}
                         sx={{
-                          bgcolor: "#1e1e1e",
-                          color: "#b0b0b0",
                           fontSize: "0.875rem",
                           py: 1.5,
-                          transition: "all 0.2s",
-                          "&:hover": { bgcolor: "#1976d2", color: "#fff" },
-                          "&.Mui-selected": {
-                            bgcolor: "#1565c0",
-                            color: "#fff",
-                            fontWeight: "600",
-                            "&:hover": { bgcolor: "#0d47a1" },
-                          },
+                          transition: "all 0.15s",
                         }}
                       >
                         {t(`categories.${category}`)}
@@ -715,14 +704,14 @@ const AdminProducts = () => {
                 <Box
                   sx={{
                     p: 1.5,
-                    bgcolor: "#1e1e1e",
-                    border: "1px solid #3a3a3a",
-                    borderRadius: "8px",
+                    bgcolor: tokens.gray50,
+                    border: `1px solid ${tokens.gray200}`,
+                    borderRadius: 2,
                   }}
                 >
                   <Typography
                     variant="subtitle2"
-                    sx={{ color: "#ff9800", fontWeight: "600", mb: 1 }}
+                    sx={{ color: tokens.accent, fontWeight: "600", mb: 1 }}
                   >
                     💰 Tax Calculation
                   </Typography>
@@ -734,10 +723,15 @@ const AdminProducts = () => {
                     }}
                   >
                     <Box sx={{ flex: 1 }}>
-                      <Typography variant="caption" sx={{ color: "#707070" }}>
+                      <Typography
+                        variant="caption"
+                        sx={{ color: tokens.gray500 }}
+                      >
                         Base Price
                       </Typography>
-                      <Typography sx={{ color: "#b0b0b0", fontWeight: "600" }}>
+                      <Typography
+                        sx={{ color: tokens.gray700, fontWeight: "600" }}
+                      >
                         ₹
                         {(editingProduct?.price || 0).toLocaleString("en-IN", {
                           maximumFractionDigits: 2,
@@ -745,10 +739,15 @@ const AdminProducts = () => {
                       </Typography>
                     </Box>
                     <Box sx={{ flex: 1 }}>
-                      <Typography variant="caption" sx={{ color: "#707070" }}>
+                      <Typography
+                        variant="caption"
+                        sx={{ color: tokens.gray500 }}
+                      >
                         GST Amount ({editingProduct?.gstPercentage}%)
                       </Typography>
-                      <Typography sx={{ color: "#4caf50", fontWeight: "600" }}>
+                      <Typography
+                        sx={{ color: tokens.success, fontWeight: "600" }}
+                      >
                         ₹
                         {(
                           ((editingProduct?.price || 0) *
@@ -758,12 +757,15 @@ const AdminProducts = () => {
                       </Typography>
                     </Box>
                     <Box sx={{ flex: 1 }}>
-                      <Typography variant="caption" sx={{ color: "#707070" }}>
+                      <Typography
+                        variant="caption"
+                        sx={{ color: tokens.gray500 }}
+                      >
                         Final Price (incl. GST)
                       </Typography>
                       <Typography
                         sx={{
-                          color: "#ff9800",
+                          color: tokens.accent,
                           fontWeight: "700",
                           fontSize: "1.1rem",
                         }}
@@ -785,7 +787,7 @@ const AdminProducts = () => {
                 <Typography
                   variant="subtitle2"
                   gutterBottom
-                  sx={{ color: "#b0b0b0", fontWeight: "600" }}
+                  sx={{ color: tokens.gray500, fontWeight: "600" }}
                 >
                   {t("admin.productImages")}
                 </Typography>
@@ -796,13 +798,14 @@ const AdminProducts = () => {
                     startIcon={<Upload />}
                     fullWidth
                     sx={{
-                      color: "#1976d2",
-                      borderColor: "#1976d2",
+                      color: tokens.primary,
+                      borderColor: tokens.primary,
                       transition: "all 0.2s",
+                      borderRadius: 2,
+                      textTransform: "none",
                       "&:hover": {
-                        bgcolor: "rgba(25, 118, 210, 0.1)",
-                        borderColor: "#42a5f5",
-                        color: "#42a5f5",
+                        bgcolor: `${tokens.primary}0A`,
+                        borderColor: tokens.primary,
                       },
                     }}
                   >
@@ -831,7 +834,7 @@ const AdminProducts = () => {
                           maxHeight: 120,
                           objectFit: "contain",
                           borderRadius: 1,
-                          border: "1px solid #3a3a3a",
+                          border: `1px solid ${tokens.gray200}`,
                         }}
                       />
                       {/* Primary Button */}
@@ -885,7 +888,7 @@ const AdminProducts = () => {
                 <Typography
                   variant="subtitle2"
                   gutterBottom
-                  sx={{ color: "#b0b0b0", fontWeight: "600" }}
+                  sx={{ color: tokens.gray500, fontWeight: "600" }}
                 >
                   {t("admin.productVideos")}
                 </Typography>
@@ -896,13 +899,14 @@ const AdminProducts = () => {
                     startIcon={<Upload />}
                     fullWidth
                     sx={{
-                      color: "#1976d2",
-                      borderColor: "#1976d2",
+                      color: tokens.primary,
+                      borderColor: tokens.primary,
                       transition: "all 0.2s",
+                      borderRadius: 2,
+                      textTransform: "none",
                       "&:hover": {
-                        bgcolor: "rgba(25, 118, 210, 0.1)",
-                        borderColor: "#42a5f5",
-                        color: "#42a5f5",
+                        bgcolor: `${tokens.primary}0A`,
+                        borderColor: tokens.primary,
                       },
                     }}
                   >
@@ -930,7 +934,7 @@ const AdminProducts = () => {
                           maxWidth: 120,
                           maxHeight: 120,
                           borderRadius: 1,
-                          border: "1px solid #3a3a3a",
+                          border: `1px solid ${tokens.gray200}`,
                         }}
                       />
                       <Button
@@ -970,8 +974,8 @@ const AdminProducts = () => {
           </DialogContent>
           <DialogActions
             sx={{
-              bgcolor: "#ffffff",
-              borderTop: "1px solid #e0e0e0",
+              bgcolor: tokens.white,
+              borderTop: `1px solid ${tokens.gray200}`,
               p: 2,
               gap: 1,
             }}
@@ -979,10 +983,10 @@ const AdminProducts = () => {
             <Button
               onClick={handleClose}
               sx={{
-                color: "#b0b0b0",
+                color: tokens.gray500,
                 textTransform: "none",
                 fontWeight: "500",
-                "&:hover": { bgcolor: "rgba(176, 176, 176, 0.1)" },
+                "&:hover": { bgcolor: `${tokens.gray200}40` },
               }}
             >
               {t("admin.cancel")}
@@ -992,18 +996,19 @@ const AdminProducts = () => {
               variant="contained"
               disabled={createMutation.isPending || updateMutation.isPending}
               sx={{
-                bgcolor: "#1976d2",
-                color: "#fff",
+                bgcolor: tokens.primary,
+                color: tokens.white,
                 textTransform: "none",
                 fontWeight: "600",
+                borderRadius: 2,
                 transition: "all 0.2s",
                 "&:hover": {
-                  bgcolor: "#1565c0",
-                  boxShadow: "0 4px 12px rgba(25, 118, 210, 0.3)",
+                  bgcolor: tokens.primaryDark,
+                  boxShadow: `0 4px 12px ${tokens.primary}30`,
                 },
                 "&:disabled": {
-                  bgcolor: "#707070",
-                  color: "#505050",
+                  bgcolor: tokens.gray300,
+                  color: tokens.gray500,
                 },
               }}
             >

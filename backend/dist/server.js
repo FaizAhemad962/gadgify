@@ -19,24 +19,29 @@ const cartRoutes_1 = __importDefault(require("./routes/cartRoutes"));
 const orderRoutes_1 = __importDefault(require("./routes/orderRoutes"));
 const adminRoutes_1 = __importDefault(require("./routes/adminRoutes"));
 const wishlistRoutes_1 = __importDefault(require("./routes/wishlistRoutes"));
+const mediaRoutes_1 = __importDefault(require("./routes/mediaRoutes"));
 const app = (0, express_1.default)();
 // Upload directory configuration (Render persistent disk in production)
-const uploadDir = process.env.NODE_ENV === 'production'
-    ? '/var/data/uploads'
-    : './uploads';
+const uploadDir = process.env.NODE_ENV === "production" ? "/var/data/uploads" : "./uploads";
 // Trust proxy (for rate limiting and logging)
-app.set('trust proxy', 1);
+app.set("trust proxy", 1);
 // Security middleware
 app.use((0, helmet_1.default)({
-    crossOriginResourcePolicy: { policy: 'cross-origin' },
+    crossOriginResourcePolicy: { policy: "cross-origin" },
     contentSecurityPolicy: {
         directives: {
             defaultSrc: ["'self'"],
-            scriptSrc: ["'self'", "'unsafe-inline'", 'checkout.razorpay.com'],
-            styleSrc: ["'self'", "'unsafe-inline'", 'https:'],
-            imgSrc: ["'self'", 'data:', 'http://localhost:5000', 'http://localhost:3000', 'https:'],
-            connectSrc: ["'self'", 'https://api.razorpay.com'],
-            frameSrc: ["'self'", 'https://api.razorpay.com'],
+            scriptSrc: ["'self'", "'unsafe-inline'", "checkout.razorpay.com"],
+            styleSrc: ["'self'", "'unsafe-inline'", "https:"],
+            imgSrc: [
+                "'self'",
+                "data:",
+                "http://localhost:5000",
+                "http://localhost:3000",
+                "https:",
+            ],
+            connectSrc: ["'self'", "https://api.razorpay.com"],
+            frameSrc: ["'self'", "https://api.razorpay.com"],
         },
     },
     hsts: {
@@ -44,7 +49,7 @@ app.use((0, helmet_1.default)({
         includeSubDomains: true,
         preload: true,
     },
-    frameguard: { action: 'deny' },
+    frameguard: { action: "deny" },
     noSniff: true,
     xssFilter: true,
     hidePoweredBy: true,
@@ -55,43 +60,44 @@ app.use((0, cors_1.default)({
     credentials: true,
 }));
 // Body parser with size limits
-app.use(express_1.default.json({ limit: '10mb' }));
-app.use(express_1.default.urlencoded({ extended: true, limit: '10mb' }));
+app.use(express_1.default.json({ limit: "10mb" }));
+app.use(express_1.default.urlencoded({ extended: true, limit: "10mb" }));
 // Sanitize input
 app.use(sanitize_1.sanitizeInput);
 app.use(sanitize_1.sanitizeStrings);
 // Security logging
 app.use(securityLogger_1.logSecurityEvents);
 // Rate limiting
-app.use('/api/', rateLimiter_1.apiLimiter);
+app.use("/api/", rateLimiter_1.apiLimiter);
 // Serve uploaded files with proper path resolution
-const path = require('path');
-app.use('/uploads', express_1.default.static(uploadDir, {
-    maxAge: '7d',
+const path = require("path");
+app.use("/uploads", express_1.default.static(uploadDir, {
+    maxAge: "7d",
     immutable: true,
     setHeaders: (res, filePath) => {
         if (filePath.match(/\.(jpg|jpeg|png|gif|webp)$/i)) {
-            res.setHeader('Cache-Control', 'public, max-age=604800, immutable');
+            res.setHeader("Cache-Control", "public, max-age=604800, immutable");
         }
         if (filePath.match(/\.(mp4|avi|mov|wmv|flv|webm|mkv)$/i)) {
-            res.setHeader('Cache-Control', 'public, max-age=2592000, immutable');
+            res.setHeader("Cache-Control", "public, max-age=2592000, immutable");
         }
-    }
+    },
 }));
 // Health check
-app.get('/health', (req, res) => {
-    res.json({ status: 'OK', timestamp: new Date().toISOString() });
+app.get("/health", (req, res) => {
+    res.json({ status: "OK", timestamp: new Date().toISOString() });
 });
 // Routes
-app.use('/api/auth', authRoutes_1.default);
-app.use('/api/products', productRoutes_1.default);
-app.use('/api/cart', cartRoutes_1.default);
-app.use('/api/orders', orderRoutes_1.default);
-app.use('/api/admin', adminRoutes_1.default);
-app.use('/api/wishlist', wishlistRoutes_1.default);
+app.use("/api/auth", authRoutes_1.default);
+app.use("/api/products/media", mediaRoutes_1.default);
+app.use("/api/products", productRoutes_1.default);
+app.use("/api/cart", cartRoutes_1.default);
+app.use("/api/orders", orderRoutes_1.default);
+app.use("/api/admin", adminRoutes_1.default);
+app.use("/api/wishlist", wishlistRoutes_1.default);
 // 404 handler
 app.use((req, res) => {
-    res.status(404).json({ message: 'Route not found' });
+    res.status(404).json({ message: "Route not found" });
 });
 // Error handler
 app.use(errorHandler_1.errorHandler);
@@ -111,7 +117,7 @@ const startServer = async () => {
         });
     }
     catch (error) {
-        logger_1.default.error('Failed to start server:', error);
+        logger_1.default.error("Failed to start server:", error);
         process.exit(1);
     }
 };
