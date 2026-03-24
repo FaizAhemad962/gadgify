@@ -388,15 +388,18 @@
     "shippingPolicy": "Shipping Policy"
   },
   "categories": {
+    "Mobiles & Computers": "Mobiles & Computers",
+    "Electronics & Appliances": "Electronics & Appliances",
+    "Men's Fashion": "Men's Fashion",
+    "Women's Fashion": "Women's Fashion",
     "Home & Kitchen": "Home & Kitchen",
-    "Electronics": "Electronics",
-    "Beauty & Personal Care": "Beauty & Personal Care",
-    "Office & Storage": "Office & Storage",
-    "Sports & Outdoor": "Sports & Outdoor",
-    "Jewelry & Accessories": "Jewelry & Accessories",
-    "Toys": "Toys",
-    "Tools & Hardware": "Tools & Hardware",
-    "Lighting": "Lighting"
+    "Beauty & Health": "Beauty & Health",
+    "Sports & Fitness": "Sports & Fitness",
+    "Toys & Baby Products": "Toys & Baby Products",
+    "Automotive & Industrial": "Automotive & Industrial",
+    "Books & Stationery": "Books & Stationery",
+    "Movies, Music & Gaming": "Movies, Music & Gaming",
+    "Doors & Hardware": "Doors & Hardware"
   },
   "payment": {
     "label": "Payment",

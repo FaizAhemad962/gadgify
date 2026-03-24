@@ -23,15 +23,6 @@ import {
   Support,
   Rocket,
   ArrowForward,
-  Kitchen,
-  Devices,
-  FaceRetouchingNatural,
-  BusinessCenter,
-  SportsBasketball,
-  Diamond,
-  Toys,
-  Build,
-  LightMode,
   Email,
   Timer,
 } from "@mui/icons-material";
@@ -41,30 +32,7 @@ import ProductCard from "@/components/ProductCard";
 import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
 import { tokens } from "@/theme/theme";
-
-const CATEGORY_ICONS: Record<string, React.ReactNode> = {
-  "Home & Kitchen": <Kitchen sx={{ fontSize: 36 }} />,
-  Electronics: <Devices sx={{ fontSize: 36 }} />,
-  "Beauty & Personal Care": <FaceRetouchingNatural sx={{ fontSize: 36 }} />,
-  "Office & Storage": <BusinessCenter sx={{ fontSize: 36 }} />,
-  "Sports & Outdoor": <SportsBasketball sx={{ fontSize: 36 }} />,
-  "Jewelry & Accessories": <Diamond sx={{ fontSize: 36 }} />,
-  Toys: <Toys sx={{ fontSize: 36 }} />,
-  "Tools & Hardware": <Build sx={{ fontSize: 36 }} />,
-  Lighting: <LightMode sx={{ fontSize: 36 }} />,
-};
-
-const CATEGORY_COLORS = [
-  tokens.primary,
-  tokens.accent,
-  tokens.secondary,
-  tokens.success,
-  tokens.warning,
-  tokens.error,
-  tokens.primaryLight,
-  tokens.accentDark,
-  tokens.secondaryDark,
-];
+import { CATEGORY_ICONS, CATEGORY_COLORS } from "@/constants/categories";
 
 // Fake testimonials (static — replace with real API data when available)
 const TESTIMONIALS = [

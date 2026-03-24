@@ -26,18 +26,7 @@ import { productsApi } from "../../api/products";
 import { AdminProductsDataGrid } from "../../components/admin/AdminProductsDataGrid";
 import type { Product } from "../../types";
 import { tokens } from "@/theme/theme";
-
-const CATEGORIES = [
-  "Home & Kitchen",
-  "Electronics",
-  "Beauty & Personal Care",
-  "Office & Storage",
-  "Sports & Outdoor",
-  "Jewelry & Accessories",
-  "Toys",
-  "Tools & Hardware",
-  "Lighting",
-];
+import { CATEGORIES } from "@/constants/categories";
 
 const productSchema = z.object({
   name: z.string().min(2, "Name is required"),

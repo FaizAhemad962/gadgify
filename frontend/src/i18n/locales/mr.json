@@ -390,15 +390,18 @@
     "shippingPolicy": "शिपिंग धोरण"
   },
   "categories": {
+    "Mobiles & Computers": "मोबाईल आणि संगणक",
+    "Electronics & Appliances": "इलेक्ट्रॉनिक्स आणि उपकरणे",
+    "Men's Fashion": "पुरुष फॅशन",
+    "Women's Fashion": "महिला फॅशन",
     "Home & Kitchen": "घर आणि स्वयंपाकघर",
-    "Electronics": "इलेक्ट्रॉनिक्स",
-    "Beauty & Personal Care": "सौंदर्य आणि वैयक्तिक काळजी",
-    "Office & Storage": "कार्यालय आणि संचयन",
-    "Sports & Outdoor": "क्रीडा आणि बाह्य",
-    "Jewelry & Accessories": "दागिने आणि उपकरणे",
-    "Toys": "खेळणी",
-    "Tools & Hardware": "साधने आणि हार्डवेअर",
-    "Lighting": "प्रकाशन"
+    "Beauty & Health": "सौंदर्य आणि आरोग्य",
+    "Sports & Fitness": "क्रीडा आणि फिटनेस",
+    "Toys & Baby Products": "खेळणी आणि शिशु उत्पादने",
+    "Automotive & Industrial": "ऑटोमोटिव्ह आणि औद्योगिक",
+    "Books & Stationery": "पुस्तके आणि स्टेशनरी",
+    "Movies, Music & Gaming": "चित्रपट, संगीत आणि गेमिंग",
+    "Doors & Hardware": "दरवाजे आणि हार्डवेअर"
   },
   "payment": {
     "label": "पेमेंट",
