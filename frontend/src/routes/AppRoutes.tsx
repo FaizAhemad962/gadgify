@@ -17,7 +17,11 @@ const ChangePasswordPage = lazy(() => import("../pages/ChangePasswordPage"));
 const WishlistPage = lazy(() => import("../pages/WishlistPage"));
 const LoginPage = lazy(() => import("../pages/auth/LoginPage"));
 const SignupPage = lazy(() => import("../pages/auth/SignupPage"));
-const AdminLayout = lazy(() => import('../components/layout/AdminLayout'))
+const ForgotPasswordPage = lazy(
+  () => import("../pages/auth/ForgotPasswordPage"),
+);
+const ResetPasswordPage = lazy(() => import("../pages/auth/ResetPasswordPage"));
+const AdminLayout = lazy(() => import("../components/layout/AdminLayout"));
 const AdminDashboard = lazy(() => import("../pages/admin/AdminDashboard"));
 const AdminProducts = lazy(() => import("../pages/admin/AdminProducts"));
 const AdminOrders = lazy(() => import("../pages/admin/AdminOrders"));
@@ -69,6 +73,8 @@ const AppRoutes = () => {
         {/* Public routes */}
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
         <Route path="/terms-conditions" element={<TermsConditions />} />
         <Route path="/refund-policy" element={<RefundPolicy />} />

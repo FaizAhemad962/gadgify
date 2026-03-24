@@ -1,9 +1,9 @@
-import Joi from 'joi'
+import Joi from "joi";
 
 export const loginSchema = Joi.object({
   email: Joi.string().email().required(),
   password: Joi.string().min(6).required(),
-})
+});
 
 export const signupSchema = Joi.object({
   email: Joi.string().email().required(),
@@ -13,8 +13,10 @@ export const signupSchema = Joi.object({
   state: Joi.string().required(),
   city: Joi.string().required(),
   address: Joi.string().min(5).required(),
-  pincode: Joi.string().pattern(/^\d{6}$/).required(),
-})
+  pincode: Joi.string()
+    .pattern(/^\d{6}$/)
+    .required(),
+});
 
 export const productSchema = Joi.object({
   name: Joi.string().min(2).required(),
@@ -25,26 +27,26 @@ export const productSchema = Joi.object({
     .items(
       Joi.object({
         url: Joi.string().uri().required(),
-        type: Joi.string().valid('image', 'video').required(),
+        type: Joi.string().valid("image", "video").required(),
         isPrimary: Joi.boolean().optional(),
-      })
+      }),
     )
     .min(1)
     .required(),
-  colors: Joi.string().optional().allow(''),
+  colors: Joi.string().optional().allow(""),
   category: Joi.string().min(2).required(),
-  hsnNo: Joi.string().optional().allow(''),
+  hsnNo: Joi.string().optional().allow(""),
   gstPercentage: Joi.number().min(0).max(100).optional(),
-})
+});
 
 export const addToCartSchema = Joi.object({
   productId: Joi.string().required(),
   quantity: Joi.number().min(1).required(),
-})
+});
 
 export const updateCartItemSchema = Joi.object({
   quantity: Joi.number().min(1).required(),
-})
+});
 
 export const createOrderSchema = Joi.object({
   items: Joi.array()
@@ -53,7 +55,7 @@ export const createOrderSchema = Joi.object({
         productId: Joi.string().required(),
         quantity: Joi.number().min(1).required(),
         price: Joi.number().min(0).required(),
-      })
+      }),
     )
     .min(1)
     .required(),
@@ -68,22 +70,33 @@ export const createOrderSchema = Joi.object({
     state: Joi.string().required(),
     pincode: Joi.string().required(),
   }).required(),
-})
+});
 
 export const ratingSchema = Joi.object({
   rating: Joi.number().min(1).max(5).required(),
-  comment: Joi.string().max(500).optional().allow(''),
-})
+  comment: Joi.string().max(500).optional().allow(""),
+});
 
 export const updateProfileSchema = Joi.object({
   name: Joi.string().min(2).required(),
   phone: Joi.string().min(10).required(),
   city: Joi.string().required(),
   address: Joi.string().min(5).required(),
-  pincode: Joi.string().pattern(/^\d{6}$/).required(),
-})
+  pincode: Joi.string()
+    .pattern(/^\d{6}$/)
+    .required(),
+});
 
 export const changePasswordSchema = Joi.object({
   currentPassword: Joi.string().required(),
   newPassword: Joi.string().min(6).required(),
-})
+});
+
+export const forgotPasswordSchema = Joi.object({
+  email: Joi.string().email().required(),
+});
+
+export const resetPasswordSchema = Joi.object({
+  token: Joi.string().required(),
+  newPassword: Joi.string().min(6).required(),
+});

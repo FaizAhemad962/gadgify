@@ -19,6 +19,8 @@ model User {
   address   String
   pincode   String
   profilePhoto String?
+  resetToken      String?
+  resetTokenExpiry DateTime?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   deletedAt DateTime?

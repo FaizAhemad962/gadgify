@@ -24,6 +24,24 @@ import { useAuth } from "../../context/AuthContext";
 import { ErrorHandler } from "../../utils/errorHandler";
 import { getMaharashtraCities } from "../../constants/location";
 import LanguageSelector from "../../components/common/LanguageSelector";
+import { tokens } from "@/theme/theme";
+
+const inputSx = {
+  "& .MuiOutlinedInput-root": {
+    backgroundColor: tokens.gray50,
+    transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+    "&:hover": {
+      backgroundColor: tokens.gray100,
+    },
+    "&.Mui-focused": {
+      backgroundColor: tokens.white,
+      boxShadow: `0 0 0 3px ${tokens.primary}1A`,
+    },
+  },
+  "& .MuiOutlinedInput-notchedOutline": {
+    borderColor: tokens.gray200,
+  },
+};
 
 const SignupPage = () => {
   const { t } = useTranslation();
@@ -86,7 +104,6 @@ const SignupPage = () => {
   });
 
   const onSubmit = async (data: SignupFormData) => {
-    // Validate Maharashtra only
     if (data.state.toLowerCase() !== "maharashtra") {
       setError(t("errors.maharashtraOnly"));
       return;
@@ -105,7 +122,7 @@ const SignupPage = () => {
     <Box
       sx={{
         minHeight: "100vh",
-        background: "linear-gradient(135deg, #1976d2 0%, #1565c0 100%)",
+        background: `linear-gradient(135deg, ${tokens.primary} 0%, ${tokens.primaryDark} 100%)`,
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -141,10 +158,10 @@ const SignupPage = () => {
           elevation={0}
           sx={{
             p: { xs: 3, sm: 4 },
-            borderRadius: 2,
-            background: "#ffffff",
+            borderRadius: 3,
+            background: tokens.white,
             backdropFilter: "blur(10px)",
-            border: "1px solid rgba(255, 255, 255, 0.1)",
+            border: `1px solid ${tokens.gray200}`,
           }}
         >
           {/* Header */}
@@ -153,7 +170,7 @@ const SignupPage = () => {
               variant="h3"
               sx={{
                 fontWeight: 900,
-                color: "#1976d2",
+                color: tokens.primary,
                 mb: 1,
                 fontSize: { xs: "2rem", sm: "2.5rem" },
               }}
@@ -164,7 +181,7 @@ const SignupPage = () => {
               variant="h5"
               sx={{
                 fontWeight: 700,
-                color: "#1a1a1a",
+                color: tokens.gray900,
                 mb: 1,
               }}
             >
@@ -173,7 +190,7 @@ const SignupPage = () => {
             <Typography
               variant="body2"
               sx={{
-                color: "#707070",
+                color: tokens.gray500,
                 fontSize: "0.95rem",
               }}
             >
@@ -186,13 +203,11 @@ const SignupPage = () => {
               severity="error"
               sx={{
                 mb: 3,
-                background: "#ffebee",
-                color: "#c62828",
-                border: "1px solid #ef5350",
-                borderRadius: 1,
-                "& .MuiAlert-icon": {
-                  color: "#c62828",
-                },
+                background: tokens.errorLight,
+                color: tokens.error,
+                border: `1px solid ${tokens.error}`,
+                borderRadius: 2,
+                "& .MuiAlert-icon": { color: tokens.error },
               }}
               onClose={() => setError("")}
             >
@@ -216,23 +231,7 @@ const SignupPage = () => {
                 {...register("name")}
                 error={!!errors.name}
                 helperText={errors.name?.message}
-                sx={{
-                  "& .MuiOutlinedInput-root": {
-                    backgroundColor: "#f9f9f9",
-                    transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-                    "&:hover": {
-                      backgroundColor: "#f0f0f0",
-                      borderColor: "#1976d2",
-                    },
-                    "&.Mui-focused": {
-                      backgroundColor: "#ffffff",
-                      boxShadow: "0 0 0 3px rgba(25, 118, 210, 0.1)",
-                    },
-                  },
-                  "& .MuiOutlinedInput-notchedOutline": {
-                    borderColor: "#e0e0e0",
-                  },
-                }}
+                sx={inputSx}
               />
 
               {/* Email & Phone */}
@@ -252,23 +251,7 @@ const SignupPage = () => {
                   {...register("email")}
                   error={!!errors.email}
                   helperText={errors.email?.message}
-                  sx={{
-                    "& .MuiOutlinedInput-root": {
-                      backgroundColor: "#f9f9f9",
-                      transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-                      "&:hover": {
-                        backgroundColor: "#f0f0f0",
-                        borderColor: "#1976d2",
-                      },
-                      "&.Mui-focused": {
-                        backgroundColor: "#ffffff",
-                        boxShadow: "0 0 0 3px rgba(25, 118, 210, 0.1)",
-                      },
-                    },
-                    "& .MuiOutlinedInput-notchedOutline": {
-                      borderColor: "#e0e0e0",
-                    },
-                  }}
+                  sx={inputSx}
                 />
 
                 <TextField
@@ -279,23 +262,7 @@ const SignupPage = () => {
                   {...register("phone")}
                   error={!!errors.phone}
                   helperText={errors.phone?.message}
-                  sx={{
-                    "& .MuiOutlinedInput-root": {
-                      backgroundColor: "#f9f9f9",
-                      transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-                      "&:hover": {
-                        backgroundColor: "#f0f0f0",
-                        borderColor: "#1976d2",
-                      },
-                      "&.Mui-focused": {
-                        backgroundColor: "#ffffff",
-                        boxShadow: "0 0 0 3px rgba(25, 118, 210, 0.1)",
-                      },
-                    },
-                    "& .MuiOutlinedInput-notchedOutline": {
-                      borderColor: "#e0e0e0",
-                    },
-                  }}
+                  sx={inputSx}
                 />
               </Box>
 
@@ -324,10 +291,8 @@ const SignupPage = () => {
                           edge="end"
                           size="small"
                           sx={{
-                            color: "#707070",
-                            "&:hover": {
-                              color: "#1976d2",
-                            },
+                            color: tokens.gray500,
+                            "&:hover": { color: tokens.primary },
                           }}
                         >
                           {showPassword ? (
@@ -339,23 +304,7 @@ const SignupPage = () => {
                       </InputAdornment>
                     ),
                   }}
-                  sx={{
-                    "& .MuiOutlinedInput-root": {
-                      backgroundColor: "#f9f9f9",
-                      transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-                      "&:hover": {
-                        backgroundColor: "#f0f0f0",
-                        borderColor: "#1976d2",
-                      },
-                      "&.Mui-focused": {
-                        backgroundColor: "#ffffff",
-                        boxShadow: "0 0 0 3px rgba(25, 118, 210, 0.1)",
-                      },
-                    },
-                    "& .MuiOutlinedInput-notchedOutline": {
-                      borderColor: "#e0e0e0",
-                    },
-                  }}
+                  sx={inputSx}
                 />
 
                 <TextField
@@ -377,10 +326,8 @@ const SignupPage = () => {
                           edge="end"
                           size="small"
                           sx={{
-                            color: "#707070",
-                            "&:hover": {
-                              color: "#1976d2",
-                            },
+                            color: tokens.gray500,
+                            "&:hover": { color: tokens.primary },
                           }}
                         >
                           {showConfirmPassword ? (
@@ -392,23 +339,7 @@ const SignupPage = () => {
                       </InputAdornment>
                     ),
                   }}
-                  sx={{
-                    "& .MuiOutlinedInput-root": {
-                      backgroundColor: "#f9f9f9",
-                      transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-                      "&:hover": {
-                        backgroundColor: "#f0f0f0",
-                        borderColor: "#1976d2",
-                      },
-                      "&.Mui-focused": {
-                        backgroundColor: "#ffffff",
-                        boxShadow: "0 0 0 3px rgba(25, 118, 210, 0.1)",
-                      },
-                    },
-                    "& .MuiOutlinedInput-notchedOutline": {
-                      borderColor: "#e0e0e0",
-                    },
-                  }}
+                  sx={inputSx}
                 />
               </Box>
 
@@ -423,23 +354,7 @@ const SignupPage = () => {
                 {...register("address")}
                 error={!!errors.address}
                 helperText={errors.address?.message}
-                sx={{
-                  "& .MuiOutlinedInput-root": {
-                    backgroundColor: "#f9f9f9",
-                    transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-                    "&:hover": {
-                      backgroundColor: "#f0f0f0",
-                      borderColor: "#1976d2",
-                    },
-                    "&.Mui-focused": {
-                      backgroundColor: "#ffffff",
-                      boxShadow: "0 0 0 3px rgba(25, 118, 210, 0.1)",
-                    },
-                  },
-                  "& .MuiOutlinedInput-notchedOutline": {
-                    borderColor: "#e0e0e0",
-                  },
-                }}
+                sx={inputSx}
               />
 
               {/* State, City, Pincode */}
@@ -464,10 +379,10 @@ const SignupPage = () => {
                   }}
                   sx={{
                     "& .MuiOutlinedInput-root": {
-                      backgroundColor: "#f0f0f0",
+                      backgroundColor: tokens.gray100,
                     },
                     "& .MuiOutlinedInput-notchedOutline": {
-                      borderColor: "#e0e0e0",
+                      borderColor: tokens.gray200,
                     },
                   }}
                 />
@@ -483,23 +398,7 @@ const SignupPage = () => {
                   SelectProps={{
                     displayEmpty: true,
                   }}
-                  sx={{
-                    "& .MuiOutlinedInput-root": {
-                      backgroundColor: "#f9f9f9",
-                      transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-                      "&:hover": {
-                        backgroundColor: "#f0f0f0",
-                        borderColor: "#1976d2",
-                      },
-                      "&.Mui-focused": {
-                        backgroundColor: "#ffffff",
-                        boxShadow: "0 0 0 3px rgba(25, 118, 210, 0.1)",
-                      },
-                    },
-                    "& .MuiOutlinedInput-notchedOutline": {
-                      borderColor: "#e0e0e0",
-                    },
-                  }}
+                  sx={inputSx}
                 >
                   <MenuItem value="" disabled>
                     {t("common.selectCity")}
@@ -519,23 +418,7 @@ const SignupPage = () => {
                   {...register("pincode")}
                   error={!!errors.pincode}
                   helperText={errors.pincode?.message}
-                  sx={{
-                    "& .MuiOutlinedInput-root": {
-                      backgroundColor: "#f9f9f9",
-                      transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-                      "&:hover": {
-                        backgroundColor: "#f0f0f0",
-                        borderColor: "#1976d2",
-                      },
-                      "&.Mui-focused": {
-                        backgroundColor: "#ffffff",
-                        boxShadow: "0 0 0 3px rgba(25, 118, 210, 0.1)",
-                      },
-                    },
-                    "& .MuiOutlinedInput-notchedOutline": {
-                      borderColor: "#e0e0e0",
-                    },
-                  }}
+                  sx={inputSx}
                 />
               </Box>
 
@@ -547,64 +430,64 @@ const SignupPage = () => {
                 type="submit"
                 disabled={signupMutation.isPending}
                 sx={{
-                  background: "#ff9800",
-                  color: "#ffffff",
+                  background: tokens.accent,
+                  color: tokens.white,
                   fontWeight: 700,
                   fontSize: "1rem",
                   py: 1.5,
                   mt: 1,
                   transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
                   "&:hover": {
-                    background: "#f57c00",
+                    background: tokens.accentDark,
                     transform: "translateY(-2px)",
-                    boxShadow: "0 8px 16px rgba(255, 152, 0, 0.3)",
+                    boxShadow: `0 8px 16px ${tokens.accent}4D`,
                   },
-                  "&:active": {
-                    transform: "translateY(0)",
-                  },
+                  "&:active": { transform: "translateY(0)" },
                   "&.Mui-disabled": {
-                    background: "#ccc",
-                    color: "#666",
+                    background: tokens.gray300,
+                    color: tokens.gray600,
                   },
                 }}
               >
                 {signupMutation.isPending ? (
-                  <>
-                    <Typography variant="body2" component="span">
-                      {t("common.creatingAccount")}...
-                    </Typography>
-                  </>
+                  <Typography variant="body2" component="span">
+                    {t("common.creatingAccount")}...
+                  </Typography>
                 ) : (
-                  `✨ ${t("auth.signupButton")}`
+                  t("auth.signupButton")
                 )}
               </Button>
             </Box>
 
             {/* Divider */}
             <Box sx={{ my: 3, display: "flex", alignItems: "center", gap: 2 }}>
-              <Box sx={{ flex: 1, height: "1px", background: "#e0e0e0" }} />
-              <Typography variant="caption" sx={{ color: "#a0a0a0" }}>
+              <Box
+                sx={{ flex: 1, height: "1px", background: tokens.gray200 }}
+              />
+              <Typography variant="caption" sx={{ color: tokens.gray400 }}>
                 {t("common.or")}
               </Typography>
-              <Box sx={{ flex: 1, height: "1px", background: "#e0e0e0" }} />
+              <Box
+                sx={{ flex: 1, height: "1px", background: tokens.gray200 }}
+              />
             </Box>
 
             {/* Login Link */}
             <Box sx={{ textAlign: "center" }}>
-              <Typography variant="body2" sx={{ color: "#707070", mb: 1 }}>
+              <Typography variant="body2" sx={{ color: tokens.gray500, mb: 1 }}>
                 {t("auth.alreadyHaveAccount")}
               </Typography>
               <Link
                 component={RouterLink}
                 to="/login"
                 sx={{
-                  color: "#ff9800",
+                  color: tokens.accent,
                   textDecoration: "none",
                   fontWeight: 700,
                   fontSize: "0.95rem",
                   transition: "all 0.3s ease",
                   "&:hover": {
-                    color: "#f57c00",
+                    color: tokens.accentDark,
                     textDecoration: "underline",
                   },
                 }}
@@ -619,7 +502,7 @@ const SignupPage = () => {
             sx={{
               mt: 3,
               pt: 3,
-              borderTop: "1px solid #e0e0e0",
+              borderTop: `1px solid ${tokens.gray200}`,
               display: "flex",
               justifyContent: "space-around",
               alignItems: "center",
@@ -629,34 +512,38 @@ const SignupPage = () => {
               <Typography sx={{ fontSize: "1.2rem", mb: 0.5 }}>📍</Typography>
               <Typography
                 variant="caption"
-                sx={{ color: "#707070", fontSize: "0.75rem" }}
+                sx={{ color: tokens.gray500, fontSize: "0.75rem" }}
               >
                 {t("common.maharashtra")}
               </Typography>
             </Box>
-            <Box sx={{ width: "1px", height: "30px", background: "#e0e0e0" }} />
+            <Box
+              sx={{ width: "1px", height: "30px", background: tokens.gray200 }}
+            />
             <Box sx={{ textAlign: "center", flex: 1 }}>
               <Typography sx={{ fontSize: "1.2rem", mb: 0.5 }}>🔒</Typography>
               <Typography
                 variant="caption"
-                sx={{ color: "#707070", fontSize: "0.75rem" }}
+                sx={{ color: tokens.gray500, fontSize: "0.75rem" }}
               >
                 {t("common.secure")}
               </Typography>
             </Box>
-            <Box sx={{ width: "1px", height: "30px", background: "#e0e0e0" }} />
+            <Box
+              sx={{ width: "1px", height: "30px", background: tokens.gray200 }}
+            />
             <Box sx={{ textAlign: "center", flex: 1 }}>
               <Typography sx={{ fontSize: "1.2rem", mb: 0.5 }}>✓</Typography>
               <Typography
                 variant="caption"
-                sx={{ color: "#707070", fontSize: "0.75rem" }}
+                sx={{ color: tokens.gray500, fontSize: "0.75rem" }}
               >
                 {t("common.verified")}
               </Typography>
             </Box>
           </Box>
           <Box sx={{ pt: 3 }}>
-            <LanguageSelector color="rgb(34, 97, 124)" />
+            <LanguageSelector color={tokens.primary} />
           </Box>
         </Paper>
       </Container>

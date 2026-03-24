@@ -1,4 +1,5 @@
-import React, { useCallback, useRef } from "react";
+import { memo, useCallback, useRef } from "react";
+import type { FC, SyntheticEvent } from "react";
 import {
   Box,
   Typography,
@@ -37,7 +38,7 @@ export interface FilterSidebarProps {
   t?: (key: string) => string;
 }
 
-export const FilterSidebar: React.FC<FilterSidebarProps> = React.memo(
+export const FilterSidebar: FC<FilterSidebarProps> = memo(
   ({
     sortBy,
     onSortChange,
@@ -67,7 +68,7 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = React.memo(
     );
 
     const handlePriceCommitted = useCallback(
-      (_: Event | React.SyntheticEvent, newValue: number | number[]) => {
+      (_: Event | SyntheticEvent, newValue: number | number[]) => {
         if (priceTimer.current) clearTimeout(priceTimer.current);
         priceTimer.current = setTimeout(() => {
           onPriceCommit(newValue as [number, number]);
