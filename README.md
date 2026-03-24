@@ -69,6 +69,7 @@ Exclusively available for customers in **Maharashtra, India** 🇮🇳
 | Validation  | Joi                                                           |
 | File Upload | Multer                                                        |
 | Logging     | Winston                                                       |
+| Email       | Resend SDK (transactional emails)                             |
 | Payments    | Stripe, Razorpay                                              |
 | Security    | Helmet, CORS, HPP, express-rate-limit, express-mongo-sanitize |
 
@@ -102,7 +103,7 @@ gadgify/
 │       │       ├── CustomIconButton.tsx
 │       │       ├── CustomSelect.tsx
 │       │       └── CustomLoadingButton.tsx
-│       ├── constants/
+│       ├── constants/            # Shared constants (categories, etc.)
 │       ├── context/              # ThemeContext (dark mode toggle)
 │       ├── hooks/                # Custom React hooks
 │       ├── i18n/                 # Translation files
@@ -139,7 +140,7 @@ gadgify/
 │       ├── middlewares/           # Auth, error handling, rate limiting
 │       ├── routes/               # Express route definitions
 │       ├── services/             # Business logic layer
-│       ├── utils/                # Helpers (JWT, validators, etc.)
+│       ├── utils/                # Helpers (JWT, validators, email, etc.)
 │       ├── validators/           # Joi request schemas
 │       ├── seed.ts               # Database seeder
 │       └── server.ts             # Express app entry point
@@ -234,12 +235,13 @@ Toggle via `ThemeContext` — uses CSS custom properties in `index.css` + MUI `c
 
 - Product browsing with category filters, search, and price sorting
 - Responsive product cards with image carousels
-- Product detail with image gallery, video support, ratings
+- Product detail with image gallery, hover zoom, video support, ratings
 - Shopping cart with quantity management
 - Wishlist
 - Checkout with Stripe or Razorpay payment
 - Order history and order detail tracking
 - User profile with password change
+- Forgot password / reset password via email
 - GST-compliant pricing (base price + GST %)
 - Multi-language support (i18n)
 - Dark mode toggle
@@ -281,6 +283,8 @@ Toggle via `ThemeContext` — uses CSS custom properties in `index.css` + MUI `c
 | ------ | ------------------------------ | ------ | ------------------------- |
 | POST   | `/api/auth/register`           | Public | Register new user         |
 | POST   | `/api/auth/login`              | Public | Login, returns JWT        |
+| POST   | `/api/auth/forgot-password`    | Public | Send password reset email |
+| POST   | `/api/auth/reset-password`     | Public | Reset password with token |
 | GET    | `/api/products`                | Public | List products (paginated) |
 | GET    | `/api/products/:id`            | Public | Product detail            |
 | POST   | `/api/products`                | Admin  | Create product            |
@@ -305,7 +309,7 @@ Toggle via `ThemeContext` — uses CSS custom properties in `index.css` + MUI `c
 
 | Model        | Key Fields                                                                                 |
 | ------------ | ------------------------------------------------------------------------------------------ |
-| User         | id, email, name, phone, role, state, city, address, pincode                                |
+| User         | id, email, name, phone, role, state, city, address, pincode, resetToken, resetTokenExpiry  |
 | Product      | id, name, description, price, originalPrice, stock, category, hsnNo, gstPercentage, colors |
 | ProductMedia | id, url, type (image/video), isPrimary, productId                                          |
 | Rating       | id, rating, comment, productId, userId (unique per user-product)                           |
@@ -374,6 +378,7 @@ Namespace convention: `admin.*`, `common.*`, `orders.*`, `payment.*`, `categorie
 ## Security
 
 - **Authentication:** JWT access tokens, bcrypt password hashing
+- **Password Reset:** Secure token-based flow — crypto.randomBytes(32), SHA-256 hashed in DB, 1-hour expiry, prevents email enumeration
 - **HTTP:** Helmet headers, CORS whitelist, HPP parameter pollution protection
 - **Rate Limiting:** Express rate limiter on auth and API endpoints
 - **Input Sanitization:** express-mongo-sanitize, Joi validation on all request bodies
@@ -382,7 +387,17 @@ Namespace convention: `admin.*`, `common.*`, `orders.*`, `payment.*`, `categorie
 
 ---
 
-## Recently Implemented Features (2025)
+## Recently Implemented Features (2025–2026)
+
+### March 2026
+
+- [x] **Forgot / Reset Password** — Full email-based password reset flow using Resend SDK. Backend generates secure crypto token (SHA-256 hashed, 1-hour expiry), sends styled HTML email with reset link. Frontend includes ForgotPasswordPage and ResetPasswordPage with validation, loading states, and success feedback
+- [x] **ChangePasswordPage UI overhaul** — Converted all hardcoded colors to design tokens, updated to MUI v7 `slotProps` pattern
+- [x] **Standardized Categories** — 12 product categories defined as shared constants (`frontend/src/constants/categories.tsx`) with icons and colors. Updated HomePage, AdminProducts, and all 3 locale files (English, Hindi, Marathi)
+- [x] **Product Detail — Image Zoom** — Replaced oversized image gallery with a responsive container (520px max). Hover-to-zoom at 2× magnification with CSS transform, cursor-following origin. Thumbnail strip below main image for multi-image/video navigation
+- [x] **Product Card — List View Layout** — ProductCard now accepts `viewMode` prop. In list view, renders horizontally with a compact 220×200px image, content in the middle, and action buttons on the right — no more oversized full-width cards
+
+### 2025
 
 - [x] **Dynamic HomePage** — Trending products, new arrivals, shop-by-category grid, deal-of-the-day countdown, customer testimonials, newsletter signup
 - [x] **Product listing enhancements** — Desktop filter sidebar restored, grid/list view toggle, "Showing X of Y" product counter, URL-driven category/sort filters
@@ -401,7 +416,7 @@ Namespace convention: `admin.*`, `common.*`, `orders.*`, `payment.*`, `categorie
 - [ ] **Multi-vendor support** — Allow third-party sellers on the platform
 - [ ] **Analytics dashboard** — Sales trends, customer insights, revenue charts (Chart.js / Recharts)
 - [ ] **PWA support** — Service worker, offline cache, installable app
-- [ ] **Email notifications** — Order confirmation, shipping updates, password reset (Nodemailer / SendGrid)
+- [ ] **Email notifications** — Order confirmation, shipping updates (Nodemailer / SendGrid)
 - [ ] **Image optimization** — Sharp / CDN integration for responsive image serving
 - [ ] **CI/CD pipeline** — GitHub Actions for lint, test, build, deploy
 - [ ] **Unit & integration tests** — Vitest (frontend) + Jest/Supertest (backend)
