@@ -31,6 +31,7 @@ interface ProductCardProps {
   onNavigate: (id: string) => void;
   t: (key: string) => string;
   isAddingToCart?: boolean;
+  viewMode?: "grid" | "list";
 }
 
 const ProductCard: React.FC<ProductCardProps> = ({
@@ -43,7 +44,9 @@ const ProductCard: React.FC<ProductCardProps> = ({
   onNavigate,
   t,
   isAddingToCart = false,
+  viewMode = "grid",
 }) => {
+  const isList = viewMode === "list";
   // Calculate discount percentage
   const discountPercent =
     product.originalPrice && product.originalPrice > product.price
@@ -57,17 +60,17 @@ const ProductCard: React.FC<ProductCardProps> = ({
     <Card
       sx={{
         display: "flex",
-        flexDirection: "column",
+        flexDirection: isList ? "row" : "column",
         overflow: "hidden",
-        height: "100%",
+        height: isList ? "auto" : "100%",
         border: `1px solid ${tokens.gray200}`,
-        borderRadius: 4,
+        borderRadius: isList ? 3 : 4,
         transition: "all 0.25s cubic-bezier(.4,0,.2,1)",
         position: "relative",
         bgcolor: tokens.white,
         "&:hover": {
           boxShadow: "0 12px 32px rgba(0,0,0,0.1)",
-          transform: "translateY(-6px)",
+          transform: isList ? "none" : "translateY(-6px)",
           borderColor: tokens.gray300,
         },
       }}
@@ -82,6 +85,11 @@ const ProductCard: React.FC<ProductCardProps> = ({
           alignItems: "center",
           justifyContent: "center",
           bgcolor: tokens.gray50,
+          ...(isList && {
+            width: 220,
+            minWidth: 220,
+            height: 200,
+          }),
         }}
         onClick={() => onNavigate(product.id)}
       >
@@ -97,7 +105,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
             ""
           }
           alt={product.name}
-          height={320}
+          height={isList ? 200 : 320}
           objectFit="cover"
         />
 
@@ -162,6 +170,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
           flexDirection: "column",
           gap: 1,
           p: 2,
+          ...(isList && { justifyContent: "center" }),
         }}
       >
         {/* Title */}
@@ -255,12 +264,18 @@ const ProductCard: React.FC<ProductCardProps> = ({
       <CardActions
         sx={{
           display: "flex",
-          flexDirection: "column",
+          flexDirection: isList ? "row" : "column",
           gap: 1,
           px: 2,
           pb: 2,
-          pt: 0,
+          pt: isList ? 2 : 0,
           "& > :not(style) + :not(style)": { ml: 0 },
+          ...(isList && {
+            minWidth: 200,
+            alignItems: "center",
+            flexDirection: "column",
+            justifyContent: "center",
+          }),
         }}
       >
         <Button

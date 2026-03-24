@@ -1,7 +1,7 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
-import { useState } from "react";
+import { useState, useRef, useCallback } from "react";
 import {
   Container,
   Box,
@@ -16,8 +16,6 @@ import {
   Tooltip,
   Snackbar,
 } from "@mui/material";
-import { Swiper, SwiperSlide } from "swiper/react";
-import { Pagination, Navigation } from "swiper/modules";
 
 import {
   ShoppingCart,
@@ -47,6 +45,10 @@ const ProductDetailPage = () => {
   const [selectedColor, setSelectedColor] = useState<string>("");
   const [quantity, setQuantity] = useState(1);
   const [shareSnackbar, setShareSnackbar] = useState(false);
+  const [activeMediaIndex, setActiveMediaIndex] = useState(0);
+  const [zoomStyle, setZoomStyle] = useState<React.CSSProperties>({});
+  const [isZooming, setIsZooming] = useState(false);
+  const imgContainerRef = useRef<HTMLDivElement>(null);
 
   const {
     data: product,
@@ -74,6 +76,24 @@ const ProductDetailPage = () => {
   const relatedProducts = (relatedData?.products || [])
     .filter((p: any) => p.id !== id)
     .slice(0, 4);
+
+  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    const container = imgContainerRef.current;
+    if (!container) return;
+    const rect = container.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width) * 100;
+    const y = ((e.clientY - rect.top) / rect.height) * 100;
+    setZoomStyle({
+      transformOrigin: `${x}% ${y}%`,
+      transform: "scale(2)",
+    });
+  }, []);
+
+  const handleMouseEnter = useCallback(() => setIsZooming(true), []);
+  const handleMouseLeave = useCallback(() => {
+    setIsZooming(false);
+    setZoomStyle({});
+  }, []);
 
   const handleAddToCart = async () => {
     if (!isAuthenticated) {
@@ -145,7 +165,8 @@ const ProductDetailPage = () => {
       alt: "Product Video",
     })),
   ];
-  console.log(items);
+  const activeItem = items[activeMediaIndex] || items[0];
+
   return (
     <Container maxWidth="xl" sx={{ py: 4 }}>
       <Button
@@ -162,36 +183,134 @@ const ProductDetailPage = () => {
           flexDirection: { xs: "column", md: "row" },
         }}
       >
+        {/* ── Image Gallery ── */}
         <Box
           sx={{
-            maxWidth: 630,
+            maxWidth: 520,
             width: "100%",
             display: "flex",
             flexDirection: "column",
             gap: 2,
           }}
         >
+          {/* Main image with zoom */}
           <Box
+            ref={imgContainerRef}
+            onMouseMove={handleMouseMove}
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeave}
             sx={{
               width: "100%",
-              height: 420, // 🔥 FIXED HEIGHT
+              height: { xs: 300, sm: 400 },
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              bgcolor: "#fafafa",
-              borderRadius: 4,
+              bgcolor: tokens.gray50,
+              borderRadius: 3,
+              border: `1px solid ${tokens.gray200}`,
+              overflow: "hidden",
+              cursor: isZooming ? "crosshair" : "default",
+              position: "relative",
             }}
           >
-            <img
-              src={primary?.url}
-              alt={"Product image"}
-              style={{
-                borderRadius: 8,
-                width: "100%",
-                height: "100%",
-              }}
-            />
+            {activeItem?.type === "video" ? (
+              <video
+                src={activeItem.url}
+                controls
+                style={{
+                  maxWidth: "100%",
+                  maxHeight: "100%",
+                  objectFit: "contain",
+                  borderRadius: 8,
+                }}
+              />
+            ) : (
+              <img
+                src={activeItem?.url}
+                alt={activeItem?.alt || "Product image"}
+                style={{
+                  maxWidth: "100%",
+                  maxHeight: "100%",
+                  objectFit: "contain",
+                  transition: isZooming ? "none" : "transform 0.3s ease",
+                  ...zoomStyle,
+                }}
+                draggable={false}
+              />
+            )}
           </Box>
+
+          {/* Thumbnail strip */}
+          {items.length > 1 && (
+            <Box
+              sx={{
+                display: "flex",
+                gap: 1,
+                overflowX: "auto",
+                py: 0.5,
+                px: 0.5,
+                "&::-webkit-scrollbar": { height: 4 },
+                "&::-webkit-scrollbar-thumb": {
+                  bgcolor: tokens.gray300,
+                  borderRadius: 2,
+                },
+              }}
+            >
+              {items.map((item, idx) => (
+                <Box
+                  key={item.url}
+                  onClick={() => setActiveMediaIndex(idx)}
+                  sx={{
+                    width: 64,
+                    height: 64,
+                    minWidth: 64,
+                    borderRadius: 2,
+                    border:
+                      idx === activeMediaIndex
+                        ? `2px solid ${tokens.accent}`
+                        : `1px solid ${tokens.gray200}`,
+                    overflow: "hidden",
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    bgcolor: tokens.gray50,
+                    transition: "border-color 0.2s",
+                    "&:hover": {
+                      borderColor: tokens.accent,
+                    },
+                  }}
+                >
+                  {item.type === "video" ? (
+                    <Box
+                      sx={{
+                        width: "100%",
+                        height: "100%",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        bgcolor: tokens.gray100,
+                        fontSize: 24,
+                      }}
+                    >
+                      ▶
+                    </Box>
+                  ) : (
+                    <img
+                      src={item.url}
+                      alt={`Thumbnail ${idx + 1}`}
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "cover",
+                      }}
+                      draggable={false}
+                    />
+                  )}
+                </Box>
+              ))}
+            </Box>
+          )}
         </Box>
 
         <Box sx={{ flex: 1, display: "flex", flexDirection: "column", gap: 3 }}>
@@ -221,12 +340,20 @@ const ProductDetailPage = () => {
             {product.stock > 0 ? (
               <Chip
                 label={`${t("products.stock")}: ${product.stock}`}
-                sx={{ bgcolor: "#4caf50", color: "#fff", fontWeight: 600 }}
+                sx={{
+                  bgcolor: tokens.success,
+                  color: tokens.white,
+                  fontWeight: 600,
+                }}
               />
             ) : (
               <Chip
                 label={t("products.outOfStock")}
-                sx={{ bgcolor: "#f44336", color: "#fff", fontWeight: 600 }}
+                sx={{
+                  bgcolor: tokens.error,
+                  color: tokens.white,
+                  fontWeight: 600,
+                }}
               />
             )}
           </Box>
@@ -334,7 +461,13 @@ const ProductDetailPage = () => {
               gap: 2,
             }}
           >
-            <Paper sx={{ p: 2.5, borderRadius: 2, border: "1px solid #eee" }}>
+            <Paper
+              sx={{
+                p: 2.5,
+                borderRadius: 2,
+                border: `1px solid ${tokens.gray200}`,
+              }}
+            >
               <Typography
                 variant="h6"
                 sx={{
@@ -355,7 +488,13 @@ const ProductDetailPage = () => {
                 {t("products.freeDeliveryAbove")}
               </Typography>
             </Paper>
-            <Paper sx={{ p: 2.5, borderRadius: 2, border: "1px solid #eee" }}>
+            <Paper
+              sx={{
+                p: 2.5,
+                borderRadius: 2,
+                border: `1px solid ${tokens.gray200}`,
+              }}
+            >
               <Typography
                 variant="h6"
                 sx={{
@@ -409,50 +548,10 @@ const ProductDetailPage = () => {
           )}
         </Box>
       </Box>
-      <Box sx={{ maxWidth: 630, my: 4, position: "relative" }}>
-        <Swiper
-          slidesPerView={2}
-          navigation
-          pagination
-          modules={[Pagination, Navigation]}
-        >
-          {items.map((item) => (
-            <SwiperSlide key={item.url}>
-              {item.type === "image" ? (
-                <img
-                  src={item.url}
-                  alt={item.alt || "Product image"}
-                  style={{
-                    borderRadius: 8,
-                    objectFit: "contain",
-                    maxHeight: "130px",
-                    maxWidth: "160px",
-                    width: "100%",
-                    height: "100%",
-                  }}
-                />
-              ) : (
-                <video
-                  src={item.url}
-                  controls
-                  style={{
-                    objectFit: "contain",
-                    maxHeight: "130px",
-                    maxWidth: "160px",
-                    width: "100%",
-                    height: "100%",
-                    borderRadius: 8,
-                  }}
-                />
-              )}
-            </SwiperSlide>
-          ))}
-        </Swiper>
-      </Box>
 
       {/* Ratings Section */}
       <Box sx={{ mt: 8 }}>
-        <Divider sx={{ mb: 6, borderColor: "#ddd" }} />
+        <Divider sx={{ mb: 6, borderColor: tokens.gray200 }} />
         <Typography
           variant="h5"
           gutterBottom
@@ -474,7 +573,7 @@ const ProductDetailPage = () => {
       {/* Related Products */}
       {relatedProducts.length > 0 && (
         <Box sx={{ mt: 8 }}>
-          <Divider sx={{ mb: 6, borderColor: "#ddd" }} />
+          <Divider sx={{ mb: 6, borderColor: tokens.gray200 }} />
           <Typography
             variant="h5"
             gutterBottom

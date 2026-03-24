@@ -494,6 +494,7 @@ const ProductsPage = () => {
                       onNavigate={(id) => navigate(`/products/${id}`)}
                       t={t}
                       isAddingToCart={isAddingToCart(product.id)}
+                      viewMode={viewMode}
                     />
                   ))
                 ) : (
