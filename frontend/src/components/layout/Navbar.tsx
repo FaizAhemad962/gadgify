@@ -31,13 +31,18 @@ import {
   Dashboard,
   Person,
   Logout,
+  DarkMode,
+  LightMode,
 } from "@mui/icons-material";
 import { useAuth } from "../../context/AuthContext";
 import { useCart } from "../../context/CartContext";
 import { useWishlist } from "../../context/WishlistContext";
 import LanguageSelector from "../common/LanguageSelector";
+import SearchAutocomplete from "../common/SearchAutocomplete";
 import { AppDrawer } from "../ui/Drawer";
 import { tokens } from "@/theme/theme";
+import { useThemeMode } from "../../context/ThemeContext";
+import styles from "./Navbar.module.css";
 
 const Navbar = () => {
   const { t } = useTranslation();
@@ -45,7 +50,7 @@ const Navbar = () => {
   const { isAuthenticated, isAdmin, logout, user } = useAuth();
   const { itemCount } = useCart();
   const { wishlistItems } = useWishlist();
-  // const { mode, toggleTheme } = useThemeMode();
+  const { mode, toggleTheme } = useThemeMode();
 
   const [anchorElUser, setAnchorElUser] = useState<null | HTMLElement>(null);
 
@@ -102,6 +107,24 @@ const Navbar = () => {
             to: "/admin/orders",
             icon: <Settings />,
           },
+          {
+            id: "adminCoupons",
+            label: t("nav.adminCoupons", "Coupons"),
+            to: "/admin/coupons",
+            icon: <Settings />,
+          },
+          {
+            id: "adminCategories",
+            label: t("nav.adminCategories", "Categories"),
+            to: "/admin/categories",
+            icon: <Settings />,
+          },
+          {
+            id: "adminUsers",
+            label: t("nav.adminUsers", "Users"),
+            to: "/admin/users",
+            icon: <Settings />,
+          },
         ]
       : []),
   ];
@@ -150,10 +173,10 @@ const Navbar = () => {
           disableGutters
           sx={{
             minHeight: { xs: 56, md: 64 },
-            gap: 1,
+            gap: 3,
             display: "flex",
             alignItems: "center",
-            justifyContent: "space-between",
+            // justifyContent: "space-between",
           }}
         >
           {/* ── Brand ── */}
@@ -173,7 +196,7 @@ const Navbar = () => {
                 height={40}
                 width={40}
                 src={BrandIcon}
-                style={{ marginRight: 10 }}
+                className={styles.navbarImg}
               />
               <Typography
                 variant="h6"
@@ -189,6 +212,11 @@ const Navbar = () => {
               </Typography>
             </Link>
           </Box>
+
+          {/* ── Search Bar ── */}
+          {/* <Box sx={{ display: { xs: "none", md: "flex" }, mx: 2 }}>
+            <SearchAutocomplete />
+          </Box> */}
 
           {/* ── Mobile menu ── */}
           <Box sx={{ display: { xs: "flex", md: "none" }, ml: "auto" }}>

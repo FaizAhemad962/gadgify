@@ -5,6 +5,7 @@ import { AuthProvider } from "./context/AuthContext";
 import { CartProvider } from "./context/CartContext";
 import { WishlistProvider } from "./context/WishlistContext";
 import { SearchProvider } from "./context/SearchContext";
+import { CompareProvider } from "./context/CompareContext";
 import AppRoutes from "./routes/AppRoutes";
 import ScrollToTop from "./components/ScrollToTop";
 
@@ -28,7 +29,9 @@ function App() {
             <CartProvider>
               <WishlistProvider>
                 <SearchProvider>
-                  <AppRoutes />
+                  <CompareProvider>
+                    <AppRoutes />
+                  </CompareProvider>
                 </SearchProvider>
               </WishlistProvider>
             </CartProvider>

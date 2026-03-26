@@ -29,6 +29,7 @@ import {
 import { useAuth } from "@/context/AuthContext";
 import { productsApi } from "@/api/products";
 import ProductCard from "@/components/ProductCard";
+import RecentlyViewed from "@/components/products/RecentlyViewed";
 import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
 import { tokens } from "@/theme/theme";
@@ -323,9 +324,9 @@ const HomePage = () => {
             sx={{
               display: "grid",
               gridTemplateColumns: {
-                xs: "repeat(3, 1fr)",
-                sm: "repeat(3, 1fr)",
-                md: "repeat(5, 1fr)",
+                xs: "repeat(1, 1fr)",
+                sm: "repeat(1, 1fr)",
+                md: "repeat(4, 1fr)",
               },
               gap: 2,
             }}
@@ -428,7 +429,11 @@ const HomePage = () => {
           <Box
             sx={{
               display: "grid",
-              gridTemplateColumns: { xs: "1fr 1fr", md: "1fr 1fr 1fr 1fr" },
+              gridTemplateColumns: {
+                xs: "1fr",
+                sm: "repeat(2, 1fr)",
+                md: "repeat(4, 1fr)",
+              },
               gap: 3,
             }}
           >
@@ -646,7 +651,7 @@ const HomePage = () => {
           <Box
             sx={{
               display: "grid",
-              gridTemplateColumns: { xs: "1fr 1fr", md: "1fr 1fr 1fr 1fr" },
+              gridTemplateColumns: { xs: "1fr", md: "repeat(4, 1fr)" },
               gap: 3,
             }}
           >
@@ -762,6 +767,11 @@ const HomePage = () => {
           </Box>
         </Container>
       </Box>
+
+      {/* ───── Recently Viewed Products ───── */}
+      <Container maxWidth="lg" sx={{ py: 4 }}>
+        <RecentlyViewed />
+      </Container>
 
       {/* ───── 5. CUSTOMER TESTIMONIALS ───── */}
       <Container maxWidth="lg" sx={{ py: 8 }}>

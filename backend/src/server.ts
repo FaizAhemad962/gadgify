@@ -15,6 +15,9 @@ import orderRoutes from "./routes/orderRoutes";
 import adminRoutes from "./routes/adminRoutes";
 import wishlistRoutes from "./routes/wishlistRoutes";
 import mediaRoutes from "./routes/mediaRoutes";
+import couponRoutes from "./routes/couponRoutes";
+import categoryRoutes from "./routes/categoryRoutes";
+import addressRoutes from "./routes/addressRoutes";
 
 const app: Application = express();
 
@@ -110,7 +113,9 @@ app.use("/api/cart", cartRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/wishlist", wishlistRoutes);
-
+app.use("/api/coupons", couponRoutes);
+app.use("/api/categories", categoryRoutes);
+app.use("/api/addresses", addressRoutes);
 
 // 404 handler
 app.use((req: Request, res: Response) => {

@@ -1,5 +1,5 @@
 ---
-description: "Describe what this custom agent does and when to use it."
+description: "Use when building features, fixing bugs, or refactoring in the Gadgify e-commerce app. Expert in React 19, MUI 7, Express 5, Prisma, PostgreSQL, Stripe/Razorpay payments, JWT auth, and i18n. Follows Route→Controller→Service→Prisma layering on backend, React Query + Hook Form + Zod on frontend."
 tools:
   [
     "execute/runInTerminal",

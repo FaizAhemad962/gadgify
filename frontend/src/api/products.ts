@@ -53,6 +53,23 @@ export const productsApi = {
     return data;
   },
 
+  getSuggestions: async (
+    q: string,
+  ): Promise<
+    Array<{
+      id: string;
+      name: string;
+      price: number;
+      category: string;
+      image: string | null;
+    }>
+  > => {
+    const { data } = await apiClient.get("/products/suggestions", {
+      params: { q },
+    });
+    return data.data;
+  },
+
   create: async (payload: CreateProductRequest): Promise<Product> => {
     const { data } = await apiClient.post("/products", payload);
     return data;

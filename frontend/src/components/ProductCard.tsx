@@ -10,9 +10,15 @@ import {
   Typography,
   CircularProgress,
 } from "@mui/material";
-import { ShoppingCart, Favorite, FavoriteBorder } from "@mui/icons-material";
+import {
+  ShoppingCart,
+  Favorite,
+  FavoriteBorder,
+  CompareArrows,
+} from "@mui/icons-material";
 import LazyImage from "../components/common/LazyImage";
 import { StarRating } from "../components/common/StarRating";
+import { useCompare } from "../context/CompareContext";
 import { tokens } from "@/theme/theme";
 
 interface ProductMedia {
@@ -47,6 +53,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
   viewMode = "grid",
 }) => {
   const isList = viewMode === "list";
+  const { isInCompare, addToCompare, removeFromCompare, isFull } = useCompare();
   // Calculate discount percentage
   const discountPercent =
     product.originalPrice && product.originalPrice > product.price
@@ -159,6 +166,43 @@ const ProductCard: React.FC<ProductCardProps> = ({
           ) : (
             <FavoriteBorder sx={{ fontSize: 20, color: tokens.gray500 }} />
           )}
+        </IconButton>
+
+        {/* Compare toggle */}
+        <IconButton
+          aria-label={t("products.compare")}
+          onClick={(e) => {
+            e.stopPropagation();
+            if (isInCompare(product.id)) {
+              removeFromCompare(product.id);
+            } else {
+              addToCompare(product.id);
+            }
+          }}
+          disabled={!isInCompare(product.id) && isFull}
+          sx={{
+            position: "absolute",
+            top: 50,
+            right: 10,
+            bgcolor: isInCompare(product.id)
+              ? tokens.accent
+              : "rgba(255,255,255,0.9)",
+            backdropFilter: "blur(4px)",
+            boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+            p: 1,
+            transition: "all 0.2s",
+            "&:hover": {
+              bgcolor: isInCompare(product.id) ? tokens.accentDark : "#fff",
+              transform: "scale(1.1)",
+            },
+          }}
+        >
+          <CompareArrows
+            sx={{
+              fontSize: 20,
+              color: isInCompare(product.id) ? "#fff" : tokens.gray500,
+            }}
+          />
         </IconButton>
       </Box>
 

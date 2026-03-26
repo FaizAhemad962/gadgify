@@ -3,6 +3,7 @@ import { Box } from "@mui/material";
 import Navbar from "./Navbar";
 import Footer from "./Footer";
 import PageContainer from "./PageContainer";
+import CompareBar from "../common/CompareBar";
 
 const Layout = () => {
   return (
@@ -22,6 +23,7 @@ const Layout = () => {
         </PageContainer>
       </Box>
       <Footer />
+      <CompareBar />
     </Box>
   );
 };

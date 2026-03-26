@@ -312,6 +312,55 @@ export const deleteProduct = async (
   }
 };
 
+export const getProductSuggestions = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> => {
+  try {
+    const q = ((req.query.q as string) || "").trim();
+    if (q.length < 2) {
+      res.json({ success: true, data: [] });
+      return;
+    }
+
+    const products = await prisma.product.findMany({
+      where: {
+        deletedAt: null,
+        OR: [
+          { name: { contains: q, mode: "insensitive" as const } },
+          { category: { contains: q, mode: "insensitive" as const } },
+        ],
+      } as any,
+      select: {
+        id: true,
+        name: true,
+        price: true,
+        category: true,
+        media: {
+          where: { isPrimary: true },
+          select: { url: true },
+          take: 1,
+        },
+      },
+      take: 8,
+      orderBy: { name: "asc" },
+    });
+
+    const suggestions = products.map((p: any) => ({
+      id: p.id,
+      name: p.name,
+      price: p.price,
+      category: p.category,
+      image: p.media?.[0]?.url || null,
+    }));
+
+    res.json({ success: true, data: suggestions });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const searchProducts = async (
   req: Request,
   res: Response,

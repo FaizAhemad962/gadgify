@@ -2,7 +2,7 @@ import crypto from "crypto";
 import { Request, Response, NextFunction } from "express";
 import prisma from "../config/database";
 import { hashPassword, comparePassword, generateToken } from "../utils/auth";
-import { sendPasswordResetEmail } from "../utils/email";
+import { sendPasswordResetEmail, sendWelcomeEmail } from "../utils/email";
 import { AuthRequest } from "../middlewares/auth";
 import { validatePasswordStrength } from "../middlewares/securityValidator";
 import logger from "../utils/logger";
@@ -115,6 +115,11 @@ export const signup = async (
 
     // Log signup event
     logger.info(`User signup: ${email}`);
+
+    // Send welcome email (non-blocking)
+    sendWelcomeEmail(email, name).catch((err) =>
+      logger.error(`Welcome email failed for ${email}: ${err.message}`),
+    );
 
     // Generate token
     const token = generateToken({

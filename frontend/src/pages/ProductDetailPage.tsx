@@ -1,7 +1,7 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import {
   Container,
   Box,
@@ -23,6 +23,7 @@ import {
   Share,
   Add,
   Remove,
+  NotificationsActive,
 } from "@mui/icons-material";
 import { productsApi } from "../api/products";
 import { ratingsApi } from "../api/ratings";
@@ -33,6 +34,8 @@ import { StarRating } from "../components/common/StarRating";
 import { RatingForm } from "../components/product/RatingForm";
 import { RatingsList } from "../components/product/RatingsList";
 import ProductCard from "../components/ProductCard";
+import RecentlyViewed from "../components/products/RecentlyViewed";
+import { useRecentlyViewed } from "../hooks/useRecentlyViewed";
 import { tokens } from "@/theme/theme";
 
 const ProductDetailPage = () => {
@@ -42,13 +45,44 @@ const ProductDetailPage = () => {
   const { isAuthenticated } = useAuth();
   const { addToCart, isAddingToCart } = useCart();
   const { isInWishlist, toggleWishlist, isToggling } = useWishlist();
+  const { addProduct: trackRecentlyViewed } = useRecentlyViewed();
   const [selectedColor, setSelectedColor] = useState<string>("");
   const [quantity, setQuantity] = useState(1);
   const [shareSnackbar, setShareSnackbar] = useState(false);
+  const [stockNotifySnackbar, setStockNotifySnackbar] = useState(false);
   const [activeMediaIndex, setActiveMediaIndex] = useState(0);
   const [zoomStyle, setZoomStyle] = useState<React.CSSProperties>({});
   const [isZooming, setIsZooming] = useState(false);
   const imgContainerRef = useRef<HTMLDivElement>(null);
+
+  const isNotifySubscribed = (productId: string) => {
+    try {
+      const subscribed: string[] = JSON.parse(
+        localStorage.getItem("gadgify_stock_notify") || "[]",
+      );
+      return subscribed.includes(productId);
+    } catch {
+      return false;
+    }
+  };
+
+  const handleNotifyMe = (productId: string) => {
+    try {
+      const subscribed: string[] = JSON.parse(
+        localStorage.getItem("gadgify_stock_notify") || "[]",
+      );
+      if (!subscribed.includes(productId)) {
+        subscribed.push(productId);
+        localStorage.setItem(
+          "gadgify_stock_notify",
+          JSON.stringify(subscribed),
+        );
+      }
+      setStockNotifySnackbar(true);
+    } catch {
+      // silently fail
+    }
+  };
 
   const {
     data: product,
@@ -59,6 +93,13 @@ const ProductDetailPage = () => {
     queryFn: () => productsApi.getById(id!),
     enabled: !!id,
   });
+
+  // Track this product as recently viewed
+  useEffect(() => {
+    if (product?.id) {
+      trackRecentlyViewed(product.id);
+    }
+  }, [product?.id, trackRecentlyViewed]);
 
   const { data: ratingsData } = useQuery({
     queryKey: ["ratings", id],
@@ -347,14 +388,35 @@ const ProductDetailPage = () => {
                 }}
               />
             ) : (
-              <Chip
-                label={t("products.outOfStock")}
-                sx={{
-                  bgcolor: tokens.error,
-                  color: tokens.white,
-                  fontWeight: 600,
-                }}
-              />
+              <>
+                <Chip
+                  label={t("products.outOfStock")}
+                  sx={{
+                    bgcolor: tokens.error,
+                    color: tokens.white,
+                    fontWeight: 600,
+                  }}
+                />
+                {!isNotifySubscribed(product.id) && (
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    startIcon={<NotificationsActive />}
+                    onClick={() => handleNotifyMe(product.id)}
+                    sx={{ textTransform: "none" }}
+                  >
+                    {t("products.notifyMe")}
+                  </Button>
+                )}
+                {isNotifySubscribed(product.id) && (
+                  <Chip
+                    label={t("products.notifyMeSubscribed")}
+                    color="info"
+                    size="small"
+                    icon={<NotificationsActive />}
+                  />
+                )}
+              </>
             )}
           </Box>
 
@@ -611,12 +673,28 @@ const ProductDetailPage = () => {
         </Box>
       )}
 
+      {/* Recently Viewed */}
+      <RecentlyViewed excludeProductId={id} />
+
       <Snackbar
         open={shareSnackbar}
         autoHideDuration={2000}
         onClose={() => setShareSnackbar(false)}
         message={t("common.linkCopied")}
       />
+      <Snackbar
+        open={stockNotifySnackbar}
+        autoHideDuration={3000}
+        onClose={() => setStockNotifySnackbar(false)}
+      >
+        <Alert
+          onClose={() => setStockNotifySnackbar(false)}
+          severity="success"
+          variant="filled"
+        >
+          {t("products.notifyMeSuccess")}
+        </Alert>
+      </Snackbar>
     </Container>
   );
 };

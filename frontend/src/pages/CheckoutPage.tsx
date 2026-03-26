@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -14,12 +14,18 @@ import {
   Button,
   Divider,
   Alert,
+  Chip,
+  Radio,
+  RadioGroup,
+  FormControlLabel,
 } from "@mui/material";
 import { useCart } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
 import { tokens } from "@/theme/theme";
 import { ErrorHandler } from "../utils/errorHandler";
 import { ordersApi } from "../api/orders";
+import { couponsApi, type CouponValidation } from "../api/coupons";
+import { addressesApi, type Address } from "../api/addresses";
 
 const shippingSchema = z.object({
   name: z.string().min(2, "Name is required"),
@@ -38,6 +44,28 @@ const CheckoutPage = () => {
   const { cart, clearCart } = useCart();
   const { user } = useAuth();
   const [error, setError] = useState("");
+  const [couponCode, setCouponCode] = useState("");
+  const [couponError, setCouponError] = useState("");
+  const [appliedCoupon, setAppliedCoupon] = useState<CouponValidation | null>(
+    null,
+  );
+  const [isValidatingCoupon, setIsValidatingCoupon] = useState(false);
+  const [selectedAddressId, setSelectedAddressId] = useState<string>("new");
+
+  const { data: savedAddresses = [] } = useQuery({
+    queryKey: ["addresses"],
+    queryFn: addressesApi.getAll,
+  });
+
+  // Set initial selection to default address when data loads
+  const defaultAddr = savedAddresses.find((a: Address) => a.isDefault);
+  if (savedAddresses.length > 0 && selectedAddressId === "new" && defaultAddr) {
+    setSelectedAddressId(defaultAddr.id);
+  }
+
+  const selectedSavedAddress = savedAddresses.find(
+    (a: Address) => a.id === selectedAddressId,
+  );
 
   const {
     register,
@@ -134,9 +162,50 @@ const CheckoutPage = () => {
     return 50;
   };
 
+  const handleApplyCoupon = async () => {
+    if (!couponCode.trim()) return;
+    setCouponError("");
+    setIsValidatingCoupon(true);
+    try {
+      const result = await couponsApi.validate(
+        couponCode.trim(),
+        calculateSubtotal(),
+      );
+      setAppliedCoupon(result);
+    } catch (err: any) {
+      const msg = err?.response?.data?.message || t("errors.invalidCoupon");
+      setCouponError(msg);
+      setAppliedCoupon(null);
+    } finally {
+      setIsValidatingCoupon(false);
+    }
+  };
+
+  const handleRemoveCoupon = () => {
+    setAppliedCoupon(null);
+    setCouponCode("");
+    setCouponError("");
+  };
+
+  const getDiscount = () => {
+    return appliedCoupon?.discount || 0;
+  };
+
   const onSubmit = async (data: ShippingFormData) => {
+    // Determine shipping address — saved or form
+    const shippingAddress = selectedSavedAddress
+      ? {
+          name: selectedSavedAddress.name,
+          phone: selectedSavedAddress.phone,
+          address: selectedSavedAddress.address,
+          city: selectedSavedAddress.city,
+          state: selectedSavedAddress.state,
+          pincode: selectedSavedAddress.pincode,
+        }
+      : data;
+
     // Check Maharashtra restriction
-    if (data.state.toLowerCase() !== "maharashtra") {
+    if (shippingAddress.state.toLowerCase() !== "maharashtra") {
       setError(t("errors.maharashtraOnly"));
       return;
     }
@@ -158,8 +227,9 @@ const CheckoutPage = () => {
       })),
       subtotal,
       shipping,
-      total,
-      shippingAddress: data,
+      total: total - getDiscount(),
+      couponCode: appliedCoupon?.code || undefined,
+      shippingAddress,
     };
 
     createOrderMutation.mutate(orderData);
@@ -172,7 +242,8 @@ const CheckoutPage = () => {
 
   const subtotal = calculateSubtotal();
   const shipping = calculateShipping();
-  const total = subtotal + shipping;
+  const discount = getDiscount();
+  const total = subtotal + shipping - discount;
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
@@ -211,131 +282,239 @@ const CheckoutPage = () => {
               </Typography>
               <Divider sx={{ mb: 3 }} />
 
-              <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2.5 }}>
-                <Box
-                  sx={{ flex: { xs: "1 1 100%", sm: "1 1 calc(50% - 6px)" } }}
-                >
-                  <TextField
-                    fullWidth
-                    label={t("auth.name")}
-                    {...register("name")}
-                    error={!!errors.name}
-                    helperText={errors.name?.message}
-                    variant="outlined"
-                    size="small"
-                    sx={{
-                      "& .MuiOutlinedInput-root": {
-                        "&:hover fieldset": {
-                          borderColor: tokens.primary,
+              {/* Saved Address Selection */}
+              {savedAddresses.length > 0 && (
+                <Box sx={{ mb: 3 }}>
+                  <Typography
+                    variant="body2"
+                    sx={{ fontWeight: 600, mb: 1.5, color: "text.secondary" }}
+                  >
+                    {t("address.savedAddresses", "Saved Addresses")}
+                  </Typography>
+                  <RadioGroup
+                    value={selectedAddressId}
+                    onChange={(e) => setSelectedAddressId(e.target.value)}
+                  >
+                    {savedAddresses.map((addr: Address) => (
+                      <Paper
+                        key={addr.id}
+                        variant="outlined"
+                        sx={{
+                          p: 1.5,
+                          mb: 1,
+                          cursor: "pointer",
+                          borderColor:
+                            selectedAddressId === addr.id
+                              ? "primary.main"
+                              : "divider",
+                          borderWidth: selectedAddressId === addr.id ? 2 : 1,
+                          bgcolor:
+                            selectedAddressId === addr.id
+                              ? "action.selected"
+                              : "transparent",
+                        }}
+                        onClick={() => setSelectedAddressId(addr.id)}
+                      >
+                        <FormControlLabel
+                          value={addr.id}
+                          control={<Radio size="small" />}
+                          label={
+                            <Box>
+                              <Typography variant="body2" fontWeight={600}>
+                                {addr.label}
+                                {addr.isDefault && (
+                                  <Chip
+                                    label={t("address.default", "Default")}
+                                    size="small"
+                                    color="primary"
+                                    sx={{
+                                      ml: 1,
+                                      height: 20,
+                                      fontSize: "0.7rem",
+                                    }}
+                                  />
+                                )}
+                              </Typography>
+                              <Typography
+                                variant="caption"
+                                color="text.secondary"
+                              >
+                                {addr.name} · {addr.phone}
+                              </Typography>
+                              <Typography
+                                variant="caption"
+                                display="block"
+                                color="text.secondary"
+                              >
+                                {addr.address}, {addr.city}, {addr.state} -{" "}
+                                {addr.pincode}
+                              </Typography>
+                            </Box>
+                          }
+                          sx={{ alignItems: "flex-start", m: 0, width: "100%" }}
+                        />
+                      </Paper>
+                    ))}
+                    <Paper
+                      variant="outlined"
+                      sx={{
+                        p: 1.5,
+                        cursor: "pointer",
+                        borderColor:
+                          selectedAddressId === "new"
+                            ? "primary.main"
+                            : "divider",
+                        borderWidth: selectedAddressId === "new" ? 2 : 1,
+                        bgcolor:
+                          selectedAddressId === "new"
+                            ? "action.selected"
+                            : "transparent",
+                      }}
+                      onClick={() => setSelectedAddressId("new")}
+                    >
+                      <FormControlLabel
+                        value="new"
+                        control={<Radio size="small" />}
+                        label={
+                          <Typography variant="body2" fontWeight={600}>
+                            {t("address.useNewAddress", "Use a new address")}
+                          </Typography>
+                        }
+                        sx={{ m: 0 }}
+                      />
+                    </Paper>
+                  </RadioGroup>
+                </Box>
+              )}
+
+              {/* Manual Address Form (shown when "new" selected or no saved addresses) */}
+              {(selectedAddressId === "new" || savedAddresses.length === 0) && (
+                <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2.5 }}>
+                  <Box
+                    sx={{ flex: { xs: "1 1 100%", sm: "1 1 calc(50% - 6px)" } }}
+                  >
+                    <TextField
+                      fullWidth
+                      label={t("auth.name")}
+                      {...register("name")}
+                      error={!!errors.name}
+                      helperText={errors.name?.message}
+                      variant="outlined"
+                      size="small"
+                      sx={{
+                        "& .MuiOutlinedInput-root": {
+                          "&:hover fieldset": {
+                            borderColor: tokens.primary,
+                          },
                         },
-                      },
-                    }}
-                  />
-                </Box>
-                <Box
-                  sx={{ flex: { xs: "1 1 100%", sm: "1 1 calc(50% - 6px)" } }}
-                >
-                  <TextField
-                    fullWidth
-                    label={t("auth.phone")}
-                    {...register("phone")}
-                    error={!!errors.phone}
-                    helperText={errors.phone?.message}
-                    variant="outlined"
-                    size="small"
-                    sx={{
-                      "& .MuiOutlinedInput-root": {
-                        "&:hover fieldset": {
-                          borderColor: tokens.primary,
+                      }}
+                    />
+                  </Box>
+                  <Box
+                    sx={{ flex: { xs: "1 1 100%", sm: "1 1 calc(50% - 6px)" } }}
+                  >
+                    <TextField
+                      fullWidth
+                      label={t("auth.phone")}
+                      {...register("phone")}
+                      error={!!errors.phone}
+                      helperText={errors.phone?.message}
+                      variant="outlined"
+                      size="small"
+                      sx={{
+                        "& .MuiOutlinedInput-root": {
+                          "&:hover fieldset": {
+                            borderColor: tokens.primary,
+                          },
                         },
-                      },
-                    }}
-                  />
-                </Box>
-                <Box sx={{ flex: "1 1 100%" }}>
-                  <TextField
-                    fullWidth
-                    multiline
-                    rows={3}
-                    label={t("auth.address")}
-                    {...register("address")}
-                    error={!!errors.address}
-                    helperText={errors.address?.message}
-                    variant="outlined"
-                    size="small"
-                    sx={{
-                      "& .MuiOutlinedInput-root": {
-                        "&:hover fieldset": {
-                          borderColor: tokens.primary,
+                      }}
+                    />
+                  </Box>
+                  <Box sx={{ flex: "1 1 100%" }}>
+                    <TextField
+                      fullWidth
+                      multiline
+                      rows={3}
+                      label={t("auth.address")}
+                      {...register("address")}
+                      error={!!errors.address}
+                      helperText={errors.address?.message}
+                      variant="outlined"
+                      size="small"
+                      sx={{
+                        "& .MuiOutlinedInput-root": {
+                          "&:hover fieldset": {
+                            borderColor: tokens.primary,
+                          },
                         },
-                      },
-                    }}
-                  />
-                </Box>
-                <Box
-                  sx={{ flex: { xs: "1 1 100%", sm: "1 1 calc(50% - 6px)" } }}
-                >
-                  <TextField
-                    fullWidth
-                    label={t("auth.city")}
-                    {...register("city")}
-                    error={!!errors.city}
-                    helperText={errors.city?.message}
-                    variant="outlined"
-                    size="small"
-                    sx={{
-                      "& .MuiOutlinedInput-root": {
-                        "&:hover fieldset": {
-                          borderColor: tokens.primary,
+                      }}
+                    />
+                  </Box>
+                  <Box
+                    sx={{ flex: { xs: "1 1 100%", sm: "1 1 calc(50% - 6px)" } }}
+                  >
+                    <TextField
+                      fullWidth
+                      label={t("auth.city")}
+                      {...register("city")}
+                      error={!!errors.city}
+                      helperText={errors.city?.message}
+                      variant="outlined"
+                      size="small"
+                      sx={{
+                        "& .MuiOutlinedInput-root": {
+                          "&:hover fieldset": {
+                            borderColor: tokens.primary,
+                          },
                         },
-                      },
-                    }}
-                  />
-                </Box>
-                <Box
-                  sx={{ flex: { xs: "1 1 100%", sm: "1 1 calc(50% - 6px)" } }}
-                >
-                  <TextField
-                    fullWidth
-                    label={t("auth.state")}
-                    {...register("state")}
-                    error={!!errors.state}
-                    helperText={
-                      errors.state?.message || t("common.mustBeMaharashtra")
-                    }
-                    variant="outlined"
-                    size="small"
-                    InputProps={{
-                      readOnly: true,
-                    }}
-                    sx={{
-                      "& .MuiOutlinedInput-root": {
-                        backgroundColor: tokens.gray50,
-                      },
-                    }}
-                  />
-                </Box>
-                <Box
-                  sx={{ flex: { xs: "1 1 100%", sm: "1 1 calc(50% - 6px)" } }}
-                >
-                  <TextField
-                    fullWidth
-                    label={t("auth.pincode")}
-                    {...register("pincode")}
-                    error={!!errors.pincode}
-                    helperText={errors.pincode?.message}
-                    variant="outlined"
-                    size="small"
-                    sx={{
-                      "& .MuiOutlinedInput-root": {
-                        "&:hover fieldset": {
-                          borderColor: tokens.primary,
+                      }}
+                    />
+                  </Box>
+                  <Box
+                    sx={{ flex: { xs: "1 1 100%", sm: "1 1 calc(50% - 6px)" } }}
+                  >
+                    <TextField
+                      fullWidth
+                      label={t("auth.state")}
+                      {...register("state")}
+                      error={!!errors.state}
+                      helperText={
+                        errors.state?.message || t("common.mustBeMaharashtra")
+                      }
+                      variant="outlined"
+                      size="small"
+                      InputProps={{
+                        readOnly: true,
+                      }}
+                      sx={{
+                        "& .MuiOutlinedInput-root": {
+                          backgroundColor: tokens.gray50,
                         },
-                      },
-                    }}
-                  />
+                      }}
+                    />
+                  </Box>
+                  <Box
+                    sx={{ flex: { xs: "1 1 100%", sm: "1 1 calc(50% - 6px)" } }}
+                  >
+                    <TextField
+                      fullWidth
+                      label={t("auth.pincode")}
+                      {...register("pincode")}
+                      error={!!errors.pincode}
+                      helperText={errors.pincode?.message}
+                      variant="outlined"
+                      size="small"
+                      sx={{
+                        "& .MuiOutlinedInput-root": {
+                          "&:hover fieldset": {
+                            borderColor: tokens.primary,
+                          },
+                        },
+                      }}
+                    />
+                  </Box>
                 </Box>
-              </Box>
+              )}
             </Paper>
           </Box>
 
@@ -442,6 +621,104 @@ const CheckoutPage = () => {
                   </Typography>
                 </Box>
               </Box>
+
+              {/* Coupon Code Input */}
+              <Box sx={{ mb: 2.5 }}>
+                <Typography
+                  variant="body2"
+                  sx={{ fontWeight: 600, mb: 1, color: "text.primary" }}
+                >
+                  🎟️ {t("checkout.applyCoupon")}
+                </Typography>
+                {appliedCoupon ? (
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      p: 1.5,
+                      bgcolor: "#e8f5e9",
+                      borderRadius: 1,
+                    }}
+                  >
+                    <Box>
+                      <Chip
+                        label={appliedCoupon.code}
+                        color="success"
+                        size="small"
+                        sx={{ fontWeight: 700, mr: 1 }}
+                      />
+                      <Typography
+                        component="span"
+                        variant="body2"
+                        sx={{ color: "success.main", fontWeight: 600 }}
+                      >
+                        -₹{appliedCoupon.discount.toLocaleString()}
+                      </Typography>
+                    </Box>
+                    <Button
+                      size="small"
+                      color="error"
+                      onClick={handleRemoveCoupon}
+                      sx={{ minWidth: "auto", textTransform: "none" }}
+                    >
+                      ✕
+                    </Button>
+                  </Box>
+                ) : (
+                  <Box sx={{ display: "flex", gap: 1 }}>
+                    <TextField
+                      size="small"
+                      placeholder={t("checkout.couponPlaceholder")}
+                      value={couponCode}
+                      onChange={(e) => {
+                        setCouponCode(e.target.value);
+                        setCouponError("");
+                      }}
+                      error={!!couponError}
+                      helperText={couponError}
+                      sx={{ flex: 1 }}
+                      slotProps={{
+                        input: {
+                          sx: { textTransform: "uppercase" },
+                        },
+                      }}
+                    />
+                    <Button
+                      variant="outlined"
+                      size="small"
+                      onClick={handleApplyCoupon}
+                      disabled={isValidatingCoupon || !couponCode.trim()}
+                      sx={{
+                        textTransform: "none",
+                        fontWeight: 600,
+                        minWidth: 80,
+                      }}
+                    >
+                      {isValidatingCoupon ? "..." : t("common.apply")}
+                    </Button>
+                  </Box>
+                )}
+              </Box>
+
+              {/* Discount row */}
+              {discount > 0 && (
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    mb: 1.5,
+                    alignItems: "center",
+                  }}
+                >
+                  <Typography sx={{ color: "success.main", fontWeight: 500 }}>
+                    {t("checkout.discount")}
+                  </Typography>
+                  <Typography sx={{ fontWeight: 600, color: "success.main" }}>
+                    -₹{discount.toLocaleString()}
+                  </Typography>
+                </Box>
+              )}
 
               <Divider sx={{ my: 2.5 }} />
 

@@ -13,4 +13,5 @@ export const config = {
   razorpayKeySecret: process.env.RAZORPAY_KEY_SECRET || "",
   resendApiKey: process.env.RESEND_API_KEY || "",
   emailFrom: process.env.EMAIL_FROM || "Gadgify <onboarding@resend.dev>",
+  adminEmail: process.env.ADMIN_EMAIL || "",
 };

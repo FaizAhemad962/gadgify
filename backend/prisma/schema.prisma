@@ -28,6 +28,7 @@ model User {
   orders    Order[]
   ratings   Rating[]
   wishlists Wishlist[]
+  addresses Address[]
 
   @@map("users")
 }
@@ -119,6 +120,8 @@ model Order {
   userId          String
   subtotal        Float?
   shipping        Float?
+  discount        Float?      @default(0)
+  couponCode      String?
   total           Float
   status          String      @default("PENDING")
   paymentStatus   String      @default("PENDING")
@@ -159,4 +162,56 @@ model Wishlist {
 
   @@unique([userId, productId])
   @@map("wishlists")
+}
+
+model Coupon {
+  id             String    @id @default(uuid())
+  code           String    @unique
+  discountType   String    // 'PERCENTAGE' or 'FLAT'
+  discountValue  Float
+  minOrderAmount Float     @default(0)
+  maxDiscount    Float?    // Cap for percentage discounts
+  usageLimit     Int?      // Max total uses (null = unlimited)
+  usedCount      Int       @default(0)
+  isActive       Boolean   @default(true)
+  expiresAt      DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@map("coupons")
+  @@index([code])
+}
+
+model Category {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  description String?
+  icon        String?
+  sortOrder   Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("categories")
+  @@index([isActive, sortOrder])
+}
+
+model Address {
+  id        String   @id @default(uuid())
+  userId    String
+  label     String   @default("Home")
+  name      String
+  phone     String
+  address   String
+  city      String
+  state     String   @default("Maharashtra")
+  pincode   String
+  isDefault Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("addresses")
+  @@index([userId])
 }

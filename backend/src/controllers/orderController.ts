@@ -1,56 +1,125 @@
-import { Response, NextFunction } from 'express'
-import prisma from '../config/database'
-import { AuthRequest } from '../middlewares/auth'
-import { razorpayInstance } from '../config/razorpay'
-import { config } from '../config'
-import crypto from 'crypto'
+import { Response, NextFunction } from "express";
+import prisma from "../config/database";
+import { AuthRequest } from "../middlewares/auth";
+import { razorpayInstance } from "../config/razorpay";
+import { config } from "../config";
+import crypto from "crypto";
+import {
+  sendOrderConfirmationEmail,
+  sendPaymentSuccessEmail,
+  sendOrderStatusEmail,
+  sendLowStockAlertEmail,
+} from "../utils/email";
+import logger from "../utils/logger";
 
 // Helper function to parse shippingAddress JSON
 const transformOrder = (order: any) => {
-  if (!order) return order
+  if (!order) return order;
   return {
     ...order,
-    shippingAddress: typeof order.shippingAddress === 'string' 
-      ? JSON.parse(order.shippingAddress) 
-      : order.shippingAddress
-  }
-}
+    shippingAddress:
+      typeof order.shippingAddress === "string"
+        ? JSON.parse(order.shippingAddress)
+        : order.shippingAddress,
+  };
+};
 
 export const createOrder = async (
   req: AuthRequest,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Promise<void> => {
   try {
-    console.log('--------- req body', req.body)
-    const { items, subtotal, shipping, total, shippingAddress } = req.body
-    const userId = req.user!.id
+    console.log("--------- req body", req.body);
+    const { items, subtotal, shipping, total, shippingAddress, couponCode } =
+      req.body;
+    const userId = req.user!.id;
 
     // Fetch all products
-    const productIds = items.map((item: any) => item.productId)
+    const productIds = items.map((item: any) => item.productId);
     const products = await prisma.product.findMany({
       where: { id: { in: productIds }, deletedAt: null } as any,
-    })
+    });
 
     // Create a map for quick lookup
-    const productMap = new Map(products.map(p => [p.id, p]))
+    const productMap = new Map(products.map((p) => [p.id, p]));
 
     // Validate stock for all items
     for (const item of items) {
-      const product = productMap.get(item.productId)
+      const product = productMap.get(item.productId);
 
       if (!product) {
-        res.status(404).json({ message: `Product ${item.productId} not found` })
-        return
+        res
+          .status(404)
+          .json({ message: `Product ${item.productId} not found` });
+        return;
       }
 
       if (product.stock < item.quantity) {
         res.status(400).json({
           message: `Insufficient stock for ${product.name}`,
-        })
-        return
+        });
+        return;
       }
     }
+
+    // Validate and apply coupon if provided
+    let discount = 0;
+    let appliedCouponCode: string | null = null;
+
+    if (couponCode) {
+      const coupon = await prisma.coupon.findUnique({
+        where: { code: couponCode.toUpperCase() },
+      });
+
+      if (!coupon || !coupon.isActive) {
+        res.status(400).json({ message: "Invalid or inactive coupon code" });
+        return;
+      }
+
+      if (coupon.expiresAt && new Date() > coupon.expiresAt) {
+        res.status(400).json({ message: "This coupon has expired" });
+        return;
+      }
+
+      if (coupon.usageLimit !== null && coupon.usedCount >= coupon.usageLimit) {
+        res
+          .status(400)
+          .json({ message: "This coupon has reached its usage limit" });
+        return;
+      }
+
+      if (subtotal < coupon.minOrderAmount) {
+        res.status(400).json({
+          message: `Minimum order amount is ₹${coupon.minOrderAmount}`,
+        });
+        return;
+      }
+
+      if (coupon.discountType === "PERCENTAGE") {
+        discount = (subtotal * coupon.discountValue) / 100;
+        if (coupon.maxDiscount && discount > coupon.maxDiscount) {
+          discount = coupon.maxDiscount;
+        }
+      } else {
+        discount = coupon.discountValue;
+      }
+
+      if (discount > subtotal) {
+        discount = subtotal;
+      }
+
+      discount = Math.round(discount * 100) / 100;
+      appliedCouponCode = coupon.code;
+
+      // Increment usage count
+      await prisma.coupon.update({
+        where: { id: coupon.id },
+        data: { usedCount: { increment: 1 } },
+      });
+    }
+
+    const finalTotal = subtotal + shipping - discount;
 
     // Create order
     const order = await prisma.order.create({
@@ -58,7 +127,9 @@ export const createOrder = async (
         userId,
         subtotal,
         shipping,
-        total: subtotal + shipping,
+        discount,
+        couponCode: appliedCouponCode,
+        total: finalTotal,
         shippingAddress: JSON.stringify(shippingAddress),
         items: {
           create: items.map((item: any) => ({
@@ -87,7 +158,7 @@ export const createOrder = async (
           },
         },
       },
-    })
+    });
 
     // Update product stock
     for (const item of items) {
@@ -98,25 +169,65 @@ export const createOrder = async (
             decrement: item.quantity,
           },
         },
-      })
+      });
+    }
+
+    // Check for low stock products and alert admin (non-blocking)
+    if (config.adminEmail) {
+      const updatedProducts = await prisma.product.findMany({
+        where: {
+          id: { in: items.map((i: any) => i.productId) },
+          stock: { lte: 5 },
+          deletedAt: null,
+        },
+        select: { id: true, name: true, stock: true },
+      });
+      if (updatedProducts.length > 0) {
+        sendLowStockAlertEmail(config.adminEmail, updatedProducts).catch(
+          (err: Error) =>
+            logger.error(`Low stock alert email failed: ${err.message}`),
+        );
+      }
     }
 
     // Clear cart
-    const cart = await prisma.cart.findUnique({ where: { userId } })
+    const cart = await prisma.cart.findUnique({ where: { userId } });
     if (cart) {
-      await prisma.cartItem.deleteMany({ where: { cartId: cart.id } })
+      await prisma.cartItem.deleteMany({ where: { cartId: cart.id } });
     }
 
-    res.status(201).json(transformOrder(order))
+    // Send order confirmation email (non-blocking)
+    if (order.user?.email) {
+      sendOrderConfirmationEmail(order.user.email, {
+        orderId: order.id,
+        userName: order.user.name || "Customer",
+        items: order.items.map((item: any) => ({
+          name: item.product?.name || "Product",
+          quantity: item.quantity,
+          price: item.price,
+        })),
+        subtotal: order.subtotal || 0,
+        shipping: order.shipping || 0,
+        discount: order.discount || 0,
+        total: order.total,
+        couponCode: order.couponCode,
+      }).catch((err: Error) =>
+        logger.error(
+          `Order confirmation email failed for ${order.id}: ${err.message}`,
+        ),
+      );
+    }
+
+    res.status(201).json(transformOrder(order));
   } catch (error) {
-    next(error)
+    next(error);
   }
-}
+};
 
 export const getOrders = async (
   req: AuthRequest,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Promise<void> => {
   try {
     const orders = await prisma.order.findMany({
@@ -126,22 +237,22 @@ export const getOrders = async (
           include: { product: true },
         },
       },
-      orderBy: { createdAt: 'desc' },
-    })
+      orderBy: { createdAt: "desc" },
+    });
 
-    res.json(orders.map(transformOrder))
+    res.json(orders.map(transformOrder));
   } catch (error) {
-    next(error)
+    next(error);
   }
-}
+};
 
 export const getOrderById = async (
   req: AuthRequest,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Promise<void> => {
   try {
-    const { id } = req.params
+    const { id } = req.params;
 
     const order = await prisma.order.findUnique({
       where: { id },
@@ -164,57 +275,57 @@ export const getOrderById = async (
           },
         },
       },
-    })
+    });
 
     if (!order) {
-      res.status(404).json({ message: 'Order not found' })
-      return
+      res.status(404).json({ message: "Order not found" });
+      return;
     }
 
     // Check if user owns the order
-    if (order.userId !== req.user!.id && req.user!.role !== 'ADMIN') {
-      res.status(403).json({ message: 'Access denied' })
-      return
+    if (order.userId !== req.user!.id && req.user!.role !== "ADMIN") {
+      res.status(403).json({ message: "Access denied" });
+      return;
     }
 
-    res.json(transformOrder(order))
+    res.json(transformOrder(order));
   } catch (error) {
-    next(error)
+    next(error);
   }
-}
+};
 
 export const createPaymentIntent = async (
   req: AuthRequest,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Promise<void> => {
   try {
-    const { orderId } = req.params
+    const { orderId } = req.params;
 
     const order = await prisma.order.findUnique({
       where: { id: orderId },
-    })
+    });
 
     if (!order || order.userId !== req.user!.id) {
-      res.status(404).json({ message: 'Order not found' })
-      return
+      res.status(404).json({ message: "Order not found" });
+      return;
     }
 
-    if (order.paymentStatus === 'COMPLETED') {
-      res.status(400).json({ message: 'Order already paid' })
-      return
+    if (order.paymentStatus === "COMPLETED") {
+      res.status(400).json({ message: "Order already paid" });
+      return;
     }
 
     // Create Razorpay order
     const razorpayOrder = await razorpayInstance.orders.create({
       amount: Math.round(order.total * 100), // Amount in paise
-      currency: 'INR',
+      currency: "INR",
       receipt: order.id,
       notes: {
         orderId: order.id,
         userId: req.user!.id,
       },
-    })
+    });
 
     res.json({
       razorpayOrderId: razorpayOrder.id,
@@ -222,20 +333,21 @@ export const createPaymentIntent = async (
       currency: razorpayOrder.currency,
       keyId: config.razorpayKeyId,
       orderId: order.id,
-    })
+    });
   } catch (error) {
-    next(error)
+    next(error);
   }
-}
+};
 
 export const confirmPayment = async (
   req: AuthRequest,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Promise<void> => {
   try {
-    const { orderId } = req.params
-    const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body
+    const { orderId } = req.params;
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature } =
+      req.body;
 
     const order = await prisma.order.findUnique({
       where: { id: orderId },
@@ -258,31 +370,31 @@ export const confirmPayment = async (
           },
         },
       },
-    })
+    });
 
     if (!order || order.userId !== req.user!.id) {
-      res.status(404).json({ message: 'Order not found' })
-      return
+      res.status(404).json({ message: "Order not found" });
+      return;
     }
 
     // Verify Razorpay signature
-    const body = razorpay_order_id + '|' + razorpay_payment_id
+    const body = razorpay_order_id + "|" + razorpay_payment_id;
     const expectedSignature = crypto
-      .createHmac('sha256', config.razorpayKeySecret)
+      .createHmac("sha256", config.razorpayKeySecret)
       .update(body.toString())
-      .digest('hex')
+      .digest("hex");
 
     if (expectedSignature !== razorpay_signature) {
-      res.status(400).json({ message: 'Invalid payment signature' })
-      return
+      res.status(400).json({ message: "Invalid payment signature" });
+      return;
     }
 
     const updatedOrder = await prisma.order.update({
       where: { id: orderId },
       data: {
-        paymentStatus: 'COMPLETED',
+        paymentStatus: "COMPLETED",
         paymentId: razorpay_payment_id,
-        status: 'PROCESSING',
+        status: "PROCESSING",
       },
       include: {
         items: {
@@ -303,37 +415,59 @@ export const confirmPayment = async (
           },
         },
       },
-    })
+    });
 
-    res.json(transformOrder(updatedOrder))
+    // Send payment success email (non-blocking)
+    if (updatedOrder.user?.email) {
+      sendPaymentSuccessEmail(updatedOrder.user.email, {
+        orderId: updatedOrder.id,
+        userName: updatedOrder.user.name || "Customer",
+        total: updatedOrder.total,
+        paymentId: razorpay_payment_id,
+      }).catch((err: Error) =>
+        logger.error(
+          `Payment success email failed for ${updatedOrder.id}: ${err.message}`,
+        ),
+      );
+    }
+
+    res.json(transformOrder(updatedOrder));
   } catch (error) {
-    next(error)
+    next(error);
   }
-}
+};
 
 // Admin routes
 export const getAllOrders = async (
   req: AuthRequest,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Promise<void> => {
   try {
-    const page = parseInt(req.query.page as string) || 1
-    const limit = parseInt(req.query.limit as string) || 20
-    const search = (req.query.search as string) || ''
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 20;
+    const search = (req.query.search as string) || "";
 
-    const skip = (page - 1) * limit
+    const skip = (page - 1) * limit;
 
     // Build search filter
     const searchFilter = search
       ? {
           OR: [
-            { id: { contains: search, mode: 'insensitive' as const } },
-            { user: { name: { contains: search, mode: 'insensitive' as const } } },
-            { user: { email: { contains: search, mode: 'insensitive' as const } } },
+            { id: { contains: search, mode: "insensitive" as const } },
+            {
+              user: {
+                name: { contains: search, mode: "insensitive" as const },
+              },
+            },
+            {
+              user: {
+                email: { contains: search, mode: "insensitive" as const },
+              },
+            },
           ],
         }
-      : {}
+      : {};
 
     const [orders, total] = await Promise.all([
       prisma.order.findMany({
@@ -357,30 +491,30 @@ export const getAllOrders = async (
             },
           },
         },
-        orderBy: { createdAt: 'desc' },
+        orderBy: { createdAt: "desc" },
         skip,
         take: limit,
       }),
       prisma.order.count({ where: searchFilter }),
-    ])
+    ]);
 
     res.json({
       orders: orders.map(transformOrder),
       total,
-    })
+    });
   } catch (error) {
-    next(error)
+    next(error);
   }
-}
+};
 
 export const updateOrderStatus = async (
   req: AuthRequest,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Promise<void> => {
   try {
-    const { orderId } = req.params
-    const { status } = req.body
+    const { orderId } = req.params;
+    const { status } = req.body;
 
     const order = await prisma.order.update({
       where: { id: orderId },
@@ -404,10 +538,23 @@ export const updateOrderStatus = async (
           },
         },
       },
-    })
+    });
 
-    res.json(transformOrder(order))
+    // Send status update email (non-blocking)
+    if (order.user?.email) {
+      sendOrderStatusEmail(order.user.email, {
+        orderId: order.id,
+        userName: order.user.name || "Customer",
+        status,
+      }).catch((err: Error) =>
+        logger.error(
+          `Order status email failed for ${order.id}: ${err.message}`,
+        ),
+      );
+    }
+
+    res.json(transformOrder(order));
   } catch (error) {
-    next(error)
+    next(error);
   }
-}
+};
