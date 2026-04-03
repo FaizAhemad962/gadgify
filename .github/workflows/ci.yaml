@@ -148,6 +148,21 @@ jobs:
           cp backend/package.json deploy-backend/
           cp backend/package-lock.json deploy-backend/
           cp backend/prisma deploy-backend/ -r || true
+
+          # Verify files exist
+          echo "📋 Deployment package contents:"
+          ls -la deploy-backend/
+          echo ""
+          echo "📋 dist/ contents:"
+          ls -la deploy-backend/dist/ | head -20
+          echo ""
+          echo "📋 Checking entry point:"
+          if [ -f deploy-backend/dist/server.js ]; then
+            echo "✅ dist/server.js exists"
+          else
+            echo "❌ dist/server.js NOT found!"
+            find deploy-backend -name "server.js" -type f
+          fi
           ls -la deploy-backend/
 
       - name: Login to Azure
