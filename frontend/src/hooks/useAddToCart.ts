@@ -1,30 +1,31 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { useCallback, useState } from 'react'
-import type { AddToCartRequest } from '../types'
-import { cartApi } from '../api/cart'
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useCallback, useState } from "react";
+import type { AddToCartRequest } from "../types";
+import { cartApi } from "../api/cart";
 
 export const useAddToCart = () => {
-  const queryClient = useQueryClient()
-  const [error, setError] = useState<string | null>(null)
+  const queryClient = useQueryClient();
+  const [error, setError] = useState<string | null>(null);
 
   const mutation = useMutation({
     mutationFn: cartApi.addItem,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['cart'] })
-      setError(null)
+      queryClient.invalidateQueries({ queryKey: ["cart"] });
+      setError(null);
     },
-    onError: (err: any) => {
-      const message = err.response?.data?.message || 'Failed to add to cart'
-      setError(message)
+    onError: (err: Error | unknown) => {
+      const message =
+        err instanceof Error ? err.message : "Failed to add to cart";
+      setError(message);
     },
-  })
+  });
 
   const addToCart = useCallback(
     async (data: AddToCartRequest) => {
-      return mutation.mutateAsync(data)
+      return mutation.mutateAsync(data);
     },
-    [mutation]
-  )
+    [mutation],
+  );
 
   return {
     addToCart,
@@ -32,5 +33,5 @@ export const useAddToCart = () => {
     error,
     isError: mutation.isError,
     clearError: () => setError(null),
-  }
-}
+  };
+};

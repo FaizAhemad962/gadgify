@@ -138,7 +138,7 @@ const ProfilePage = () => {
         // Force page reload to update context
         window.location.reload();
       }
-    } catch (err: any) {
+    } catch (err: Error | unknown) {
       const message = ErrorHandler.getUserFriendlyMessage(
         err,
         t("errors.somethingWrong"),
@@ -185,7 +185,7 @@ const ProfilePage = () => {
         localStorage.setItem("user", JSON.stringify(response.user));
         window.location.reload();
       }
-    } catch (err: any) {
+    } catch (err: Error | unknown) {
       const message = ErrorHandler.getUserFriendlyMessage(
         err,
         t("errors.somethingWrong"),

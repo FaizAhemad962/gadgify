@@ -1,30 +1,31 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { useCallback, useState } from 'react'
-import { cartApi } from '../api/cart'
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useCallback, useState } from "react";
+import { cartApi } from "../api/cart";
 
 export const useUpdateCartItem = () => {
-  const queryClient = useQueryClient()
-  const [error, setError] = useState<string | null>(null)
+  const queryClient = useQueryClient();
+  const [error, setError] = useState<string | null>(null);
 
   const mutation = useMutation({
     mutationFn: ({ itemId, quantity }: { itemId: string; quantity: number }) =>
       cartApi.updateItem(itemId, { quantity }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['cart'] })
-      setError(null)
+      queryClient.invalidateQueries({ queryKey: ["cart"] });
+      setError(null);
     },
-    onError: (err: any) => {
-      const message = err.response?.data?.message || 'Failed to update cart'
-      setError(message)
+    onError: (err: Error | unknown) => {
+      const message =
+        err instanceof Error ? err.message : "Failed to update cart";
+      setError(message);
     },
-  })
+  });
 
   const updateQuantity = useCallback(
     async (itemId: string, quantity: number) => {
-      return mutation.mutateAsync({ itemId, quantity })
+      return mutation.mutateAsync({ itemId, quantity });
     },
-    [mutation]
-  )
+    [mutation],
+  );
 
   return {
     updateQuantity,
@@ -32,31 +33,32 @@ export const useUpdateCartItem = () => {
     error,
     isError: mutation.isError,
     clearError: () => setError(null),
-  }
-}
+  };
+};
 
 export const useRemoveFromCart = () => {
-  const queryClient = useQueryClient()
-  const [error, setError] = useState<string | null>(null)
+  const queryClient = useQueryClient();
+  const [error, setError] = useState<string | null>(null);
 
   const mutation = useMutation({
     mutationFn: cartApi.removeItem,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['cart'] })
-      setError(null)
+      queryClient.invalidateQueries({ queryKey: ["cart"] });
+      setError(null);
     },
     onError: (err: any) => {
-      const message = err.response?.data?.message || 'Failed to remove from cart'
-      setError(message)
+      const message =
+        err.response?.data?.message || "Failed to remove from cart";
+      setError(message);
     },
-  })
+  });
 
   const removeFromCart = useCallback(
     async (itemId: string) => {
-      return mutation.mutateAsync(itemId)
+      return mutation.mutateAsync(itemId);
     },
-    [mutation]
-  )
+    [mutation],
+  );
 
   return {
     removeFromCart,
@@ -64,31 +66,28 @@ export const useRemoveFromCart = () => {
     error,
     isError: mutation.isError,
     clearError: () => setError(null),
-  }
-}
+  };
+};
 
 export const useClearCart = () => {
-  const queryClient = useQueryClient()
-  const [error, setError] = useState<string | null>(null)
+  const queryClient = useQueryClient();
+  const [error, setError] = useState<string | null>(null);
 
   const mutation = useMutation({
     mutationFn: cartApi.clear,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['cart'] })
-      setError(null)
+      queryClient.invalidateQueries({ queryKey: ["cart"] });
+      setError(null);
     },
     onError: (err: any) => {
-      const message = err.response?.data?.message || 'Failed to clear cart'
-      setError(message)
+      const message = err.response?.data?.message || "Failed to clear cart";
+      setError(message);
     },
-  })
+  });
 
-  const clearCart = useCallback(
-    async () => {
-      return mutation.mutateAsync()
-    },
-    [mutation]
-  )
+  const clearCart = useCallback(async () => {
+    return mutation.mutateAsync();
+  }, [mutation]);
 
   return {
     clearCart,
@@ -96,5 +95,5 @@ export const useClearCart = () => {
     error,
     isError: mutation.isError,
     clearError: () => setError(null),
-  }
-}
+  };
+};

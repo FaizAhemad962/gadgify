@@ -27,8 +27,10 @@ interface ProductMedia {
   isPrimary?: boolean;
 }
 
+import type { Product } from "../types";
+
 interface ProductCardProps {
-  product: any;
+  product: Product;
   isInWishlist: (id: string) => boolean;
   isToggling: (id: string) => boolean;
   toggleWishlist: (id: string) => Promise<void>;
@@ -54,14 +56,6 @@ const ProductCard: React.FC<ProductCardProps> = ({
 }) => {
   const isList = viewMode === "list";
   const { isInCompare, addToCompare, removeFromCompare, isFull } = useCompare();
-  // Calculate discount percentage
-  const discountPercent =
-    product.originalPrice && product.originalPrice > product.price
-      ? Math.round(
-          ((product.originalPrice - product.price) / product.originalPrice) *
-            100,
-        )
-      : 0;
 
   return (
     <Card
@@ -116,10 +110,10 @@ const ProductCard: React.FC<ProductCardProps> = ({
           objectFit="cover"
         />
 
-        {/* Discount badge */}
-        {discountPercent > 0 && (
+        {/* Discount badge removed - not available */}
+        {false && (
           <Chip
-            label={`${discountPercent}% OFF`}
+            label={`OFF`}
             size="small"
             sx={{
               position: "absolute",
@@ -246,7 +240,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
             size="small"
           />
           <Typography variant="caption" color="text.secondary">
-            {product.totalRatings > 0
+            {product.totalRatings && product.totalRatings > 0
               ? `(${product.totalRatings})`
               : "No reviews"}
           </Typography>
@@ -259,14 +253,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
           >
             ₹{product.price.toLocaleString()}
           </Typography>
-          {product.originalPrice && product.originalPrice > product.price && (
-            <Typography
-              variant="body2"
-              sx={{ textDecoration: "line-through", color: tokens.gray400 }}
-            >
-              ₹{product.originalPrice.toLocaleString()}
-            </Typography>
-          )}
+          {/* Discount price display removed - not available in Product type */}
         </Box>
 
         {/* Stock chip */}

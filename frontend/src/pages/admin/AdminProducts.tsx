@@ -111,7 +111,7 @@ const AdminProducts = () => {
     handleSubmit,
     reset,
     formState: { errors },
-  } = useForm<ProductFormInput, any, ProductFormData>({
+  } = useForm<ProductFormInput, Record<string, unknown>, ProductFormData>({
     resolver: zodResolver(productSchema),
   });
 

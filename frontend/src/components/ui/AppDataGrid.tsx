@@ -78,8 +78,15 @@ export const AppDataGrid = ({
   const localeText = {
     MuiTablePagination: {
       labelRowsPerPage: t("admin.rowsPerPage"),
-      labelDisplayedRows: ({ from, to, count }: any) =>
-        `${t("admin.showing")} ${from}-${to} ${t("admin.of")} ${count}`,
+      labelDisplayedRows: ({
+        from,
+        to,
+        count,
+      }: {
+        from: number;
+        to: number;
+        count: number;
+      }) => `${t("admin.showing")} ${from}-${to} ${t("admin.of")} ${count}`,
     },
     noRowsLabel: t("common.noData"),
     noResultsOverlayLabel: t("common.noResults"),

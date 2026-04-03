@@ -45,8 +45,13 @@ export const AdminProductsDataGrid = ({
           return <Skeleton variant="rectangular" width={50} height={50} />;
         const media = Array.isArray(params.row.media) ? params.row.media : [];
         const img =
-          media.find((m: any) => m.type === "image" && m.isPrimary) ||
-          media.find((m: any) => m.type === "image");
+          media.find(
+            (m: { type: string; isPrimary?: boolean }) =>
+              m.type === "image" && m.isPrimary,
+          ) ||
+          media.find(
+            (m: { type: string; isPrimary?: boolean }) => m.type === "image",
+          );
         if (!img || !img.url) {
           return <Skeleton variant="rectangular" width={50} height={50} />;
         }
@@ -162,7 +167,7 @@ export const AdminProductsDataGrid = ({
 
   return (
     <AppDataGrid
-      rows={products}
+      rows={products as any}
       columns={columns}
       isLoading={isLoading}
       total={total}

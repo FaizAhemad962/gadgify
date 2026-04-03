@@ -105,7 +105,9 @@ const OrdersPage = () => {
   };
 
   // Reorder: add all items from an order back to cart
-  const handleReorder = async (order: any) => {
+  const handleReorder = async (order: {
+    items: { productId: string; quantity: number }[];
+  }) => {
     for (const item of order.items) {
       await addToCart({ productId: item.productId, quantity: item.quantity });
     }

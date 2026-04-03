@@ -93,7 +93,7 @@ const SignupPage = () => {
       login(data.token, data.user);
       navigate("/");
     },
-    onError: (error: any) => {
+    onError: (error: Error | unknown) => {
       const message = ErrorHandler.getUserFriendlyMessage(
         error,
         t("errors.somethingWrong"),
@@ -110,10 +110,10 @@ const SignupPage = () => {
     }
 
     setError("");
-    const { confirmPassword, ...signupData } = data;
+    const { confirmPassword: _, ...signupData } = data;
     try {
       await signupMutation.mutateAsync(signupData);
-    } catch (err: any) {
+    } catch (_err: Error | unknown) {
       // Error is handled in onError callback
     }
   };

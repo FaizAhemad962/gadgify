@@ -18,6 +18,7 @@ const ThemeContext = createContext<ThemeContextValue>({
 
 export const useThemeMode = () => useContext(ThemeContext);
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const ThemeContextProvider = ({ children }: { children: ReactNode }) => {
   const [mode, setMode] = useState<ThemeMode>(() => {
     const stored = localStorage.getItem("theme-mode");

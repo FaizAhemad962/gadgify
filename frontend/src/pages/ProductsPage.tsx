@@ -65,8 +65,13 @@ const ProductsPage = () => {
   // Read category from URL query params (e.g. from HomePage category tiles)
   useEffect(() => {
     const cat = searchParams.get("category");
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (cat) setSelectedCategories([cat]);
+  }, [searchParams]);
+
+  useEffect(() => {
     const sort = searchParams.get("sortBy");
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (sort) setSortBy(sort as SortOption);
   }, [searchParams]);
 
@@ -134,6 +139,7 @@ const ProductsPage = () => {
   const categories = allProductsForCategories?.products
     ? [
         ...new Set(
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           allProductsForCategories.products.map((p: any) => p.category),
         ),
       ].sort()

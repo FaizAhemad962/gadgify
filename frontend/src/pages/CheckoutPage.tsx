@@ -97,7 +97,11 @@ const CheckoutPage = () => {
           name: "Gadgify",
           description: "Order Payment",
           order_id: paymentData.razorpayOrderId,
-          handler: async function (response: any) {
+          handler: async function (response: {
+            razorpay_order_id: string;
+            razorpay_payment_id: string;
+            razorpay_signature: string;
+          }) {
             try {
               await ordersApi.confirmPayment(order.id, {
                 razorpay_order_id: response.razorpay_order_id,
@@ -125,7 +129,14 @@ const CheckoutPage = () => {
           },
         };
 
-        const razorpay = new (window as any).Razorpay(options);
+        const razorpay = new (
+          window as unknown as {
+            Razorpay: new (options: Record<string, unknown>) => {
+              on: (event: string, handler: () => void) => void;
+              open: () => void;
+            };
+          }
+        ).Razorpay(options);
         razorpay.on("payment.failed", function () {
           setError(t("errors.paymentFailed"));
         });
@@ -172,6 +183,7 @@ const CheckoutPage = () => {
         calculateSubtotal(),
       );
       setAppliedCoupon(result);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       const msg = err?.response?.data?.message || t("errors.invalidCoupon");
       setCouponError(msg);

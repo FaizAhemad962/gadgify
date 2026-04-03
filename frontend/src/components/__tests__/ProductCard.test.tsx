@@ -33,14 +33,21 @@ const mockProduct = {
   id: "prod-1",
   name: "Test Headphones",
   price: 2999,
-  originalPrice: 4999,
   description: "Great headphones",
   category: "Electronics",
   averageRating: 4.5,
   totalRatings: 120,
   stock: 15,
+  createdAt: "2024-01-01T00:00:00Z",
+  updatedAt: "2024-01-01T00:00:00Z",
   media: [
-    { url: "https://example.com/img.jpg", type: "image", isPrimary: true },
+    {
+      id: "1",
+      url: "https://example.com/img.jpg",
+      type: "image" as const,
+      isPrimary: true,
+      productId: "prod-1",
+    },
   ],
 };
 

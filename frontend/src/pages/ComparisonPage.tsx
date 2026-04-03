@@ -22,6 +22,8 @@ import { productsApi } from "../api/products";
 import { useCompare } from "../context/CompareContext";
 import { tokens } from "@/theme/theme";
 
+import type { Product } from "../types";
+
 const ComparisonPage = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -64,14 +66,16 @@ const ComparisonPage = () => {
   const rows: {
     label: string;
     key: string;
-    render?: (p: any) => React.ReactNode;
+    render?: (p: Product) => React.ReactNode;
   }[] = [
     {
       label: t("compare.image"),
       key: "image",
       render: (p) => {
         const img =
-          p.media?.find((m: any) => m.isPrimary)?.url ||
+          p.media?.find(
+            (m: { isPrimary?: boolean; url?: string }) => m.isPrimary,
+          )?.url ||
           p.media?.[0]?.url ||
           "";
         return (
@@ -193,7 +197,7 @@ const ComparisonPage = () => {
                 </TableCell>
                 {products.map((p) => (
                   <TableCell key={p.id} align="center">
-                    {row.render ? row.render(p) : (p as any)[row.key] || "—"}
+                    {row.render ? row.render(p) : (p as never)[row.key] || "—"}
                   </TableCell>
                 ))}
               </TableRow>

@@ -31,6 +31,7 @@ export const CATEGORIES = [
 
 export type Category = (typeof CATEGORIES)[number];
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const CATEGORY_ICONS: Record<Category, React.ReactNode> = {
   "Mobiles & Computers": <Smartphone sx={{ fontSize: 36 }} />,
   "Electronics & Appliances": <Tv sx={{ fontSize: 36 }} />,
@@ -46,6 +47,7 @@ export const CATEGORY_ICONS: Record<Category, React.ReactNode> = {
   "Doors & Hardware": <Construction sx={{ fontSize: 36 }} />,
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const CATEGORY_COLORS = [
   tokens.primary,
   tokens.accent,

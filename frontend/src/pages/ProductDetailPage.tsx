@@ -181,10 +181,16 @@ const ProductDetailPage = () => {
       </Container>
     );
   }
-  const images = product.media.filter((m: any) => m.type === "image");
-  const videos = product.media.filter((m: any) => m.type === "video");
-  const primary = images.find((m: any) => m.isPrimary);
-  const otherImages = images.filter((m: any) => !m.isPrimary);
+  const images = product.media.filter(
+    (m: { type: string }) => m.type === "image",
+  );
+  const videos = product.media.filter(
+    (m: { type: string }) => m.type === "video",
+  );
+  const primary = images.find((m: { isPrimary?: boolean }) => m.isPrimary);
+  const otherImages = images.filter(
+    (m: { isPrimary?: boolean }) => !m.isPrimary,
+  );
   const items = [
     ...(primary
       ? [
@@ -195,7 +201,7 @@ const ProductDetailPage = () => {
           },
         ]
       : []),
-    ...otherImages.map((img: any) => ({
+    ...otherImages.map((img: { url: string; alt?: string }) => ({
       type: "image" as const,
       url: img.url,
       alt: product.name,

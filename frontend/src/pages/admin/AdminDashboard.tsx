@@ -355,6 +355,7 @@ const AdminDashboard = () => {
                       ((value: number | undefined) => [
                         value ? `₹${value.toLocaleString()}` : "N/A",
                         t("admin.revenue"),
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
                       ]) as any
                     }
                     labelFormatter={(label) =>
@@ -411,6 +412,7 @@ const AdminDashboard = () => {
                     paddingAngle={3}
                     dataKey="count"
                     nameKey="status"
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     label={(props: any) => {
                       const data = props.payload?.[0]?.payload;
                       return data ? `${data.status}: ${data.count}` : "";
@@ -433,6 +435,7 @@ const AdminDashboard = () => {
                       ((value: number | undefined, name: string) => [
                         value ?? 0,
                         t(`orders.${name?.toLowerCase()}`),
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
                       ]) as any
                     }
                     contentStyle={{
@@ -492,6 +495,7 @@ const AdminDashboard = () => {
                           `₹${value ? value.toLocaleString() : "N/A"}`,
                           t("admin.revenue"),
                         ];
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
                       }) as any
                     }
                     contentStyle={{
@@ -612,7 +616,8 @@ const AdminDashboard = () => {
           {t("admin.recentOrders")}
         </Typography>
         <AppDataGrid
-          rows={analytics?.recentOrders || []}
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          rows={(analytics?.recentOrders as any) || []}
           columns={orderColumns}
           isLoading={isLoading}
           total={analytics?.recentOrders?.length || 0}

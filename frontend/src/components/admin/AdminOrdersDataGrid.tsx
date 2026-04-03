@@ -30,7 +30,7 @@ export const AdminOrdersDataGrid = ({
   const { t } = useTranslation();
 
   const getPaymentStatusColor = (
-    status: string,
+    status: "PENDING" | "PROCESSING" | "SHIPPED" | "DELIVERED" | "CANCELLED",
   ):
     | "default"
     | "primary"
@@ -39,10 +39,21 @@ export const AdminOrdersDataGrid = ({
     | "info"
     | "success"
     | "warning" => {
-    const colors: Record<string, any> = {
+    const colors: Record<
+      string,
+      | "default"
+      | "primary"
+      | "secondary"
+      | "error"
+      | "info"
+      | "success"
+      | "warning"
+    > = {
       PENDING: "warning",
-      COMPLETED: "success",
-      FAILED: "error",
+      PROCESSING: "info",
+      SHIPPED: "success",
+      DELIVERED: "success",
+      CANCELLED: "error",
     };
     return colors[status] || "default";
   };
@@ -171,7 +182,17 @@ export const AdminOrdersDataGrid = ({
       renderCell: (params: GridRenderCellParams) => (
         <Select
           value={params.row.status}
-          onChange={(e) => onStatusChange(params.row.id, e.target.value as any)}
+          onChange={(e) =>
+            onStatusChange(
+              params.row.id,
+              e.target.value as
+                | "PENDING"
+                | "PROCESSING"
+                | "SHIPPED"
+                | "DELIVERED"
+                | "CANCELLED",
+            )
+          }
           size="small"
         >
           <MenuItem value="PENDING">{t("orders.pending")}</MenuItem>
@@ -186,7 +207,7 @@ export const AdminOrdersDataGrid = ({
 
   return (
     <AppDataGrid
-      rows={orders}
+      rows={orders as any}
       columns={columns}
       isLoading={isLoading}
       total={total}
