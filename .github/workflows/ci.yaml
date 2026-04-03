@@ -105,7 +105,7 @@ jobs:
         uses: azure/webapps-deploy@v2
         with:
           app-name: gadgify-ui
-          package: ./frontend/build
+          package: ./frontend/dist
 
   deploy-backend:
     runs-on: ubuntu-latest
