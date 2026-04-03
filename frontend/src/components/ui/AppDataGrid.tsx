@@ -12,7 +12,7 @@ import { useTranslation } from "react-i18next";
 import { tokens } from "../../theme/theme";
 
 interface AppDataGridProps {
-  rows: any[];
+  rows: (Record<string, unknown> & { id: string })[];
   columns: GridColDef[];
   isLoading?: boolean;
   /** Total row count — required for server-side pagination */
@@ -146,7 +146,7 @@ export const AppDataGrid = ({
           "& .MuiDataGrid-virtualScroller": {
             overflowX: "auto",
           },
-          ...(sxOverride as any),
+          ...(sxOverride as SxProps<Theme>),
         }}
       />
     </Box>

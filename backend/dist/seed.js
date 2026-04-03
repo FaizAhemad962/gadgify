@@ -6,9 +6,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const database_1 = __importDefault(require("./config/database"));
 const bcryptjs_1 = __importDefault(require("bcryptjs"));
 async function seed() {
-    console.log('🌱 Seeding database...');
+    console.log("🌱 Seeding database...");
     // Clear existing data
-    console.log('🗑️  Clearing existing data...');
+    console.log("🗑️  Clearing existing data...");
     await database_1.default.wishlist.deleteMany({});
     await database_1.default.rating.deleteMany({});
     await database_1.default.cartItem.deleteMany({});
@@ -18,9 +18,9 @@ async function seed() {
     await database_1.default.productMedia.deleteMany({});
     await database_1.default.product.deleteMany({});
     // await prisma.user.deleteMany({})
-    console.log('✅ Data cleared');
+    console.log("✅ Data cleared");
     // Create sample products with categories and original prices
-    console.log('📦 Adding sample products...');
+    console.log("📦 Adding sample products...");
     const products = [
         {
             name: "Eye Glass Cleaner Spray",
@@ -315,8 +315,8 @@ async function seed() {
             media: {
                 create: [
                     {
-                        url: '/uploads/product-1767471801486-579409941.jpeg',
-                        type: 'image',
+                        url: "/uploads/product-1767471801486-579409941.jpeg",
+                        type: "image",
                         isPrimary: true,
                     },
                 ],
@@ -325,52 +325,52 @@ async function seed() {
     })));
     console.log(`✅ Created ${createdProducts.length} products with images`);
     // Create sample users - 3 regular users and 1 admin
-    console.log('👥 Adding sample users...');
-    const hashedPassword = await bcryptjs_1.default.hash('password123', 10);
+    console.log("👥 Adding sample users...");
+    const hashedPassword = await bcryptjs_1.default.hash("password123", 10);
     const users = [
         {
-            email: 'user1@example.com',
+            email: "user1@example.com",
             password: hashedPassword,
-            name: 'Raj Kumar',
-            phone: '9876543210',
-            role: 'USER',
-            state: 'Maharashtra',
-            city: 'Mumbai',
-            address: '123 MG Road, Mumbai',
-            pincode: '400001',
+            name: "Raj Kumar",
+            phone: "9876543210",
+            role: "USER",
+            state: "Maharashtra",
+            city: "Mumbai",
+            address: "123 MG Road, Mumbai",
+            pincode: "400001",
         },
         {
-            email: 'user2@example.com',
+            email: "user2@example.com",
             password: hashedPassword,
-            name: 'Priya Sharma',
-            phone: '8765432109',
-            role: 'USER',
-            state: 'Maharashtra',
-            city: 'Pune',
-            address: '456 FC Road, Pune',
-            pincode: '411001',
+            name: "Priya Sharma",
+            phone: "8765432109",
+            role: "USER",
+            state: "Maharashtra",
+            city: "Pune",
+            address: "456 FC Road, Pune",
+            pincode: "411001",
         },
         {
-            email: 'user3@example.com',
+            email: "user3@example.com",
             password: hashedPassword,
-            name: 'Anil Patel',
-            phone: '7654321098',
-            role: 'USER',
-            state: 'Maharashtra',
-            city: 'Nagpur',
-            address: '789 Dharampeth, Nagpur',
-            pincode: '440001',
+            name: "Anil Patel",
+            phone: "7654321098",
+            role: "USER",
+            state: "Maharashtra",
+            city: "Nagpur",
+            address: "789 Dharampeth, Nagpur",
+            pincode: "440001",
         },
         {
-            email: 'admin@example.com',
+            email: "admin@example.com",
             password: hashedPassword,
-            name: 'Admin User',
-            phone: '9999999999',
-            role: 'ADMIN',
-            state: 'Maharashtra',
-            city: 'Mumbai',
-            address: '999 Admin Tower, Mumbai',
-            pincode: '400050',
+            name: "Admin User",
+            phone: "9999999999",
+            role: "ADMIN",
+            state: "Maharashtra",
+            city: "Mumbai",
+            address: "999 Admin Tower, Mumbai",
+            pincode: "400050",
         },
     ];
     const createdUsers = await database_1.default.user.createMany({
@@ -378,9 +378,9 @@ async function seed() {
     });
     console.log(`✅ Created ${createdUsers.count} users (3 regular + 1 admin)`);
     // Create carts for regular users
-    console.log('🛒 Creating carts for users...');
+    console.log("🛒 Creating carts for users...");
     const regularUsers = await database_1.default.user.findMany({
-        where: { role: 'USER' },
+        where: { role: "USER" },
         take: 3,
     });
     for (const user of regularUsers) {
@@ -391,17 +391,17 @@ async function seed() {
         });
     }
     console.log(`✅ Created carts for ${regularUsers.length} users`);
-    console.log('🎉 Seeding completed!');
-    console.log('📊 Summary:');
+    console.log("🎉 Seeding completed!");
+    console.log("📊 Summary:");
     console.log(`   - Products: ${createdProducts.length} (with images)`);
     console.log(`   - Images added: 1 primary image per product`);
     console.log(`   - Categories: 15+ (Accessories, Travel, Bags, Home Utility, Personal Care, Electronics, Home Gadgets, Kitchen, Storage, Toys & Collectibles, Stationery, Tools, Eco Products, Cleaning, Footwear Care, Baby Care, Travel Accessories)`);
-    console.log('🖼️  Product images linked from: /uploads/product-*.jpeg');
-    console.log('ℹ️  Admin login: admin@example.com / hashedPassword123');
+    console.log("🖼️  Product images linked from: /uploads/product-*.jpeg");
+    console.log("ℹ️  Admin login: admin@example.com / hashedPassword123");
 }
 seed()
     .catch((e) => {
-    console.error('❌ Seeding error:', e);
+    console.error("❌ Seeding error:", e);
     process.exit(1);
 })
     .finally(async () => {

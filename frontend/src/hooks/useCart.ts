@@ -46,9 +46,9 @@ export const useRemoveFromCart = () => {
       queryClient.invalidateQueries({ queryKey: ["cart"] });
       setError(null);
     },
-    onError: (err: any) => {
+    onError: (err: unknown) => {
       const message =
-        err.response?.data?.message || "Failed to remove from cart";
+        err instanceof Error ? err.message : "Failed to remove from cart";
       setError(message);
     },
   });
@@ -79,8 +79,9 @@ export const useClearCart = () => {
       queryClient.invalidateQueries({ queryKey: ["cart"] });
       setError(null);
     },
-    onError: (err: any) => {
-      const message = err.response?.data?.message || "Failed to clear cart";
+    onError: (err: unknown) => {
+      const message =
+        err instanceof Error ? err.message : "Failed to clear cart";
       setError(message);
     },
   });

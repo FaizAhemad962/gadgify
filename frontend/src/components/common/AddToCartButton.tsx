@@ -42,7 +42,7 @@ export const AddToCartButton = ({
     try {
       await addToCart({ productId, quantity });
       if (onAdded) onAdded();
-    } catch (_e) {
+    } catch {
       // Optionally handle error
     } finally {
       setLoading(false);

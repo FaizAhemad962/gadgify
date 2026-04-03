@@ -83,8 +83,9 @@ export const useDeleteProduct = () => {
       queryClient.invalidateQueries({ queryKey: ["products"] });
       setError(null);
     },
-    onError: (err: any) => {
-      const message = err.response?.data?.message || "Failed to delete product";
+    onError: (err: unknown) => {
+      const message =
+        err instanceof Error ? err.message : "Failed to delete product";
       setError(message);
     },
   });

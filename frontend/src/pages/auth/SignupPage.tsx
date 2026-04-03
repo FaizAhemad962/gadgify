@@ -110,10 +110,11 @@ const SignupPage = () => {
     }
 
     setError("");
-    const { confirmPassword: _, ...signupData } = data;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { confirmPassword, ...signupData } = data;
     try {
       await signupMutation.mutateAsync(signupData);
-    } catch (_err: Error | unknown) {
+    } catch {
       // Error is handled in onError callback
     }
   };

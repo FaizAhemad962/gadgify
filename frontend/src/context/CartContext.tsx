@@ -55,7 +55,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   // Add to cart mutation with optimistic updates
   const addMutation = useMutation({
     mutationFn: cartApi.addItem,
-    onError: (_err: Error | unknown) => {
+    onError: () => {
       // Refetch to get correct state on error
       queryClient.invalidateQueries({ queryKey: ["cart"] });
     },
@@ -297,6 +297,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useCart = () => {
   const context = useContext(CartContext);
   if (context === undefined) {

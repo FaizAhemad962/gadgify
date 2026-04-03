@@ -115,7 +115,7 @@ const ProductDetailPage = () => {
     enabled: !!product?.category,
   });
   const relatedProducts = (relatedData?.products || [])
-    .filter((p: any) => p.id !== id)
+    .filter((p: { id: string; name?: string }) => p.id !== id)
     .slice(0, 4);
 
   const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
@@ -206,7 +206,7 @@ const ProductDetailPage = () => {
       url: img.url,
       alt: product.name,
     })),
-    ...videos.map((vid: any) => ({
+    ...videos.map((vid: { url: string }) => ({
       type: "video" as const,
       url: vid.url,
       alt: "Product Video",
@@ -657,7 +657,7 @@ const ProductDetailPage = () => {
               gap: 3,
             }}
           >
-            {relatedProducts.map((rp: any) => (
+            {relatedProducts.map((rp) => (
               <ProductCard
                 key={rp.id}
                 product={rp}

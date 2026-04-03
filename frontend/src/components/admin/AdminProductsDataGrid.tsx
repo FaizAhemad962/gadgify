@@ -167,7 +167,7 @@ export const AdminProductsDataGrid = ({
 
   return (
     <AppDataGrid
-      rows={products as any}
+      rows={products as unknown as (Record<string, unknown> & { id: string })[]}
       columns={columns}
       isLoading={isLoading}
       total={total}

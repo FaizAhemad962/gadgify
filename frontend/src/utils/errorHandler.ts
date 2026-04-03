@@ -92,18 +92,18 @@ export class ErrorHandler {
    */
   static getValidationErrors(error: unknown): Record<string, string[]> {
     if (error instanceof AxiosError) {
-      const data = error.response?.data as any;
+      const data = error.response?.data as Record<string, unknown> | undefined;
 
       if (data?.errors && typeof data.errors === "object") {
-        return data.errors;
+        return data.errors as Record<string, string[]>;
       }
 
       if (data?.fieldErrors && typeof data.fieldErrors === "object") {
-        return data.fieldErrors;
+        return data.fieldErrors as Record<string, string[]>;
       }
 
       if (data?.validation && typeof data.validation === "object") {
-        return data.validation;
+        return data.validation as Record<string, string[]>;
       }
     }
 

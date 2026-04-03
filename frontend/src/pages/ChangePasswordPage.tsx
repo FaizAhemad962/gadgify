@@ -142,7 +142,7 @@ const ChangePasswordPage = () => {
       setTimeout(() => {
         navigate("/profile");
       }, 2000);
-    } catch (err: any) {
+    } catch (err: unknown) {
       const message = ErrorHandler.getUserFriendlyMessage(
         err,
         t("errors.somethingWrong"),

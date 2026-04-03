@@ -111,23 +111,6 @@ const ProductCard: React.FC<ProductCardProps> = ({
         />
 
         {/* Discount badge removed - not available */}
-        {false && (
-          <Chip
-            label={`OFF`}
-            size="small"
-            sx={{
-              position: "absolute",
-              top: 12,
-              left: 12,
-              bgcolor: tokens.error,
-              color: "#fff",
-              fontWeight: 700,
-              fontSize: "0.7rem",
-              height: 24,
-              borderRadius: 1.5,
-            }}
-          />
-        )}
 
         {/* Wishlist toggle */}
         <IconButton
