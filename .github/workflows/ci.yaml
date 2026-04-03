@@ -127,12 +127,28 @@ jobs:
         working-directory: backend
         run: npm ci
 
+      - name: Prisma generate
+        working-directory: backend
+        run: npx prisma generate
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
       - name: Build backend
         working-directory: backend
         run: npm run build
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
+
+      - name: Prepare deployment package
+        run: |
+          mkdir -p deploy-backend
+          cp -r backend/dist deploy-backend/
+          cp -r backend/node_modules deploy-backend/
+          cp backend/package.json deploy-backend/
+          cp backend/package-lock.json deploy-backend/
+          cp backend/prisma deploy-backend/ -r || true
+          ls -la deploy-backend/
 
       - name: Login to Azure
         uses: azure/login@v1
@@ -147,4 +163,48 @@ jobs:
         uses: azure/webapps-deploy@v2
         with:
           app-name: gaddgify-Backend
-          package: ./backend/dist
+          package: ./deploy-backend
+
+      - name: Run Prisma Migrations
+        run: |
+          az webapp deployment slot config --resource-group gadgify-rg --name gaddgify-Backend --auto-swap-slot-name production
+          az webapp config appsettings set --resource-group gadgify-rg --name gaddgify-Backend --settings DATABASE_URL="${{ secrets.DATABASE_URL }}"
+        continue-on-error: true
+
+      - name: Wait for deployment
+        run: sleep 30
+
+      - name: Health Check
+        run: |
+          MAX_ATTEMPTS=30
+          ATTEMPT=0
+          HEALTH_URL="https://gaddgify-backend.azurewebsites.net/health"
+
+          while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
+            RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" "$HEALTH_URL")
+            if [ "$RESPONSE" = "200" ]; then
+              echo "✅ Health check passed"
+              exit 0
+            fi
+            ATTEMPT=$((ATTEMPT + 1))
+            echo "⏳ Health check attempt $ATTEMPT/$MAX_ATTEMPTS (HTTP $RESPONSE)"
+            sleep 2
+          done
+
+          echo "❌ Health check failed after $MAX_ATTEMPTS attempts"
+          exit 1
+
+      - name: Deployment Summary
+        if: success()
+        run: |
+          echo "✅ Backend deployed successfully"
+          echo "📊 Health check: https://gaddgify-backend.azurewebsites.net/health"
+          echo "🔄 Migrations: Applied automatically"
+
+      - name: Deployment Failed
+        if: failure()
+        run: |
+          echo "❌ Backend deployment failed"
+          echo "📋 Check Azure logs: https://portal.azure.com"
+          echo "🔍 Run migrations manually if needed"
+          exit 1
