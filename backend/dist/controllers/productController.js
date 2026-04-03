@@ -3,13 +3,74 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getAllProductsAdmin = exports.searchProducts = exports.deleteProduct = exports.updateProduct = exports.createProduct = exports.getProductById = exports.getAllProducts = void 0;
+exports.getAllProductsAdmin = exports.searchProducts = exports.getProductSuggestions = exports.deleteProduct = exports.updateProduct = exports.createProduct = exports.getProductById = exports.getAllProducts = void 0;
 const database_1 = __importDefault(require("../config/database"));
 const getAllProducts = async (req, res, next) => {
     try {
+        // Extract query parameters for filtering and sorting
+        const { search = "", minPrice = 0, maxPrice = 100000, minRating = 0, category = "", sortBy = "popularity", page = 1, limit = 12, } = req.query;
+        const skip = (parseInt(page) - 1) * parseInt(limit);
+        const pageLimit = parseInt(limit);
+        // Build where clause for filtering
+        const whereClause = {
+            deletedAt: null,
+            price: {
+                gte: parseInt(minPrice),
+                lte: parseInt(maxPrice),
+            },
+        };
+        // Add search filter if provided - use AND with other filters
+        if (search) {
+            whereClause.AND = [
+                {
+                    OR: [
+                        { name: { contains: search, mode: "insensitive" } },
+                        {
+                            description: { contains: search, mode: "insensitive" },
+                        },
+                        { category: { contains: search, mode: "insensitive" } },
+                    ],
+                },
+            ];
+        }
+        // Add category filter if provided (supports comma-separated for multi-select)
+        if (category) {
+            const categoryStr = category;
+            const categoryList = categoryStr.includes(",")
+                ? categoryStr
+                    .split(",")
+                    .map((c) => c.trim())
+                    .filter(Boolean)
+                : null;
+            if (categoryList && categoryList.length > 1) {
+                // Multiple categories: use OR with contains for each
+                const categoryCondition = {
+                    OR: categoryList.map((c) => ({
+                        category: { contains: c, mode: "insensitive" },
+                    })),
+                };
+                if (whereClause.AND) {
+                    whereClause.AND.push(categoryCondition);
+                }
+                else {
+                    whereClause.AND = [categoryCondition];
+                }
+            }
+            else if (whereClause.AND) {
+                whereClause.AND.push({
+                    category: { contains: categoryStr, mode: "insensitive" },
+                });
+            }
+            else {
+                whereClause.category = {
+                    contains: categoryStr,
+                    mode: "insensitive",
+                };
+            }
+        }
+        // Fetch products with filters
         const products = await database_1.default.product.findMany({
-            where: { deletedAt: null },
-            orderBy: { createdAt: "desc" },
+            where: whereClause,
             include: {
                 ratings: {
                     select: {
@@ -18,9 +79,11 @@ const getAllProducts = async (req, res, next) => {
                 },
                 media: true,
             },
+            skip,
+            take: pageLimit,
         });
-        // Calculate average rating for each product
-        const productsWithRatings = products.map((product) => {
+        // Calculate average rating and filter by minimum rating
+        let productsWithRatings = products.map((product) => {
             const ratings = product.ratings;
             const averageRating = ratings.length > 0
                 ? ratings.reduce((sum, r) => sum + r.rating, 0) / ratings.length
@@ -33,7 +96,37 @@ const getAllProducts = async (req, res, next) => {
                 totalRatings,
             };
         });
-        res.json(productsWithRatings);
+        // Filter by minimum rating
+        if (parseInt(minRating) > 0) {
+            productsWithRatings = productsWithRatings.filter((p) => p.averageRating >= parseInt(minRating));
+        }
+        // Sort products based on sortBy parameter
+        productsWithRatings.sort((a, b) => {
+            switch (sortBy) {
+                case "price-low":
+                    return a.price - b.price;
+                case "price-high":
+                    return b.price - a.price;
+                case "rating":
+                    return b.averageRating - a.averageRating;
+                case "newest":
+                    return (new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+                case "popularity":
+                default:
+                    // Sort by total ratings as a proxy for popularity
+                    return b.totalRatings - a.totalRatings;
+            }
+        });
+        // Get total count for pagination
+        const total = await database_1.default.product.count({
+            where: whereClause,
+        });
+        res.json({
+            products: productsWithRatings,
+            total,
+            page: parseInt(page),
+            limit: pageLimit,
+        });
     }
     catch (error) {
         next(error);
@@ -146,6 +239,49 @@ const deleteProduct = async (req, res, next) => {
     }
 };
 exports.deleteProduct = deleteProduct;
+const getProductSuggestions = async (req, res, next) => {
+    try {
+        const q = (req.query.q || "").trim();
+        if (q.length < 2) {
+            res.json({ success: true, data: [] });
+            return;
+        }
+        const products = await database_1.default.product.findMany({
+            where: {
+                deletedAt: null,
+                OR: [
+                    { name: { contains: q, mode: "insensitive" } },
+                    { category: { contains: q, mode: "insensitive" } },
+                ],
+            },
+            select: {
+                id: true,
+                name: true,
+                price: true,
+                category: true,
+                media: {
+                    where: { isPrimary: true },
+                    select: { url: true },
+                    take: 1,
+                },
+            },
+            take: 8,
+            orderBy: { name: "asc" },
+        });
+        const suggestions = products.map((p) => ({
+            id: p.id,
+            name: p.name,
+            price: p.price,
+            category: p.category,
+            image: p.media?.[0]?.url || null,
+        }));
+        res.json({ success: true, data: suggestions });
+    }
+    catch (error) {
+        next(error);
+    }
+};
+exports.getProductSuggestions = getProductSuggestions;
 const searchProducts = async (req, res, next) => {
     try {
         const { q } = req.query;

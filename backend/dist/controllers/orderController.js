@@ -8,21 +8,23 @@ const database_1 = __importDefault(require("../config/database"));
 const razorpay_1 = require("../config/razorpay");
 const config_1 = require("../config");
 const crypto_1 = __importDefault(require("crypto"));
+const email_1 = require("../utils/email");
+const logger_1 = __importDefault(require("../utils/logger"));
 // Helper function to parse shippingAddress JSON
 const transformOrder = (order) => {
     if (!order)
         return order;
     return {
         ...order,
-        shippingAddress: typeof order.shippingAddress === 'string'
+        shippingAddress: typeof order.shippingAddress === "string"
             ? JSON.parse(order.shippingAddress)
-            : order.shippingAddress
+            : order.shippingAddress,
     };
 };
 const createOrder = async (req, res, next) => {
     try {
-        console.log('--------- req body', req.body);
-        const { items, subtotal, shipping, total, shippingAddress } = req.body;
+        console.log("--------- req body", req.body);
+        const { items, subtotal, shipping, total, shippingAddress, couponCode } = req.body;
         const userId = req.user.id;
         // Fetch all products
         const productIds = items.map((item) => item.productId);
@@ -30,12 +32,14 @@ const createOrder = async (req, res, next) => {
             where: { id: { in: productIds }, deletedAt: null },
         });
         // Create a map for quick lookup
-        const productMap = new Map(products.map(p => [p.id, p]));
+        const productMap = new Map(products.map((p) => [p.id, p]));
         // Validate stock for all items
         for (const item of items) {
             const product = productMap.get(item.productId);
             if (!product) {
-                res.status(404).json({ message: `Product ${item.productId} not found` });
+                res
+                    .status(404)
+                    .json({ message: `Product ${item.productId} not found` });
                 return;
             }
             if (product.stock < item.quantity) {
@@ -45,13 +49,63 @@ const createOrder = async (req, res, next) => {
                 return;
             }
         }
+        // Validate and apply coupon if provided
+        let discount = 0;
+        let appliedCouponCode = null;
+        if (couponCode) {
+            const coupon = await database_1.default.coupon.findUnique({
+                where: { code: couponCode.toUpperCase() },
+            });
+            if (!coupon || !coupon.isActive) {
+                res.status(400).json({ message: "Invalid or inactive coupon code" });
+                return;
+            }
+            if (coupon.expiresAt && new Date() > coupon.expiresAt) {
+                res.status(400).json({ message: "This coupon has expired" });
+                return;
+            }
+            if (coupon.usageLimit !== null && coupon.usedCount >= coupon.usageLimit) {
+                res
+                    .status(400)
+                    .json({ message: "This coupon has reached its usage limit" });
+                return;
+            }
+            if (subtotal < coupon.minOrderAmount) {
+                res.status(400).json({
+                    message: `Minimum order amount is ₹${coupon.minOrderAmount}`,
+                });
+                return;
+            }
+            if (coupon.discountType === "PERCENTAGE") {
+                discount = (subtotal * coupon.discountValue) / 100;
+                if (coupon.maxDiscount && discount > coupon.maxDiscount) {
+                    discount = coupon.maxDiscount;
+                }
+            }
+            else {
+                discount = coupon.discountValue;
+            }
+            if (discount > subtotal) {
+                discount = subtotal;
+            }
+            discount = Math.round(discount * 100) / 100;
+            appliedCouponCode = coupon.code;
+            // Increment usage count
+            await database_1.default.coupon.update({
+                where: { id: coupon.id },
+                data: { usedCount: { increment: 1 } },
+            });
+        }
+        const finalTotal = subtotal + shipping - discount;
         // Create order
         const order = await database_1.default.order.create({
             data: {
                 userId,
                 subtotal,
                 shipping,
-                total: subtotal + shipping,
+                discount,
+                couponCode: appliedCouponCode,
+                total: finalTotal,
                 shippingAddress: JSON.stringify(shippingAddress),
                 items: {
                     create: items.map((item) => ({
@@ -92,10 +146,41 @@ const createOrder = async (req, res, next) => {
                 },
             });
         }
+        // Check for low stock products and alert admin (non-blocking)
+        if (config_1.config.adminEmail) {
+            const updatedProducts = await database_1.default.product.findMany({
+                where: {
+                    id: { in: items.map((i) => i.productId) },
+                    stock: { lte: 5 },
+                    deletedAt: null,
+                },
+                select: { id: true, name: true, stock: true },
+            });
+            if (updatedProducts.length > 0) {
+                (0, email_1.sendLowStockAlertEmail)(config_1.config.adminEmail, updatedProducts).catch((err) => logger_1.default.error(`Low stock alert email failed: ${err.message}`));
+            }
+        }
         // Clear cart
         const cart = await database_1.default.cart.findUnique({ where: { userId } });
         if (cart) {
             await database_1.default.cartItem.deleteMany({ where: { cartId: cart.id } });
+        }
+        // Send order confirmation email (non-blocking)
+        if (order.user?.email) {
+            (0, email_1.sendOrderConfirmationEmail)(order.user.email, {
+                orderId: order.id,
+                userName: order.user.name || "Customer",
+                items: order.items.map((item) => ({
+                    name: item.product?.name || "Product",
+                    quantity: item.quantity,
+                    price: item.price,
+                })),
+                subtotal: order.subtotal || 0,
+                shipping: order.shipping || 0,
+                discount: order.discount || 0,
+                total: order.total,
+                couponCode: order.couponCode,
+            }).catch((err) => logger_1.default.error(`Order confirmation email failed for ${order.id}: ${err.message}`));
         }
         res.status(201).json(transformOrder(order));
     }
@@ -113,7 +198,7 @@ const getOrders = async (req, res, next) => {
                     include: { product: true },
                 },
             },
-            orderBy: { createdAt: 'desc' },
+            orderBy: { createdAt: "desc" },
         });
         res.json(orders.map(transformOrder));
     }
@@ -148,12 +233,12 @@ const getOrderById = async (req, res, next) => {
             },
         });
         if (!order) {
-            res.status(404).json({ message: 'Order not found' });
+            res.status(404).json({ message: "Order not found" });
             return;
         }
         // Check if user owns the order
-        if (order.userId !== req.user.id && req.user.role !== 'ADMIN') {
-            res.status(403).json({ message: 'Access denied' });
+        if (order.userId !== req.user.id && req.user.role !== "ADMIN") {
+            res.status(403).json({ message: "Access denied" });
             return;
         }
         res.json(transformOrder(order));
@@ -170,17 +255,17 @@ const createPaymentIntent = async (req, res, next) => {
             where: { id: orderId },
         });
         if (!order || order.userId !== req.user.id) {
-            res.status(404).json({ message: 'Order not found' });
+            res.status(404).json({ message: "Order not found" });
             return;
         }
-        if (order.paymentStatus === 'COMPLETED') {
-            res.status(400).json({ message: 'Order already paid' });
+        if (order.paymentStatus === "COMPLETED") {
+            res.status(400).json({ message: "Order already paid" });
             return;
         }
         // Create Razorpay order
         const razorpayOrder = await razorpay_1.razorpayInstance.orders.create({
             amount: Math.round(order.total * 100), // Amount in paise
-            currency: 'INR',
+            currency: "INR",
             receipt: order.id,
             notes: {
                 orderId: order.id,
@@ -227,25 +312,25 @@ const confirmPayment = async (req, res, next) => {
             },
         });
         if (!order || order.userId !== req.user.id) {
-            res.status(404).json({ message: 'Order not found' });
+            res.status(404).json({ message: "Order not found" });
             return;
         }
         // Verify Razorpay signature
-        const body = razorpay_order_id + '|' + razorpay_payment_id;
+        const body = razorpay_order_id + "|" + razorpay_payment_id;
         const expectedSignature = crypto_1.default
-            .createHmac('sha256', config_1.config.razorpayKeySecret)
+            .createHmac("sha256", config_1.config.razorpayKeySecret)
             .update(body.toString())
-            .digest('hex');
+            .digest("hex");
         if (expectedSignature !== razorpay_signature) {
-            res.status(400).json({ message: 'Invalid payment signature' });
+            res.status(400).json({ message: "Invalid payment signature" });
             return;
         }
         const updatedOrder = await database_1.default.order.update({
             where: { id: orderId },
             data: {
-                paymentStatus: 'COMPLETED',
+                paymentStatus: "COMPLETED",
                 paymentId: razorpay_payment_id,
-                status: 'PROCESSING',
+                status: "PROCESSING",
             },
             include: {
                 items: {
@@ -267,6 +352,15 @@ const confirmPayment = async (req, res, next) => {
                 },
             },
         });
+        // Send payment success email (non-blocking)
+        if (updatedOrder.user?.email) {
+            (0, email_1.sendPaymentSuccessEmail)(updatedOrder.user.email, {
+                orderId: updatedOrder.id,
+                userName: updatedOrder.user.name || "Customer",
+                total: updatedOrder.total,
+                paymentId: razorpay_payment_id,
+            }).catch((err) => logger_1.default.error(`Payment success email failed for ${updatedOrder.id}: ${err.message}`));
+        }
         res.json(transformOrder(updatedOrder));
     }
     catch (error) {
@@ -279,15 +373,23 @@ const getAllOrders = async (req, res, next) => {
     try {
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 20;
-        const search = req.query.search || '';
+        const search = req.query.search || "";
         const skip = (page - 1) * limit;
         // Build search filter
         const searchFilter = search
             ? {
                 OR: [
-                    { id: { contains: search, mode: 'insensitive' } },
-                    { user: { name: { contains: search, mode: 'insensitive' } } },
-                    { user: { email: { contains: search, mode: 'insensitive' } } },
+                    { id: { contains: search, mode: "insensitive" } },
+                    {
+                        user: {
+                            name: { contains: search, mode: "insensitive" },
+                        },
+                    },
+                    {
+                        user: {
+                            email: { contains: search, mode: "insensitive" },
+                        },
+                    },
                 ],
             }
             : {};
@@ -313,7 +415,7 @@ const getAllOrders = async (req, res, next) => {
                         },
                     },
                 },
-                orderBy: { createdAt: 'desc' },
+                orderBy: { createdAt: "desc" },
                 skip,
                 take: limit,
             }),
@@ -356,6 +458,14 @@ const updateOrderStatus = async (req, res, next) => {
                 },
             },
         });
+        // Send status update email (non-blocking)
+        if (order.user?.email) {
+            (0, email_1.sendOrderStatusEmail)(order.user.email, {
+                orderId: order.id,
+                userName: order.user.name || "Customer",
+                status,
+            }).catch((err) => logger_1.default.error(`Order status email failed for ${order.id}: ${err.message}`));
+        }
         res.json(transformOrder(order));
     }
     catch (error) {

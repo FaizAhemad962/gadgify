@@ -4,6 +4,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const database_1 = __importDefault(require("./config/database"));
+const bcryptjs_1 = __importDefault(require("bcryptjs"));
 async function seed() {
     console.log('🌱 Seeding database...');
     // Clear existing data
@@ -325,70 +326,71 @@ async function seed() {
     console.log(`✅ Created ${createdProducts.length} products with images`);
     // Create sample users - 3 regular users and 1 admin
     console.log('👥 Adding sample users...');
-    // const users = [
-    //   {
-    //     email: 'user1@example.com',
-    //     password: 'hashedPassword123',
-    //     name: 'Raj Kumar',
-    //     phone: '9876543210',
-    //     role: 'USER',
-    //     state: 'Maharashtra',
-    //     city: 'Mumbai',
-    //     address: '123 MG Road, Mumbai',
-    //     pincode: '400001',
-    //   },
-    //   {
-    //     email: 'user2@example.com',
-    //     password: 'hashedPassword123',
-    //     name: 'Priya Sharma',
-    //     phone: '8765432109',
-    //     role: 'USER',
-    //     state: 'Maharashtra',
-    //     city: 'Pune',
-    //     address: '456 FC Road, Pune',
-    //     pincode: '411001',
-    //   },
-    //   {
-    //     email: 'user3@example.com',
-    //     password: 'hashedPassword123',
-    //     name: 'Anil Patel',
-    //     phone: '7654321098',
-    //     role: 'USER',
-    //     state: 'Maharashtra',
-    //     city: 'Nagpur',
-    //     address: '789 Dharampeth, Nagpur',
-    //     pincode: '440001',
-    //   },
-    //   {
-    //     email: 'admin@example.com',
-    //     password: 'hashedPassword123',
-    //     name: 'Admin User',
-    //     phone: '9999999999',
-    //     role: 'ADMIN',
-    //     state: 'Maharashtra',
-    //     city: 'Mumbai',
-    //     address: '999 Admin Tower, Mumbai',
-    //     pincode: '400050',
-    //   },
-    // ]
-    // const createdUsers = await prisma.user.createMany({
-    //   data: users,
-    // })
-    // console.log(`✅ Created ${createdUsers.count} users (3 regular + 1 admin)`)
+    const hashedPassword = await bcryptjs_1.default.hash('password123', 10);
+    const users = [
+        {
+            email: 'user1@example.com',
+            password: hashedPassword,
+            name: 'Raj Kumar',
+            phone: '9876543210',
+            role: 'USER',
+            state: 'Maharashtra',
+            city: 'Mumbai',
+            address: '123 MG Road, Mumbai',
+            pincode: '400001',
+        },
+        {
+            email: 'user2@example.com',
+            password: hashedPassword,
+            name: 'Priya Sharma',
+            phone: '8765432109',
+            role: 'USER',
+            state: 'Maharashtra',
+            city: 'Pune',
+            address: '456 FC Road, Pune',
+            pincode: '411001',
+        },
+        {
+            email: 'user3@example.com',
+            password: hashedPassword,
+            name: 'Anil Patel',
+            phone: '7654321098',
+            role: 'USER',
+            state: 'Maharashtra',
+            city: 'Nagpur',
+            address: '789 Dharampeth, Nagpur',
+            pincode: '440001',
+        },
+        {
+            email: 'admin@example.com',
+            password: hashedPassword,
+            name: 'Admin User',
+            phone: '9999999999',
+            role: 'ADMIN',
+            state: 'Maharashtra',
+            city: 'Mumbai',
+            address: '999 Admin Tower, Mumbai',
+            pincode: '400050',
+        },
+    ];
+    const createdUsers = await database_1.default.user.createMany({
+        data: users,
+    });
+    console.log(`✅ Created ${createdUsers.count} users (3 regular + 1 admin)`);
     // Create carts for regular users
-    // console.log('🛒 Creating carts for users...')
-    // const regularUsers = await prisma.user.findMany({
-    //   where: { role: 'USER' },
-    //   take: 3,
-    // })
-    // for (const user of regularUsers) {
-    //   await prisma.cart.create({
-    //     data: {
-    //       userId: user.id,
-    //     },
-    //   })
-    // }
-    // console.log(`✅ Created carts for ${regularUsers.length} users`)
+    console.log('🛒 Creating carts for users...');
+    const regularUsers = await database_1.default.user.findMany({
+        where: { role: 'USER' },
+        take: 3,
+    });
+    for (const user of regularUsers) {
+        await database_1.default.cart.create({
+            data: {
+                userId: user.id,
+            },
+        });
+    }
+    console.log(`✅ Created carts for ${regularUsers.length} users`);
     console.log('🎉 Seeding completed!');
     console.log('📊 Summary:');
     console.log(`   - Products: ${createdProducts.length} (with images)`);
