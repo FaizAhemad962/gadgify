@@ -1,6 +1,16 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
+
+type ProductMedia = {
+  url: string;
+  type: "image" | "video";
+  isPrimary?: boolean;
+  id?: string;
+  productId?: string;
+};
+
+type MediaPreview = ProductMedia | string;
 import {
   Box,
   Button,
@@ -80,9 +90,9 @@ const AdminProducts = () => {
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [error, setError] = useState("");
   const [imageFiles, setImageFiles] = useState<File[]>([]);
-  const [imagePreviews, setImagePreviews] = useState<ProductMedia[]>([]);
+  const [imagePreviews, setImagePreviews] = useState<MediaPreview[]>([]);
   const [videoFiles, setVideoFiles] = useState<File[]>([]);
-  const [videoPreviews, setVideoPreviews] = useState<ProductMedia[]>([]);
+  const [videoPreviews, setVideoPreviews] = useState<MediaPreview[]>([]);
   const [primaryImageIdx, setPrimaryImageIdx] = useState<number>(0);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [_, setSelectedCategory] = useState("");
@@ -159,10 +169,14 @@ const AdminProducts = () => {
           url: m.url,
           media: m,
           productId: m.productId,
-        })),
+        })) as unknown as MediaPreview[],
       );
       setVideoPreviews(
-        videos.map((m) => ({ url: m.url, id: m.id, productId: m.productId })),
+        videos.map((m) => ({
+          url: m.url,
+          id: m.id,
+          productId: m.productId,
+        })) as unknown as MediaPreview[],
       );
       setImageFiles([]);
       setVideoFiles([]);
@@ -234,7 +248,13 @@ const AdminProducts = () => {
     });
 
     // 3️⃣ Delete from backend if already saved
-    if (image?.url) {
+    if (
+      image &&
+      typeof image === "object" &&
+      "productId" in image &&
+      image.productId &&
+      image.url
+    ) {
       deleteMediaByUrlAndProductId(image.productId, image.url);
     }
   };
@@ -247,7 +267,13 @@ const AdminProducts = () => {
     setVideoPreviews((prev) => prev.filter((_, i) => i !== idx));
 
     // 2️⃣ Delete from backend if already saved
-    if (video?.url) {
+    if (
+      video &&
+      typeof video === "object" &&
+      "productId" in video &&
+      video.productId &&
+      video.url
+    ) {
       deleteMediaByUrlAndProductId(video.productId, video.url);
     }
   };
@@ -816,7 +842,9 @@ const AdminProducts = () => {
                     >
                       <Box
                         component="img"
-                        src={preview}
+                        src={
+                          typeof preview === "string" ? preview : preview.url
+                        }
                         alt={`Preview ${idx + 1}`}
                         sx={{
                           maxWidth: 120,
@@ -917,7 +945,9 @@ const AdminProducts = () => {
                     >
                       <Box
                         component="video"
-                        src={preview}
+                        src={
+                          typeof preview === "string" ? preview : preview.url
+                        }
                         controls
                         sx={{
                           maxWidth: 120,

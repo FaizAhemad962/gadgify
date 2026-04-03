@@ -351,10 +351,12 @@ const AdminDashboard = () => {
                     fontSize={12}
                   />
                   <Tooltip
-                    formatter={(value: number) => [
-                      `₹${value.toLocaleString()}`,
-                      t("admin.revenue"),
-                    ]}
+                    formatter={
+                      ((value: number | undefined) => [
+                        value ? `₹${value.toLocaleString()}` : "N/A",
+                        t("admin.revenue"),
+                      ]) as any
+                    }
                     labelFormatter={(label) =>
                       new Date(label).toLocaleDateString("en-IN", {
                         day: "2-digit",
@@ -409,7 +411,10 @@ const AdminDashboard = () => {
                     paddingAngle={3}
                     dataKey="count"
                     nameKey="status"
-                    label={({ status, count }) => `${status}: ${count}`}
+                    label={(props: any) => {
+                      const data = props.payload?.[0]?.payload;
+                      return data ? `${data.status}: ${data.count}` : "";
+                    }}
                   >
                     {(analytics?.statusDistribution || []).map(
                       (entry, index) => (
@@ -424,10 +429,12 @@ const AdminDashboard = () => {
                     )}
                   </Pie>
                   <Tooltip
-                    formatter={(value: number, name: string) => [
-                      value,
-                      t(`orders.${name.toLowerCase()}`),
-                    ]}
+                    formatter={
+                      ((value: number | undefined, name: string) => [
+                        value ?? 0,
+                        t(`orders.${name?.toLowerCase()}`),
+                      ]) as any
+                    }
                     contentStyle={{
                       borderRadius: 8,
                       border: `1px solid ${tokens.gray200}`,
@@ -477,11 +484,16 @@ const AdminDashboard = () => {
                     }
                   />
                   <Tooltip
-                    formatter={(value: number, name: string) => {
-                      if (name === "unitsSold")
-                        return [value, t("admin.unitsSold")];
-                      return [`₹${value.toLocaleString()}`, t("admin.revenue")];
-                    }}
+                    formatter={
+                      ((value: number | undefined, name: string) => {
+                        if (name === "unitsSold")
+                          return [value, t("admin.unitsSold")];
+                        return [
+                          `₹${value ? value.toLocaleString() : "N/A"}`,
+                          t("admin.revenue"),
+                        ];
+                      }) as any
+                    }
                     contentStyle={{
                       borderRadius: 8,
                       border: `1px solid ${tokens.gray200}`,

@@ -31,17 +31,13 @@ import {
   Dashboard,
   Person,
   Logout,
-  DarkMode,
-  LightMode,
 } from "@mui/icons-material";
 import { useAuth } from "../../context/AuthContext";
 import { useCart } from "../../context/CartContext";
 import { useWishlist } from "../../context/WishlistContext";
 import LanguageSelector from "../common/LanguageSelector";
-import SearchAutocomplete from "../common/SearchAutocomplete";
 import { AppDrawer } from "../ui/Drawer";
 import { tokens } from "@/theme/theme";
-import { useThemeMode } from "../../context/ThemeContext";
 import styles from "./Navbar.module.css";
 
 const Navbar = () => {
@@ -50,7 +46,6 @@ const Navbar = () => {
   const { isAuthenticated, isAdmin, logout, user } = useAuth();
   const { itemCount } = useCart();
   const { wishlistItems } = useWishlist();
-  const { mode, toggleTheme } = useThemeMode();
 
   const [anchorElUser, setAnchorElUser] = useState<null | HTMLElement>(null);
 

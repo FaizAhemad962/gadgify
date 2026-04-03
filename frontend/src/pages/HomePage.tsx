@@ -367,7 +367,7 @@ const HomePage = () => {
                     height: 64,
                   }}
                 >
-                  {CATEGORY_ICONS[cat]}
+                  {CATEGORY_ICONS[cat as keyof typeof CATEGORY_ICONS]}
                 </Box>
                 <Typography
                   variant="body2"
