@@ -165,14 +165,8 @@ jobs:
           app-name: gaddgify-Backend
           package: ./deploy-backend
 
-      - name: Run Prisma Migrations
-        run: |
-          az webapp deployment slot config --resource-group gadgify-rg --name gaddgify-Backend --auto-swap-slot-name production
-          az webapp config appsettings set --resource-group gadgify-rg --name gaddgify-Backend --settings DATABASE_URL="${{ secrets.DATABASE_URL }}"
-        continue-on-error: true
-
-      - name: Wait for deployment
-        run: sleep 30
+      - name: Wait for app to start
+        run: sleep 15
 
       - name: Health Check
         run: |
@@ -180,10 +174,13 @@ jobs:
           ATTEMPT=0
           HEALTH_URL="https://gaddgify-backend.azurewebsites.net/health"
 
+          echo "🔍 Checking health endpoint: $HEALTH_URL"
+
           while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
-            RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" "$HEALTH_URL")
+            RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" "$HEALTH_URL" 2>/dev/null || echo "000")
             if [ "$RESPONSE" = "200" ]; then
-              echo "✅ Health check passed"
+              echo "✅ Health check passed (HTTP 200)"
+              curl -s "$HEALTH_URL" | head -20
               exit 0
             fi
             ATTEMPT=$((ATTEMPT + 1))
@@ -192,6 +189,10 @@ jobs:
           done
 
           echo "❌ Health check failed after $MAX_ATTEMPTS attempts"
+          echo "📋 Troubleshooting:"
+          echo "   1. Check Azure logs: https://portal.azure.com"
+          echo "   2. Verify DATABASE_URL in App Service Configuration"
+          echo "   3. Check PostgreSQL firewall allows Azure services"
           exit 1
 
       - name: Deployment Summary
