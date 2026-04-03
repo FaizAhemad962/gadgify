@@ -1,10 +1,10 @@
-name: CI
+name: CI2
 
 on:
   push:
-    branches: ["dep"]
+    branches: ["main"]
   pull_request:
-    branches: ["dep"]
+    branches: ["main"]
 
 jobs:
   frontend:
