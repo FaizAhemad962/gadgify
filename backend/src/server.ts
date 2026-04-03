@@ -7,7 +7,11 @@ import { sanitizeInput, sanitizeStrings } from "./middlewares/sanitize";
 import { logSecurityEvents } from "./middlewares/securityLogger";
 import { apiLimiter } from "./middlewares/rateLimiter";
 import logger from "./utils/logger";
-import { initializeConnectionPool } from "./utils/connectionPool";
+import {
+  initializeConnectionPool,
+  checkConnectionHealth,
+} from "./utils/connectionPool";
+import { runStartupDiagnostics } from "./utils/startupDiagnostics";
 import authRoutes from "./routes/authRoutes";
 import productRoutes from "./routes/productRoutes";
 import cartRoutes from "./routes/cartRoutes";
@@ -101,8 +105,26 @@ app.use(
 );
 
 // Health check
-app.get("/health", (req: Request, res: Response) => {
-  res.json({ status: "OK", timestamp: new Date().toISOString() });
+app.get("/health", async (req: Request, res: Response) => {
+  try {
+    const isDbHealthy = await checkConnectionHealth();
+    const status = isDbHealthy ? "UP" : "DEGRADED";
+    const statusCode = isDbHealthy ? 200 : 503;
+
+    res.status(statusCode).json({
+      status,
+      timestamp: new Date().toISOString(),
+      database: isDbHealthy ? "connected" : "disconnected",
+      uptime: process.uptime(),
+    });
+  } catch (error) {
+    res.status(503).json({
+      status: "DOWN",
+      timestamp: new Date().toISOString(),
+      database: "error",
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
 });
 
 // Routes
@@ -129,6 +151,34 @@ const PORT = config.port;
 
 const startServer = async () => {
   try {
+    // Run startup diagnostics
+    logger.info("Running startup diagnostics...");
+    const diagnostics = await runStartupDiagnostics();
+    const failures = diagnostics.filter((d) => d.status === "FAILED");
+
+    if (failures.length > 0) {
+      logger.error(
+        `❌ Startup failed: ${failures.length} critical issue(s) detected`,
+      );
+      failures.forEach((f) => {
+        logger.error(`   - ${f.name}: ${f.error}`);
+      });
+      logger.error("\n📋 TROUBLESHOOTING:");
+      logger.error(
+        "   1. Verify DATABASE_URL is set in Azure App Service Configuration",
+      );
+      logger.error(
+        "   2. Check PostgreSQL server firewall allows Azure App Service IP",
+      );
+      logger.error("   3. Run migrations: npx prisma migrate deploy");
+      logger.error(
+        "   4. Check Azure App Service Logs in Azure Portal > Monitoring > App Service logs",
+      );
+      process.exit(1);
+    }
+
+    logger.info("✅ All startup checks passed!");
+
     // Initialize database connection pool
     await initializeConnectionPool();
 
@@ -137,12 +187,14 @@ const startServer = async () => {
       logger.info(`📝 Environment: ${config.nodeEnv}`);
       logger.info(`🌐 Frontend URL: ${config.frontendUrl}`);
       logger.info(`🔒 Security: Enabled`);
+      logger.info(`📊 Health check: GET /health`);
       console.log(`🚀 Server running on port ${PORT}`);
       console.log(`📝 Environment: ${config.nodeEnv}`);
       console.log(`🌐 Frontend URL: ${config.frontendUrl}`);
     });
   } catch (error) {
     logger.error("Failed to start server:", error);
+    console.error("Server startup failed:", error);
     process.exit(1);
   }
 };
