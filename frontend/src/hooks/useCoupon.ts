@@ -29,7 +29,6 @@ export const useCoupon = (options?: UseCouponOptions) => {
     promo: context.promo,
     isValidatingPromo: context.isValidatingPromo,
     discount: context.discount,
-
     // Setters
     setCode: context.setCode,
     setError: context.setError,
