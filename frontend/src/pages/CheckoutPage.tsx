@@ -24,8 +24,8 @@ import { useAuth } from "../context/AuthContext";
 import { tokens } from "@/theme/theme";
 import { ErrorHandler } from "../utils/errorHandler";
 import { ordersApi } from "../api/orders";
-import { couponsApi, type CouponValidation } from "../api/coupons";
 import { addressesApi, type Address } from "../api/addresses";
+import { useCoupon } from "../hooks/useCoupon";
 
 const shippingSchema = z.object({
   name: z.string().min(2, "Name is required"),
@@ -44,12 +44,17 @@ const CheckoutPage = () => {
   const { cart, clearCart } = useCart();
   const { user } = useAuth();
   const [error, setError] = useState("");
-  const [couponCode, setCouponCode] = useState("");
-  const [couponError, setCouponError] = useState("");
-  const [appliedCoupon, setAppliedCoupon] = useState<CouponValidation | null>(
-    null,
-  );
-  const [isValidatingCoupon, setIsValidatingCoupon] = useState(false);
+  const {
+    code: couponCode,
+    error: couponError,
+    promo: appliedCoupon,
+    isValidatingPromo: isValidatingCoupon,
+    discount,
+    setCode: setCouponCode,
+    setError: setCouponError,
+    applyPromo,
+    removePromo,
+  } = useCoupon();
   const [selectedAddressId, setSelectedAddressId] = useState<string>("new");
 
   const { data: savedAddresses = [] } = useQuery({
@@ -174,33 +179,7 @@ const CheckoutPage = () => {
   };
 
   const handleApplyCoupon = async () => {
-    if (!couponCode.trim()) return;
-    setCouponError("");
-    setIsValidatingCoupon(true);
-    try {
-      const result = await couponsApi.validate(
-        couponCode.trim(),
-        calculateSubtotal(),
-      );
-      setAppliedCoupon(result);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (err: any) {
-      const msg = err?.response?.data?.message || t("errors.invalidCoupon");
-      setCouponError(msg);
-      setAppliedCoupon(null);
-    } finally {
-      setIsValidatingCoupon(false);
-    }
-  };
-
-  const handleRemoveCoupon = () => {
-    setAppliedCoupon(null);
-    setCouponCode("");
-    setCouponError("");
-  };
-
-  const getDiscount = () => {
-    return appliedCoupon?.discount || 0;
+    await applyPromo(calculateSubtotal());
   };
 
   const onSubmit = async (data: ShippingFormData) => {
@@ -239,7 +218,7 @@ const CheckoutPage = () => {
       })),
       subtotal,
       shipping,
-      total: total - getDiscount(),
+      total: total - discount,
       couponCode: appliedCoupon?.code || undefined,
       shippingAddress,
     };
@@ -254,7 +233,6 @@ const CheckoutPage = () => {
 
   const subtotal = calculateSubtotal();
   const shipping = calculateShipping();
-  const discount = getDiscount();
   const total = subtotal + shipping - discount;
 
   return (
@@ -646,35 +624,66 @@ const CheckoutPage = () => {
                   <Box
                     sx={{
                       display: "flex",
-                      alignItems: "center",
+                      alignItems: "flex-start",
                       justifyContent: "space-between",
-                      p: 1.5,
+                      p: 1.25,
                       bgcolor: "#e8f5e9",
                       borderRadius: 1,
+                      border: "1px solid #4caf50",
+                      gap: 1,
                     }}
                   >
-                    <Box>
-                      <Chip
-                        label={appliedCoupon.code}
-                        color="success"
-                        size="small"
-                        sx={{ fontWeight: 700, mr: 1 }}
-                      />
-                      <Typography
-                        component="span"
-                        variant="body2"
-                        sx={{ color: "success.main", fontWeight: 600 }}
+                    <Box sx={{ minWidth: 0, flex: 1 }}>
+                      <Box
+                        sx={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 1,
+                          mb: 0.5,
+                          flexWrap: "wrap",
+                        }}
                       >
-                        -₹{appliedCoupon.discount.toLocaleString()}
+                        <Chip
+                          label={appliedCoupon.code}
+                          color="success"
+                          size="small"
+                          sx={{ fontWeight: 700, flexShrink: 0 }}
+                        />
+                        <Typography
+                          component="span"
+                          variant="body2"
+                          sx={{
+                            color: "success.main",
+                            fontWeight: 600,
+                            whiteSpace: "nowrap",
+                          }}
+                        >
+                          -₹{appliedCoupon.discount.toLocaleString()}
+                        </Typography>
+                      </Box>
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          color: "success.main",
+                          display: "block",
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        ✓ Coupon applied successfully
                       </Typography>
                     </Box>
                     <Button
                       size="small"
                       color="error"
-                      onClick={handleRemoveCoupon}
-                      sx={{ minWidth: "auto", textTransform: "none" }}
+                      onClick={removePromo}
+                      sx={{
+                        minWidth: "auto",
+                        textTransform: "none",
+                        flexShrink: 0,
+                        whiteSpace: "nowrap",
+                      }}
                     >
-                      ✕
+                      Remove
                     </Button>
                   </Box>
                 ) : (

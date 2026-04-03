@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ThemeContextProvider } from "./context/ThemeContext";
 import { AuthProvider } from "./context/AuthContext";
 import { CartProvider } from "./context/CartContext";
+import { CouponProvider } from "./context/CouponContext";
 import { WishlistProvider } from "./context/WishlistContext";
 import { SearchProvider } from "./context/SearchContext";
 import { CompareProvider } from "./context/CompareContext";
@@ -27,13 +28,15 @@ function App() {
           <ScrollToTop />
           <AuthProvider>
             <CartProvider>
-              <WishlistProvider>
-                <SearchProvider>
-                  <CompareProvider>
-                    <AppRoutes />
-                  </CompareProvider>
-                </SearchProvider>
-              </WishlistProvider>
+              <CouponProvider>
+                <WishlistProvider>
+                  <SearchProvider>
+                    <CompareProvider>
+                      <AppRoutes />
+                    </CompareProvider>
+                  </SearchProvider>
+                </WishlistProvider>
+              </CouponProvider>
             </CartProvider>
           </AuthProvider>
         </BrowserRouter>

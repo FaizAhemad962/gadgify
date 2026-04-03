@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { tokens } from "@/theme/theme";
@@ -12,24 +11,28 @@ import {
   Divider,
   TextField,
   InputAdornment,
+  Alert,
+  Chip,
 } from "@mui/material";
 import { Delete, ShoppingCartOutlined, LocalOffer } from "@mui/icons-material";
 import QuantityInput from "../components/common/QuantityInput";
 import { useCart } from "../context/CartContext";
+import { useCoupon } from "../hooks/useCoupon";
 
 const CartPage = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { cart, updateQuantity, removeFromCart, isLoading } = useCart();
-  const [couponCode, setCouponCode] = useState("");
-  const [couponApplied, setCouponApplied] = useState(false);
-
-  const handleApplyCoupon = () => {
-    if (couponCode.trim()) {
-      // Placeholder — integrate with backend coupon API when available
-      setCouponApplied(true);
-    }
-  };
+  const {
+    code: couponCode,
+    error: couponError,
+    promo: appliedCoupon,
+    isValidatingPromo: isValidating,
+    discount,
+    setCode: setCouponCode,
+    applyPromo,
+    removePromo,
+  } = useCoupon();
 
   const calculateSubtotal = () => {
     if (!cart?.items) return 0;
@@ -77,8 +80,9 @@ const CartPage = () => {
   }
 
   const subtotal = calculateSubtotal();
-  const shipping = subtotal > 5000 ? 0 : 100;
-  const total = subtotal + shipping;
+  const subtotalAfterDiscount = subtotal - discount;
+  const shipping = subtotalAfterDiscount > 5000 ? 0 : 100;
+  const total = subtotalAfterDiscount + shipping;
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
@@ -273,6 +277,28 @@ const CartPage = () => {
                   ₹{subtotal.toLocaleString()}
                 </Typography>
               </Box>
+              {discount > 0 && (
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    mb: 1.5,
+                    alignItems: "center",
+                  }}
+                >
+                  <Typography sx={{ color: tokens.success, fontWeight: 500 }}>
+                    {t("checkout.discount")}
+                  </Typography>
+                  <Typography
+                    sx={{
+                      fontWeight: 600,
+                      color: tokens.success,
+                    }}
+                  >
+                    -₹{discount.toLocaleString()}
+                  </Typography>
+                </Box>
+              )}
               <Box
                 sx={{
                   display: "flex",
@@ -326,62 +352,133 @@ const CartPage = () => {
 
             {/* Coupon Code */}
             <Box sx={{ mb: 2.5 }}>
-              <Typography
-                variant="body2"
-                sx={{ fontWeight: 600, color: "text.primary", mb: 1 }}
-              >
-                {t("common.applyCoupon")}
-              </Typography>
-              <Box sx={{ display: "flex", gap: 1 }}>
-                <TextField
-                  size="small"
-                  placeholder={t("common.couponPlaceholder")}
-                  value={couponCode}
-                  onChange={(e) => {
-                    setCouponCode(e.target.value);
-                    setCouponApplied(false);
-                  }}
-                  fullWidth
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <LocalOffer
-                          sx={{ fontSize: 18, color: tokens.gray400 }}
-                        />
-                      </InputAdornment>
-                    ),
-                  }}
+              {!appliedCoupon ? (
+                <>
+                  <Typography
+                    variant="body2"
+                    sx={{ fontWeight: 600, color: "text.primary", mb: 1 }}
+                  >
+                    🎟️ {t("common.applyCoupon")}
+                  </Typography>
+                  <Box sx={{ display: "flex", gap: 1, mb: 1 }}>
+                    <TextField
+                      size="small"
+                      placeholder={t("common.couponPlaceholder")}
+                      value={couponCode}
+                      onChange={(e) => setCouponCode(e.target.value)}
+                      fullWidth
+                      disabled={isValidating}
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <LocalOffer
+                              sx={{ fontSize: 18, color: tokens.gray400 }}
+                            />
+                          </InputAdornment>
+                        ),
+                      }}
+                      sx={{
+                        "& .MuiOutlinedInput-root": { borderRadius: 2 },
+                      }}
+                    />
+                    <Button
+                      variant="outlined"
+                      onClick={() => applyPromo(subtotal)}
+                      disabled={!couponCode.trim() || isValidating}
+                      sx={{
+                        minWidth: 80,
+                        fontWeight: 600,
+                        borderColor: tokens.accent,
+                        color: tokens.accent,
+                        borderRadius: 2,
+                        textTransform: "none",
+                        "&:hover": {
+                          borderColor: tokens.accentDark,
+                          bgcolor: "#FFF3E0",
+                        },
+                      }}
+                    >
+                      {isValidating ? "..." : t("common.apply")}
+                    </Button>
+                  </Box>
+                  {couponError && (
+                    <Alert severity="error" sx={{ py: 0.5, px: 1, mb: 1 }}>
+                      {couponError}
+                    </Alert>
+                  )}
+                  <Typography
+                    variant="caption"
+                    sx={{ color: "text.secondary" }}
+                  >
+                    💡 Tip: Coupon will be carried to checkout
+                  </Typography>
+                </>
+              ) : (
+                <Box
                   sx={{
-                    "& .MuiOutlinedInput-root": { borderRadius: 2 },
-                  }}
-                />
-                <Button
-                  variant="outlined"
-                  onClick={handleApplyCoupon}
-                  disabled={!couponCode.trim()}
-                  sx={{
-                    minWidth: 80,
-                    fontWeight: 600,
-                    borderColor: tokens.accent,
-                    color: tokens.accent,
-                    borderRadius: 2,
-                    textTransform: "none",
-                    "&:hover": {
-                      borderColor: tokens.accentDark,
-                      bgcolor: "#FFF3E0",
-                    },
+                    display: "flex",
+                    alignItems: "flex-start",
+                    justifyContent: "space-between",
+                    p: 1.25,
+                    bgcolor: "#e8f5e9",
+                    borderRadius: 1,
+                    border: "1px solid #4caf50",
+                    gap: 1,
                   }}
                 >
-                  {t("common.apply")}
-                </Button>
-              </Box>
-              {couponApplied && (
-                <Typography
-                  variant="caption"
-                  sx={{ color: tokens.success, mt: 0.5, display: "block" }}
-                >
-                  {t("common.couponApplied")}
-                </Typography>
+                  <Box sx={{ minWidth: 0, flex: 1 }}>
+                    <Box
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 1,
+                        mb: 0.5,
+                        flexWrap: "wrap",
+                      }}
+                    >
+                      <Chip
+                        label={appliedCoupon?.code}
+                        color="success"
+                        size="small"
+                        sx={{ fontWeight: 700, flexShrink: 0 }}
+                      />
+                      <Typography
+                        component="span"
+                        variant="body2"
+                        sx={{
+                          color: "success.main",
+                          fontWeight: 600,
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        -₹{discount.toLocaleString()}
+                      </Typography>
+                    </Box>
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        color: "success.main",
+                        display: "block",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      ✓ {t("common.couponApplied")}
+                    </Typography>
+                  </Box>
+                  <Button
+                    size="small"
+                    color="error"
+                    onClick={removePromo}
+                    sx={{
+                      minWidth: "auto",
+                      textTransform: "none",
+                      flexShrink: 0,
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    Remove
+                  </Button>
+                </Box>
               )}
             </Box>
             <Divider sx={{ mb: 2.5 }} />
