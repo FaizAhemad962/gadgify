@@ -151,50 +151,20 @@ const PORT = config.port;
 
 const startServer = async () => {
   try {
-    logger.info("🚀 Starting server...");
-
-    // Initialize database connection pool (with timeout)
-    logger.info("Initializing database connection...");
-    const connectionPromise = initializeConnectionPool();
-    const timeoutPromise = new Promise((_, reject) =>
-      setTimeout(() => reject(new Error("Database connection timeout")), 10000),
-    );
-
-    try {
-      await Promise.race([connectionPromise, timeoutPromise]);
-      logger.info("✅ Database connected");
-    } catch (dbError) {
-      logger.warn(`⚠️  Database connection issue: ${dbError}`);
-      logger.warn(
-        "Continuing startup - health endpoint will show degraded status",
-      );
-    }
-
-    // Run startup diagnostics (non-blocking)
-    logger.info("Running diagnostics...");
-    try {
-      const diagnostics = await runStartupDiagnostics();
-      const failures = diagnostics.filter((d) => d.status === "FAILED");
-      if (failures.length > 0) {
-        logger.warn("⚠️  Some diagnostics failed - check logs above");
-      }
-    } catch (diagError) {
-      logger.warn(`Diagnostics skipped: ${diagError}`);
-    }
+    // Initialize database connection pool
+    await initializeConnectionPool();
 
     app.listen(PORT, () => {
       logger.info(`🚀 Server running on port ${PORT}`);
       logger.info(`📝 Environment: ${config.nodeEnv}`);
       logger.info(`🌐 Frontend URL: ${config.frontendUrl}`);
       logger.info(`🔒 Security: Enabled`);
-      logger.info(`📊 Health check: GET /health`);
       console.log(`🚀 Server running on port ${PORT}`);
       console.log(`📝 Environment: ${config.nodeEnv}`);
       console.log(`🌐 Frontend URL: ${config.frontendUrl}`);
     });
   } catch (error) {
     logger.error("Failed to start server:", error);
-    console.error("Server startup failed:", error);
     process.exit(1);
   }
 };
