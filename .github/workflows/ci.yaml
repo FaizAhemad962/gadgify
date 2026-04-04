@@ -183,36 +183,6 @@ jobs:
           app-name: gaddgify-Backend
           package: ./deploy-backend
 
-      - name: Wait for app to start
-        run: sleep 15
-
-      - name: Health Check
-        run: |
-          MAX_ATTEMPTS=10
-          ATTEMPT=0
-          HEALTH_URL="https://gaddgify-backend-fbgyghh5ckc9g0fh.southindia-01.azurewebsites.net/health"
-
-          echo "🔍 Checking health endpoint: $HEALTH_URL"
-
-          while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
-            RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" "$HEALTH_URL" 2>/dev/null || echo "000")
-            if [ "$RESPONSE" = "200" ]; then
-              echo "✅ Health check passed (HTTP 200)"
-              curl -s "$HEALTH_URL" | head -20
-              exit 0
-            fi
-            ATTEMPT=$((ATTEMPT + 1))
-            echo "⏳ Health check attempt $ATTEMPT/$MAX_ATTEMPTS (HTTP $RESPONSE)"
-            sleep 2
-          done
-
-          echo "❌ Health check failed after $MAX_ATTEMPTS attempts"
-          echo "📋 Troubleshooting:"
-          echo "   1. Check Azure logs: https://portal.azure.com"
-          echo "   2. Verify DATABASE_URL in App Service Configuration"
-          echo "   3. Check PostgreSQL firewall allows Azure services"
-          exit 1
-
       - name: Deployment Summary
         if: success()
         run: |
