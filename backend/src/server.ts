@@ -151,36 +151,36 @@ const PORT = config.port;
 
 const startServer = async () => {
   try {
-    // Run startup diagnostics
-    logger.info("Running startup diagnostics...");
-    const diagnostics = await runStartupDiagnostics();
-    const failures = diagnostics.filter((d) => d.status === "FAILED");
+    logger.info("🚀 Starting server...");
 
-    if (failures.length > 0) {
-      logger.error(
-        `❌ Startup failed: ${failures.length} critical issue(s) detected`,
+    // Initialize database connection pool (with timeout)
+    logger.info("Initializing database connection...");
+    const connectionPromise = initializeConnectionPool();
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error("Database connection timeout")), 10000),
+    );
+
+    try {
+      await Promise.race([connectionPromise, timeoutPromise]);
+      logger.info("✅ Database connected");
+    } catch (dbError) {
+      logger.warn(`⚠️  Database connection issue: ${dbError}`);
+      logger.warn(
+        "Continuing startup - health endpoint will show degraded status",
       );
-      failures.forEach((f) => {
-        logger.error(`   - ${f.name}: ${f.error}`);
-      });
-      logger.error("\n📋 TROUBLESHOOTING:");
-      logger.error(
-        "   1. Verify DATABASE_URL is set in Azure App Service Configuration",
-      );
-      logger.error(
-        "   2. Check PostgreSQL server firewall allows Azure App Service IP",
-      );
-      logger.error("   3. Run migrations: npx prisma migrate deploy");
-      logger.error(
-        "   4. Check Azure App Service Logs in Azure Portal > Monitoring > App Service logs",
-      );
-      process.exit(1);
     }
 
-    logger.info("✅ All startup checks passed!");
-
-    // Initialize database connection pool
-    await initializeConnectionPool();
+    // Run startup diagnostics (non-blocking)
+    logger.info("Running diagnostics...");
+    try {
+      const diagnostics = await runStartupDiagnostics();
+      const failures = diagnostics.filter((d) => d.status === "FAILED");
+      if (failures.length > 0) {
+        logger.warn("⚠️  Some diagnostics failed - check logs above");
+      }
+    } catch (diagError) {
+      logger.warn(`Diagnostics skipped: ${diagError}`);
+    }
 
     app.listen(PORT, () => {
       logger.info(`🚀 Server running on port ${PORT}`);
