@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updateOrderStatus = exports.getAllOrders = exports.confirmPayment = exports.createPaymentIntent = exports.getOrderById = exports.getOrders = exports.createOrder = void 0;
+exports.updateOrderStatus = exports.getAllOrders = exports.cancelPendingOrder = exports.retryPayment = exports.confirmPayment = exports.createPaymentIntent = exports.getOrderById = exports.getOrders = exports.createOrder = void 0;
 const database_1 = __importDefault(require("../config/database"));
 const razorpay_1 = require("../config/razorpay");
 const config_1 = require("../config");
@@ -135,31 +135,6 @@ const createOrder = async (req, res, next) => {
                 },
             },
         });
-        // Update product stock
-        for (const item of items) {
-            await database_1.default.product.update({
-                where: { id: item.productId },
-                data: {
-                    stock: {
-                        decrement: item.quantity,
-                    },
-                },
-            });
-        }
-        // Check for low stock products and alert admin (non-blocking)
-        if (config_1.config.adminEmail) {
-            const updatedProducts = await database_1.default.product.findMany({
-                where: {
-                    id: { in: items.map((i) => i.productId) },
-                    stock: { lte: 5 },
-                    deletedAt: null,
-                },
-                select: { id: true, name: true, stock: true },
-            });
-            if (updatedProducts.length > 0) {
-                (0, email_1.sendLowStockAlertEmail)(config_1.config.adminEmail, updatedProducts).catch((err) => logger_1.default.error(`Low stock alert email failed: ${err.message}`));
-            }
-        }
         // Clear cart
         const cart = await database_1.default.cart.findUnique({ where: { userId } });
         if (cart) {
@@ -189,6 +164,40 @@ const createOrder = async (req, res, next) => {
     }
 };
 exports.createOrder = createOrder;
+/**
+ * Update product stock - moves to payment confirmation
+ * Stock is only decremented when payment is confirmed
+ */
+const decrementProductStock = async (items) => {
+    for (const item of items) {
+        await database_1.default.product.update({
+            where: { id: item.productId },
+            data: {
+                stock: {
+                    decrement: item.quantity,
+                },
+            },
+        });
+    }
+};
+/**
+ * Check for low stock and send alert
+ */
+const checkLowStockAndAlert = async (items) => {
+    if (config_1.config.adminEmail) {
+        const updatedProducts = await database_1.default.product.findMany({
+            where: {
+                id: { in: items.map((i) => i.productId) },
+                stock: { lte: 5 },
+                deletedAt: null,
+            },
+            select: { id: true, name: true, stock: true },
+        });
+        if (updatedProducts.length > 0) {
+            (0, email_1.sendLowStockAlertEmail)(config_1.config.adminEmail, updatedProducts).catch((err) => logger_1.default.error(`Low stock alert email failed: ${err.message}`));
+        }
+    }
+};
 const getOrders = async (req, res, next) => {
     try {
         const orders = await database_1.default.order.findMany({
@@ -352,6 +361,10 @@ const confirmPayment = async (req, res, next) => {
                 },
             },
         });
+        // Decrement product stock only after payment is confirmed
+        await decrementProductStock(updatedOrder.items);
+        // Check for low stock and alert admin
+        await checkLowStockAndAlert(updatedOrder.items);
         // Send payment success email (non-blocking)
         if (updatedOrder.user?.email) {
             (0, email_1.sendPaymentSuccessEmail)(updatedOrder.user.email, {
@@ -368,6 +381,137 @@ const confirmPayment = async (req, res, next) => {
     }
 };
 exports.confirmPayment = confirmPayment;
+/**
+ * Retry payment for a pending order
+ * Allows users to retry payment if their order is still pending
+ */
+const retryPayment = async (req, res, next) => {
+    try {
+        const { orderId } = req.params;
+        const order = await database_1.default.order.findUnique({
+            where: { id: orderId },
+            include: {
+                items: {
+                    include: { product: true },
+                },
+                user: {
+                    select: {
+                        id: true,
+                        email: true,
+                        name: true,
+                        phone: true,
+                        role: true,
+                        state: true,
+                        city: true,
+                        address: true,
+                        pincode: true,
+                        createdAt: true,
+                    },
+                },
+            },
+        });
+        if (!order) {
+            res.status(404).json({ success: false, message: "Order not found" });
+            return;
+        }
+        // Only the owner or admin can retry payment
+        if (order.userId !== req.user.id && req.user.role !== "ADMIN") {
+            res.status(403).json({ success: false, message: "Access denied" });
+            return;
+        }
+        // Only allow retry on pending orders
+        if (order.paymentStatus !== "PENDING") {
+            res.status(400).json({
+                success: false,
+                message: `Cannot retry payment for order with payment status: ${order.paymentStatus}`,
+            });
+            return;
+        }
+        // Create new Razorpay order for retry
+        const razorpayOrder = await razorpay_1.razorpayInstance.orders.create({
+            amount: Math.round(order.total * 100), // Amount in paise
+            currency: "INR",
+            receipt: `${order.id}-retry-${Date.now()}`,
+            notes: {
+                orderId: order.id,
+                userId: order.userId,
+                isRetry: "true",
+            },
+        });
+        res.json({
+            success: true,
+            message: "Payment retry initiated",
+            data: {
+                razorpayOrderId: razorpayOrder.id,
+                amount: razorpayOrder.amount,
+                currency: razorpayOrder.currency,
+                keyId: config_1.config.razorpayKeyId,
+                orderId: order.id,
+            },
+        });
+    }
+    catch (error) {
+        next(error);
+    }
+};
+exports.retryPayment = retryPayment;
+/**
+ * Cancel pending order
+ * Allows users or admins to cancel orders that are pending payment
+ * No need to restore stock since it was never decremented
+ */
+const cancelPendingOrder = async (req, res, next) => {
+    try {
+        const { orderId } = req.params;
+        const order = await database_1.default.order.findUnique({
+            where: { id: orderId },
+            include: {
+                items: {
+                    include: { product: true },
+                },
+            },
+        });
+        if (!order) {
+            res.status(404).json({ success: false, message: "Order not found" });
+            return;
+        }
+        // Only the owner or admin can cancel
+        if (order.userId !== req.user.id && req.user.role !== "ADMIN") {
+            res.status(403).json({ success: false, message: "Access denied" });
+            return;
+        }
+        // Only allow cancellation of pending orders
+        if (order.paymentStatus !== "PENDING") {
+            res.status(400).json({
+                success: false,
+                message: `Cannot cancel order with payment status: ${order.paymentStatus}`,
+            });
+            return;
+        }
+        // Mark order as cancelled (stock was never decremented, so no need to restore)
+        const cancelledOrder = await database_1.default.order.update({
+            where: { id: orderId },
+            data: {
+                status: "CANCELLED",
+                paymentStatus: "CANCELLED",
+            },
+            include: {
+                items: {
+                    include: { product: true },
+                },
+            },
+        });
+        res.json({
+            success: true,
+            message: "Order cancelled successfully",
+            data: transformOrder(cancelledOrder),
+        });
+    }
+    catch (error) {
+        next(error);
+    }
+};
+exports.cancelPendingOrder = cancelPendingOrder;
 // Admin routes
 const getAllOrders = async (req, res, next) => {
     try {

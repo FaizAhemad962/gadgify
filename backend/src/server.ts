@@ -22,6 +22,8 @@ import mediaRoutes from "./routes/mediaRoutes";
 import couponRoutes from "./routes/couponRoutes";
 import categoryRoutes from "./routes/categoryRoutes";
 import addressRoutes from "./routes/addressRoutes";
+import roleChangeRoutes from "./routes/roleChangeRoutes";
+import multiAccountRoutes from "./routes/multiAccountRoutes";
 
 const app: Application = express();
 
@@ -138,6 +140,8 @@ app.use("/api/wishlist", wishlistRoutes);
 app.use("/api/coupons", couponRoutes);
 app.use("/api/categories", categoryRoutes);
 app.use("/api/addresses", addressRoutes);
+app.use("/api/role-change", roleChangeRoutes);
+app.use("/api/accounts", multiAccountRoutes);
 
 // 404 handler
 app.use((req: Request, res: Response) => {

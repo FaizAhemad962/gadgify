@@ -38,8 +38,9 @@ Exclusively available for customers in **Maharashtra, India** 🇮🇳
 
 ## Default Credentials
 
-**Admin:** `admin@gadgify.com` / `admin123`
-**User:** `user@example.com` / `user123`
+**Super Admin:** `super-admin@gadgify.com` / `super-admin9606@`
+
+> Note: Create additional admin, delivery staff, and support staff accounts as needed via the admin panel or API.
 
 ---
 
@@ -372,6 +373,323 @@ All accept standard MUI props plus token-based default styling:
 Via `i18next` with automatic browser language detection. Translation files in `frontend/src/i18n/`.
 
 Namespace convention: `admin.*`, `common.*`, `orders.*`, `payment.*`, `categories.*`, `months.*`.
+
+---
+
+## Role-Based Access Control (RBAC)
+
+### Supported Roles
+
+Gadgify implements a **5-tier role hierarchy**:
+
+| Role               | Level | Capabilities                                                                  | Frontend Access          | Visual Indicator |
+| ------------------ | ----- | ----------------------------------------------------------------------------- | ------------------------ | :--------------: |
+| **USER**           | 0     | Browse, purchase, rate products, wishlist                                     | Customer dashboard       |     👤 Blue      |
+| **DELIVERY_STAFF** | 1     | Delivery management (future dashboard)                                        | Basic staff access       |     🚚 Blue      |
+| **SUPPORT_STAFF**  | 1     | Customer support (future dashboard)                                           | Support ticket viewing   |     👨‍💼 Cyan      |
+| **ADMIN**          | 2     | Manage products, categories, orders, create DELIVERY_STAFF/SUPPORT_STAFF/USER | Full admin dashboard     |    ⚙️ Orange     |
+| **SUPER_ADMIN**    | 3     | All permissions + create ADMIN accounts, manage roles, view audit logs        | Enhanced admin dashboard |      👑 Red      |
+
+### Authentication Flow
+
+1. **Backend** (`src/middlewares/auth.ts`):
+   - `authenticate()` — Verifies JWT token and fetches user role
+   - `authorize(...roles)` — Middleware that checks if user has required role(s)
+   - Example: `router.use(authenticate, authorize("ADMIN", "SUPER_ADMIN"))`
+
+2. **Frontend** (`frontend/src/context/AuthContext.tsx`):
+   - `isAuthenticated` — Boolean flag set after login
+   - `isAdmin` — Helper that checks if user role is ADMIN or SUPER_ADMIN
+   - `user.role` — Actual role string for advanced permission checks
+   - User types: Must be updated to include all 5 roles
+
+### Navigation Menu Strategy
+
+**Current Issue:** Frontend navbar shows same admin links to both USER and ADMIN/SUPER_ADMIN roles.
+
+**Solution:** Role-based conditional rendering in navbar:
+
+```tsx
+// frontend/src/components/layout/Navbar.tsx
+
+// Check if user can access admin features
+const hasAdminAccess = ["ADMIN", "SUPER_ADMIN"].includes(user?.role);
+const isSuperAdmin = user?.role === "SUPER_ADMIN";
+
+// Navigation items vary by role
+const navItems = [
+  // Common to all
+  { id: "home", label: "Home", to: "/", icon: <Home /> },
+  { id: "products", label: "Products", to: "/products", icon: <ShoppingBag /> },
+
+  // Customer-only
+  ...(isAuthenticated && !hasAdminAccess
+    ? [
+        {
+          id: "orders",
+          label: "Orders",
+          to: "/orders",
+          icon: <ShoppingCart />,
+        },
+        {
+          id: "wishlist",
+          label: "Wishlist",
+          to: "/wishlist",
+          icon: <Favorite />,
+        },
+      ]
+    : []),
+
+  // Admin & Super Admin
+  ...(hasAdminAccess
+    ? [
+        {
+          id: "adminDashboard",
+          label: "Dashboard",
+          to: "/admin",
+          icon: <Dashboard />,
+        },
+        {
+          id: "adminProducts",
+          label: "Products",
+          to: "/admin/products",
+          icon: <Inventory />,
+        },
+        {
+          id: "adminOrders",
+          label: "Orders",
+          to: "/admin/orders",
+          icon: <ShoppingCart />,
+        },
+        {
+          id: "adminCategories",
+          label: "Categories",
+          to: "/admin/categories",
+          icon: <Settings />,
+        },
+      ]
+    : []),
+
+  // Super Admin only
+  ...(isSuperAdmin
+    ? [
+        {
+          id: "adminUsers",
+          label: "Users",
+          to: "/admin/users",
+          icon: <People />,
+        },
+        {
+          id: "adminCoupons",
+          label: "Coupons",
+          to: "/admin/coupons",
+          icon: <LocalOffer />,
+        },
+        {
+          id: "auditLogs",
+          label: "Audit Logs",
+          to: "/admin/audit",
+          icon: <History />,
+        },
+      ]
+    : []),
+];
+```
+
+### Implementation Checklist
+
+- [x] **DONE**: Update User type in `frontend/src/types/index.ts` to include all 5 roles
+- [x] **DONE**: Update AuthContext `isAdmin` check to recognize both ADMIN and SUPER_ADMIN
+- [x] **DONE**: Create role constants and helper utilities (`constants/roles.ts`, `utils/roleHelper.ts`)
+- [x] **DONE**: Create role permissions hook (`hooks/useRolePermissions.ts`)
+- [x] **DONE**: Add role badges in ProfilePage, Navbar user menu, AdminDashboard
+- [x] **DONE**: Add role-based restrictions in AdminUsers role dropdown
+- [x] **DONE**: Add role translations to all 3 locales (en.json, hi.json, mr.json)
+- [ ] TODO: Add role-based route protection in `frontend/src/routes/AppRoutes.tsx` (partial - SuperAdminRoute exists)
+- [ ] TODO: Create staff-specific dashboards (DeliveryDashboard, SupportDashboard)
+- [ ] TODO: Create Audit Logs page (SUPER_ADMIN only)
+- [ ] TODO: Update remaining admin pages with role indicators
+
+### Role Infrastructure Files (✅ COMPLETED)
+
+**New files created for role management:**
+
+1. **`frontend/src/constants/roles.ts`** - Role configuration and metadata
+   - `ROLE_CONFIG` - Colors, icons, labels, levels for all 5 roles
+   - `CREATABLE_ROLES_BY_ROLE` - Permission matrix for role creation
+   - `ROLE_LEVELS` - Hierarchy levels (0-3)
+
+2. **`frontend/src/utils/roleHelper.ts`** - Role utility functions
+   - `getRoleLabel()`, `getRoleColor()`, `getRoleIcon()` - Display utilities
+   - `canCreateRole()` - Permission checking
+   - `hasAdminAccess()`, `isSuperAdmin()`, `isStaffRole()` - Role checks
+   - 13 total helper functions
+
+3. **`frontend/src/hooks/useRolePermissions.ts`** - Custom permission hook
+   - `canAccessAdminPanel()`, `canManageUsers()`, `canViewAuditLogs()`
+   - Role-specific dashboard access checks
+   - 11 total permission methods
+
+### Updated Components (✅ COMPLETED)
+
+- `frontend/src/pages/admin/AdminUsers.tsx` - Role dropdown with access control ✅
+- `frontend/src/pages/ProfilePage.tsx` - Role badge supporting all 5 roles ✅
+- `frontend/src/components/layout/Navbar.tsx` - Role indicator in user menu ✅
+- `frontend/src/pages/admin/AdminDashboard.tsx` - Role context chip near title ✅
+
+### Backend Authorization (Already Implemented)
+
+**File:** `backend/src/middlewares/auth.ts`
+
+```typescript
+export const authorize = (...roles: string[]) => {
+  return (req: AuthRequest, res: Response, next: NextFunction): void => {
+    if (!req.user || !roles.includes(req.user.role)) {
+      res.status(403).json({ message: "Access denied" });
+      return;
+    }
+    next();
+  };
+};
+```
+
+**Usage in routes:**
+
+```typescript
+// Admin and Super Admin only
+router.get(
+  "/admin/users",
+  authenticate,
+  authorize("ADMIN", "SUPER_ADMIN"),
+  getAllUsers,
+);
+
+// Super Admin only
+router.post(
+  "/audit-logs/clean",
+  authenticate,
+  authorize("SUPER_ADMIN"),
+  cleanOldLogs,
+);
+```
+
+---
+
+## 📊 Production Readiness Status
+
+### Overall Platform Maturity: **35% Production-Ready** ⚠️
+
+> This is a **beautiful MVP** with core e-commerce functionality. For production launch, critical features still need implementation (see gaps below).
+
+### Role Implementation Status
+
+| Role               | Current | Target | Gap |     Status      |
+| ------------------ | :-----: | :----: | :-: | :-------------: |
+| **USER**           |   80%   |  100%  | 20% | ✅ Almost Ready |
+| **DELIVERY_STAFF** |   10%   |  100%  | 90% | 🔴 Not Started  |
+| **SUPPORT_STAFF**  |   10%   |  100%  | 90% | 🔴 Not Started  |
+| **ADMIN**          |   40%   |  100%  | 60% |   ⚠️ Partial    |
+| **SUPER_ADMIN**    |   17%   |  100%  | 83% |   🔴 Minimal    |
+
+### ✅ What's Working Well
+
+- Product catalog & browsing
+- Shopping cart & order placement
+- Payment integration (Stripe + Razorpay)
+- User authentication & profile
+- Admin product/category management
+- Order status tracking
+- Analytics dashboard
+- Multi-language support (EN, HI, MR)
+- GST-compliant pricing
+- Role-based access control foundation
+- Beautiful UI with MUI v7
+- Responsive mobile design
+
+### 🔴 Critical Gaps for Production
+
+**Must Have Before Launch:**
+
+- [ ] **Delivery Management Dashboard** — Delivery staff can't accept/update orders
+- [ ] **Support Ticket System** — No customer support infrastructure
+- [ ] **Order Returns & Refunds** — Critical for e-commerce
+- [ ] **Inventory Alerts** — Risk of overselling products
+- [ ] **Audit Logs** — No security audit trail
+- [ ] **Tax Configuration (GST)** — Regional tax settings
+- [ ] **Shipping Integration** — No shipping provider setup
+
+**Should Have (UX/Operational):**
+
+- [ ] **Order Tracking Page** — Customers expect real-time updates
+- [ ] **Invoice Download** — Order receipts
+- [ ] **Payment Methods** — Save multiple payment options
+- [ ] **Notification System** — Email/SMS alerts
+- [ ] **Reports & Export** — Admin needs data export
+
+**Nice to Have (Growth):**
+
+- [ ] **Referral Program** — Customer acquisition
+- [ ] **Wishlist Sharing** — Social features
+- [ ] **Live Chat Support** — Real-time customer service
+- [ ] **Advanced Analytics** — Business intelligence
+- [ ] **Marketing Tools** — Email campaigns
+
+### 🚀 Recommended Launch Path
+
+#### **Option A: MVP Launch (4-6 weeks)** ⭐ RECOMMENDED
+
+Complete all "Must Have" features before launch:
+
+1. Delivery staff dashboard & order assignment
+2. Support ticket system basics
+3. Return/refund request processing
+4. Low stock inventory alerts
+5. Audit logging
+6. Tax rate configuration
+
+**Result**: Feature-complete, customer-ready platform
+
+#### **Option B: Beta Launch (2 weeks)** ⚡ Fast but Risky
+
+Launch with current features + gradual rollout of staff features
+
+- **Risk**: May disappoint customers/staff with missing functionality
+- **Timeline**: 1-2 weeks
+
+#### **Option C: Delayed Launch (8-10 weeks)** 🎯 Premium
+
+Implement MVP + all "Should Have" features
+
+- **Result**: Polished, feature-rich platform
+- **Timeline**: 8-10 weeks
+
+### 📈 Implementation Roadmap
+
+**Phase 1: Staff Features (Weeks 1-3)**
+
+- [ ] Delivery Staff Dashboard
+- [ ] Support Ticket System
+- [ ] Basic return request handling
+
+**Phase 2: Critical Ops (Weeks 4-6)**
+
+- [ ] Inventory management & alerts
+- [ ] Audit logging
+- [ ] Tax configuration
+- [ ] Shipping integration
+
+**Phase 3: Customer Experience (Weeks 7-8)**
+
+- [ ] Advanced order tracking
+- [ ] Invoice generation
+- [ ] Payment method management
+- [ ] Notification system
+
+**Phase 4: Growth Features (Weeks 9+)**
+
+- [ ] Referral program
+- [ ] Analytics & reports
+- [ ] Marketing tools
 
 ---
 

@@ -19,8 +19,8 @@ export const getAllProducts = async (
       limit = 12,
     } = req.query;
 
-    const skip = (parseInt(page as string) - 1) * parseInt(limit as string);
     const pageLimit = parseInt(limit as string);
+    const minRatingNum = parseInt(minRating as string);
 
     // Build where clause for filtering
     const whereClause: any = {
@@ -80,8 +80,10 @@ export const getAllProducts = async (
       }
     }
 
-    // Fetch products with filters
-    const products = await prisma.product.findMany({
+    // Fetch all matching products (we'll paginate after filtering)
+    // If rating filter is applied, fetch extra to account for filtering
+    const fetchMultiplier = minRatingNum > 0 ? 3 : 1; // Fetch 3x more if rating filter
+    const allProducts = await prisma.product.findMany({
       where: whereClause,
       include: {
         ratings: {
@@ -91,12 +93,10 @@ export const getAllProducts = async (
         },
         media: true,
       },
-      skip,
-      take: pageLimit,
     });
 
-    // Calculate average rating and filter by minimum rating
-    let productsWithRatings = (products as any[]).map((product) => {
+    // Calculate average rating for all products and filter by minimum rating
+    let productsWithRatings = (allProducts as any[]).map((product) => {
       const ratings = product.ratings;
       const averageRating =
         ratings.length > 0
@@ -116,9 +116,9 @@ export const getAllProducts = async (
     });
 
     // Filter by minimum rating
-    if (parseInt(minRating as string) > 0) {
+    if (minRatingNum > 0) {
       productsWithRatings = productsWithRatings.filter(
-        (p) => p.averageRating >= parseInt(minRating as string),
+        (p) => p.averageRating >= minRatingNum,
       );
     }
 
@@ -142,15 +142,16 @@ export const getAllProducts = async (
       }
     });
 
-    // Get total count for pagination
-    const total = await prisma.product.count({
-      where: whereClause,
-    });
+    // Apply pagination after filtering
+    const pageNum = parseInt(page as string) || 1;
+    const skip = (pageNum - 1) * pageLimit;
+    const paginatedProducts = productsWithRatings.slice(skip, skip + pageLimit);
+    const total = productsWithRatings.length;
 
     res.json({
-      products: productsWithRatings,
+      products: paginatedProducts,
       total,
-      page: parseInt(page as string),
+      page: pageNum,
       limit: pageLimit,
     });
   } catch (error) {

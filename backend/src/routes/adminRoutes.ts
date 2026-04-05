@@ -11,16 +11,17 @@ import {
 import { getDashboardAnalytics } from "../controllers/analyticsController";
 import {
   getAllUsers,
+  createUser,
   updateUserRole,
   softDeleteUser,
 } from "../controllers/userController";
 import { authenticate, authorize } from "../middlewares/auth";
 import { validate } from "../middlewares/validate";
-import { updateUserRoleSchema } from "../validators";
+import { updateUserRoleSchema, createUserSchema } from "../validators";
 
 const router = Router();
 
-router.use(authenticate, authorize("ADMIN"));
+router.use(authenticate, authorize("ADMIN", "SUPER_ADMIN"));
 
 // Analytics
 router.get("/analytics", getDashboardAnalytics);
@@ -36,6 +37,7 @@ router.patch("/orders/:orderId", updateOrderStatus);
 
 // Users
 router.get("/users", getAllUsers);
+router.post("/users", validate(createUserSchema), createUser);
 router.patch("/users/:id/role", validate(updateUserRoleSchema), updateUserRole);
 router.delete("/users/:id", softDeleteUser);
 

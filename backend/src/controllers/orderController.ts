@@ -160,36 +160,6 @@ export const createOrder = async (
       },
     });
 
-    // Update product stock
-    for (const item of items) {
-      await prisma.product.update({
-        where: { id: item.productId },
-        data: {
-          stock: {
-            decrement: item.quantity,
-          },
-        },
-      });
-    }
-
-    // Check for low stock products and alert admin (non-blocking)
-    if (config.adminEmail) {
-      const updatedProducts = await prisma.product.findMany({
-        where: {
-          id: { in: items.map((i: any) => i.productId) },
-          stock: { lte: 5 },
-          deletedAt: null,
-        },
-        select: { id: true, name: true, stock: true },
-      });
-      if (updatedProducts.length > 0) {
-        sendLowStockAlertEmail(config.adminEmail, updatedProducts).catch(
-          (err: Error) =>
-            logger.error(`Low stock alert email failed: ${err.message}`),
-        );
-      }
-    }
-
     // Clear cart
     const cart = await prisma.cart.findUnique({ where: { userId } });
     if (cart) {
@@ -221,6 +191,45 @@ export const createOrder = async (
     res.status(201).json(transformOrder(order));
   } catch (error) {
     next(error);
+  }
+};
+
+/**
+ * Update product stock - moves to payment confirmation
+ * Stock is only decremented when payment is confirmed
+ */
+const decrementProductStock = async (items: any[]) => {
+  for (const item of items) {
+    await prisma.product.update({
+      where: { id: item.productId },
+      data: {
+        stock: {
+          decrement: item.quantity,
+        },
+      },
+    });
+  }
+};
+
+/**
+ * Check for low stock and send alert
+ */
+const checkLowStockAndAlert = async (items: any[]) => {
+  if (config.adminEmail) {
+    const updatedProducts = await prisma.product.findMany({
+      where: {
+        id: { in: items.map((i: any) => i.productId) },
+        stock: { lte: 5 },
+        deletedAt: null,
+      },
+      select: { id: true, name: true, stock: true },
+    });
+    if (updatedProducts.length > 0) {
+      sendLowStockAlertEmail(config.adminEmail, updatedProducts).catch(
+        (err: Error) =>
+          logger.error(`Low stock alert email failed: ${err.message}`),
+      );
+    }
   }
 };
 
@@ -417,6 +426,12 @@ export const confirmPayment = async (
       },
     });
 
+    // Decrement product stock only after payment is confirmed
+    await decrementProductStock(updatedOrder.items);
+
+    // Check for low stock and alert admin
+    await checkLowStockAndAlert(updatedOrder.items);
+
     // Send payment success email (non-blocking)
     if (updatedOrder.user?.email) {
       sendPaymentSuccessEmail(updatedOrder.user.email, {
@@ -432,6 +447,155 @@ export const confirmPayment = async (
     }
 
     res.json(transformOrder(updatedOrder));
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Retry payment for a pending order
+ * Allows users to retry payment if their order is still pending
+ */
+export const retryPayment = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction,
+): Promise<void> => {
+  try {
+    const { orderId } = req.params;
+
+    const order = await prisma.order.findUnique({
+      where: { id: orderId },
+      include: {
+        items: {
+          include: { product: true },
+        },
+        user: {
+          select: {
+            id: true,
+            email: true,
+            name: true,
+            phone: true,
+            role: true,
+            state: true,
+            city: true,
+            address: true,
+            pincode: true,
+            createdAt: true,
+          },
+        },
+      },
+    });
+
+    if (!order) {
+      res.status(404).json({ success: false, message: "Order not found" });
+      return;
+    }
+
+    // Only the owner or admin can retry payment
+    if (order.userId !== req.user!.id && req.user!.role !== "ADMIN") {
+      res.status(403).json({ success: false, message: "Access denied" });
+      return;
+    }
+
+    // Only allow retry on pending orders
+    if (order.paymentStatus !== "PENDING") {
+      res.status(400).json({
+        success: false,
+        message: `Cannot retry payment for order with payment status: ${order.paymentStatus}`,
+      });
+      return;
+    }
+
+    // Create new Razorpay order for retry
+    const razorpayOrder = await razorpayInstance.orders.create({
+      amount: Math.round(order.total * 100), // Amount in paise
+      currency: "INR",
+      receipt: `${order.id}-retry-${Date.now()}`,
+      notes: {
+        orderId: order.id,
+        userId: order.userId,
+        isRetry: "true",
+      },
+    });
+
+    res.json({
+      success: true,
+      message: "Payment retry initiated",
+      data: {
+        razorpayOrderId: razorpayOrder.id,
+        amount: razorpayOrder.amount,
+        currency: razorpayOrder.currency,
+        keyId: config.razorpayKeyId,
+        orderId: order.id,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Cancel pending order
+ * Allows users or admins to cancel orders that are pending payment
+ * No need to restore stock since it was never decremented
+ */
+export const cancelPendingOrder = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction,
+): Promise<void> => {
+  try {
+    const { orderId } = req.params;
+
+    const order = await prisma.order.findUnique({
+      where: { id: orderId },
+      include: {
+        items: {
+          include: { product: true },
+        },
+      },
+    });
+
+    if (!order) {
+      res.status(404).json({ success: false, message: "Order not found" });
+      return;
+    }
+
+    // Only the owner or admin can cancel
+    if (order.userId !== req.user!.id && req.user!.role !== "ADMIN") {
+      res.status(403).json({ success: false, message: "Access denied" });
+      return;
+    }
+
+    // Only allow cancellation of pending orders
+    if (order.paymentStatus !== "PENDING") {
+      res.status(400).json({
+        success: false,
+        message: `Cannot cancel order with payment status: ${order.paymentStatus}`,
+      });
+      return;
+    }
+
+    // Mark order as cancelled (stock was never decremented, so no need to restore)
+    const cancelledOrder = await prisma.order.update({
+      where: { id: orderId },
+      data: {
+        status: "CANCELLED",
+        paymentStatus: "CANCELLED",
+      },
+      include: {
+        items: {
+          include: { product: true },
+        },
+      },
+    });
+
+    res.json({
+      success: true,
+      message: "Order cancelled successfully",
+      data: transformOrder(cancelledOrder),
+    });
   } catch (error) {
     next(error);
   }

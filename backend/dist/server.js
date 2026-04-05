@@ -23,6 +23,8 @@ const mediaRoutes_1 = __importDefault(require("./routes/mediaRoutes"));
 const couponRoutes_1 = __importDefault(require("./routes/couponRoutes"));
 const categoryRoutes_1 = __importDefault(require("./routes/categoryRoutes"));
 const addressRoutes_1 = __importDefault(require("./routes/addressRoutes"));
+const roleChangeRoutes_1 = __importDefault(require("./routes/roleChangeRoutes"));
+const multiAccountRoutes_1 = __importDefault(require("./routes/multiAccountRoutes"));
 const app = (0, express_1.default)();
 // Upload directory configuration (Render persistent disk in production)
 const uploadDir = process.env.NODE_ENV === "production" ? "/var/data/uploads" : "./uploads";
@@ -87,8 +89,26 @@ app.use("/uploads", express_1.default.static(uploadDir, {
     },
 }));
 // Health check
-app.get("/health", (req, res) => {
-    res.json({ status: "OK", timestamp: new Date().toISOString() });
+app.get("/health", async (req, res) => {
+    try {
+        const isDbHealthy = await (0, connectionPool_1.checkConnectionHealth)();
+        const status = isDbHealthy ? "UP" : "DEGRADED";
+        const statusCode = isDbHealthy ? 200 : 503;
+        res.status(statusCode).json({
+            status,
+            timestamp: new Date().toISOString(),
+            database: isDbHealthy ? "connected" : "disconnected",
+            uptime: process.uptime(),
+        });
+    }
+    catch (error) {
+        res.status(503).json({
+            status: "DOWN",
+            timestamp: new Date().toISOString(),
+            database: "error",
+            error: error instanceof Error ? error.message : "Unknown error",
+        });
+    }
 });
 // Routes
 app.use("/api/auth", authRoutes_1.default);
@@ -101,6 +121,8 @@ app.use("/api/wishlist", wishlistRoutes_1.default);
 app.use("/api/coupons", couponRoutes_1.default);
 app.use("/api/categories", categoryRoutes_1.default);
 app.use("/api/addresses", addressRoutes_1.default);
+app.use("/api/role-change", roleChangeRoutes_1.default);
+app.use("/api/accounts", multiAccountRoutes_1.default);
 // 404 handler
 app.use((req, res) => {
     res.status(404).json({ message: "Route not found" });

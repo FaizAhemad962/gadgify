@@ -1,6 +1,8 @@
 import { Response, NextFunction } from "express";
 import prisma from "../config/database";
 import { AuthRequest } from "../middlewares/auth";
+import { hashPassword } from "../utils/auth";
+import { userExists } from "../utils/userQueryHelper";
 
 export const getAllUsers = async (
   _req: AuthRequest,
@@ -98,6 +100,89 @@ export const softDeleteUser = async (
     });
 
     res.json({ success: true, message: "User deleted" });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const createUser = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const {
+      email,
+      password,
+      name,
+      phone,
+      role,
+      state,
+      city,
+      address,
+      pincode,
+    } = req.body;
+
+    // Only allow ADMIN and SUPER_ADMIN to create users
+    if (!req.user || !["ADMIN", "SUPER_ADMIN"].includes(req.user.role)) {
+      res.status(403).json({ success: false, message: "Access denied" });
+      return;
+    }
+
+    // SUPER_ADMIN can create any role, but ADMIN can only create DELIVERY_STAFF, SUPPORT_STAFF, and USER
+    if (req.user.role === "ADMIN") {
+      const allowedRoles = ["USER", "DELIVERY_STAFF", "SUPPORT_STAFF"];
+      if (!allowedRoles.includes(role)) {
+        res.status(403).json({
+          success: false,
+          message:
+            "Admins can only create DELIVERY_STAFF, SUPPORT_STAFF, or USER roles",
+        });
+        return;
+      }
+    }
+
+    // Check if user already exists with this email and role
+    const userAlreadyExists = await userExists(email, role);
+    if (userAlreadyExists) {
+      res.status(400).json({
+        success: false,
+        message: `Email already registered as a ${role} account`,
+      });
+      return;
+    }
+
+    // Hash password
+    const hashedPassword = await hashPassword(password);
+
+    // Create user
+    const newUser = await prisma.user.create({
+      data: {
+        email,
+        password: hashedPassword,
+        name,
+        phone,
+        role,
+        state: state || "MAHARASHTRA",
+        city: city || "",
+        address: address || "",
+        pincode: pincode || "",
+      },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        phone: true,
+        role: true,
+        createdAt: true,
+      },
+    });
+
+    res.status(201).json({
+      success: true,
+      message: "User created successfully",
+      data: newUser,
+    });
   } catch (error) {
     next(error);
   }

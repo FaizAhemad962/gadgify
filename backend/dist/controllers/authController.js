@@ -10,6 +10,7 @@ const auth_1 = require("../utils/auth");
 const email_1 = require("../utils/email");
 const securityValidator_1 = require("../middlewares/securityValidator");
 const logger_1 = __importDefault(require("../utils/logger"));
+const userQueryHelper_1 = require("../utils/userQueryHelper");
 // SECURITY: Track failed login attempts (use Redis in production)
 const failedLoginAttempts = new Map();
 const MAX_FAILED_ATTEMPTS = 5;
@@ -61,10 +62,12 @@ const signup = async (req, res, next) => {
             });
             return;
         }
-        // Check if user exists
-        const existingUser = await database_1.default.user.findUnique({ where: { email } });
-        if (existingUser) {
-            res.status(400).json({ message: "Email already registered" });
+        // Check if user exists with email + USER role
+        const existingUser = await (0, userQueryHelper_1.findUserByEmail)(email, "USER");
+        if (existingUser && existingUser.role === "USER") {
+            res
+                .status(400)
+                .json({ message: "Email already registered as a user account" });
             return;
         }
         // Hash password (bcrypt with proper salt rounds)
@@ -114,7 +117,7 @@ const signup = async (req, res, next) => {
 exports.signup = signup;
 const login = async (req, res, next) => {
     try {
-        const { email, password } = req.body;
+        const { email, password, role } = req.body;
         // SECURITY: Check if account is locked
         if (isAccountLocked(email)) {
             logger_1.default.warn(`Login attempt on locked account: ${email}`);
@@ -123,8 +126,8 @@ const login = async (req, res, next) => {
             });
             return;
         }
-        // Find user
-        const user = await database_1.default.user.findUnique({ where: { email } });
+        // Find user - if role provided, use it; otherwise default to USER
+        const user = await (0, userQueryHelper_1.findUserByEmail)(email, role || "USER");
         if (!user) {
             // SECURITY: Don't reveal if email exists; log internally for debugging
             logger_1.default.warn(`Login failed: user not found for ${email}`);
@@ -269,7 +272,8 @@ const forgotPassword = async (req, res, next) => {
         const { email } = req.body;
         // Always respond with success to prevent email enumeration
         const successMessage = "If an account with that email exists, a password reset link has been sent.";
-        const user = await database_1.default.user.findUnique({ where: { email } });
+        // Look for USER role account first, then any account with that email
+        const user = await (0, userQueryHelper_1.findUserByEmail)(email, "USER");
         if (!user) {
             // Don't reveal whether email exists
             logger_1.default.info(`Password reset requested for non-existent email: ${email}`);

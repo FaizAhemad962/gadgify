@@ -16,6 +16,7 @@ import {
   Avatar,
   ListItemIcon,
   ListItemText,
+  Chip,
 } from "@mui/material";
 
 import BrandIcon from "../../assets/brand-icon.png";
@@ -38,6 +39,11 @@ import { useWishlist } from "../../context/WishlistContext";
 import LanguageSelector from "../common/LanguageSelector";
 import { AppDrawer } from "../ui/Drawer";
 import { tokens } from "@/theme/theme";
+import {
+  getRoleIcon,
+  getRoleLabel,
+  getRoleColor,
+} from "../../utils/roleHelper";
 import styles from "./Navbar.module.css";
 
 const Navbar = () => {
@@ -394,6 +400,21 @@ const Navbar = () => {
                     <Typography variant="caption" color="text.secondary">
                       {user?.email || ""}
                     </Typography>
+                    {user?.role && (
+                      <Stack direction="row" gap={0.5} sx={{ mt: 0.75 }}>
+                        <Chip
+                          label={`${getRoleIcon(user.role)} ${getRoleLabel(user.role)}`}
+                          size="small"
+                          sx={{
+                            backgroundColor: getRoleColor(user.role),
+                            color: "white",
+                            fontWeight: 600,
+                            fontSize: "0.7rem",
+                            height: 20,
+                          }}
+                        />
+                      </Stack>
+                    )}
                   </Box>
                   <MenuItem
                     onClick={() => {

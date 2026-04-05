@@ -8,81 +8,96 @@ datasource db {
 }
 
 model User {
-  id    String   @id @default(uuid())
-  email     String   @unique
-  password  String
-  name      String
-  phone     String
-  role      String   @default("USER")
-  state     String
-  city      String
-  address   String
-  pincode   String
-  profilePhoto String?
-  resetToken      String?
-  resetTokenExpiry DateTime?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  deletedAt DateTime?
-  cart      Cart?
-  orders    Order[]
-  ratings   Rating[]
-  wishlists Wishlist[]
-  addresses Address[]
+  id                   String                 @id @default(uuid())
+  email                String // Multiple accounts allowed per email
+  password             String
+  name                 String
+  phone                String
+  role                 String                 @default("USER")
+  state                String
+  city                 String
+  address              String
+  pincode              String
+  profilePhoto         String?
+  accountName          String? // Identifier for this account (e.g., "Admin Account", "Super Admin")
+  resetToken           String?
+  resetTokenExpiry     DateTime?
+  createdAt            DateTime               @default(now())
+  updatedAt            DateTime               @updatedAt
+  deletedAt            DateTime?
+  cart                 Cart?
+  orders               Order[]
+  ratings              Rating[]
+  wishlists            Wishlist[]
+  addresses            Address[]
+  permissionsGrantedBy RoleChangePermission[] @relation("RoleChangePermissionGrantedBy")
+  permissionsGrantedTo RoleChangePermission[] @relation("RoleChangePermissionGrantedTo")
+  auditLogs            AuditLog[]
 
+  // Delivery-related fields (for DELIVERY_STAFF role)
+  deliveryAssignments  DeliveryAssignment[] @relation("DeliveryStaffAssignments")
+  deliveryTracking     DeliveryTracking[]   @relation("DeliveryStaffTracking")
+  deliveryMetrics      DeliveryMetrics?     @relation("DeliveryStaffMetrics")
+  deliveryEarnings     DeliveryEarnings[]   @relation("DeliveryStaffEarnings")
+  deliveryRatings      DeliveryRating[]     @relation("DeliveryStaffRatings")
+  // Ratings given by this user as customer
+  deliveryRatingsGiven DeliveryRating[]     @relation("CustomerDeliveryRatings")
+
+  @@unique([email, role]) // One role per email (but multiple roles possible)
+  @@index([email])
   @@map("users")
 }
 
 model ProductMedia {
-    id         String   @id @default(uuid())
-    url        String
-    type       String   // 'image' or 'video'
-    isPrimary  Boolean  @default(false)
-    productId  String
-    product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
-    createdAt  DateTime @default(now())
-    updatedAt  DateTime @updatedAt
+  id        String   @id @default(uuid())
+  url       String
+  type      String // 'image' or 'video'
+  isPrimary Boolean  @default(false)
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-    @@map("product_media")
-    @@index([productId])
-  }
+  @@index([productId])
+  @@map("product_media")
+}
 
 model Product {
-  id          String      @id @default(uuid())
-  name        String
-  description String
-  price       Float
+  id            String         @id @default(uuid())
+  name          String
+  description   String
+  price         Float
   originalPrice Float?
-  stock       Int
-  media       ProductMedia[]
-  
-  colors      String?
-  category    String
-  hsnNo       String?
-  gstPercentage Float?
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
-  deletedAt   DateTime?
-  cartItems   CartItem[]
-  orderItems  OrderItem[]
-  ratings     Rating[]
-  wishlists   Wishlist[]
+  stock         Int
+  media         ProductMedia[]
 
-  @@map("products")
+  colors        String?
+  category      String
+  hsnNo         String?
+  gstPercentage Float?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  deletedAt     DateTime?
+  cartItems     CartItem[]
+  orderItems    OrderItem[]
+  ratings       Rating[]
+  wishlists     Wishlist[]
+
   @@index([deletedAt])
+  @@map("products")
 }
 
 model Rating {
-  id        String   @id @default(uuid())
+  id        String    @id @default(uuid())
   rating    Int
   comment   String?
   productId String
   userId    String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
   deletedAt DateTime?
-  product   Product  @relation(fields: [productId], references: [id], onDelete: Restrict)
-  user      User     @relation(fields: [userId], references: [id], onDelete: Restrict)
+  product   Product   @relation(fields: [productId], references: [id], onDelete: Restrict)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Restrict)
 
   @@unique([productId, userId])
   @@map("ratings")
@@ -101,15 +116,15 @@ model Cart {
 }
 
 model CartItem {
-  id        String   @id @default(uuid())
+  id        String    @id @default(uuid())
   cartId    String
   productId String
   quantity  Int
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
   deletedAt DateTime?
-  cart      Cart     @relation(fields: [cartId], references: [id], onDelete: Restrict)
-  product   Product  @relation(fields: [productId], references: [id], onDelete: Restrict)
+  cart      Cart      @relation(fields: [cartId], references: [id], onDelete: Restrict)
+  product   Product   @relation(fields: [productId], references: [id], onDelete: Restrict)
 
   @@unique([cartId, productId])
   @@map("cart_items")
@@ -133,32 +148,36 @@ model Order {
   items           OrderItem[]
   user            User        @relation(fields: [userId], references: [id], onDelete: Restrict)
 
+  // Delivery-related
+  deliveryAssignment DeliveryAssignment?
+  deliveryRating     DeliveryRating?     @relation("OrderDeliveryRating")
+
   @@map("orders")
 }
 
 model OrderItem {
-  id        String   @id @default(uuid())
+  id        String    @id @default(uuid())
   orderId   String
   productId String
   quantity  Int
   price     Float
-  createdAt DateTime @default(now())
+  createdAt DateTime  @default(now())
   deletedAt DateTime?
-  order     Order    @relation(fields: [orderId], references: [id], onDelete: Restrict)
-  product   Product  @relation(fields: [productId], references: [id], onDelete: Restrict)
+  order     Order     @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  product   Product   @relation(fields: [productId], references: [id], onDelete: Restrict)
 
   @@map("order_items")
 }
 
 model Wishlist {
-  id        String   @id @default(uuid())
+  id        String    @id @default(uuid())
   userId    String
   productId String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
   deletedAt DateTime?
-  user      User     @relation(fields: [userId], references: [id], onDelete: Restrict)
-  product   Product  @relation(fields: [productId], references: [id], onDelete: Restrict)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Restrict)
+  product   Product   @relation(fields: [productId], references: [id], onDelete: Restrict)
 
   @@unique([userId, productId])
   @@map("wishlists")
@@ -167,19 +186,19 @@ model Wishlist {
 model Coupon {
   id             String    @id @default(uuid())
   code           String    @unique
-  discountType   String    // 'PERCENTAGE' or 'FLAT'
+  discountType   String // 'PERCENTAGE' or 'FLAT'
   discountValue  Float
   minOrderAmount Float     @default(0)
-  maxDiscount    Float?    // Cap for percentage discounts
-  usageLimit     Int?      // Max total uses (null = unlimited)
+  maxDiscount    Float? // Cap for percentage discounts
+  usageLimit     Int? // Max total uses (null = unlimited)
   usedCount      Int       @default(0)
   isActive       Boolean   @default(true)
   expiresAt      DateTime?
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
 
-  @@map("coupons")
   @@index([code])
+  @@map("coupons")
 }
 
 model Category {
@@ -192,8 +211,8 @@ model Category {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  @@map("categories")
   @@index([isActive, sortOrder])
+  @@map("categories")
 }
 
 model Address {
@@ -212,6 +231,266 @@ model Address {
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@map("addresses")
   @@index([userId])
+  @@map("addresses")
+}
+
+model RoleChangePermission {
+  id                  String    @id @default(uuid())
+  grantedById         String // User who granted the permission (must be super admin or owner)
+  grantedToId         String // User who receives permission to change roles
+  canChangeRoles      Boolean   @default(true)
+  canRemovePermission Boolean   @default(false) // Can they remove permissions from others?
+  isActive            Boolean   @default(true)
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+  deletedAt           DateTime?
+
+  grantedBy User @relation("RoleChangePermissionGrantedBy", fields: [grantedById], references: [id], onDelete: Restrict)
+  grantedTo User @relation("RoleChangePermissionGrantedTo", fields: [grantedToId], references: [id], onDelete: Restrict)
+
+  @@unique([grantedToId])
+  @@index([grantedById])
+  @@index([isActive])
+  @@map("role_change_permissions")
+}
+
+model AuditLog {
+  id          String   @id @default(uuid())
+  userId      String
+  action      String // LOGIN, LOGOUT, ROLE_CHANGE, ACCOUNT_CREATED, ACCOUNT_SWITCHED, etc.
+  description String? // Detailed description of the action
+  email       String // Email for reference (allows tracking across account changes)
+  oldValue    String? // Previous value (for updates)
+  newValue    String? // New value (for updates)
+  ipAddress   String? // IP address of requester
+  userAgent   String? // Browser/device info
+  status      String   @default("SUCCESS") // SUCCESS, FAILED
+  timestamp   DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([email])
+  @@index([action])
+  @@index([timestamp])
+  @@map("audit_logs")
+}
+
+model DeliveryAssignment {
+  id              String @id @default(uuid())
+  orderId         String @unique
+  deliveryStaffId String
+
+  // Status flow: ASSIGNED → ACCEPTED/REJECTED → PICKED_UP → IN_TRANSIT → DELIVERED/FAILED
+  assignmentStatus String @default("ASSIGNED") // ASSIGNED, ACCEPTED, REJECTED, CANCELLED
+  deliveryStatus   String @default("NOT_STARTED") // NOT_STARTED, PICKED_UP, IN_TRANSIT, DELIVERED, FAILED
+
+  // Location
+  pickupLocationJson   String? // JSON: {lat, lng, address}
+  deliveryLocationJson String // JSON: {lat, lng, address}
+
+  // Timing
+  assignedAt         DateTime  @default(now())
+  acceptedAt         DateTime?
+  rejectedAt         DateTime?
+  collectedAt        DateTime?
+  deliveryAt         DateTime?
+  expectedDeliveryAt DateTime?
+
+  // Tracking
+  lastLocationJson String? // JSON: {lat, lng, timestamp}
+  distanceTraveled Float   @default(0) // in km
+
+  // Notes
+  cancellationReason String?
+  failureReason      String?
+  deliveryNote       String?
+
+  // Metadata
+  attempts         Int @default(1)
+  deliveryAttempts Int @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  order          Order              @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  deliveryStaff  User               @relation("DeliveryStaffAssignments", fields: [deliveryStaffId], references: [id], onDelete: Restrict)
+  trackingPoints DeliveryTracking[]
+  earnings       DeliveryEarnings?
+
+  @@index([deliveryStaffId])
+  @@index([deliveryStatus])
+  @@index([assignmentStatus])
+  @@index([createdAt])
+  @@map("delivery_assignments")
+}
+
+model DeliveryTracking {
+  id              String @id @default(uuid())
+  assignmentId    String
+  deliveryStaffId String
+
+  // Location
+  latitude  Float
+  longitude Float
+  accuracy  Float? // GPS accuracy in meters
+  altitude  Float?
+
+  // Movement
+  speed   Float? // in km/h
+  bearing Float? // compass direction 0-360
+
+  // Metadata
+  source   String  @default("GPS")
+  isMoving Boolean @default(false)
+
+  createdAt DateTime @default(now())
+
+  assignment    DeliveryAssignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  deliveryStaff User               @relation("DeliveryStaffTracking", fields: [deliveryStaffId], references: [id], onDelete: Cascade)
+
+  @@index([assignmentId])
+  @@index([deliveryStaffId])
+  @@index([createdAt])
+  @@map("delivery_tracking")
+}
+
+model DeliveryMetrics {
+  id              String @id @default(uuid())
+  deliveryStaffId String @unique
+
+  // Today's metrics (reset daily at midnight)
+  todayDeliveries  Int   @default(0)
+  todayEarnings    Float @default(0)
+  todayHoursActive Float @default(0)
+  todayDistance    Float @default(0) // in km
+
+  // Overall metrics
+  totalDeliveries  Int   @default(0)
+  totalEarnings    Float @default(0)
+  totalDistance    Float @default(0)
+  totalHoursActive Float @default(0)
+
+  // Performance
+  averageDeliveryTime   Int? // in minutes
+  onTimeDeliveryPercent Float @default(0)
+  cancellationRate      Float @default(0)
+
+  // Ratings
+  averageRating          Float   @default(0) // 1-5 stars
+  totalRatings           Int     @default(0)
+  ratingDistributionJson String? // JSON: {5: count, 4: count, ...}
+
+  // Availability
+  isOnline      Boolean   @default(false)
+  lastOnlineAt  DateTime?
+  lastOfflineAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  deliveryStaff User @relation("DeliveryStaffMetrics", fields: [deliveryStaffId], references: [id], onDelete: Cascade)
+
+  @@index([deliveryStaffId])
+  @@index([onTimeDeliveryPercent])
+  @@index([averageRating])
+  @@map("delivery_metrics")
+}
+
+model DeliveryEarnings {
+  id              String  @id @default(uuid())
+  deliveryStaffId String
+  assignmentId    String? @unique
+
+  // Breakdown
+  basePayment     Float
+  bonusAmount     Float @default(0)
+  deductionAmount Float @default(0)
+  totalAmount     Float
+
+  // Details
+  bonusReason      String?
+  deductionReason  String?
+  deductionPercent Float   @default(0)
+
+  // Metadata
+  date   DateTime  @default(now())
+  status String    @default("PENDING") // PENDING, PROCESSED, PAID
+  paidAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  deliveryStaff User                @relation("DeliveryStaffEarnings", fields: [deliveryStaffId], references: [id], onDelete: Cascade)
+  assignment    DeliveryAssignment? @relation(fields: [assignmentId], references: [id], onDelete: SetNull)
+
+  @@index([deliveryStaffId])
+  @@index([date])
+  @@index([status])
+  @@map("delivery_earnings")
+}
+
+model DeliveryRating {
+  id              String  @id @default(uuid())
+  orderId         String  @unique
+  assignmentId    String?
+  deliveryStaffId String
+  customerId      String
+
+  // Rating
+  rating  Int // 1-5 stars
+  comment String?
+
+  // Feedback
+  onTimeDelivery   Boolean?
+  packageCondition Boolean?
+  staffBehavior    Boolean?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  deliveryStaff User  @relation("DeliveryStaffRatings", fields: [deliveryStaffId], references: [id], onDelete: Cascade)
+  order         Order @relation("OrderDeliveryRating", fields: [orderId], references: [id], onDelete: Restrict)
+  customer      User  @relation("CustomerDeliveryRatings", fields: [customerId], references: [id], onDelete: Restrict)
+
+  @@index([deliveryStaffId])
+  @@index([customerId])
+  @@index([createdAt])
+  @@map("delivery_ratings")
+}
+
+// Configuration tables for dynamic, zero-hardcoding approach
+model BusinessConfiguration {
+  id          String   @id @default(uuid())
+  key         String   @unique
+  value       String // Stored as JSON string for flexibility
+  dataType    String   @default("string") // "string", "number", "boolean", "json"
+  description String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdBy   String? // User ID who changed it
+
+  @@index([key])
+  @@index([isActive])
+  @@map("business_configurations")
+}
+
+model FeatureFlag {
+  id              String    @id @default(uuid())
+  name            String    @unique
+  description     String?
+  isEnabled       Boolean   @default(false)
+  percentage      Int       @default(100) // For gradual rollout (1-100)
+  targetRolesJson String? // JSON array: ["ADMIN", "SUPER_ADMIN"]
+  targetUsersJson String? // JSON array: ["user_id_1", "user_id_2"]
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  enabledAt       DateTime?
+  disabledAt      DateTime?
+
+  @@index([name])
+  @@index([isEnabled])
+  @@map("feature_flags")
 }

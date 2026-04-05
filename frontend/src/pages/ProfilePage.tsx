@@ -331,13 +331,27 @@ const ProfilePage = () => {
                 label={
                   user.role === "ADMIN"
                     ? "⚙️ " + t("common.profileRoleAdmin")
-                    : "👤 " + t("common.profileRoleUser")
+                    : user.role === "SUPER_ADMIN"
+                      ? "👑 " + t("common.profileRoleSuperAdmin")
+                      : user.role === "DELIVERY_STAFF"
+                        ? "🚚 " + t("common.profileRoleDeliveryStaff")
+                        : user.role === "SUPPORT_STAFF"
+                          ? "👨‍💼 " + t("common.profileRoleSupportStaff")
+                          : "👤 " + t("common.profileRoleUser")
                 }
                 size="small"
                 sx={{
                   mt: 1,
                   backgroundColor:
-                    user.role === "ADMIN" ? tokens.accent : tokens.primary,
+                    user.role === "SUPER_ADMIN"
+                      ? "#d32f2f"
+                      : user.role === "ADMIN"
+                        ? tokens.accent
+                        : user.role === "DELIVERY_STAFF"
+                          ? "#1976d2"
+                          : user.role === "SUPPORT_STAFF"
+                            ? "#0097a7"
+                            : tokens.primary,
                   color: "white",
                   fontWeight: 600,
                 }}

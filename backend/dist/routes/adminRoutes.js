@@ -9,7 +9,7 @@ const auth_1 = require("../middlewares/auth");
 const validate_1 = require("../middlewares/validate");
 const validators_1 = require("../validators");
 const router = (0, express_1.Router)();
-router.use(auth_1.authenticate, (0, auth_1.authorize)("ADMIN"));
+router.use(auth_1.authenticate, (0, auth_1.authorize)("ADMIN", "SUPER_ADMIN"));
 // Analytics
 router.get("/analytics", analyticsController_1.getDashboardAnalytics);
 // Products
@@ -21,6 +21,7 @@ router.get("/orders", orderController_1.getAllOrders);
 router.patch("/orders/:orderId", orderController_1.updateOrderStatus);
 // Users
 router.get("/users", userController_1.getAllUsers);
+router.post("/users", (0, validate_1.validate)(validators_1.createUserSchema), userController_1.createUser);
 router.patch("/users/:id/role", (0, validate_1.validate)(validators_1.updateUserRoleSchema), userController_1.updateUserRole);
 router.delete("/users/:id", userController_1.softDeleteUser);
 exports.default = router;

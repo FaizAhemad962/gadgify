@@ -9,8 +9,8 @@ const getAllProducts = async (req, res, next) => {
     try {
         // Extract query parameters for filtering and sorting
         const { search = "", minPrice = 0, maxPrice = 100000, minRating = 0, category = "", sortBy = "popularity", page = 1, limit = 12, } = req.query;
-        const skip = (parseInt(page) - 1) * parseInt(limit);
         const pageLimit = parseInt(limit);
+        const minRatingNum = parseInt(minRating);
         // Build where clause for filtering
         const whereClause = {
             deletedAt: null,
@@ -68,8 +68,10 @@ const getAllProducts = async (req, res, next) => {
                 };
             }
         }
-        // Fetch products with filters
-        const products = await database_1.default.product.findMany({
+        // Fetch all matching products (we'll paginate after filtering)
+        // If rating filter is applied, fetch extra to account for filtering
+        const fetchMultiplier = minRatingNum > 0 ? 3 : 1; // Fetch 3x more if rating filter
+        const allProducts = await database_1.default.product.findMany({
             where: whereClause,
             include: {
                 ratings: {
@@ -79,11 +81,9 @@ const getAllProducts = async (req, res, next) => {
                 },
                 media: true,
             },
-            skip,
-            take: pageLimit,
         });
-        // Calculate average rating and filter by minimum rating
-        let productsWithRatings = products.map((product) => {
+        // Calculate average rating for all products and filter by minimum rating
+        let productsWithRatings = allProducts.map((product) => {
             const ratings = product.ratings;
             const averageRating = ratings.length > 0
                 ? ratings.reduce((sum, r) => sum + r.rating, 0) / ratings.length
@@ -97,8 +97,8 @@ const getAllProducts = async (req, res, next) => {
             };
         });
         // Filter by minimum rating
-        if (parseInt(minRating) > 0) {
-            productsWithRatings = productsWithRatings.filter((p) => p.averageRating >= parseInt(minRating));
+        if (minRatingNum > 0) {
+            productsWithRatings = productsWithRatings.filter((p) => p.averageRating >= minRatingNum);
         }
         // Sort products based on sortBy parameter
         productsWithRatings.sort((a, b) => {
@@ -117,14 +117,15 @@ const getAllProducts = async (req, res, next) => {
                     return b.totalRatings - a.totalRatings;
             }
         });
-        // Get total count for pagination
-        const total = await database_1.default.product.count({
-            where: whereClause,
-        });
+        // Apply pagination after filtering
+        const pageNum = parseInt(page) || 1;
+        const skip = (pageNum - 1) * pageLimit;
+        const paginatedProducts = productsWithRatings.slice(skip, skip + pageLimit);
+        const total = productsWithRatings.length;
         res.json({
-            products: productsWithRatings,
+            products: paginatedProducts,
             total,
-            page: parseInt(page),
+            page: pageNum,
             limit: pageLimit,
         });
     }

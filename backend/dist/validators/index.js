@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updateAddressSchema = exports.createAddressSchema = exports.updateUserRoleSchema = exports.updateCategorySchema = exports.createCategorySchema = exports.updateCouponSchema = exports.createCouponSchema = exports.validateCouponSchema = exports.resetPasswordSchema = exports.forgotPasswordSchema = exports.changePasswordSchema = exports.updateProfileSchema = exports.ratingSchema = exports.createOrderSchema = exports.updateCartItemSchema = exports.addToCartSchema = exports.productSchema = exports.signupSchema = exports.loginSchema = void 0;
+exports.changeUserRoleSchema = exports.grantRoleChangePermissionSchema = exports.updateAddressSchema = exports.createAddressSchema = exports.createUserSchema = exports.updateUserRoleSchema = exports.updateCategorySchema = exports.createCategorySchema = exports.updateCouponSchema = exports.createCouponSchema = exports.validateCouponSchema = exports.resetPasswordSchema = exports.forgotPasswordSchema = exports.changePasswordSchema = exports.updateProfileSchema = exports.ratingSchema = exports.createOrderSchema = exports.updateCartItemSchema = exports.addToCartSchema = exports.productSchema = exports.signupSchema = exports.loginSchema = void 0;
 const joi_1 = __importDefault(require("joi"));
 exports.loginSchema = joi_1.default.object({
     email: joi_1.default.string().email().required(),
@@ -128,7 +128,25 @@ exports.updateCategorySchema = joi_1.default.object({
     isActive: joi_1.default.boolean().optional(),
 });
 exports.updateUserRoleSchema = joi_1.default.object({
-    role: joi_1.default.string().valid("USER", "ADMIN").required(),
+    role: joi_1.default.string()
+        .valid("USER", "ADMIN", "SUPER_ADMIN", "DELIVERY_STAFF", "SUPPORT_STAFF")
+        .required(),
+});
+exports.createUserSchema = joi_1.default.object({
+    email: joi_1.default.string().email().required(),
+    password: joi_1.default.string().min(8).required(),
+    name: joi_1.default.string().min(2).required(),
+    phone: joi_1.default.string().min(10).required(),
+    role: joi_1.default.string()
+        .valid("USER", "ADMIN", "SUPER_ADMIN", "DELIVERY_STAFF", "SUPPORT_STAFF")
+        .required(),
+    state: joi_1.default.string().optional().default("Maharashtra"),
+    city: joi_1.default.string().optional().allow(""),
+    address: joi_1.default.string().optional().allow(""),
+    pincode: joi_1.default.string()
+        .pattern(/^\d{6}$/)
+        .optional()
+        .allow(""),
 });
 exports.createAddressSchema = joi_1.default.object({
     label: joi_1.default.string().trim().max(50).optional().default("Home"),
@@ -153,4 +171,14 @@ exports.updateAddressSchema = joi_1.default.object({
         .pattern(/^\d{6}$/)
         .optional(),
     isDefault: joi_1.default.boolean().optional(),
+});
+// Role Change Permission Schemas
+exports.grantRoleChangePermissionSchema = joi_1.default.object({
+    email: joi_1.default.string().email().required(),
+    canRemovePermission: joi_1.default.boolean().optional().default(false),
+});
+exports.changeUserRoleSchema = joi_1.default.object({
+    role: joi_1.default.string()
+        .valid("USER", "ADMIN", "SUPER_ADMIN", "DELIVERY_STAFF", "SUPPORT_STAFF")
+        .required(),
 });

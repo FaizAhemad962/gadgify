@@ -143,7 +143,26 @@ export const updateCategorySchema = Joi.object({
 });
 
 export const updateUserRoleSchema = Joi.object({
-  role: Joi.string().valid("USER", "ADMIN").required(),
+  role: Joi.string()
+    .valid("USER", "ADMIN", "SUPER_ADMIN", "DELIVERY_STAFF", "SUPPORT_STAFF")
+    .required(),
+});
+
+export const createUserSchema = Joi.object({
+  email: Joi.string().email().required(),
+  password: Joi.string().min(8).required(),
+  name: Joi.string().min(2).required(),
+  phone: Joi.string().min(10).required(),
+  role: Joi.string()
+    .valid("USER", "ADMIN", "SUPER_ADMIN", "DELIVERY_STAFF", "SUPPORT_STAFF")
+    .required(),
+  state: Joi.string().optional().default("Maharashtra"),
+  city: Joi.string().optional().allow(""),
+  address: Joi.string().optional().allow(""),
+  pincode: Joi.string()
+    .pattern(/^\d{6}$/)
+    .optional()
+    .allow(""),
 });
 
 export const createAddressSchema = Joi.object({
@@ -170,4 +189,16 @@ export const updateAddressSchema = Joi.object({
     .pattern(/^\d{6}$/)
     .optional(),
   isDefault: Joi.boolean().optional(),
+});
+
+// Role Change Permission Schemas
+export const grantRoleChangePermissionSchema = Joi.object({
+  email: Joi.string().email().required(),
+  canRemovePermission: Joi.boolean().optional().default(false),
+});
+
+export const changeUserRoleSchema = Joi.object({
+  role: Joi.string()
+    .valid("USER", "ADMIN", "SUPER_ADMIN", "DELIVERY_STAFF", "SUPPORT_STAFF")
+    .required(),
 });

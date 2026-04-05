@@ -32,9 +32,12 @@ import {
   Search as SearchIcon,
 } from "@mui/icons-material";
 import { usersApi, type AdminUser } from "../../api/users";
+import { useAuth } from "../../context/AuthContext";
+import { getAssignableRoles } from "../../utils/roleHelper";
 
 const AdminUsers = () => {
   const { t } = useTranslation();
+  const { user } = useAuth();
   const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
   const [deleteTarget, setDeleteTarget] = useState<AdminUser | null>(null);
@@ -43,6 +46,8 @@ const AdminUsers = () => {
     message: "",
     severity: "success" as "success" | "error",
   });
+
+  const assignableRoles = getAssignableRoles(user?.role);
 
   const { data: users = [], isLoading } = useQuery({
     queryKey: ["admin-users"],
@@ -195,10 +200,26 @@ const AdminUsers = () => {
                           role: e.target.value,
                         })
                       }
-                      sx={{ minWidth: 100 }}
+                      sx={{ minWidth: 140 }}
+                      disabled={assignableRoles.length === 0}
                     >
-                      <MenuItem value="USER">USER</MenuItem>
-                      <MenuItem value="ADMIN">ADMIN</MenuItem>
+                      {assignableRoles.includes("USER") && (
+                        <MenuItem value="USER">USER</MenuItem>
+                      )}
+                      {assignableRoles.includes("DELIVERY_STAFF") && (
+                        <MenuItem value="DELIVERY_STAFF">
+                          DELIVERY_STAFF
+                        </MenuItem>
+                      )}
+                      {assignableRoles.includes("SUPPORT_STAFF") && (
+                        <MenuItem value="SUPPORT_STAFF">SUPPORT_STAFF</MenuItem>
+                      )}
+                      {assignableRoles.includes("ADMIN") && (
+                        <MenuItem value="ADMIN">ADMIN</MenuItem>
+                      )}
+                      {assignableRoles.includes("SUPER_ADMIN") && (
+                        <MenuItem value="SUPER_ADMIN">SUPER_ADMIN</MenuItem>
+                      )}
                     </Select>
                   </TableCell>
                   <TableCell>

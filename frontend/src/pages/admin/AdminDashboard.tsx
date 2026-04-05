@@ -29,6 +29,12 @@ import { AppDataGrid } from "../../components/ui/AppDataGrid";
 import type { GridColDef } from "@mui/x-data-grid";
 import { formatDate } from "@/utils/dateFormatter";
 import { tokens } from "@/theme/theme";
+import { useAuth } from "../../context/AuthContext";
+import {
+  getRoleIcon,
+  getRoleLabel,
+  getRoleColor,
+} from "../../utils/roleHelper";
 
 const STATUS_COLORS: Record<string, string> = {
   PENDING: tokens.warning,
@@ -48,6 +54,7 @@ const PIE_COLORS = [
 
 const AdminDashboard = () => {
   const { t } = useTranslation();
+  const { user } = useAuth();
 
   const {
     data: analytics,
@@ -174,14 +181,27 @@ const AdminDashboard = () => {
 
   return (
     <Box>
-      <Typography
-        variant="h4"
-        gutterBottom
-        fontWeight="700"
-        sx={{ color: tokens.gray900, mb: 4 }}
-      >
-        {t("admin.dashboard")}
-      </Typography>
+      <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 4 }}>
+        <Typography
+          variant="h4"
+          fontWeight="700"
+          sx={{ color: tokens.gray900 }}
+        >
+          {t("admin.dashboard")}
+        </Typography>
+        {user?.role && (
+          <Chip
+            label={`${getRoleIcon(user.role)} ${getRoleLabel(user.role)}`}
+            sx={{
+              backgroundColor: getRoleColor(user.role),
+              color: "white",
+              fontWeight: 600,
+              fontSize: "0.75rem",
+              height: 24,
+            }}
+          />
+        )}
+      </Box>
 
       {/* Stat Cards */}
       <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap", mb: 4 }}>

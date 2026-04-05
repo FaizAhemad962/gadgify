@@ -21,7 +21,6 @@ const ForgotPasswordPage = lazy(
   () => import("../pages/auth/ForgotPasswordPage"),
 );
 const ResetPasswordPage = lazy(() => import("../pages/auth/ResetPasswordPage"));
-const AdminLayout = lazy(() => import("../components/layout/AdminLayout"));
 const AdminDashboard = lazy(() => import("../pages/admin/AdminDashboard"));
 const AdminProducts = lazy(() => import("../pages/admin/AdminProducts"));
 const AdminOrders = lazy(() => import("../pages/admin/AdminOrders"));
@@ -55,7 +54,7 @@ const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
   return isAuthenticated ? <>{children}</> : <Navigate to="/login" replace />;
 };
 
-// Admin route wrapper
+// Admin/Super Admin route wrapper
 const AdminRoute = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated, isAdmin } = useAuth();
 
@@ -64,6 +63,21 @@ const AdminRoute = ({ children }: { children: React.ReactNode }) => {
   }
 
   if (!isAdmin) {
+    return <Navigate to="/" replace />;
+  }
+
+  return <>{children}</>;
+};
+
+// Super Admin only route wrapper
+const SuperAdminRoute = ({ children }: { children: React.ReactNode }) => {
+  const { isAuthenticated, isSuperAdmin } = useAuth();
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (!isSuperAdmin) {
     return <Navigate to="/" replace />;
   }
 
@@ -150,12 +164,12 @@ const AppRoutes = () => {
           />
         </Route>
 
-        {/* Admin routes */}
+        {/* Admin routes - all using unified Layout component */}
         <Route
           path="/admin"
           element={
             <AdminRoute>
-              <AdminLayout />
+              <Layout />
             </AdminRoute>
           }
         >
@@ -164,7 +178,14 @@ const AppRoutes = () => {
           <Route path="orders" element={<AdminOrders />} />
           <Route path="coupons" element={<AdminCoupons />} />
           <Route path="categories" element={<AdminCategories />} />
-          <Route path="users" element={<AdminUsers />} />
+          <Route
+            path="users"
+            element={
+              <SuperAdminRoute>
+                <AdminUsers />
+              </SuperAdminRoute>
+            }
+          />
         </Route>
 
         {/* 404 */}

@@ -6,6 +6,10 @@ import { sendPasswordResetEmail, sendWelcomeEmail } from "../utils/email";
 import { AuthRequest } from "../middlewares/auth";
 import { validatePasswordStrength } from "../middlewares/securityValidator";
 import logger from "../utils/logger";
+import {
+  findUserByEmail,
+  isEmailRegisteredWithAnyRole,
+} from "../utils/userQueryHelper";
 
 // SECURITY: Track failed login attempts (use Redis in production)
 const failedLoginAttempts = new Map<
@@ -76,10 +80,12 @@ export const signup = async (
       return;
     }
 
-    // Check if user exists
-    const existingUser = await prisma.user.findUnique({ where: { email } });
-    if (existingUser) {
-      res.status(400).json({ message: "Email already registered" });
+    // Check if user exists with email + USER role
+    const existingUser = await findUserByEmail(email, "USER");
+    if (existingUser && existingUser.role === "USER") {
+      res
+        .status(400)
+        .json({ message: "Email already registered as a user account" });
       return;
     }
 
@@ -140,7 +146,7 @@ export const login = async (
   next: NextFunction,
 ): Promise<void> => {
   try {
-    const { email, password } = req.body;
+    const { email, password, role } = req.body;
 
     // SECURITY: Check if account is locked
     if (isAccountLocked(email)) {
@@ -151,8 +157,8 @@ export const login = async (
       return;
     }
 
-    // Find user
-    const user = await prisma.user.findUnique({ where: { email } });
+    // Find user - if role provided, use it; otherwise default to USER
+    const user = await findUserByEmail(email, role || "USER");
     if (!user) {
       // SECURITY: Don't reveal if email exists; log internally for debugging
       logger.warn(`Login failed: user not found for ${email}`);
@@ -327,7 +333,8 @@ export const forgotPassword = async (
     const successMessage =
       "If an account with that email exists, a password reset link has been sent.";
 
-    const user = await prisma.user.findUnique({ where: { email } });
+    // Look for USER role account first, then any account with that email
+    const user = await findUserByEmail(email, "USER");
     if (!user) {
       // Don't reveal whether email exists
       logger.info(`Password reset requested for non-existent email: ${email}`);

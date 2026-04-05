@@ -87,6 +87,17 @@ const ProductsPage = () => {
   const loaderRef = useRef<HTMLDivElement>(null);
   const { cart, addToCart, isAddingToCart } = useCart();
 
+  // Track all accumulated products as user scrolls
+  const [accumulatedProducts, setAccumulatedProducts] = useState<
+    Array<{
+      id: string;
+      name: string;
+      price: number;
+      media?: Array<{ isPrimary: boolean }>;
+      [key: string]: any;
+    }>
+  >([]);
+
   const {
     data: response,
     isLoading,
@@ -119,12 +130,62 @@ const ProductsPage = () => {
     enabled: true,
   });
 
+  // Accumulate products from all pages as user scrolls
+  useEffect(() => {
+    if (response && typeof response === "object" && response?.products) {
+      const newProducts = response.products;
+
+      // If filters changed, reset accumulated products
+      if (
+        debouncedSearchQuery === "" &&
+        priceRange[0] === 0 &&
+        priceRange[1] === 100000 &&
+        selectedRatings.length === 0 &&
+        selectedCategories.length === 0 &&
+        accumulatedProducts.length === 0
+      ) {
+        setAccumulatedProducts(newProducts);
+      } else if (accumulatedProducts.length === 0) {
+        // First page
+        setAccumulatedProducts(newProducts);
+      } else {
+        // Append new products (avoid duplicates by checking IDs)
+        const existingIds = new Set(accumulatedProducts.map((p) => p.id));
+        const uniqueNewProducts = newProducts.filter(
+          (p: any) => !existingIds.has(p.id),
+        );
+        if (uniqueNewProducts.length > 0) {
+          setAccumulatedProducts((prev) => [...prev, ...uniqueNewProducts]);
+        }
+      }
+    }
+  }, [
+    response,
+    debouncedSearchQuery,
+    priceRange,
+    selectedRatings,
+    selectedCategories,
+  ]);
+
+  // Reset accumulated products when filters change
+  useEffect(() => {
+    setAccumulatedProducts([]);
+  }, [
+    debouncedSearchQuery,
+    priceRange,
+    selectedRatings,
+    selectedCategories,
+    sortBy,
+  ]);
+
   // Handle both array (old format) and object (new format) responses
-  const products = Array.isArray(response)
+  const currentPageProducts = Array.isArray(response)
     ? response
     : typeof response === "object" && response?.products
       ? response.products
       : [];
+  const products =
+    accumulatedProducts.length > 0 ? accumulatedProducts : currentPageProducts;
   const total =
     typeof response === "object" ? response?.total || 0 : products.length;
 

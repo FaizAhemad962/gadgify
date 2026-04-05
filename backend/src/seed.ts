@@ -14,7 +14,6 @@ async function seed() {
   await prisma.cart.deleteMany({});
   await prisma.productMedia.deleteMany({});
   await prisma.product.deleteMany({});
-  // await prisma.user.deleteMany({})
   console.log("✅ Data cleared");
 
   // Create sample products with categories and original prices
@@ -330,55 +329,22 @@ async function seed() {
 
   console.log(`✅ Created ${createdProducts.length} products with images`);
 
-  // Create sample users - 3 regular users and 1 admin
-  console.log("👥 Adding sample users...");
+  // Create super admin user
+  console.log("👥 Adding super admin...");
 
-  const hashedPassword = await bcryptjs.hash("password123", 10);
+  const hashedPassword = await bcryptjs.hash("super-admin9606@", 10);
 
   const users = [
     {
-      email: "user1@example.com",
+      email: "super-admin@gadgify.com",
       password: hashedPassword,
-      name: "Raj Kumar",
-      phone: "9876543210",
-      role: "USER",
+      name: "Super Admin",
+      phone: "9000000000",
+      role: "SUPER_ADMIN",
       state: "Maharashtra",
       city: "Mumbai",
-      address: "123 MG Road, Mumbai",
+      address: "Gadgify HQ, Mumbai",
       pincode: "400001",
-    },
-    {
-      email: "user2@example.com",
-      password: hashedPassword,
-      name: "Priya Sharma",
-      phone: "8765432109",
-      role: "USER",
-      state: "Maharashtra",
-      city: "Pune",
-      address: "456 FC Road, Pune",
-      pincode: "411001",
-    },
-    {
-      email: "user3@example.com",
-      password: hashedPassword,
-      name: "Anil Patel",
-      phone: "7654321098",
-      role: "USER",
-      state: "Maharashtra",
-      city: "Nagpur",
-      address: "789 Dharampeth, Nagpur",
-      pincode: "440001",
-    },
-    {
-      email: "admin@example.com",
-      password: hashedPassword,
-      name: "Admin User",
-      phone: "9999999999",
-      role: "ADMIN",
-      state: "Maharashtra",
-      city: "Mumbai",
-      address: "999 Admin Tower, Mumbai",
-      pincode: "400050",
     },
   ];
 
@@ -386,24 +352,7 @@ async function seed() {
     data: users,
   });
 
-  console.log(`✅ Created ${createdUsers.count} users (3 regular + 1 admin)`);
-
-  // Create carts for regular users
-  console.log("🛒 Creating carts for users...");
-  const regularUsers = await prisma.user.findMany({
-    where: { role: "USER" },
-    take: 3,
-  });
-
-  for (const user of regularUsers) {
-    await prisma.cart.create({
-      data: {
-        userId: user.id,
-      },
-    });
-  }
-
-  console.log(`✅ Created carts for ${regularUsers.length} users`);
+  console.log(`✅ Created ${createdUsers.count} super admin account`);
 
   console.log("🎉 Seeding completed!");
   console.log("📊 Summary:");
@@ -413,7 +362,10 @@ async function seed() {
     `   - Categories: 15+ (Accessories, Travel, Bags, Home Utility, Personal Care, Electronics, Home Gadgets, Kitchen, Storage, Toys & Collectibles, Stationery, Tools, Eco Products, Cleaning, Footwear Care, Baby Care, Travel Accessories)`,
   );
   console.log("🖼️  Product images linked from: /uploads/product-*.jpeg");
-  console.log("ℹ️  Admin login: admin@example.com / hashedPassword123");
+  console.log("ℹ️  Super Admin Account:");
+  console.log("   Email: super-admin@gadgify.com");
+  console.log("   Password: super-admin9606@");
+  console.log("   Role: SUPER_ADMIN");
 }
 
 seed()
