@@ -14,7 +14,7 @@ router.get("/suggestions", productController_1.getProductSuggestions);
 router.get("/search", productController_1.searchProducts);
 router.get("/:id", productController_1.getProductById);
 // Image upload endpoint (Admin only)
-router.post("/upload-image", auth_1.authenticate, (0, auth_1.authorize)("ADMIN"), rateLimiter_1.uploadLimiter, upload_1.upload.single("image"), (req, res) => {
+router.post("/upload-image", auth_1.authenticate, (0, auth_1.authorize)("ADMIN", "SUPER_ADMIN"), rateLimiter_1.uploadLimiter, upload_1.upload.single("image"), (req, res) => {
     if (!req.file) {
         return res.status(400).json({ message: "No file uploaded" });
     }
@@ -22,7 +22,7 @@ router.post("/upload-image", auth_1.authenticate, (0, auth_1.authorize)("ADMIN")
     res.json({ imageUrl });
 });
 // Video upload endpoint (Admin only)
-router.post("/upload-video", auth_1.authenticate, (0, auth_1.authorize)("ADMIN"), rateLimiter_1.uploadLimiter, (req, res, next) => {
+router.post("/upload-video", auth_1.authenticate, (0, auth_1.authorize)("ADMIN", "SUPER_ADMIN"), rateLimiter_1.uploadLimiter, (req, res, next) => {
     upload_1.videoUpload.single("video")(req, res, function (err) {
         if (err instanceof Error) {
             // Multer error (file too large, invalid type, etc.)
@@ -38,9 +38,9 @@ router.post("/upload-video", auth_1.authenticate, (0, auth_1.authorize)("ADMIN")
     });
 });
 // Admin only
-router.post("/", auth_1.authenticate, (0, auth_1.authorize)("ADMIN"), (0, validate_1.validate)(validators_1.productSchema), productController_1.createProduct);
-router.put("/:id", auth_1.authenticate, (0, auth_1.authorize)("ADMIN"), (0, validate_1.validate)(validators_1.productSchema), productController_1.updateProduct);
-router.delete("/:id", auth_1.authenticate, (0, auth_1.authorize)("ADMIN"), productController_1.deleteProduct);
+router.post("/", auth_1.authenticate, (0, auth_1.authorize)("ADMIN", "SUPER_ADMIN"), (0, validate_1.validate)(validators_1.productSchema), productController_1.createProduct);
+router.put("/:id", auth_1.authenticate, (0, auth_1.authorize)("ADMIN", "SUPER_ADMIN"), (0, validate_1.validate)(validators_1.productSchema), productController_1.updateProduct);
+router.delete("/:id", auth_1.authenticate, (0, auth_1.authorize)("ADMIN", "SUPER_ADMIN"), productController_1.deleteProduct);
 // Rating routes
 router.get("/:productId/ratings", ratingController_1.getRatings);
 router.post("/:productId/ratings", auth_1.authenticate, (0, validate_1.validate)(validators_1.ratingSchema), ratingController_1.createRating);

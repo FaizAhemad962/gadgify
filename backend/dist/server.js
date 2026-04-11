@@ -25,6 +25,10 @@ const categoryRoutes_1 = __importDefault(require("./routes/categoryRoutes"));
 const addressRoutes_1 = __importDefault(require("./routes/addressRoutes"));
 const roleChangeRoutes_1 = __importDefault(require("./routes/roleChangeRoutes"));
 const multiAccountRoutes_1 = __importDefault(require("./routes/multiAccountRoutes"));
+const deliveryRoutes_1 = __importDefault(require("./routes/deliveryRoutes"));
+const faqRoutes_1 = __importDefault(require("./routes/faqRoutes"));
+const flashSaleRoutes_1 = __importDefault(require("./routes/flashSaleRoutes"));
+const newsletterRoutes_1 = __importDefault(require("./routes/newsletterRoutes"));
 const app = (0, express_1.default)();
 // Upload directory configuration (Render persistent disk in production)
 const uploadDir = process.env.NODE_ENV === "production" ? "/var/data/uploads" : "./uploads";
@@ -123,6 +127,10 @@ app.use("/api/categories", categoryRoutes_1.default);
 app.use("/api/addresses", addressRoutes_1.default);
 app.use("/api/role-change", roleChangeRoutes_1.default);
 app.use("/api/accounts", multiAccountRoutes_1.default);
+app.use("/api/delivery", deliveryRoutes_1.default);
+app.use("/api/faqs", faqRoutes_1.default);
+app.use("/api/flash-sales", flashSaleRoutes_1.default);
+app.use("/api/newsletters", newsletterRoutes_1.default);
 // 404 handler
 app.use((req, res) => {
     res.status(404).json({ message: "Route not found" });

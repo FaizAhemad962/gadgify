@@ -31,7 +31,7 @@ router.get("/:id", getProductById);
 router.post(
   "/upload-image",
   authenticate,
-  authorize("ADMIN"),
+  authorize("ADMIN", "SUPER_ADMIN"),
   uploadLimiter,
   upload.single("image"),
   (req: Request, res: Response) => {
@@ -47,7 +47,7 @@ router.post(
 router.post(
   "/upload-video",
   authenticate,
-  authorize("ADMIN"),
+  authorize("ADMIN", "SUPER_ADMIN"),
   uploadLimiter,
   (req: Request, res: Response, next) => {
     videoUpload.single("video")(req, res, function (err) {
@@ -70,18 +70,23 @@ router.post(
 router.post(
   "/",
   authenticate,
-  authorize("ADMIN"),
+  authorize("ADMIN", "SUPER_ADMIN"),
   validate(productSchema),
   createProduct,
 );
 router.put(
   "/:id",
   authenticate,
-  authorize("ADMIN"),
+  authorize("ADMIN", "SUPER_ADMIN"),
   validate(productSchema),
   updateProduct,
 );
-router.delete("/:id", authenticate, authorize("ADMIN"), deleteProduct);
+router.delete(
+  "/:id",
+  authenticate,
+  authorize("ADMIN", "SUPER_ADMIN"),
+  deleteProduct,
+);
 
 // Rating routes
 router.get("/:productId/ratings", getRatings);

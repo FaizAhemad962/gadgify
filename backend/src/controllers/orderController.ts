@@ -243,7 +243,11 @@ export const getOrders = async (
       where: { userId: req.user!.id },
       include: {
         items: {
-          include: { product: true },
+          include: {
+            product: {
+              include: { media: true },
+            },
+          },
         },
       },
       orderBy: { createdAt: "desc" },
@@ -267,7 +271,11 @@ export const getOrderById = async (
       where: { id },
       include: {
         items: {
-          include: { product: true },
+          include: {
+            product: {
+              include: { media: true },
+            },
+          },
         },
         user: {
           select: {
@@ -464,6 +472,10 @@ export const retryPayment = async (
   try {
     const { orderId } = req.params;
 
+    logger.info(
+      `[retryPayment] Processing retry for order: ${orderId}, user: ${req.user!.id}`,
+    );
+
     const order = await prisma.order.findUnique({
       where: { id: orderId },
       include: {
@@ -488,18 +500,29 @@ export const retryPayment = async (
     });
 
     if (!order) {
+      logger.warn(`[retryPayment] Order not found: ${orderId}`);
       res.status(404).json({ success: false, message: "Order not found" });
       return;
     }
 
+    logger.info(
+      `[retryPayment] Order found: ${order.id}, paymentStatus: ${order.paymentStatus}, userId: ${order.userId}`,
+    );
+
     // Only the owner or admin can retry payment
     if (order.userId !== req.user!.id && req.user!.role !== "ADMIN") {
+      logger.warn(
+        `[retryPayment] Access denied for user ${req.user!.id} trying to retry order ${orderId}`,
+      );
       res.status(403).json({ success: false, message: "Access denied" });
       return;
     }
 
     // Only allow retry on pending orders
     if (order.paymentStatus !== "PENDING") {
+      logger.warn(
+        `[retryPayment] Cannot retry non-pending order ${orderId} with status: ${order.paymentStatus}`,
+      );
       res.status(400).json({
         success: false,
         message: `Cannot retry payment for order with payment status: ${order.paymentStatus}`,
@@ -507,30 +530,63 @@ export const retryPayment = async (
       return;
     }
 
+    logger.info(
+      `[retryPayment] Creating new Razorpay order for ${orderId}, amount: ${order.total}`,
+    );
+
     // Create new Razorpay order for retry
-    const razorpayOrder = await razorpayInstance.orders.create({
-      amount: Math.round(order.total * 100), // Amount in paise
-      currency: "INR",
-      receipt: `${order.id}-retry-${Date.now()}`,
-      notes: {
-        orderId: order.id,
-        userId: order.userId,
-        isRetry: "true",
-      },
-    });
+    let razorpayOrder;
+    try {
+      razorpayOrder = await razorpayInstance.orders.create({
+        amount: Math.round(order.total * 100), // Amount in paise
+        currency: "INR",
+        receipt: `retry-${Date.now()}`.substring(0, 40), // Keep receipt under 40 chars
+        notes: {
+          orderId: order.id,
+          userId: order.userId,
+          isRetry: "true",
+        },
+      });
+      logger.info(`[retryPayment] Razorpay order created: ${razorpayOrder.id}`);
+    } catch (razorpayError: any) {
+      let errorMessage = "Razorpay service error";
+
+      // Extract error message from Razorpay response
+      if (razorpayError?.error?.description) {
+        errorMessage = razorpayError.error.description;
+      } else if (razorpayError?.message) {
+        errorMessage = razorpayError.message;
+      } else if (razorpayError?.error?.message) {
+        errorMessage = razorpayError.error.message;
+      }
+
+      logger.error(`[retryPayment] Razorpay API failed:`, {
+        message: errorMessage,
+        error: razorpayError,
+        apiResponse: razorpayError?.error,
+      });
+
+      res.status(400).json({
+        success: false,
+        message: `Failed to create payment order: ${errorMessage}`,
+      });
+      return;
+    }
 
     res.json({
-      success: true,
-      message: "Payment retry initiated",
-      data: {
-        razorpayOrderId: razorpayOrder.id,
-        amount: razorpayOrder.amount,
-        currency: razorpayOrder.currency,
-        keyId: config.razorpayKeyId,
-        orderId: order.id,
-      },
+      razorpayOrderId: razorpayOrder.id,
+      amount: razorpayOrder.amount,
+      currency: razorpayOrder.currency,
+      keyId: config.razorpayKeyId,
+      orderId: order.id,
     });
   } catch (error) {
+    logger.error(
+      `[retryPayment] Error: ${error instanceof Error ? error.message : String(error)}`,
+    );
+    if (error instanceof Error) {
+      logger.error(`[retryPayment] Stack: ${error.stack}`);
+    }
     next(error);
   }
 };
@@ -638,7 +694,11 @@ export const getAllOrders = async (
         where: searchFilter,
         include: {
           items: {
-            include: { product: true },
+            include: {
+              product: {
+                include: { media: true },
+              },
+            },
           },
           user: {
             select: {

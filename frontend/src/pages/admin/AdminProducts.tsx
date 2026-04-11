@@ -338,10 +338,11 @@ const AdminProducts = () => {
     }[] = [];
 
     // Upload new images
+    const newImages: { url: string; type: "image"; isPrimary?: boolean }[] = [];
     for (let i = 0; i < imageFiles.length; i++) {
       try {
         const uploadResult = await productsApi.uploadImage(imageFiles[i]);
-        mediaArr.push({
+        newImages.push({
           url: `${baseUrl}${uploadResult.imageUrl}`,
           type: "image",
           isPrimary: i === primaryImageIdx,
@@ -351,8 +352,11 @@ const AdminProducts = () => {
         return;
       }
     }
-    // Add existing image URLs (for edit)
-    if (editingProduct && editingProduct.media) {
+
+    // If new images uploaded, use ONLY new ones. Otherwise, preserve existing images.
+    if (newImages.length > 0) {
+      mediaArr.push(...newImages);
+    } else if (editingProduct?.media) {
       const existingImages = editingProduct.media.filter(
         (m) => m.type === "image",
       );
@@ -360,16 +364,17 @@ const AdminProducts = () => {
         mediaArr.push({
           url: img.url,
           type: "image",
-          isPrimary: imageFiles.length === 0 && idx === primaryImageIdx,
+          isPrimary: idx === primaryImageIdx,
         });
       });
     }
 
     // Upload new videos
+    const newVideos: { url: string; type: "video" }[] = [];
     for (let i = 0; i < videoFiles.length; i++) {
       try {
         const uploadResult = await productsApi.uploadVideo(videoFiles[i]);
-        mediaArr.push({
+        newVideos.push({
           url: `${baseUrl}${uploadResult.videoUrl}`,
           type: "video",
         });
@@ -378,8 +383,11 @@ const AdminProducts = () => {
         return;
       }
     }
-    // Add existing video URLs (for edit)
-    if (editingProduct && editingProduct.media) {
+
+    // If new videos uploaded, use ONLY new ones. Otherwise, preserve existing videos.
+    if (newVideos.length > 0) {
+      mediaArr.push(...newVideos);
+    } else if (editingProduct?.media) {
       const existingVideos = editingProduct.media.filter(
         (m) => m.type === "video",
       );

@@ -204,7 +204,11 @@ const getOrders = async (req, res, next) => {
             where: { userId: req.user.id },
             include: {
                 items: {
-                    include: { product: true },
+                    include: {
+                        product: {
+                            include: { media: true },
+                        },
+                    },
                 },
             },
             orderBy: { createdAt: "desc" },
@@ -223,7 +227,11 @@ const getOrderById = async (req, res, next) => {
             where: { id },
             include: {
                 items: {
-                    include: { product: true },
+                    include: {
+                        product: {
+                            include: { media: true },
+                        },
+                    },
                 },
                 user: {
                     select: {
@@ -388,6 +396,7 @@ exports.confirmPayment = confirmPayment;
 const retryPayment = async (req, res, next) => {
     try {
         const { orderId } = req.params;
+        logger_1.default.info(`[retryPayment] Processing retry for order: ${orderId}, user: ${req.user.id}`);
         const order = await database_1.default.order.findUnique({
             where: { id: orderId },
             include: {
@@ -411,46 +420,78 @@ const retryPayment = async (req, res, next) => {
             },
         });
         if (!order) {
+            logger_1.default.warn(`[retryPayment] Order not found: ${orderId}`);
             res.status(404).json({ success: false, message: "Order not found" });
             return;
         }
+        logger_1.default.info(`[retryPayment] Order found: ${order.id}, paymentStatus: ${order.paymentStatus}, userId: ${order.userId}`);
         // Only the owner or admin can retry payment
         if (order.userId !== req.user.id && req.user.role !== "ADMIN") {
+            logger_1.default.warn(`[retryPayment] Access denied for user ${req.user.id} trying to retry order ${orderId}`);
             res.status(403).json({ success: false, message: "Access denied" });
             return;
         }
         // Only allow retry on pending orders
         if (order.paymentStatus !== "PENDING") {
+            logger_1.default.warn(`[retryPayment] Cannot retry non-pending order ${orderId} with status: ${order.paymentStatus}`);
             res.status(400).json({
                 success: false,
                 message: `Cannot retry payment for order with payment status: ${order.paymentStatus}`,
             });
             return;
         }
+        logger_1.default.info(`[retryPayment] Creating new Razorpay order for ${orderId}, amount: ${order.total}`);
         // Create new Razorpay order for retry
-        const razorpayOrder = await razorpay_1.razorpayInstance.orders.create({
-            amount: Math.round(order.total * 100), // Amount in paise
-            currency: "INR",
-            receipt: `${order.id}-retry-${Date.now()}`,
-            notes: {
-                orderId: order.id,
-                userId: order.userId,
-                isRetry: "true",
-            },
-        });
+        let razorpayOrder;
+        try {
+            razorpayOrder = await razorpay_1.razorpayInstance.orders.create({
+                amount: Math.round(order.total * 100), // Amount in paise
+                currency: "INR",
+                receipt: `retry-${Date.now()}`.substring(0, 40), // Keep receipt under 40 chars
+                notes: {
+                    orderId: order.id,
+                    userId: order.userId,
+                    isRetry: "true",
+                },
+            });
+            logger_1.default.info(`[retryPayment] Razorpay order created: ${razorpayOrder.id}`);
+        }
+        catch (razorpayError) {
+            let errorMessage = "Razorpay service error";
+            // Extract error message from Razorpay response
+            if (razorpayError?.error?.description) {
+                errorMessage = razorpayError.error.description;
+            }
+            else if (razorpayError?.message) {
+                errorMessage = razorpayError.message;
+            }
+            else if (razorpayError?.error?.message) {
+                errorMessage = razorpayError.error.message;
+            }
+            logger_1.default.error(`[retryPayment] Razorpay API failed:`, {
+                message: errorMessage,
+                error: razorpayError,
+                apiResponse: razorpayError?.error,
+            });
+            res.status(400).json({
+                success: false,
+                message: `Failed to create payment order: ${errorMessage}`,
+            });
+            return;
+        }
         res.json({
-            success: true,
-            message: "Payment retry initiated",
-            data: {
-                razorpayOrderId: razorpayOrder.id,
-                amount: razorpayOrder.amount,
-                currency: razorpayOrder.currency,
-                keyId: config_1.config.razorpayKeyId,
-                orderId: order.id,
-            },
+            razorpayOrderId: razorpayOrder.id,
+            amount: razorpayOrder.amount,
+            currency: razorpayOrder.currency,
+            keyId: config_1.config.razorpayKeyId,
+            orderId: order.id,
         });
     }
     catch (error) {
+        logger_1.default.error(`[retryPayment] Error: ${error instanceof Error ? error.message : String(error)}`);
+        if (error instanceof Error) {
+            logger_1.default.error(`[retryPayment] Stack: ${error.stack}`);
+        }
         next(error);
     }
 };
@@ -542,7 +583,11 @@ const getAllOrders = async (req, res, next) => {
                 where: searchFilter,
                 include: {
                     items: {
-                        include: { product: true },
+                        include: {
+                            product: {
+                                include: { media: true },
+                            },
+                        },
                     },
                     user: {
                         select: {

@@ -22,30 +22,41 @@ export const productsApi = {
     page: number;
     limit: number;
   }> => {
-    const params = {
-      search: filters?.search || "",
-      minPrice: filters?.minPrice ?? 0,
-      maxPrice: filters?.maxPrice ?? 100000,
-      minRating: filters?.minRating ?? 0,
-      category: filters?.category || "",
-      sortBy: filters?.sortBy || "popularity",
-      page: filters?.page ?? 1,
-      limit: filters?.limit ?? 12,
-    };
+    // Only add parameters that are explicitly provided
+    const params: Record<string, any> = {};
+
+    if (filters?.search) params.search = filters.search;
+    if (filters?.minPrice !== undefined) params.minPrice = filters.minPrice;
+    if (filters?.maxPrice !== undefined) params.maxPrice = filters.maxPrice;
+    if (filters?.minRating !== undefined) params.minRating = filters.minRating;
+    if (filters?.category) params.category = filters.category;
+    if (filters?.sortBy) params.sortBy = filters.sortBy;
+    if (filters?.page) params.page = filters.page;
+    if (filters?.limit) params.limit = filters.limit ?? 24;
 
     const { data } = await apiClient.get("/products", { params });
-    console.log(data);
 
-    // Sort by primary image
-    if (data.products) {
-      data.products.sort((a: Product, b: Product) => {
-        const aHasPrimary = a.media?.some((m) => m.isPrimary);
-        const bHasPrimary = b.media?.some((m) => m.isPrimary);
-        return Number(bHasPrimary) - Number(aHasPrimary);
-      });
-    }
+    // Support both API shapes:
+    // 1) { products, total, page, limit }
+    // 2) { success, message, data: { products, total, page, limit } }
+    const payload = (data as any)?.data ?? data;
+    const products: Product[] = Array.isArray(payload?.products)
+      ? payload.products
+      : [];
 
-    return data;
+    // Keep products with primary image at top for better UX
+    products.sort((a: Product, b: Product) => {
+      const aHasPrimary = a.media?.some((m) => m.isPrimary);
+      const bHasPrimary = b.media?.some((m) => m.isPrimary);
+      return Number(bHasPrimary) - Number(aHasPrimary);
+    });
+
+    return {
+      products,
+      total: Number(payload?.total ?? products.length),
+      page: Number(payload?.page ?? filters?.page ?? 1),
+      limit: Number(payload?.limit ?? filters?.limit ?? 12),
+    };
   },
 
   getById: async (id: string): Promise<Product> => {

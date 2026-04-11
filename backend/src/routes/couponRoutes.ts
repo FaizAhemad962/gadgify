@@ -25,21 +25,26 @@ router.post(
 );
 
 // Admin: CRUD
-router.get("/", authenticate, authorize("ADMIN"), getAllCoupons);
+router.get("/", authenticate, authorize("ADMIN", "SUPER_ADMIN"), getAllCoupons);
 router.post(
   "/",
   authenticate,
-  authorize("ADMIN"),
+  authorize("ADMIN", "SUPER_ADMIN"),
   validate(createCouponSchema),
   createCoupon,
 );
 router.put(
   "/:id",
   authenticate,
-  authorize("ADMIN"),
+  authorize("ADMIN", "SUPER_ADMIN"),
   validate(updateCouponSchema),
   updateCoupon,
 );
-router.delete("/:id", authenticate, authorize("ADMIN"), deleteCoupon);
+router.delete(
+  "/:id",
+  authenticate,
+  authorize("ADMIN", "SUPER_ADMIN"),
+  deleteCoupon,
+);
 
 export default router;

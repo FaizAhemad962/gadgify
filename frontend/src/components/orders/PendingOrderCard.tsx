@@ -64,9 +64,9 @@ export const PendingOrderCard: React.FC<OrderCardProps> = ({
       const RazorpayWindow = window as any;
       if (RazorpayWindow.Razorpay) {
         const razorpay = new RazorpayWindow.Razorpay({
-          key_id: data.data.keyId,
-          order_id: data.data.razorpayOrderId,
-          amount: data.data.amount,
+          key_id: data.keyId,
+          order_id: data.razorpayOrderId,
+          amount: data.amount,
           currency: "INR",
           name: "Gadgify",
           description: `Payment for Order ${orderId}`,

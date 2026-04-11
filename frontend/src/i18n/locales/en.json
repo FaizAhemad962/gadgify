@@ -103,7 +103,9 @@
     "shipped": "Shipped",
     "delivered": "Delivered",
     "cancelled": "Cancelled",
-    "paymentStatus": "Payment"
+    "paymentStatus": "Payment",
+    "paymentPending": "Payment is pending. Please complete the payment to confirm your order.",
+    "retryPayment": "Retry Payment"
   },
   "errors": {
     "maharashtraOnly": "This service is currently available only in Maharashtra.",
@@ -317,6 +319,7 @@
     "save": "Save",
     "cancel": "Cancel",
     "edit": "Edit",
+    "refresh": "Refresh",
     "backToProducts": "Back to Products",
     "readyToShop": "Ready to Start Shopping?",
     "shopNow": "Shop Now",
@@ -446,6 +449,7 @@
     "quickView": "Quick View",
     "addedToCart": "Added to Cart",
     "showingXofY": "Showing {{shown}} of {{total}} products",
+    "endOfResults": "You have reached the end of the product list",
     "gridView": "Grid View",
     "listView": "List View",
     "specifications": "Specifications",
@@ -489,6 +493,14 @@
     "create": "Create",
     "noOrdersFound": "No orders match your filters",
     "all": "All"
+  },
+  "newsletter": {
+    "unsubscribing": "Unsubscribing...",
+    "unsubscribeSuccess": "You've been unsubscribed",
+    "unsubscribeMessage": "You will no longer receive emails from Gadgify newsletter. You can resubscribe anytime on our website.",
+    "unsubscribeFailed": "Unsubscribe Failed",
+    "contactSupport": "Please contact support if you continue to receive emails.",
+    "unsubscribeInfo": "If you have questions, please contact support@gadgify.com"
   },
   "footer": {
     "aboutDesc": "Your premier destination for authentic electronics and gadgets in Maharashtra.",

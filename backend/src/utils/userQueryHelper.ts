@@ -11,25 +11,14 @@ export async function findUserByEmail(
   defaultRole: string = "USER",
 ) {
   try {
-    // Try to find the specific role first
+    // Normalize email to lowercase for case-insensitive search
+    const normalizedEmail = email.toLowerCase().trim();
     const user = await prisma.user.findUnique({
-      where: {
-        email_role: {
-          email,
-          role: defaultRole,
-        },
-      },
+      where: { email: normalizedEmail },
     });
-
-    if (user) return user;
-
-    // If not found with default role, find any account with this email
-    const anyUser = await prisma.user.findFirst({
-      where: { email },
-      orderBy: { createdAt: "asc" }, // Return oldest account
-    });
-
-    return anyUser;
+    if (!user || user.deletedAt) return null;
+    if (defaultRole && user.role !== defaultRole) return user;
+    return user;
   } catch (error) {
     console.error("Error in findUserByEmail:", error);
     return null;
@@ -45,26 +34,13 @@ export async function findUserByEmailWithMultipleCheck(
   defaultRole: string = "USER",
 ) {
   try {
-    // Find the default role account
-    const user = await prisma.user.findUnique({
-      where: {
-        email_role: {
-          email,
-          role: defaultRole,
-        },
-      },
-    });
-
-    // Check if there are other accounts with same email
-    const allUsersByEmail = await prisma.user.findMany({
-      where: { email },
-      select: { id: true, role: true },
-    });
+    const user = await prisma.user.findUnique({ where: { email } });
+    const activeUser = user && !user.deletedAt ? user : null;
 
     return {
-      user,
-      otherAccounts: allUsersByEmail.filter((u) => u.id !== user?.id),
-      allAccountsCount: allUsersByEmail.length,
+      user: activeUser,
+      otherAccounts: [],
+      allAccountsCount: activeUser ? 1 : 0,
     };
   } catch (error) {
     console.error("Error in findUserByEmailWithMultipleCheck:", error);
@@ -106,15 +82,8 @@ export async function userExists(
   role: string = "USER",
 ): Promise<boolean> {
   try {
-    const user = await prisma.user.findUnique({
-      where: {
-        email_role: {
-          email,
-          role,
-        },
-      },
-    });
-    return user !== null && !user.deletedAt;
+    const user = await prisma.user.findUnique({ where: { email } });
+    return user !== null && !user.deletedAt && user.role === role;
   } catch (error) {
     console.error("Error in userExists:", error);
     return false;
@@ -128,8 +97,13 @@ export async function isEmailRegisteredWithAnyRole(
   email: string,
 ): Promise<boolean> {
   try {
+    // Normalize email to lowercase for consistent checking
+    const normalizedEmail = email.toLowerCase().trim();
     const user = await prisma.user.findFirst({
-      where: { email, deletedAt: null },
+      where: {
+        email: { equals: normalizedEmail, mode: "insensitive" },
+        deletedAt: null,
+      },
     });
     return user !== null;
   } catch (error) {

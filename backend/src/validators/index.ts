@@ -26,7 +26,7 @@ export const productSchema = Joi.object({
   media: Joi.array()
     .items(
       Joi.object({
-        url: Joi.string().uri().required(),
+        url: Joi.string().uri({ allowRelative: true }).required(),
         type: Joi.string().valid("image", "video").required(),
         isPrimary: Joi.boolean().optional(),
       }),

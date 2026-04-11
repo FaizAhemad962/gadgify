@@ -558,7 +558,7 @@ const CheckoutPage = () => {
                           sx={{ color: "text.secondary" }}
                         >
                           Qty: {item.quantity} × ₹
-                          {item.product.price.toLocaleString()}
+                          {item.product?.price?.toLocaleString()}
                         </Typography>
                       </Box>
                       <Typography

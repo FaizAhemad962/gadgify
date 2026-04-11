@@ -24,6 +24,10 @@ import categoryRoutes from "./routes/categoryRoutes";
 import addressRoutes from "./routes/addressRoutes";
 import roleChangeRoutes from "./routes/roleChangeRoutes";
 import multiAccountRoutes from "./routes/multiAccountRoutes";
+import deliveryRoutes from "./routes/deliveryRoutes";
+import faqRoutes from "./routes/faqRoutes";
+import flashSaleRoutes from "./routes/flashSaleRoutes";
+import newsletterRoutes from "./routes/newsletterRoutes";
 
 const app: Application = express();
 
@@ -142,6 +146,10 @@ app.use("/api/categories", categoryRoutes);
 app.use("/api/addresses", addressRoutes);
 app.use("/api/role-change", roleChangeRoutes);
 app.use("/api/accounts", multiAccountRoutes);
+app.use("/api/delivery", deliveryRoutes);
+app.use("/api/faqs", faqRoutes);
+app.use("/api/flash-sales", flashSaleRoutes);
+app.use("/api/newsletters", newsletterRoutes);
 
 // 404 handler
 app.use((req: Request, res: Response) => {

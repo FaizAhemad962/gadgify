@@ -33,7 +33,7 @@ const asyncHandler = (
 router.post(
   "/admin/assign",
   authenticate,
-  authorize("ADMIN"),
+  authorize("ADMIN", "SUPER_ADMIN"),
   validateDelivery(delivery.validateAssignDelivery),
   asyncHandler(adminController.assignDeliveryToStaff),
 );
@@ -45,7 +45,7 @@ router.post(
 router.post(
   "/admin/batch-assign",
   authenticate,
-  authorize("ADMIN"),
+  authorize("ADMIN", "SUPER_ADMIN"),
   validateDelivery(delivery.validateBatchAssignDelivery),
   asyncHandler(adminController.batchAssignDeliveries),
 );
@@ -57,7 +57,7 @@ router.post(
 router.post(
   "/admin/reassign",
   authenticate,
-  authorize("ADMIN"),
+  authorize("ADMIN", "SUPER_ADMIN"),
   validateDelivery(delivery.validateReassignDelivery),
   asyncHandler(adminController.reassignDelivery),
 );
@@ -69,7 +69,7 @@ router.post(
 router.get(
   "/admin/assignments",
   authenticate,
-  authorize("ADMIN"),
+  authorize("ADMIN", "SUPER_ADMIN"),
   validateDelivery(delivery.validateListAssignments, "query"),
   asyncHandler(adminController.listAssignments),
 );
@@ -81,7 +81,7 @@ router.get(
 router.get(
   "/admin/assignments/:id",
   authenticate,
-  authorize("ADMIN"),
+  authorize("ADMIN", "SUPER_ADMIN"),
   asyncHandler(adminController.getAssignmentDetails),
 );
 
@@ -266,7 +266,7 @@ router.post(
 router.get(
   "/admin/analytics/overview",
   authenticate,
-  authorize("ADMIN"),
+  authorize("ADMIN", "SUPER_ADMIN"),
   validateDelivery(delivery.validateAnalyticsQuery, "query"),
   asyncHandler(analyticsController.getDeliveryOverview),
 );
@@ -278,7 +278,7 @@ router.get(
 router.get(
   "/admin/analytics/by-staff",
   authenticate,
-  authorize("ADMIN"),
+  authorize("ADMIN", "SUPER_ADMIN"),
   validateDelivery(delivery.validateAnalyticsQuery, "query"),
   asyncHandler(analyticsController.getStaffPerformance),
 );
@@ -290,7 +290,7 @@ router.get(
 router.get(
   "/admin/analytics/heatmap",
   authenticate,
-  authorize("ADMIN"),
+  authorize("ADMIN", "SUPER_ADMIN"),
   validateDelivery(delivery.validateHeatmapQuery, "query"),
   asyncHandler(analyticsController.getDeliveryHeatmap),
 );
@@ -302,7 +302,7 @@ router.get(
 router.get(
   "/admin/analytics/reports",
   authenticate,
-  authorize("ADMIN"),
+  authorize("ADMIN", "SUPER_ADMIN"),
   validateDelivery(delivery.validateReportQuery, "query"),
   asyncHandler(analyticsController.generateDeliveryReport),
 );

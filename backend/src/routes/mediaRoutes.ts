@@ -8,7 +8,7 @@ console.log("HERE IN MEDIA ROUTES");
 router.delete(
   "/",
   authenticate,
-  authorize("ADMIN"),
+  authorize("ADMIN", "SUPER_ADMIN"),
   deleteMediaByUrlAndProductId,
 );
 

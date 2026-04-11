@@ -58,27 +58,27 @@ const asyncHandler = (fn) => {
  * POST /api/delivery/admin/assign
  * Manually assign a delivery order to a staff member
  */
-router.post("/admin/assign", auth_1.authenticate, (0, auth_1.authorize)("ADMIN"), (0, deliveryValidator_1.validateDelivery)(delivery.validateAssignDelivery), asyncHandler(adminController.assignDeliveryToStaff));
+router.post("/admin/assign", auth_1.authenticate, (0, auth_1.authorize)("ADMIN", "SUPER_ADMIN"), (0, deliveryValidator_1.validateDelivery)(delivery.validateAssignDelivery), asyncHandler(adminController.assignDeliveryToStaff));
 /**
  * POST /api/delivery/admin/batch-assign
  * Bulk assign multiple delivery orders
  */
-router.post("/admin/batch-assign", auth_1.authenticate, (0, auth_1.authorize)("ADMIN"), (0, deliveryValidator_1.validateDelivery)(delivery.validateBatchAssignDelivery), asyncHandler(adminController.batchAssignDeliveries));
+router.post("/admin/batch-assign", auth_1.authenticate, (0, auth_1.authorize)("ADMIN", "SUPER_ADMIN"), (0, deliveryValidator_1.validateDelivery)(delivery.validateBatchAssignDelivery), asyncHandler(adminController.batchAssignDeliveries));
 /**
  * POST /api/delivery/admin/reassign
  * Reassign a delivery to a different staff member
  */
-router.post("/admin/reassign", auth_1.authenticate, (0, auth_1.authorize)("ADMIN"), (0, deliveryValidator_1.validateDelivery)(delivery.validateReassignDelivery), asyncHandler(adminController.reassignDelivery));
+router.post("/admin/reassign", auth_1.authenticate, (0, auth_1.authorize)("ADMIN", "SUPER_ADMIN"), (0, deliveryValidator_1.validateDelivery)(delivery.validateReassignDelivery), asyncHandler(adminController.reassignDelivery));
 /**
  * GET /api/delivery/admin/assignments
  * List delivery assignments with filters
  */
-router.get("/admin/assignments", auth_1.authenticate, (0, auth_1.authorize)("ADMIN"), (0, deliveryValidator_1.validateDelivery)(delivery.validateListAssignments, "query"), asyncHandler(adminController.listAssignments));
+router.get("/admin/assignments", auth_1.authenticate, (0, auth_1.authorize)("ADMIN", "SUPER_ADMIN"), (0, deliveryValidator_1.validateDelivery)(delivery.validateListAssignments, "query"), asyncHandler(adminController.listAssignments));
 /**
  * GET /api/delivery/admin/assignments/:id
  * Get detailed assignment information
  */
-router.get("/admin/assignments/:id", auth_1.authenticate, (0, auth_1.authorize)("ADMIN"), asyncHandler(adminController.getAssignmentDetails));
+router.get("/admin/assignments/:id", auth_1.authenticate, (0, auth_1.authorize)("ADMIN", "SUPER_ADMIN"), asyncHandler(adminController.getAssignmentDetails));
 // ============================================================================
 // DELIVERY STAFF ROUTES (PROTECTED - STAFF ROLE)
 // ============================================================================
@@ -162,20 +162,20 @@ router.post("/orders/:orderId/rate", auth_1.authenticate, (0, deliveryValidator_
  * GET /api/delivery/admin/analytics/overview
  * Get comprehensive delivery analytics
  */
-router.get("/admin/analytics/overview", auth_1.authenticate, (0, auth_1.authorize)("ADMIN"), (0, deliveryValidator_1.validateDelivery)(delivery.validateAnalyticsQuery, "query"), asyncHandler(analyticsController.getDeliveryOverview));
+router.get("/admin/analytics/overview", auth_1.authenticate, (0, auth_1.authorize)("ADMIN", "SUPER_ADMIN"), (0, deliveryValidator_1.validateDelivery)(delivery.validateAnalyticsQuery, "query"), asyncHandler(analyticsController.getDeliveryOverview));
 /**
  * GET /api/delivery/admin/analytics/by-staff
  * Get staff performance analytics
  */
-router.get("/admin/analytics/by-staff", auth_1.authenticate, (0, auth_1.authorize)("ADMIN"), (0, deliveryValidator_1.validateDelivery)(delivery.validateAnalyticsQuery, "query"), asyncHandler(analyticsController.getStaffPerformance));
+router.get("/admin/analytics/by-staff", auth_1.authenticate, (0, auth_1.authorize)("ADMIN", "SUPER_ADMIN"), (0, deliveryValidator_1.validateDelivery)(delivery.validateAnalyticsQuery, "query"), asyncHandler(analyticsController.getStaffPerformance));
 /**
  * GET /api/delivery/admin/analytics/heatmap
  * Get delivery density heatmap
  */
-router.get("/admin/analytics/heatmap", auth_1.authenticate, (0, auth_1.authorize)("ADMIN"), (0, deliveryValidator_1.validateDelivery)(delivery.validateHeatmapQuery, "query"), asyncHandler(analyticsController.getDeliveryHeatmap));
+router.get("/admin/analytics/heatmap", auth_1.authenticate, (0, auth_1.authorize)("ADMIN", "SUPER_ADMIN"), (0, deliveryValidator_1.validateDelivery)(delivery.validateHeatmapQuery, "query"), asyncHandler(analyticsController.getDeliveryHeatmap));
 /**
  * GET /api/delivery/admin/analytics/reports
  * Generate delivery reports
  */
-router.get("/admin/analytics/reports", auth_1.authenticate, (0, auth_1.authorize)("ADMIN"), (0, deliveryValidator_1.validateDelivery)(delivery.validateReportQuery, "query"), asyncHandler(analyticsController.generateDeliveryReport));
+router.get("/admin/analytics/reports", auth_1.authenticate, (0, auth_1.authorize)("ADMIN", "SUPER_ADMIN"), (0, deliveryValidator_1.validateDelivery)(delivery.validateReportQuery, "query"), asyncHandler(analyticsController.generateDeliveryReport));
 exports.default = router;

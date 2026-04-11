@@ -28,12 +28,23 @@ import {
 } from "@mui/icons-material";
 import { useAuth } from "@/context/AuthContext";
 import { productsApi } from "@/api/products";
+import { useNewsletterSubscribe } from "@/hooks/useNewsletter";
 import ProductCard from "@/components/ProductCard";
 import RecentlyViewed from "@/components/products/RecentlyViewed";
+import { LazySection } from "@/components/LazySection";
 import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
 import { tokens } from "@/theme/theme";
 import { CATEGORY_ICONS, CATEGORY_COLORS } from "@/constants/categories";
+import {
+  FlashSale,
+  BestSellers,
+  FeaturedBrands,
+  FAQ,
+  HowItWorks,
+  PaymentSecurity,
+  CustomerHighlights,
+} from "@/components/sections";
 
 // Fake testimonials (static — replace with real API data when available)
 const TESTIMONIALS = [
@@ -67,7 +78,9 @@ const HomePage = () => {
   const { addToCart } = useCart();
   const { isInWishlist, toggleWishlist, isToggling } = useWishlist();
 
-  // Newsletter state
+  // Newsletter subscription
+  const { subscribe, isPending, error, message, clearError, clearMessage } =
+    useNewsletterSubscribe();
   const [email, setEmail] = useState("");
   const [subscribed, setSubscribed] = useState(false);
 
@@ -142,10 +155,17 @@ const HomePage = () => {
     navigate("/checkout");
   };
 
-  const handleSubscribe = () => {
-    if (email) {
+  const handleSubscribe = async () => {
+    if (!email.trim()) return;
+
+    try {
+      clearError();
+      clearMessage();
+      await subscribe(email);
       setSubscribed(true);
       setEmail("");
+    } catch {
+      // Error is handled by the hook
     }
   };
 
@@ -454,6 +474,11 @@ const HomePage = () => {
         )}
       </Container>
 
+      {/* ───── FLASH SALE ───── */}
+      <LazySection>
+        <FlashSale />
+      </LazySection>
+
       {/* ───── 3. DEAL OF THE DAY ───── */}
       {dealProduct && (
         <Box sx={{ bgcolor: tokens.white, py: 8 }}>
@@ -651,7 +676,11 @@ const HomePage = () => {
           <Box
             sx={{
               display: "grid",
-              gridTemplateColumns: { xs: "1fr", md: "repeat(4, 1fr)" },
+              gridTemplateColumns: {
+                xs: "1fr",
+                sm: "repeat(2, 1fr)",
+                md: "repeat(4, 1fr)",
+              },
               gap: 3,
             }}
           >
@@ -671,6 +700,11 @@ const HomePage = () => {
           </Box>
         )}
       </Container>
+
+      {/* ───── BEST SELLERS ───── */}
+      <LazySection>
+        <BestSellers />
+      </LazySection>
 
       {/* ───── Features Section ───── */}
       <Box sx={{ bgcolor: tokens.white, py: 8 }}>
@@ -768,9 +802,16 @@ const HomePage = () => {
         </Container>
       </Box>
 
+      {/* ───── FEATURED BRANDS ───── */}
+      <LazySection>
+        <FeaturedBrands />
+      </LazySection>
+
       {/* ───── Recently Viewed Products ───── */}
       <Container maxWidth="lg" sx={{ py: 4 }}>
-        <RecentlyViewed />
+        <LazySection>
+          <RecentlyViewed />
+        </LazySection>
       </Container>
 
       {/* ───── 5. CUSTOMER TESTIMONIALS ───── */}
@@ -847,6 +888,21 @@ const HomePage = () => {
         </Box>
       </Container>
 
+      {/* ───── CUSTOMER HIGHLIGHTS (Real Reviews from Ratings) ───── */}
+      {/* <LazySection>
+        <CustomerHighlights />
+      </LazySection> */}
+
+      {/* ───── HOW IT WORKS ───── */}
+      {/* <LazySection>
+        <HowItWorks />
+      </LazySection> */}
+
+      {/* ───── PAYMENT SECURITY ───── */}
+      {/* <LazySection>
+        <PaymentSecurity />
+      </LazySection> */}
+
       {/* ───── Satisfaction Guarantee ───── */}
       <Box sx={{ bgcolor: tokens.white, py: 6 }}>
         <Container maxWidth="sm" sx={{ textAlign: "center" }}>
@@ -868,6 +924,11 @@ const HomePage = () => {
         </Container>
       </Box>
 
+      {/* ───── FAQ ───── */}
+      {/* <LazySection>
+          <FAQ />
+        </LazySection> */}
+
       {/* ───── 6. NEWSLETTER SIGNUP ───── */}
       <Box
         sx={{
@@ -884,49 +945,71 @@ const HomePage = () => {
           <Typography variant="body1" sx={{ opacity: 0.85, mb: 4 }}>
             {t("common.newsletterDesc")}
           </Typography>
-          {subscribed ? (
-            <Typography
-              variant="h6"
-              sx={{ color: tokens.accentLight, fontWeight: 700 }}
-            >
-              ✅ {t("common.subscribed")}
-            </Typography>
+
+          {subscribed && message ? (
+            <Box>
+              <Typography
+                variant="h6"
+                sx={{ color: tokens.accentLight, fontWeight: 700, mb: 2 }}
+              >
+                ✅ {message}
+              </Typography>
+            </Box>
           ) : (
-            <Box sx={{ display: "flex", gap: 1, maxWidth: 440, mx: "auto" }}>
-              <TextField
-                size="small"
-                fullWidth
-                placeholder={t("common.emailPlaceholderShort")}
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <Email sx={{ color: tokens.gray400 }} />
-                    </InputAdornment>
-                  ),
-                }}
+            <Box>
+              <Box
                 sx={{
-                  bgcolor: "white",
-                  borderRadius: 2,
-                  "& .MuiOutlinedInput-root": { borderRadius: 2 },
-                }}
-              />
-              <Button
-                variant="contained"
-                onClick={handleSubscribe}
-                sx={{
-                  bgcolor: tokens.accent,
-                  textTransform: "none",
-                  fontWeight: 700,
-                  px: 3,
-                  borderRadius: 2,
-                  whiteSpace: "nowrap",
-                  "&:hover": { bgcolor: tokens.accentDark },
+                  display: "flex",
+                  gap: 1,
+                  maxWidth: 440,
+                  mx: "auto",
+                  mb: 2,
                 }}
               >
-                {t("common.subscribe")}
-              </Button>
+                <TextField
+                  size="small"
+                  fullWidth
+                  placeholder={t("common.emailPlaceholderShort")}
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  disabled={isPending}
+                  error={!!error}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <Email sx={{ color: tokens.gray400 }} />
+                      </InputAdornment>
+                    ),
+                  }}
+                  sx={{
+                    bgcolor: "white",
+                    borderRadius: 2,
+                    "& .MuiOutlinedInput-root": { borderRadius: 2 },
+                  }}
+                />
+                <Button
+                  variant="contained"
+                  onClick={handleSubscribe}
+                  disabled={isPending || !email.trim()}
+                  sx={{
+                    bgcolor: tokens.accent,
+                    textTransform: "none",
+                    fontWeight: 700,
+                    px: 3,
+                    borderRadius: 2,
+                    whiteSpace: "nowrap",
+                    "&:hover": { bgcolor: tokens.accentDark },
+                    "&:disabled": { opacity: 0.6 },
+                  }}
+                >
+                  {isPending ? t("common.loading") : t("common.subscribe")}
+                </Button>
+              </Box>
+              {error && (
+                <Typography variant="body2" sx={{ color: tokens.error, mb: 2 }}>
+                  {error}
+                </Typography>
+              )}
             </Box>
           )}
         </Container>

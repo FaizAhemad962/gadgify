@@ -2,7 +2,7 @@ import { Response, NextFunction } from "express";
 import prisma from "../config/database";
 import { AuthRequest } from "../middlewares/auth";
 import { hashPassword } from "../utils/auth";
-import { userExists } from "../utils/userQueryHelper";
+import { isEmailRegisteredWithAnyRole } from "../utils/userQueryHelper";
 
 export const getAllUsers = async (
   _req: AuthRequest,
@@ -142,12 +142,12 @@ export const createUser = async (
       }
     }
 
-    // Check if user already exists with this email and role
-    const userAlreadyExists = await userExists(email, role);
+    // Single-account mode: one email can map to only one account
+    const userAlreadyExists = await isEmailRegisteredWithAnyRole(email);
     if (userAlreadyExists) {
       res.status(400).json({
         success: false,
-        message: `Email already registered as a ${role} account`,
+        message: "Email already registered",
       });
       return;
     }

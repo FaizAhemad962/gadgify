@@ -4,6 +4,7 @@ import Navbar from "./Navbar";
 import Footer from "./Footer";
 import PageContainer from "./PageContainer";
 import CompareBar from "../common/CompareBar";
+import ScrollToTopButton from "../ScrollToTopButton";
 import { useAuth } from "../../context/AuthContext";
 
 const Layout = () => {
@@ -61,6 +62,9 @@ const Layout = () => {
 
       {/* CompareBar - shown for all authenticated users */}
       {isAuthenticated && <CompareBar />}
+
+      {/* Scroll to top button - shown on all pages */}
+      <ScrollToTopButton />
 
       {/* Footer - shared across all roles */}
       <Footer />

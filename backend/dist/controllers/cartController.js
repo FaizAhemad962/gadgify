@@ -11,7 +11,11 @@ const getCart = async (req, res, next) => {
             where: { userId: req.user.id },
             include: {
                 items: {
-                    include: { product: true },
+                    include: {
+                        product: {
+                            include: { media: true },
+                        },
+                    },
                 },
             },
         });
@@ -21,7 +25,11 @@ const getCart = async (req, res, next) => {
                 data: { userId: req.user.id },
                 include: {
                     items: {
-                        include: { product: true },
+                        include: {
+                            product: {
+                                include: { media: true },
+                            },
+                        },
                     },
                 },
             });
@@ -38,13 +46,15 @@ const addToCart = async (req, res, next) => {
         const { productId, quantity } = req.body;
         const userId = req.user.id;
         // Check if product exists and has stock
-        const product = await database_1.default.product.findFirst({ where: { id: productId, deletedAt: null } });
+        const product = await database_1.default.product.findFirst({
+            where: { id: productId, deletedAt: null },
+        });
         if (!product) {
-            res.status(404).json({ message: 'Product not found' });
+            res.status(404).json({ message: "Product not found" });
             return;
         }
         if (product.stock < quantity) {
-            res.status(400).json({ message: 'Insufficient stock' });
+            res.status(400).json({ message: "Insufficient stock" });
             return;
         }
         // Use transaction to handle concurrent add-to-cart requests safely
@@ -75,14 +85,18 @@ const addToCart = async (req, res, next) => {
             });
             // Verify stock after potential quantity increase
             if (cartItem.quantity > product.stock) {
-                throw new Error('Insufficient stock');
+                throw new Error("Insufficient stock");
             }
             // Return updated cart
             return await tx.cart.findUnique({
                 where: { id: cart.id },
                 include: {
                     items: {
-                        include: { product: true },
+                        include: {
+                            product: {
+                                include: { media: true },
+                            },
+                        },
                     },
                 },
             });
@@ -103,11 +117,11 @@ const updateCartItem = async (req, res, next) => {
             include: { cart: true, product: true },
         });
         if (!cartItem || cartItem.cart.userId !== req.user.id) {
-            res.status(404).json({ message: 'Cart item not found' });
+            res.status(404).json({ message: "Cart item not found" });
             return;
         }
         if (cartItem.product.stock < quantity) {
-            res.status(400).json({ message: 'Insufficient stock' });
+            res.status(400).json({ message: "Insufficient stock" });
             return;
         }
         await database_1.default.cartItem.update({
@@ -137,7 +151,7 @@ const removeFromCart = async (req, res, next) => {
             include: { cart: true },
         });
         if (!cartItem || cartItem.cart.userId !== req.user.id) {
-            res.status(404).json({ message: 'Cart item not found' });
+            res.status(404).json({ message: "Cart item not found" });
             return;
         }
         await database_1.default.cartItem.delete({ where: { id: itemId } });

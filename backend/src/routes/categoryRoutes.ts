@@ -16,23 +16,33 @@ const router = Router();
 router.get("/", getCategories);
 
 // Admin: get all categories (including inactive)
-router.get("/all", authenticate, authorize("ADMIN"), getAllCategories);
+router.get(
+  "/all",
+  authenticate,
+  authorize("ADMIN", "SUPER_ADMIN"),
+  getAllCategories,
+);
 
 // Admin: CRUD
 router.post(
   "/",
   authenticate,
-  authorize("ADMIN"),
+  authorize("ADMIN", "SUPER_ADMIN"),
   validate(createCategorySchema),
   createCategory,
 );
 router.put(
   "/:id",
   authenticate,
-  authorize("ADMIN"),
+  authorize("ADMIN", "SUPER_ADMIN"),
   validate(updateCategorySchema),
   updateCategory,
 );
-router.delete("/:id", authenticate, authorize("ADMIN"), deleteCategory);
+router.delete(
+  "/:id",
+  authenticate,
+  authorize("ADMIN", "SUPER_ADMIN"),
+  deleteCategory,
+);
 
 export default router;

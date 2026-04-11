@@ -306,3 +306,39 @@ export const sendLowStockAlertEmail = async (
   `),
   );
 };
+
+// ── Newsletter Subscription ───────────────────────────────────────
+export const sendNewsletterWelcomeEmail = async (to: string): Promise<void> => {
+  const unsubscribeUrl = `${config.frontendUrl}/newsletters/unsubscribe?email=${encodeURIComponent(to)}`;
+
+  await sendEmail(
+    to,
+    "Welcome to Gadgify Newsletter! 📰",
+    emailLayout(`
+    <h2 style="color: #1B2A4A; font-size: 20px; margin-bottom: 12px;">You're In! 🎉</h2>
+    <p style="color: #57534e; font-size: 14px; line-height: 1.6;">
+      Thank you for subscribing to the Gadgify newsletter. Get ready to receive exclusive deals, new arrivals, and tech tips straight to your inbox!
+    </p>
+    <div style="background: #f5f5f4; border-left: 4px solid ${brandColor}; padding: 16px; margin: 20px 0; border-radius: 4px;">
+      <p style="color: #1B2A4A; font-size: 14px; font-weight: 700; margin: 0 0 8px;">What to expect:</p>
+      <ul style="color: #57534e; font-size: 13px; margin: 0; padding-left: 20px; line-height: 1.8;">
+        <li>Exclusive deals and discounts available only to subscribers</li>
+        <li>Early access to new product launches</li>
+        <li>Technology tips and product recommendations</li>
+        <li>Special festival and seasonal offers</li>
+      </ul>
+    </div>
+    <p style="color: #57534e; font-size: 14px; line-height: 1.6; margin-bottom: 20px;">
+      We respect your inbox and will only send you relevant content. You can unsubscribe anytime.
+    </p>
+    <div style="text-align: center; margin: 28px 0;">
+      <a href="${config.frontendUrl}/products" style="background: ${brandColor}; color: #ffffff; text-decoration: none; padding: 12px 32px; border-radius: 8px; font-weight: 700; font-size: 14px; display: inline-block;">
+        Start Shopping
+      </a>
+    </div>
+    <p style="color: #a8a29e; font-size: 11px; line-height: 1.5; text-align: center; margin-top: 24px;">
+      <a href="${unsubscribeUrl}" style="color: #888; text-decoration: none;">Unsubscribe from newsletter</a>
+    </p>
+  `),
+  );
+};

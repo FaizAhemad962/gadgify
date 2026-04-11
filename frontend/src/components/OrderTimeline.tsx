@@ -38,7 +38,8 @@ const OrderTimeline = ({ status, createdAt }: OrderTimelineProps) => {
   const getStepState = (index: number) => {
     if (isCancelled) return index === 0 ? "completed" : "cancelled";
     if (index < currentIndex) return "completed";
-    if (index === currentIndex) return "current";
+    if (index === currentIndex && currentIndex < STEPS.length - 1) return "current";
+    if (index === currentIndex && currentIndex === STEPS.length - 1) return "completed"; // DELIVERED status is final
     return "upcoming";
   };
 

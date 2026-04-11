@@ -8,7 +8,6 @@ import { WishlistProvider } from "./context/WishlistContext";
 import { SearchProvider } from "./context/SearchContext";
 import { CompareProvider } from "./context/CompareContext";
 import AppRoutes from "./routes/AppRoutes";
-import ScrollToTop from "./components/ScrollToTop";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -25,7 +24,6 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <ThemeContextProvider>
         <BrowserRouter>
-          <ScrollToTop />
           <AuthProvider>
             <CartProvider>
               <CouponProvider>

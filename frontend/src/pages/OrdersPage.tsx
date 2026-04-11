@@ -41,9 +41,13 @@ const OrdersPage = () => {
     data: orders,
     isLoading,
     error,
+    refetch,
   } = useQuery({
     queryKey: ["orders"],
     queryFn: ordersApi.getAll,
+    staleTime: 0, // Always refetch on mount
+    refetchOnWindowFocus: true, // Refetch when user switches back to tab
+    refetchInterval: 5000, // Poll every 5 seconds for real-time updates
   });
 
   const getStatusColor = (status: string) => {

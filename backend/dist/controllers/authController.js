@@ -53,6 +53,8 @@ const clearFailedLoginAttempts = (email) => {
 const signup = async (req, res, next) => {
     try {
         const { email, password, name, phone, state, city, address, pincode } = req.body;
+        // Normalize email to lowercase
+        const normalizedEmail = email.toLowerCase().trim();
         // SECURITY: Validate password strength
         const passwordValidation = (0, securityValidator_1.validatePasswordStrength)(password);
         if (!passwordValidation.valid) {
@@ -62,46 +64,57 @@ const signup = async (req, res, next) => {
             });
             return;
         }
-        // Check if user exists with email + USER role
-        const existingUser = await (0, userQueryHelper_1.findUserByEmail)(email, "USER");
-        if (existingUser && existingUser.role === "USER") {
-            res
-                .status(400)
-                .json({ message: "Email already registered as a user account" });
+        // Single-account mode: one email can have only one account
+        const emailAlreadyRegistered = await (0, userQueryHelper_1.isEmailRegisteredWithAnyRole)(normalizedEmail);
+        if (emailAlreadyRegistered) {
+            res.status(400).json({ message: "Email already registered" });
             return;
         }
         // Hash password (bcrypt with proper salt rounds)
         const hashedPassword = await (0, auth_1.hashPassword)(password);
-        // Create user
-        const user = await database_1.default.user.create({
-            data: {
-                email,
-                password: hashedPassword,
-                name,
-                phone,
-                state,
-                city,
-                address,
-                pincode,
-            },
-            select: {
-                id: true,
-                email: true,
-                name: true,
-                phone: true,
-                role: true,
-                state: true,
-                city: true,
-                address: true,
-                pincode: true,
-                profilePhoto: true,
-                createdAt: true,
-            },
-        });
+        // Create user with proper error handling
+        let user;
+        try {
+            user = await database_1.default.user.create({
+                data: {
+                    email: normalizedEmail,
+                    password: hashedPassword,
+                    name,
+                    phone,
+                    state,
+                    city,
+                    address,
+                    pincode,
+                },
+                select: {
+                    id: true,
+                    email: true,
+                    name: true,
+                    phone: true,
+                    role: true,
+                    state: true,
+                    city: true,
+                    address: true,
+                    pincode: true,
+                    profilePhoto: true,
+                    createdAt: true,
+                },
+            });
+        }
+        catch (createError) {
+            // Handle unique constraint violations that might slip through
+            if (createError.code === "P2002" ||
+                createError.message.includes("Unique constraint failed")) {
+                logger_1.default.warn(`Signup failed: Email already exists: ${normalizedEmail}`);
+                res.status(400).json({ message: "Email already registered" });
+                return;
+            }
+            throw createError;
+        }
         // Log signup event
-        logger_1.default.info(`User signup: ${email}`);
+        logger_1.default.info(`User signup: ${normalizedEmail}`);
         // Send welcome email (non-blocking)
-        (0, email_1.sendWelcomeEmail)(email, name).catch((err) => logger_1.default.error(`Welcome email failed for ${email}: ${err.message}`));
+        (0, email_1.sendWelcomeEmail)(normalizedEmail, name).catch((err) => logger_1.default.error(`Welcome email failed for ${normalizedEmail}: ${err.message}`));
         // Generate token
         const token = (0, auth_1.generateToken)({
             id: user.id,
@@ -111,27 +124,30 @@ const signup = async (req, res, next) => {
         res.status(201).json({ token, user });
     }
     catch (error) {
+        logger_1.default.error(`Signup error: ${error instanceof Error ? error.message : String(error)}`);
         next(error);
     }
 };
 exports.signup = signup;
 const login = async (req, res, next) => {
     try {
-        const { email, password, role } = req.body;
+        const { email, password } = req.body;
+        // Normalize email to lowercase
+        const normalizedEmail = email.toLowerCase().trim();
         // SECURITY: Check if account is locked
-        if (isAccountLocked(email)) {
-            logger_1.default.warn(`Login attempt on locked account: ${email}`);
+        if (isAccountLocked(normalizedEmail)) {
+            logger_1.default.warn(`Login attempt on locked account: ${normalizedEmail}`);
             res.status(429).json({
                 message: "Too many failed login attempts. Please try again later.",
             });
             return;
         }
-        // Find user - if role provided, use it; otherwise default to USER
-        const user = await (0, userQueryHelper_1.findUserByEmail)(email, role || "USER");
+        // Single-account mode: login by email only
+        const user = await (0, userQueryHelper_1.findUserByEmail)(normalizedEmail);
         if (!user) {
             // SECURITY: Don't reveal if email exists; log internally for debugging
-            logger_1.default.warn(`Login failed: user not found for ${email}`);
-            recordFailedLoginAttempt(email);
+            logger_1.default.warn(`Login failed: user not found for ${normalizedEmail}`);
+            recordFailedLoginAttempt(normalizedEmail);
             res.status(401).json({ message: "Invalid credentials" });
             return;
         }
@@ -139,15 +155,15 @@ const login = async (req, res, next) => {
         const isValidPassword = await (0, auth_1.comparePassword)(password, user.password);
         if (!isValidPassword) {
             // SECURITY: Track failed attempt; log internally for debugging
-            logger_1.default.warn(`Login failed: bad password for ${email}`);
-            recordFailedLoginAttempt(email);
+            logger_1.default.warn(`Login failed: bad password for ${normalizedEmail}`);
+            recordFailedLoginAttempt(normalizedEmail);
             res.status(401).json({ message: "Invalid credentials" });
             return;
         }
         // SECURITY: Clear failed attempts on successful login
-        clearFailedLoginAttempts(email);
+        clearFailedLoginAttempts(normalizedEmail);
         // Log login event
-        logger_1.default.info(`User login: ${email}`);
+        logger_1.default.info(`User login: ${normalizedEmail}`);
         // Generate token
         const token = (0, auth_1.generateToken)({
             id: user.id,

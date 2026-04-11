@@ -234,13 +234,14 @@ Toggle via `ThemeContext` — uses CSS custom properties in `index.css` + MUI `c
 
 ### Customer
 
-- Product browsing with category filters, search, and price sorting
+- Product browsing with category filters, search, and price sorting (infinite scroll with proper pagination)
 - Responsive product cards with image carousels
 - Product detail with image gallery, hover zoom, video support, ratings
 - Shopping cart with quantity management
 - Wishlist
 - Checkout with Stripe or Razorpay payment
-- Order history and order detail tracking
+- Order history and order detail tracking with payment status
+- **Retry payment on pending orders** — Complete failed payments without reordering
 - User profile with password change
 - Forgot password / reset password via email
 - GST-compliant pricing (base price + GST %)
@@ -593,9 +594,9 @@ router.post(
 
 ### ✅ What's Working Well
 
-- Product catalog & browsing
+- Product catalog & browsing with proper pagination (fixed April 2026)
 - Shopping cart & order placement
-- Payment integration (Stripe + Razorpay)
+- Payment integration (Stripe + Razorpay) with retry payment feature
 - User authentication & profile
 - Admin product/category management
 - Order status tracking
@@ -706,6 +707,12 @@ Implement MVP + all "Should Have" features
 ---
 
 ## Recently Implemented Features (2025–2026)
+
+### April 2026
+
+- [x] **Fixed Products Pagination Bug** — Products page was showing only 2 items when scrolling (infinite scroll). Root cause: rating filter applied AFTER pagination. Fixed by fetching all products first, applying filters in memory, then paginating. Now correctly returns 12 items per page with infinite scroll accumulation
+- [x] **Retry Payment Feature** — Users can now retry payment on orders with `PENDING` payment status. Added `/api/orders/:id/retry-payment` POST endpoint, frontend retry button, Razorpay modal integration, and payment pending alert. Includes i18n translations (EN, HI, MR)
+- [x] **Payment Pending Alert** — Added warning alert in OrderDetailPage showing "Payment is pending. Please complete the payment to confirm your order" with Retry Payment button
 
 ### March 2026
 

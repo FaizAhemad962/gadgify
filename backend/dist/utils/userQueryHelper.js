@@ -17,23 +17,16 @@ const database_1 = __importDefault(require("../config/database"));
  */
 async function findUserByEmail(email, defaultRole = "USER") {
     try {
-        // Try to find the specific role first
+        // Normalize email to lowercase for case-insensitive search
+        const normalizedEmail = email.toLowerCase().trim();
         const user = await database_1.default.user.findUnique({
-            where: {
-                email_role: {
-                    email,
-                    role: defaultRole,
-                },
-            },
+            where: { email: normalizedEmail },
         });
-        if (user)
+        if (!user || user.deletedAt)
+            return null;
+        if (defaultRole && user.role !== defaultRole)
             return user;
-        // If not found with default role, find any account with this email
-        const anyUser = await database_1.default.user.findFirst({
-            where: { email },
-            orderBy: { createdAt: "asc" }, // Return oldest account
-        });
-        return anyUser;
+        return user;
     }
     catch (error) {
         console.error("Error in findUserByEmail:", error);
@@ -46,24 +39,12 @@ async function findUserByEmail(email, defaultRole = "USER") {
  */
 async function findUserByEmailWithMultipleCheck(email, defaultRole = "USER") {
     try {
-        // Find the default role account
-        const user = await database_1.default.user.findUnique({
-            where: {
-                email_role: {
-                    email,
-                    role: defaultRole,
-                },
-            },
-        });
-        // Check if there are other accounts with same email
-        const allUsersByEmail = await database_1.default.user.findMany({
-            where: { email },
-            select: { id: true, role: true },
-        });
+        const user = await database_1.default.user.findUnique({ where: { email } });
+        const activeUser = user && !user.deletedAt ? user : null;
         return {
-            user,
-            otherAccounts: allUsersByEmail.filter((u) => u.id !== user?.id),
-            allAccountsCount: allUsersByEmail.length,
+            user: activeUser,
+            otherAccounts: [],
+            allAccountsCount: activeUser ? 1 : 0,
         };
     }
     catch (error) {
@@ -102,15 +83,8 @@ async function findAllAccountsByEmail(email) {
  */
 async function userExists(email, role = "USER") {
     try {
-        const user = await database_1.default.user.findUnique({
-            where: {
-                email_role: {
-                    email,
-                    role,
-                },
-            },
-        });
-        return user !== null && !user.deletedAt;
+        const user = await database_1.default.user.findUnique({ where: { email } });
+        return user !== null && !user.deletedAt && user.role === role;
     }
     catch (error) {
         console.error("Error in userExists:", error);
@@ -122,8 +96,13 @@ async function userExists(email, role = "USER") {
  */
 async function isEmailRegisteredWithAnyRole(email) {
     try {
+        // Normalize email to lowercase for consistent checking
+        const normalizedEmail = email.toLowerCase().trim();
         const user = await database_1.default.user.findFirst({
-            where: { email, deletedAt: null },
+            where: {
+                email: { equals: normalizedEmail, mode: "insensitive" },
+                deletedAt: null,
+            },
         });
         return user !== null;
     }

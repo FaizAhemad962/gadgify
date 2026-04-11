@@ -1,19 +1,43 @@
-import { useEffect } from 'react'
-import { useLocation } from 'react-router-dom'
+import { useEffect } from "react";
+import { useLocation, useNavigationType } from "react-router-dom";
 
 const ScrollToTop = () => {
-  const { pathname } = useLocation()
+  const { pathname } = useLocation();
+  const navigationType = useNavigationType();
 
+  // Helper function to scroll to top
+  const scrollToTopHelper = () => {
+    // Use requestAnimationFrame to ensure DOM is ready
+    requestAnimationFrame(() => {
+      window.scrollTo(0, 0);
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+    });
+
+    // Also add a small timeout as backup
+    setTimeout(() => {
+      window.scrollTo(0, 0);
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+    }, 0);
+  };
+
+  // Scroll on route change
   useEffect(() => {
-    // Scroll to top with smooth behavior
-    window.scrollTo({
-      top: 0,
-      left: 0,
-      behavior: 'smooth',
-    })
-  }, [pathname])
+    scrollToTopHelper();
+  }, [pathname]);
 
-  return null
-}
+  // Scroll on any navigation action (including same route)
+  useEffect(() => {
+    scrollToTopHelper();
+  }, [navigationType]);
 
-export default ScrollToTop
+  // Scroll on initial mount (page refresh)
+  useEffect(() => {
+    scrollToTopHelper();
+  }, []);
+
+  return null;
+};
+
+export default ScrollToTop;

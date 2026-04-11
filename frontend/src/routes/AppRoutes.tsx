@@ -21,6 +21,9 @@ const ForgotPasswordPage = lazy(
   () => import("../pages/auth/ForgotPasswordPage"),
 );
 const ResetPasswordPage = lazy(() => import("../pages/auth/ResetPasswordPage"));
+const NewsletterUnsubscribePage = lazy(
+  () => import("../pages/NewsletterUnsubscribePage"),
+);
 const AdminDashboard = lazy(() => import("../pages/admin/AdminDashboard"));
 const AdminProducts = lazy(() => import("../pages/admin/AdminProducts"));
 const AdminOrders = lazy(() => import("../pages/admin/AdminOrders"));
@@ -93,6 +96,10 @@ const AppRoutes = () => {
         <Route path="/signup" element={<SignupPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
+        <Route
+          path="/newsletters/unsubscribe"
+          element={<NewsletterUnsubscribePage />}
+        />
         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
         <Route path="/terms-conditions" element={<TermsConditions />} />
         <Route path="/refund-policy" element={<RefundPolicy />} />

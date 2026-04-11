@@ -66,7 +66,12 @@ const Navbar = () => {
   const handleLogout = () => {
     logout();
     handleCloseUserMenu();
-    navigate("/login");
+    handleNavClick("/login");
+  };
+
+  const handleNavClick = (to: string) => {
+    window.scrollTo(0, 0);
+    navigate(to);
   };
 
   // Unified navigation items
@@ -182,36 +187,33 @@ const Navbar = () => {
         >
           {/* ── Brand ── */}
           <Box
-            sx={{ display: "flex", alignItems: "center", mr: { xs: 0, md: 3 } }}
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              mr: { xs: 0, md: 3 },
+              cursor: "pointer",
+            }}
+            onClick={() => handleNavClick("/")}
           >
-            <Link
-              to="/"
-              style={{
-                display: "flex",
-                alignItems: "center",
-                textDecoration: "none",
+            <img
+              alt="Gadgify"
+              height={40}
+              width={40}
+              src={BrandIcon}
+              className={styles.navbarImg}
+            />
+            <Typography
+              variant="h6"
+              sx={{
+                fontWeight: 800,
+                fontSize: "1.25rem",
+                color: "#fff",
+                letterSpacing: "-0.02em",
+                display: { xs: "none", sm: "block" },
               }}
             >
-              <img
-                alt="Gadgify"
-                height={40}
-                width={40}
-                src={BrandIcon}
-                className={styles.navbarImg}
-              />
-              <Typography
-                variant="h6"
-                sx={{
-                  fontWeight: 800,
-                  fontSize: "1.25rem",
-                  color: "#fff",
-                  letterSpacing: "-0.02em",
-                  display: { xs: "none", sm: "block" },
-                }}
-              >
-                Gadgify
-              </Typography>
-            </Link>
+              Gadgify
+            </Typography>
           </Box>
 
           {/* ── Search Bar ── */}
@@ -222,7 +224,10 @@ const Navbar = () => {
           {/* ── Mobile menu ── */}
           <Box sx={{ display: { xs: "flex", md: "none" }, ml: "auto" }}>
             <AppDrawer
-              items={navItems}
+              items={navItems.map((item) => ({
+                ...item,
+                onClick: () => handleNavClick(item.to),
+              }))}
               trigger={
                 <IconButton size="small" aria-label="Open navigation menu">
                   <MenuIcon sx={{ fontSize: "1.5rem", color: "white" }} />
@@ -240,7 +245,7 @@ const Navbar = () => {
               .map((item) => (
                 <Button
                   key={item.id}
-                  onClick={() => navigate(item.to)}
+                  onClick={() => handleNavClick(item.to)}
                   aria-label={item.label}
                   startIcon={item.icon}
                   sx={navBtnSx}
@@ -265,7 +270,7 @@ const Navbar = () => {
                   .map((item) => (
                     <Button
                       key={item.id}
-                      onClick={() => navigate(item.to)}
+                      onClick={() => handleNavClick(item.to)}
                       aria-label={item.label}
                       startIcon={item.icon}
                       size="small"
@@ -305,7 +310,7 @@ const Navbar = () => {
                 {/* Wishlist */}
                 <IconButton
                   size="small"
-                  onClick={() => navigate("/wishlist")}
+                  onClick={() => handleNavClick("/wishlist")}
                   color="inherit"
                   aria-label="Wishlist"
                   sx={{
@@ -324,7 +329,7 @@ const Navbar = () => {
                 {/* Cart */}
                 <IconButton
                   size="small"
-                  onClick={() => navigate("/cart")}
+                  onClick={() => handleNavClick("/cart")}
                   color="inherit"
                   aria-label="Shopping cart"
                   sx={{
@@ -419,7 +424,7 @@ const Navbar = () => {
                   <MenuItem
                     onClick={() => {
                       handleCloseUserMenu();
-                      navigate("/profile");
+                      handleNavClick("/profile");
                     }}
                     sx={{ py: 1.25 }}
                   >

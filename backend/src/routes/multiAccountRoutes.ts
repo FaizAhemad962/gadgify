@@ -7,16 +7,8 @@ import {
   getAuditDashboard,
   cleanOldLogs,
 } from "../controllers/auditLogController";
-import {
-  getAccountsByEmail,
-  createAdditionalAccount,
-  hasMultipleAccounts,
-  getMultiAccountStats,
-  getAllAccountsGrouped,
-} from "../controllers/multiAccountController";
 import { authenticate, authorize } from "../middlewares/auth";
-import { validate } from "../middlewares/validate";
-import { createUserSchema } from "../validators";
+// Removed unused imports after disabling multi-account routes
 
 const router = Router();
 
@@ -26,17 +18,29 @@ router.use(authenticate);
 // ===== MULTI-ACCOUNT ROUTES =====
 
 // Get accounts for current user's email
-router.get("/my-accounts", getAccountsByEmail);
+router.get("/my-accounts", (req, res) => {
+  res.status(410).json({
+    success: false,
+    message: "Multi-account feature has been deprecated",
+  });
+});
 
 // Check if user has multiple accounts
-router.get("/check-multiple", hasMultipleAccounts);
+router.get("/check-multiple", (req, res) => {
+  res.status(410).json({
+    success: false,
+    message: "Multi-account feature has been deprecated",
+  });
+});
 
-// Create additional account for same email (requires same email)
-router.post(
-  "/create-additional",
-  validate(createUserSchema),
-  createAdditionalAccount,
-);
+// Create additional account for same email (DISABLED - returning 410 Gone)
+router.post("/create-additional", (req, res) => {
+  res.status(410).json({
+    success: false,
+    message:
+      "Multi-account creation has been disabled. One email = one account",
+  });
+});
 
 // ===== AUDIT LOG ROUTES =====
 
@@ -50,11 +54,21 @@ router.get("/audit-logs/email/:email", getEmailAuditLogs);
 
 router.use(authorize("ADMIN", "SUPER_ADMIN"));
 
-// Get multi-account statistics
-router.get("/stats", getMultiAccountStats);
+// Get multi-account statistics (DISABLED - returning 410 Gone)
+router.get("/stats", (req, res) => {
+  res.status(410).json({
+    success: false,
+    message: "Multi-account feature has been deprecated",
+  });
+});
 
-// Get all accounts grouped by email
-router.get("/all-accounts", getAllAccountsGrouped);
+// Get all accounts grouped by email (DISABLED - returning 410 Gone)
+router.get("/all-accounts", (req, res) => {
+  res.status(410).json({
+    success: false,
+    message: "Multi-account feature has been deprecated",
+  });
+});
 
 // Get audit logs by action
 router.get("/audit-logs/action/:action", getAuditLogsByAction);

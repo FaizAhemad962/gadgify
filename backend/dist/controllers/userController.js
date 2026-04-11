@@ -109,12 +109,12 @@ const createUser = async (req, res, next) => {
                 return;
             }
         }
-        // Check if user already exists with this email and role
-        const userAlreadyExists = await (0, userQueryHelper_1.userExists)(email, role);
+        // Single-account mode: one email can map to only one account
+        const userAlreadyExists = await (0, userQueryHelper_1.isEmailRegisteredWithAnyRole)(email);
         if (userAlreadyExists) {
             res.status(400).json({
                 success: false,
-                message: `Email already registered as a ${role} account`,
+                message: "Email already registered",
             });
             return;
         }

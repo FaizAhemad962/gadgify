@@ -9,7 +9,7 @@ datasource db {
 
 model User {
   id                   String                 @id @default(uuid())
-  email                String // Multiple accounts allowed per email
+  email                String                 @unique // One email = one account
   password             String
   name                 String
   phone                String
@@ -19,7 +19,6 @@ model User {
   address              String
   pincode              String
   profilePhoto         String?
-  accountName          String? // Identifier for this account (e.g., "Admin Account", "Super Admin")
   resetToken           String?
   resetTokenExpiry     DateTime?
   createdAt            DateTime               @default(now())
@@ -43,7 +42,6 @@ model User {
   // Ratings given by this user as customer
   deliveryRatingsGiven DeliveryRating[]     @relation("CustomerDeliveryRatings")
 
-  @@unique([email, role]) // One role per email (but multiple roles possible)
   @@index([email])
   @@map("users")
 }
@@ -493,4 +491,51 @@ model FeatureFlag {
   @@index([name])
   @@index([isEnabled])
   @@map("feature_flags")
+}
+
+model FAQ {
+  id        String    @id @default(uuid())
+  question  String
+  answer    String
+  category  String // e.g., "Shipping", "Returns", "Payment"
+  order     Int       @default(0) // Display order
+  isActive  Boolean   @default(true)
+  views     Int       @default(0)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@index([category])
+  @@index([isActive])
+  @@map("faqs")
+}
+
+model FlashSale {
+  id          String    @id @default(uuid())
+  productId   String?   // Optional: specific product
+  title       String
+  description String?
+  discountPercentage Float   @default(0)
+  maxDiscount Float?    // Maximum discount amount
+  startTime   DateTime
+  endTime     DateTime
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([isActive])
+  @@index([startTime])
+  @@index([endTime])
+  @@map("flash_sales")
+}
+
+model Newsletter {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([email])
+  @@index([isActive])
+  @@map("newsletters")
 }

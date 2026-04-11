@@ -20,7 +20,6 @@ class MultiAccountService {
                 email: true,
                 name: true,
                 role: true,
-                accountName: true,
                 city: true,
                 phone: true,
                 createdAt: true,
@@ -36,7 +35,6 @@ class MultiAccountService {
             phone: acc.phone,
             role: acc.role,
             city: acc.city,
-            accountName: acc.accountName || undefined,
             createdAt: acc.createdAt.toISOString(),
         }));
     }
@@ -78,7 +76,6 @@ class MultiAccountService {
                 email: true,
                 name: true,
                 role: true,
-                accountName: true,
                 city: true,
                 phone: true,
                 createdAt: true,
@@ -93,7 +90,6 @@ class MultiAccountService {
         const existing = await database_1.default.user.findFirst({
             where: {
                 email,
-                role,
                 deletedAt: null,
             },
         });
@@ -111,14 +107,12 @@ class MultiAccountService {
                 state,
                 address,
                 pincode,
-                accountName: accountName || `${role} Account`,
             },
             select: {
                 id: true,
                 email: true,
                 name: true,
                 role: true,
-                accountName: true,
                 createdAt: true,
             },
         });
@@ -202,7 +196,6 @@ class MultiAccountService {
                 email: true,
                 name: true,
                 role: true,
-                accountName: true,
                 phone: true,
                 city: true,
                 createdAt: true,
