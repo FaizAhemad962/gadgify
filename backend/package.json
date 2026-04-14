@@ -5,13 +5,16 @@
   "type": "commonjs",
   "scripts": {
     "dev": "nodemon src/server.ts",
-    "build": "tsc",
+    "build": "tsc -p tsconfig.json",
     "start": "node dist/server.js",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:studio": "prisma studio",
     "seed": "npm run build && node dist/seed.js",
-    "setup:admin": "npm run build && node dist/setup-super-admin.js"
+    "setup:admin": "npm run build && node dist/setup-super-admin.js",
+    "fix:admin": "npm run build && node dist/fix-admin-role.js",
+    "recreate:admin": "npm run build && node dist/delete-recreate-admin.js",
+    "delete:all-users": "npm run build && node dist/delete-all-users.js"
   },
   "keywords": [],
   "author": "",
