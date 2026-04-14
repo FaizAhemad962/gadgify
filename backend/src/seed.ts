@@ -6,15 +6,19 @@ async function seed() {
 
   // Clear existing data
   console.log("🗑️  Clearing existing data...");
-  await prisma.wishlist.deleteMany({});
-  await prisma.rating.deleteMany({});
-  await prisma.cartItem.deleteMany({});
-  await prisma.orderItem.deleteMany({});
-  await prisma.order.deleteMany({});
-  await prisma.cart.deleteMany({});
-  await prisma.productMedia.deleteMany({});
-  await prisma.product.deleteMany({});
-  console.log("✅ Data cleared");
+  try {
+    await prisma.wishlist.deleteMany({});
+    await prisma.rating.deleteMany({});
+    await prisma.cartItem.deleteMany({});
+    await prisma.orderItem.deleteMany({});
+    await prisma.order.deleteMany({});
+    await prisma.cart.deleteMany({});
+    await prisma.productMedia.deleteMany({});
+    await prisma.product.deleteMany({});
+    console.log("✅ Data cleared");
+  } catch (error) {
+    console.warn("⚠️  Warning during data cleanup:", error);
+  }
 
   // Create sample products with categories and original prices
   console.log("📦 Adding sample products...");
@@ -334,38 +338,54 @@ async function seed() {
 
   const hashedPassword = await bcryptjs.hash("super-admin9606@", 10);
 
-  const users = [
-    {
-      email: "super-admin@gadgify.com",
-      password: hashedPassword,
-      name: "Super Admin",
-      phone: "9000000000",
-      role: "SUPER_ADMIN",
-      state: "Maharashtra",
-      city: "Mumbai",
-      address: "Gadgify HQ, Mumbai",
-      pincode: "400001",
-    },
-  ];
+  try {
+    // Check if super admin already exists
+    const existingAdmin = await prisma.user.findUnique({
+      where: { email: "super-admin@gadgify.com" },
+    });
 
-  const createdUsers = await prisma.user.createMany({
-    data: users,
-  });
+    let createdUsers = { count: 0 };
 
-  console.log(`✅ Created ${createdUsers.count} super admin account`);
+    if (!existingAdmin) {
+      const users = [
+        {
+          email: "super-admin@gadgify.com",
+          password: hashedPassword,
+          name: "Super Admin",
+          phone: "9000000000",
+          role: "SUPER_ADMIN",
+          state: "Maharashtra",
+          city: "Mumbai",
+          address: "Gadgify HQ, Mumbai",
+          pincode: "400001",
+        },
+      ];
 
-  console.log("🎉 Seeding completed!");
-  console.log("📊 Summary:");
-  console.log(`   - Products: ${createdProducts.length} (with images)`);
-  console.log(`   - Images added: 1 primary image per product`);
-  console.log(
-    `   - Categories: 15+ (Accessories, Travel, Bags, Home Utility, Personal Care, Electronics, Home Gadgets, Kitchen, Storage, Toys & Collectibles, Stationery, Tools, Eco Products, Cleaning, Footwear Care, Baby Care, Travel Accessories)`,
-  );
-  console.log("🖼️  Product images linked from: /uploads/product-*.jpeg");
-  console.log("ℹ️  Super Admin Account:");
-  console.log("   Email: super-admin@gadgify.com");
-  console.log("   Password: super-admin9606@");
-  console.log("   Role: SUPER_ADMIN");
+      createdUsers = await prisma.user.createMany({
+        data: users,
+        skipDuplicates: true,
+      });
+
+      console.log(`✅ Created ${createdUsers.count} super admin account`);
+    } else {
+      console.log("ℹ️  Super Admin already exists");
+    }
+
+    console.log("🎉 Seeding completed!");
+    console.log("📊 Summary:");
+    console.log(`   - Products: ${createdProducts.length} (with images)`);
+    console.log(`   - Images added: 1 primary image per product`);
+    console.log(
+      `   - Categories: 15+ (Accessories, Travel, Bags, Home Utility, Personal Care, Electronics, Home Gadgets, Kitchen, Storage, Toys & Collectibles, Stationery, Tools, Eco Products, Cleaning, Footwear Care, Baby Care, Travel Accessories)`,
+    );
+    console.log("🖼️  Product images linked from: /uploads/product-*.jpeg");
+    console.log("ℹ️  Super Admin Account:");
+    console.log("   Email: super-admin@gadgify.com");
+    console.log("   Password: super-admin9606@");
+    console.log("   Role: SUPER_ADMIN");
+  } catch (error) {
+    console.error("❌ Error creating super admin:", error);
+  }
 }
 
 seed()
