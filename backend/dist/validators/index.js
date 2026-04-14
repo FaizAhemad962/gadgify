@@ -28,7 +28,7 @@ exports.productSchema = joi_1.default.object({
     stock: joi_1.default.number().min(0).required(),
     media: joi_1.default.array()
         .items(joi_1.default.object({
-        url: joi_1.default.string().uri().required(),
+        url: joi_1.default.string().uri({ allowRelative: true }).required(),
         type: joi_1.default.string().valid("image", "video").required(),
         isPrimary: joi_1.default.boolean().optional(),
     }))

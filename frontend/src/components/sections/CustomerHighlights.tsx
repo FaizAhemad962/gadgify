@@ -51,16 +51,16 @@ const CustomerHighlights: React.FC<CustomerHighlightsProps> = ({
   // Transform product ratings into customer highlights - get top 3 rated products with reviews
   const highlights: CustomerHighlight[] = products
     .slice(0, limit)
-    .filter((p: any) => p && Array.isArray(p.ratings) && p.ratings.length > 0)
+    .filter((p: any) => p && p.topRating)
     .map((product, idx) => {
-      const topRating = product.ratings?.[0];
+      const topRating = product?.topRating;
       if (!topRating) return null;
 
       const userName = topRating.user?.name || `Customer ${idx + 1}`;
       const userCity = topRating.user?.city || "Maharashtra";
       const initials = userName
         .split(" ")
-        .map((n: any) => n)
+        .map((n: any) => n[0])
         .join("");
 
       return {

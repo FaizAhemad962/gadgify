@@ -41,7 +41,7 @@ const OrdersPage = () => {
     data: orders,
     isLoading,
     error,
-    refetch,
+    // refetch,
   } = useQuery({
     queryKey: ["orders"],
     queryFn: ordersApi.getAll,

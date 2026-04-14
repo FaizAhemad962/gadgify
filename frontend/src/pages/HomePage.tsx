@@ -40,10 +40,10 @@ import {
   FlashSale,
   BestSellers,
   FeaturedBrands,
-  FAQ,
-  HowItWorks,
-  PaymentSecurity,
-  CustomerHighlights,
+  // FAQ,
+  // HowItWorks,
+  // PaymentSecurity,
+  // CustomerHighlights,
 } from "@/components/sections";
 
 // Fake testimonials (static — replace with real API data when available)

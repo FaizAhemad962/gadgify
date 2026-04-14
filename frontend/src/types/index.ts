@@ -34,6 +34,16 @@ export interface Product {
   updatedAt: string;
   averageRating?: number;
   totalRatings?: number;
+  topRating?: {
+    id: string;
+    rating: number;
+    comment?: string;
+    user: {
+      id: string;
+      name: string;
+      city: string;
+    };
+  };
   media: ProductMedia[];
 }
 

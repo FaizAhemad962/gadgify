@@ -1,4 +1,4 @@
-import { Suspense, ReactNode } from "react";
+import { Suspense, type ReactNode } from "react";
 import { Box, Skeleton, keyframes } from "@mui/material";
 import { useLazyLoad } from "@/hooks/useLazyLoad";
 

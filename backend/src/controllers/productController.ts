@@ -88,7 +88,19 @@ export const getAllProducts = async (
       include: {
         ratings: {
           select: {
+            id: true,
             rating: true,
+            comment: true,
+            user: {
+              select: {
+                id: true,
+                name: true,
+                city: true,
+              },
+            },
+          },
+          orderBy: {
+            createdAt: "desc",
           },
         },
         media: true,
@@ -106,12 +118,14 @@ export const getAllProducts = async (
             ) / ratings.length
           : 0;
       const totalRatings = ratings.length;
+      const topRating = ratings.length > 0 ? ratings[0] : null;
 
       const { ratings: _, ...productData } = product;
       return {
         ...productData,
         averageRating: Number(averageRating.toFixed(1)),
         totalRatings,
+        topRating,
       };
     });
 

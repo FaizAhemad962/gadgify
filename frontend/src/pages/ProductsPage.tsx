@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -8,13 +8,13 @@ import {
   Box,
   CircularProgress,
   Alert,
-  IconButton,
+  // IconButton,
   useMediaQuery,
   useTheme,
   ToggleButtonGroup,
   ToggleButton,
 } from "@mui/material";
-import { ViewModule, ViewList, ArrowUpward } from "@mui/icons-material";
+import { ViewModule, ViewList } from "@mui/icons-material";
 import { productsApi } from "../api/products";
 import { useCart } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
@@ -142,11 +142,11 @@ const ProductsPage = () => {
   };
 
   // Responsive column count based on screen size and view mode
-  const colCount = useMemo(() => {
-    if (viewMode === "list") return 1;
-    if (isMobile) return 1;
-    return 3;
-  }, [viewMode, isMobile]);
+  // const colCount = useMemo(() => {
+  //   if (viewMode === "list") return 1;
+  //   if (isMobile) return 1;
+  //   return 3;
+  // }, [viewMode, isMobile]);
 
   if (error) {
     return (
