@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Container, Box, Typography, Skeleton } from "@mui/material";
+import { Container, Box, Typography } from "@mui/material";
 import { Timer } from "@mui/icons-material";
 import { productsApi } from "../../api/products";
 import { flashSaleApi } from "../../api/flashSales";
@@ -36,7 +36,7 @@ const FlashSale: React.FC<FlashSaleProps> = ({
   });
 
   // Fetch active flash sales
-  const { data: flashSalesData, isLoading: flashLoading } = useQuery({
+  const { data: flashSalesData } = useQuery({
     queryKey: ["active-flash-sales"],
     queryFn: () => flashSaleApi.getAll({ limit: 1 }),
     staleTime: 2 * 60 * 1000,
@@ -64,14 +64,13 @@ const FlashSale: React.FC<FlashSaleProps> = ({
   }, [currentFlashSale]);
 
   // Fetch products for flash sale
-  const { data: productsData, isLoading: productsLoading } = useQuery({
+  const { data: productsData } = useQuery({
     queryKey: ["flash-sale-products"],
     queryFn: () => productsApi.getAll({ limit }),
     staleTime: 5 * 60 * 1000,
   });
 
   const products = productsData?.products || [];
-  const isLoading = flashLoading || productsLoading;
 
   const handleAddToCart = async (productId: string) => {
     if (!isAuthenticated) {
@@ -152,54 +151,33 @@ const FlashSale: React.FC<FlashSaleProps> = ({
           </Box>
         </Box>
 
-        {isLoading ? (
-          <Box
-            sx={{
-              display: "grid",
-              gridTemplateColumns: {
-                xs: "1fr",
-                sm: "repeat(2, 1fr)",
-                md: "repeat(4, 1fr)",
-                lg: "repeat(4, 1fr)",
-              },
-              gap: 2.5,
-            }}
-          >
-            {[...Array(4)].map((_, i) => (
-              <Box key={i}>
-                <Skeleton variant="rounded" height={320} />
-              </Box>
-            ))}
-          </Box>
-        ) : (
-          <Box
-            sx={{
-              display: "grid",
-              gridTemplateColumns: {
-                xs: "1fr",
-                sm: "repeat(2, 1fr)",
-                md: "repeat(4, 1fr)",
-                lg: "repeat(4, 1fr)",
-              },
-              gap: 2.5,
-            }}
-          >
-            {products.map((product) => (
-              <Box key={product.id}>
-                <ProductCard
-                  product={product}
-                  isInWishlist={isInWishlist}
-                  isToggling={isToggling}
-                  toggleWishlist={toggleWishlist}
-                  onAddToCart={handleAddToCart}
-                  onBuyNow={handleBuyNow}
-                  onNavigate={(id) => navigate(`/products/${id}`)}
-                  t={t}
-                />
-              </Box>
-            ))}
-          </Box>
-        )}
+        <Box
+          sx={{
+            display: "grid",
+            gridTemplateColumns: {
+              xs: "1fr",
+              sm: "repeat(2, 1fr)",
+              md: "repeat(4, 1fr)",
+              lg: "repeat(4, 1fr)",
+            },
+            gap: 2.5,
+          }}
+        >
+          {products.map((product) => (
+            <Box key={product.id}>
+              <ProductCard
+                product={product}
+                isInWishlist={isInWishlist}
+                isToggling={isToggling}
+                toggleWishlist={toggleWishlist}
+                onAddToCart={handleAddToCart}
+                onBuyNow={handleBuyNow}
+                onNavigate={(id) => navigate(`/products/${id}`)}
+                t={t}
+              />
+            </Box>
+          ))}
+        </Box>
       </Container>
     </Box>
   );

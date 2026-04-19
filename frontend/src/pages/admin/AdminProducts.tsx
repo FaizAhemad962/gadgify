@@ -36,7 +36,7 @@ import { productsApi } from "../../api/products";
 import { AdminProductsDataGrid } from "../../components/admin/AdminProductsDataGrid";
 import type { Product } from "../../types";
 import { tokens } from "@/theme/theme";
-import { CATEGORIES } from "@/constants/categories";
+import { useCategories } from "@/hooks/useCategories";
 
 const productSchema = z.object({
   name: z.string().min(2, "Name is required"),
@@ -99,6 +99,9 @@ const AdminProducts = () => {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(25);
   const [searchQuery, setSearchQuery] = useState("");
+
+  // Fetch categories from database
+  const { data: categoriesData = [] } = useCategories();
 
   const { data: productsData, isLoading } = useQuery({
     queryKey: ["admin-products", page, rowsPerPage, searchQuery],
@@ -206,7 +209,7 @@ const AdminProducts = () => {
         stock: undefined,
         media: [],
         colors: "",
-        category: CATEGORIES[0],
+        category: categoriesData?.[0]?.name || "",
         hsnNo: "",
         gstPercentage: undefined,
       });
@@ -648,7 +651,11 @@ const AdminProducts = () => {
                   <Select
                     label={t("admin.category")}
                     {...register("category")}
-                    defaultValue={editingProduct?.category || CATEGORIES[0]}
+                    defaultValue={
+                      editingProduct?.category ||
+                      categoriesData?.[0]?.name ||
+                      ""
+                    }
                     onChange={(e) => {
                       setSelectedCategory(e.target.value);
                     }}
@@ -662,17 +669,17 @@ const AdminProducts = () => {
                       },
                     }}
                   >
-                    {CATEGORIES.map((category) => (
+                    {categoriesData.map((category) => (
                       <MenuItem
-                        key={category}
-                        value={category}
+                        key={category.id}
+                        value={category.name}
                         sx={{
                           fontSize: "0.875rem",
                           py: 1.5,
                           transition: "all 0.15s",
                         }}
                       >
-                        {t(`categories.${category}`)}
+                        {category.name}
                       </MenuItem>
                     ))}
                   </Select>

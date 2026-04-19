@@ -76,7 +76,19 @@ const getAllProducts = async (req, res, next) => {
             include: {
                 ratings: {
                     select: {
+                        id: true,
                         rating: true,
+                        comment: true,
+                        user: {
+                            select: {
+                                id: true,
+                                name: true,
+                                city: true,
+                            },
+                        },
+                    },
+                    orderBy: {
+                        createdAt: "desc",
                     },
                 },
                 media: true,
@@ -89,11 +101,13 @@ const getAllProducts = async (req, res, next) => {
                 ? ratings.reduce((sum, r) => sum + r.rating, 0) / ratings.length
                 : 0;
             const totalRatings = ratings.length;
+            const topRating = ratings.length > 0 ? ratings[0] : null;
             const { ratings: _, ...productData } = product;
             return {
                 ...productData,
                 averageRating: Number(averageRating.toFixed(1)),
                 totalRatings,
+                topRating,
             };
         });
         // Filter by minimum rating

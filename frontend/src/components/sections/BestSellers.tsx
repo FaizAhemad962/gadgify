@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Container, Box, Typography, Button, Skeleton } from "@mui/material";
+import { Container, Box, Typography, Button } from "@mui/material";
 import { ArrowForward, TrendingUp } from "@mui/icons-material";
 import { productsApi } from "../../api/products";
 import ProductCard from "../ProductCard";
@@ -94,25 +94,7 @@ const BestSellers: React.FC<BestSellersProps> = ({
         </Button>
       </Box>
 
-      {isLoading ? (
-        <Box
-          sx={{
-            display: "grid",
-            gridTemplateColumns: {
-              xs: "1fr",
-              sm: "repeat(2, 1fr)",
-              md: "repeat(4, 1fr)",
-            },
-            gap: 3,
-          }}
-        >
-          {[...Array(4)].map((_, i) => (
-            <Box key={i}>
-              <Skeleton variant="rounded" height={340} />
-            </Box>
-          ))}
-        </Box>
-      ) : products.length > 0 ? (
+      {!isLoading && products.length > 0 && (
         <Box
           sx={{
             display: "grid",
@@ -139,7 +121,8 @@ const BestSellers: React.FC<BestSellersProps> = ({
             </Box>
           ))}
         </Box>
-      ) : (
+      )}
+      {!isLoading && products.length === 0 && (
         <Box sx={{ textAlign: "center", py: 4 }}>
           <Typography color="text.secondary">
             {t("common.noProductsFound")}

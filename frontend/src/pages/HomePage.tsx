@@ -8,7 +8,6 @@ import {
   Card,
   CardContent,
   Divider,
-  Skeleton,
   TextField,
   InputAdornment,
   Avatar,
@@ -29,17 +28,18 @@ import {
 import { useAuth } from "@/context/AuthContext";
 import { productsApi } from "@/api/products";
 import { useNewsletterSubscribe } from "@/hooks/useNewsletter";
+import { useCategories } from "@/hooks/useCategories";
+import { getCategoryIcon } from "@/utils/categoryIconMapper";
+import { getCategoryColor } from "@/utils/categoryColorMapper";
 import ProductCard from "@/components/ProductCard";
 import RecentlyViewed from "@/components/products/RecentlyViewed";
-import { LazySection } from "@/components/LazySection";
 import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
 import { tokens } from "@/theme/theme";
-import { CATEGORY_ICONS, CATEGORY_COLORS } from "@/constants/categories";
 import {
   FlashSale,
   BestSellers,
-  FeaturedBrands,
+  // FeaturedBrands,
   // FAQ,
   // HowItWorks,
   // PaymentSecurity,
@@ -77,6 +77,16 @@ const HomePage = () => {
   const { isAuthenticated } = useAuth();
   const { addToCart } = useCart();
   const { isInWishlist, toggleWishlist, isToggling } = useWishlist();
+
+  // Color palette for testimonials and other features
+  const featureColors = [
+    tokens.primary,
+    tokens.accent,
+    tokens.secondary,
+    tokens.success,
+    tokens.warning,
+    tokens.error,
+  ];
 
   // Newsletter subscription
   const { subscribe, isPending, error, message, clearError, clearMessage } =
@@ -136,7 +146,8 @@ const HomePage = () => {
   const newArrivals = newArrivalsData?.products || [];
   const dealProduct = dealData?.products?.[0];
 
-  const categories = Object.keys(CATEGORY_ICONS);
+  // Fetch categories from database
+  const { data: categoriesData = [] } = useCategories();
 
   const handleAddToCart = async (productId: string) => {
     if (!isAuthenticated) {
@@ -168,25 +179,6 @@ const HomePage = () => {
       // Error is handled by the hook
     }
   };
-
-  const productSkeletons = (
-    <Box
-      sx={{
-        display: "grid",
-        gridTemplateColumns: { xs: "1fr 1fr", md: "1fr 1fr 1fr 1fr" },
-        gap: 3,
-      }}
-    >
-      {[...Array(4)].map((_, i) => (
-        <Skeleton
-          key={i}
-          variant="rounded"
-          height={320}
-          sx={{ borderRadius: 3 }}
-        />
-      ))}
-    </Box>
-  );
 
   return (
     <Box sx={{ bgcolor: tokens.gray50 }}>
@@ -259,7 +251,7 @@ const HomePage = () => {
                 px: 4,
                 borderRadius: 2,
                 textTransform: "none",
-                fontSize: "1rem",
+                fontSize: { xs: "0.9rem", md: "1rem" },
                 "&:hover": {
                   bgcolor: tokens.accentDark,
                   boxShadow: `0 6px 20px ${tokens.accent}44`,
@@ -276,8 +268,9 @@ const HomePage = () => {
                   color: "white",
                   borderColor: "white",
                   fontWeight: 700,
-                  py: 1.5,
-                  px: 4,
+                  py: 1,
+                  px: 2,
+                  minHeight: 44,
                   "&:hover": {
                     borderColor: tokens.accent,
                     bgcolor: `${tokens.accent}18`,
@@ -298,7 +291,7 @@ const HomePage = () => {
           sx={{
             display: "grid",
             gridTemplateColumns: { xs: "1fr 1fr", md: "1fr 1fr 1fr 1fr" },
-            gap: 3,
+            gap: { xs: 2, md: 3 },
           }}
         >
           {[
@@ -310,13 +303,22 @@ const HomePage = () => {
             <Box key={index} sx={{ textAlign: "center" }}>
               <Typography
                 variant="h4"
-                sx={{ fontWeight: 900, color: tokens.accent, mb: 1 }}
+                sx={{
+                  fontWeight: 900,
+                  color: tokens.accent,
+                  mb: 0.5,
+                  fontSize: { xs: "1.75rem", sm: "2rem", md: "2.5rem" },
+                }}
               >
                 {stat.number}
               </Typography>
               <Typography
                 variant="body2"
-                sx={{ color: "text.secondary", fontWeight: 600 }}
+                sx={{
+                  color: "text.secondary",
+                  fontWeight: 600,
+                  fontSize: { xs: "0.85rem", md: "0.95rem" },
+                }}
               >
                 {stat.label}
               </Typography>
@@ -326,17 +328,27 @@ const HomePage = () => {
       </Container>
 
       {/* ───── 1. SHOP BY CATEGORY ───── */}
-      <Box sx={{ bgcolor: tokens.white, py: 8 }}>
+      <Box sx={{ bgcolor: tokens.white, py: { xs: 2, md: 3 } }}>
         <Container maxWidth="lg">
-          <Box sx={{ textAlign: "center", mb: 5 }}>
+          <Box sx={{ textAlign: "center", mb: 2 }}>
             <Typography
-              variant="h4"
+              variant="h3"
               fontWeight="700"
-              sx={{ color: "text.primary", mb: 1 }}
+              sx={{
+                color: "text.primary",
+                mb: 1,
+                fontSize: { xs: "1.5rem", sm: "1.75rem", md: "2rem" },
+              }}
             >
               {t("common.shopByCategory")}
             </Typography>
-            <Typography variant="body1" sx={{ color: "text.secondary" }}>
+            <Typography
+              variant="body1"
+              sx={{
+                color: "text.secondary",
+                fontSize: { xs: "0.9rem", md: "1rem" },
+              }}
+            >
               {t("common.shopByCategoryDesc")}
             </Typography>
           </Box>
@@ -345,49 +357,53 @@ const HomePage = () => {
               display: "grid",
               gridTemplateColumns: {
                 xs: "repeat(1, 1fr)",
-                sm: "repeat(1, 1fr)",
+                sm: "repeat(2, 1fr)",
                 md: "repeat(4, 1fr)",
               },
               gap: 2,
             }}
           >
-            {categories.map((cat, i) => (
-              <Box
-                key={cat}
+            {categoriesData.map((category, i) => (
+              <Card
+                key={category.id}
                 onClick={() =>
-                  navigate(`/products?category=${encodeURIComponent(cat)}`)
+                  navigate(
+                    `/products?category=${encodeURIComponent(category.name)}`,
+                  )
                 }
                 sx={{
                   display: "flex",
                   flexDirection: "column",
                   alignItems: "center",
-                  gap: 1.5,
-                  p: 3,
-                  borderRadius: 3,
+                  gap: 0.5,
+                  p: { xs: 1, md: 2 },
                   cursor: "pointer",
                   border: `1px solid ${tokens.gray200}`,
-                  bgcolor: tokens.white,
-                  transition: "all 0.25s",
+                  height: "100%",
+                  transition: "all 0.25s cubic-bezier(.4,0,.2,1)",
+                  minHeight: 160,
+                  justifyContent: "center",
                   "&:hover": {
-                    borderColor: CATEGORY_COLORS[i],
-                    boxShadow: `0 4px 16px ${CATEGORY_COLORS[i]}20`,
-                    transform: "translateY(-3px)",
+                    borderColor: getCategoryColor(category.name, i),
+                    boxShadow: `0 8px 24px ${getCategoryColor(category.name, i)}30`,
+                    transform: "translateY(-4px)",
                   },
                 }}
               >
                 <Box
                   sx={{
-                    color: CATEGORY_COLORS[i],
+                    color: getCategoryColor(category.name, i),
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    bgcolor: `${CATEGORY_COLORS[i]}10`,
+                    bgcolor: `${getCategoryColor(category.name, i)}10`,
                     borderRadius: 2,
-                    width: 64,
-                    height: 64,
+                    width: { xs: 56, md: 64 },
+                    height: { xs: 56, md: 64 },
+                    fontSize: { xs: "1.75rem", md: "2rem" },
                   }}
                 >
-                  {CATEGORY_ICONS[cat as keyof typeof CATEGORY_ICONS]}
+                  {getCategoryIcon(category.name)}
                 </Box>
                 <Typography
                   variant="body2"
@@ -395,38 +411,47 @@ const HomePage = () => {
                     fontWeight: 600,
                     color: "text.primary",
                     textAlign: "center",
-                    fontSize: { xs: "0.75rem", sm: "0.85rem" },
+                    fontSize: { xs: "0.8rem", sm: "0.9rem", md: "0.95rem" },
                   }}
                 >
-                  {t(`categories.${cat}`)}
+                  {category.name}
                 </Typography>
-              </Box>
+              </Card>
             ))}
           </Box>
         </Container>
       </Box>
 
       {/* ───── 2. TRENDING NOW ───── */}
-      <Container maxWidth="lg" sx={{ py: 8 }}>
+      <Container maxWidth="lg" sx={{ py: { xs: 2, md: 3 } }}>
         <Box
           sx={{
             display: "flex",
             justifyContent: "space-between",
-            alignItems: "center",
-            mb: 4,
+            alignItems: { xs: "flex-start", sm: "center" },
+            flexDirection: { xs: "column", sm: "row" },
+            gap: 1,
+            mb: 1,
           }}
         >
           <Box>
             <Typography
-              variant="h4"
+              variant="h3"
               fontWeight="700"
-              sx={{ color: "text.primary" }}
+              sx={{
+                color: "text.primary",
+                fontSize: { xs: "1.5rem", sm: "1.75rem", md: "2rem" },
+              }}
             >
               🔥 {t("common.trendingNow")}
             </Typography>
             <Typography
               variant="body2"
-              sx={{ color: "text.secondary", mt: 0.5 }}
+              sx={{
+                color: "text.secondary",
+                mt: 0.5,
+                fontSize: { xs: "0.85rem", md: "0.95rem" },
+              }}
             >
               {t("common.trendingDesc")}
             </Typography>
@@ -438,14 +463,14 @@ const HomePage = () => {
               textTransform: "none",
               fontWeight: 600,
               color: tokens.primary,
+              minHeight: 44,
+              px: 2,
             }}
           >
             {t("common.viewAll")}
           </Button>
         </Box>
-        {trendingLoading ? (
-          productSkeletons
-        ) : (
+        {!trendingLoading && (
           <Box
             sx={{
               display: "grid",
@@ -454,7 +479,7 @@ const HomePage = () => {
                 sm: "repeat(2, 1fr)",
                 md: "repeat(4, 1fr)",
               },
-              gap: 3,
+              gap: 2,
             }}
           >
             {trendingProducts.map((product) => (
@@ -475,20 +500,18 @@ const HomePage = () => {
       </Container>
 
       {/* ───── FLASH SALE ───── */}
-      <LazySection>
-        <FlashSale />
-      </LazySection>
+      <FlashSale />
 
       {/* ───── 3. DEAL OF THE DAY ───── */}
       {dealProduct && (
-        <Box sx={{ bgcolor: tokens.white, py: 8 }}>
+        <Box sx={{ bgcolor: tokens.white, py: { xs: 2, md: 3 } }}>
           <Container maxWidth="lg">
             <Box
               sx={{
                 display: "flex",
                 flexDirection: { xs: "column", md: "row" },
-                gap: 4,
-                p: { xs: 3, md: 5 },
+                gap: { xs: 2, md: 3 },
+                p: { xs: 2, md: 3 },
                 borderRadius: 4,
                 background: `linear-gradient(135deg, ${tokens.primaryDark} 0%, ${tokens.primary} 100%)`,
                 color: "white",
@@ -496,12 +519,18 @@ const HomePage = () => {
                 overflow: "hidden",
               }}
             >
-              <Box sx={{ position: "absolute", top: 16, right: 16 }}>
+              <Box
+                sx={{
+                  position: "absolute",
+                  top: 1,
+                  right: 1,
+                }}
+              >
                 <Box
                   sx={{
                     bgcolor: tokens.accent,
-                    px: 2,
-                    py: 0.5,
+                    px: 1,
+                    py: 1,
                     borderRadius: 2,
                     display: "flex",
                     alignItems: "center",
@@ -509,7 +538,10 @@ const HomePage = () => {
                   }}
                 >
                   <Timer sx={{ fontSize: 16 }} />
-                  <Typography variant="caption" sx={{ fontWeight: 700 }}>
+                  <Typography
+                    variant="caption"
+                    sx={{ fontWeight: 700, fontSize: "0.8rem" }}
+                  >
                     {t("common.limitedTimeOffer")}
                   </Typography>
                 </Box>
@@ -531,12 +563,12 @@ const HomePage = () => {
                   }
                   alt={dealProduct.name}
                   sx={{
-                    width: { xs: 200, md: 280 },
-                    height: { xs: 200, md: 280 },
+                    width: { xs: 160, sm: 200, md: 280 },
+                    height: { xs: 160, sm: 200, md: 280 },
                     objectFit: "contain",
                     borderRadius: 3,
                     bgcolor: "white",
-                    p: 2,
+                    p: 1,
                   }}
                 />
               </Box>
@@ -554,32 +586,68 @@ const HomePage = () => {
                     color: tokens.accent,
                     fontWeight: 700,
                     letterSpacing: 2,
+                    fontSize: "0.8rem",
                   }}
                 >
                   {t("common.dealOfTheDay")}
                 </Typography>
-                <Typography variant="h4" sx={{ fontWeight: 800, mt: 1, mb: 2 }}>
+                <Typography
+                  variant="h3"
+                  sx={{
+                    fontWeight: 800,
+                    mt: 0.5,
+                    mb: 1,
+                    fontSize: { xs: "1.5rem", md: "2rem" },
+                  }}
+                >
                   {dealProduct.name}
                 </Typography>
                 <Typography
                   variant="body1"
-                  sx={{ opacity: 0.85, mb: 3, lineHeight: 1.7 }}
+                  sx={{
+                    opacity: 0.85,
+                    mb: 2,
+                    lineHeight: 1.7,
+                    fontSize: { xs: "0.9rem", md: "1rem" },
+                  }}
                 >
                   {dealProduct.description?.substring(0, 150)}...
                 </Typography>
                 <Box
-                  sx={{ display: "flex", alignItems: "center", gap: 2, mb: 3 }}
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 1,
+                    mb: 2,
+                  }}
                 >
                   <Typography
-                    variant="h4"
-                    sx={{ fontWeight: 800, color: tokens.accent }}
+                    variant="h3"
+                    sx={{
+                      fontWeight: 800,
+                      color: tokens.accent,
+                      fontSize: { xs: "1.75rem", md: "2.25rem" },
+                    }}
                   >
                     ₹{dealProduct.price.toLocaleString()}
                   </Typography>
                 </Box>
                 {/* Countdown */}
-                <Box sx={{ display: "flex", gap: 2, mb: 3 }}>
-                  <Typography variant="body2" sx={{ opacity: 0.7 }}>
+                <Box
+                  sx={{
+                    display: "flex",
+                    gap: 1,
+                    mb: 2,
+                    flexWrap: "wrap",
+                  }}
+                >
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      opacity: 0.7,
+                      fontSize: { xs: "0.85rem", md: "0.95rem" },
+                    }}
+                  >
                     {t("common.dealEndsIn")}:
                   </Typography>
                   {[
@@ -591,19 +659,29 @@ const HomePage = () => {
                       key={i}
                       sx={{
                         bgcolor: "rgba(255,255,255,0.15)",
-                        px: 1.5,
-                        py: 0.5,
+                        px: 1,
+                        py: 1,
                         borderRadius: 1.5,
                         textAlign: "center",
                         minWidth: 48,
                       }}
                     >
-                      <Typography variant="h6" sx={{ fontWeight: 800 }}>
+                      <Typography
+                        variant="h6"
+                        sx={{
+                          fontWeight: 800,
+                          fontSize: "1rem",
+                        }}
+                      >
                         {String(t.val).padStart(2, "0")}
                       </Typography>
                       <Typography
                         variant="caption"
-                        sx={{ opacity: 0.7, fontSize: "0.65rem" }}
+                        sx={{
+                          opacity: 0.7,
+                          fontSize: "0.65rem",
+                          display: "block",
+                        }}
                       >
                         {t.label}
                       </Typography>
@@ -617,11 +695,13 @@ const HomePage = () => {
                   sx={{
                     bgcolor: tokens.accent,
                     fontWeight: 700,
-                    py: 1.5,
-                    px: 4,
+                    py: 1,
+                    px: 3,
                     borderRadius: 2,
                     textTransform: "none",
                     alignSelf: "flex-start",
+                    minHeight: 44,
+                    fontSize: { xs: "0.9rem", md: "1rem" },
                     "&:hover": { bgcolor: tokens.accentDark },
                   }}
                 >
@@ -634,26 +714,35 @@ const HomePage = () => {
       )}
 
       {/* ───── 4. NEW ARRIVALS ───── */}
-      <Container maxWidth="lg" sx={{ py: 8 }}>
+      <Container maxWidth="lg" sx={{ py: { xs: 2, md: 3 } }}>
         <Box
           sx={{
             display: "flex",
             justifyContent: "space-between",
-            alignItems: "center",
-            mb: 4,
+            alignItems: { xs: "flex-start", sm: "center" },
+            flexDirection: { xs: "column", sm: "row" },
+            gap: 1,
+            mb: 1,
           }}
         >
           <Box>
             <Typography
-              variant="h4"
+              variant="h3"
               fontWeight="700"
-              sx={{ color: "text.primary" }}
+              sx={{
+                color: "text.primary",
+                fontSize: { xs: "1.5rem", sm: "1.75rem", md: "2rem" },
+              }}
             >
               ✨ {t("common.newArrivals")}
             </Typography>
             <Typography
               variant="body2"
-              sx={{ color: "text.secondary", mt: 0.5 }}
+              sx={{
+                color: "text.secondary",
+                mt: 0.5,
+                fontSize: { xs: "0.85rem", md: "0.95rem" },
+              }}
             >
               {t("common.newArrivalsDesc")}
             </Typography>
@@ -665,14 +754,14 @@ const HomePage = () => {
               textTransform: "none",
               fontWeight: 600,
               color: tokens.primary,
+              minHeight: 44,
+              px: 2,
             }}
           >
             {t("common.viewAll")}
           </Button>
         </Box>
-        {newArrivalsLoading ? (
-          productSkeletons
-        ) : (
+        {!newArrivalsLoading && (
           <Box
             sx={{
               display: "grid",
@@ -681,7 +770,7 @@ const HomePage = () => {
                 sm: "repeat(2, 1fr)",
                 md: "repeat(4, 1fr)",
               },
-              gap: 3,
+              gap: 2,
             }}
           >
             {newArrivals.map((product) => (
@@ -702,26 +791,34 @@ const HomePage = () => {
       </Container>
 
       {/* ───── BEST SELLERS ───── */}
-      <LazySection>
-        <BestSellers />
-      </LazySection>
+      <BestSellers />
 
       {/* ───── Features Section ───── */}
-      <Box sx={{ bgcolor: tokens.white, py: 8 }}>
+      <Box sx={{ bgcolor: tokens.white, py: { xs: 2, md: 3 } }}>
         <Container maxWidth="lg">
           <Typography
-            variant="h4"
+            variant="h3"
             align="center"
             gutterBottom
             fontWeight="700"
-            sx={{ mb: 2, color: "text.primary" }}
+            sx={{
+              mb: 1,
+              color: "text.primary",
+              fontSize: { xs: "1.5rem", sm: "1.75rem", md: "2rem" },
+            }}
           >
             {t("common.whyChooseGadgify")}
           </Typography>
           <Typography
             variant="body1"
             align="center"
-            sx={{ color: "text.secondary", mb: 6, maxWidth: 600, mx: "auto" }}
+            sx={{
+              color: "text.secondary",
+              mb: 2,
+              maxWidth: 600,
+              mx: "auto",
+              fontSize: { xs: "0.9rem", md: "1rem" },
+            }}
           >
             {t("common.commitmentMessage")}
           </Typography>
@@ -733,30 +830,30 @@ const HomePage = () => {
                 sm: "1fr 1fr",
                 md: "1fr 1fr 1fr 1fr",
               },
-              gap: 3,
+              gap: 2,
             }}
           >
             {[
               {
-                icon: <ShoppingCart sx={{ fontSize: 40 }} />,
+                icon: <ShoppingCart sx={{ fontSize: { xs: 32, md: 40 } }} />,
                 title: t("common.wideSelection"),
                 desc: t("common.browseProducts"),
                 color: tokens.primary,
               },
               {
-                icon: <LocalShipping sx={{ fontSize: 40 }} />,
+                icon: <LocalShipping sx={{ fontSize: { xs: 32, md: 40 } }} />,
                 title: t("common.fastDelivery"),
                 desc: t("common.quickDelivery"),
                 color: tokens.success,
               },
               {
-                icon: <Security sx={{ fontSize: 40 }} />,
+                icon: <Security sx={{ fontSize: { xs: 32, md: 40 } }} />,
                 title: t("common.securePayment"),
                 desc: t("common.safeTransactions"),
                 color: tokens.accent,
               },
               {
-                icon: <Support sx={{ fontSize: 40 }} />,
+                icon: <Support sx={{ fontSize: { xs: 32, md: 40 } }} />,
                 title: t("common.support247"),
                 desc: t("common.alwaysHelp"),
                 color: tokens.secondary,
@@ -770,7 +867,7 @@ const HomePage = () => {
                   flexDirection: "column",
                   alignItems: "center",
                   textAlign: "center",
-                  p: 4,
+                  p: { xs: 1, md: 2 },
                   border: `1px solid ${tokens.gray200}`,
                   transition: "all 0.25s cubic-bezier(.4,0,.2,1)",
                   "&:hover": {
@@ -779,19 +876,26 @@ const HomePage = () => {
                   },
                 }}
               >
-                <Box sx={{ color: feature.color, mb: 3 }}>{feature.icon}</Box>
+                <Box sx={{ color: feature.color, mb: 2 }}>{feature.icon}</Box>
                 <CardContent sx={{ p: 0 }}>
                   <Typography
                     variant="h6"
                     gutterBottom
-                    sx={{ fontWeight: 700, color: "text.primary" }}
+                    sx={{
+                      fontWeight: 700,
+                      color: "text.primary",
+                      fontSize: { xs: "0.95rem", md: "1.1rem" },
+                    }}
                   >
                     {feature.title}
                   </Typography>
                   <Typography
                     variant="body2"
                     color="text.secondary"
-                    sx={{ lineHeight: 1.6 }}
+                    sx={{
+                      lineHeight: 1.6,
+                      fontSize: { xs: "0.85rem", md: "0.95rem" },
+                    }}
                   >
                     {feature.desc}
                   </Typography>
@@ -803,28 +907,34 @@ const HomePage = () => {
       </Box>
 
       {/* ───── FEATURED BRANDS ───── */}
-      <LazySection>
-        <FeaturedBrands />
-      </LazySection>
+      {/* <FeaturedBrands /> */}
 
       {/* ───── Recently Viewed Products ───── */}
-      <Container maxWidth="lg" sx={{ py: 4 }}>
-        <LazySection>
-          <RecentlyViewed />
-        </LazySection>
+      <Container maxWidth="lg" sx={{ py: { xs: 2, md: 3 } }}>
+        <RecentlyViewed />
       </Container>
 
       {/* ───── 5. CUSTOMER TESTIMONIALS ───── */}
-      <Container maxWidth="lg" sx={{ py: 8 }}>
-        <Box sx={{ textAlign: "center", mb: 5 }}>
+      <Container maxWidth="lg" sx={{ py: { xs: 2, md: 3 } }}>
+        <Box sx={{ textAlign: "center", mb: 2 }}>
           <Typography
-            variant="h4"
+            variant="h3"
             fontWeight="700"
-            sx={{ color: "text.primary", mb: 1 }}
+            sx={{
+              color: "text.primary",
+              mb: 1,
+              fontSize: { xs: "1.5rem", sm: "1.75rem", md: "2rem" },
+            }}
           >
             💬 {t("common.customerStories")}
           </Typography>
-          <Typography variant="body1" sx={{ color: "text.secondary" }}>
+          <Typography
+            variant="body1"
+            sx={{
+              color: "text.secondary",
+              fontSize: { xs: "0.9rem", md: "1rem" },
+            }}
+          >
             {t("common.customerStoriesDesc")}
           </Typography>
         </Box>
@@ -832,17 +942,17 @@ const HomePage = () => {
           sx={{
             display: "grid",
             gridTemplateColumns: { xs: "1fr", md: "1fr 1fr 1fr" },
-            gap: 3,
+            gap: 2,
           }}
         >
           {TESTIMONIALS.map((review, i) => (
             <Card
               key={i}
               sx={{
-                p: 3,
+                p: { xs: 1, md: 2 },
                 border: `1px solid ${tokens.gray200}`,
                 height: "100%",
-                transition: "all 0.25s",
+                transition: "all 0.25s cubic-bezier(.4,0,.2,1)",
                 "&:hover": {
                   boxShadow: "0 8px 24px rgba(0,0,0,0.08)",
                   transform: "translateY(-3px)",
@@ -850,18 +960,40 @@ const HomePage = () => {
               }}
             >
               <Box
-                sx={{ display: "flex", alignItems: "center", gap: 2, mb: 2 }}
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 1,
+                  mb: 1,
+                }}
               >
-                <Avatar sx={{ bgcolor: CATEGORY_COLORS[i], fontWeight: 700 }}>
+                <Avatar
+                  sx={{
+                    bgcolor: featureColors[i % featureColors.length],
+                    fontWeight: 700,
+                    width: { xs: 40, md: 48 },
+                    height: { xs: 40, md: 48 },
+                    fontSize: "1rem",
+                  }}
+                >
                   {review.avatar}
                 </Avatar>
                 <Box>
-                  <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
+                  <Typography
+                    variant="subtitle2"
+                    sx={{
+                      fontWeight: 700,
+                      fontSize: { xs: "0.9rem", md: "0.95rem" },
+                    }}
+                  >
                     {review.name}
                   </Typography>
                   <Typography
                     variant="caption"
-                    sx={{ color: "text.secondary" }}
+                    sx={{
+                      color: "text.secondary",
+                      fontSize: "0.8rem",
+                    }}
                   >
                     {review.city}
                   </Typography>
@@ -871,7 +1003,7 @@ const HomePage = () => {
                 value={review.rating}
                 readOnly
                 size="small"
-                sx={{ mb: 1.5 }}
+                sx={{ mb: 1 }}
               />
               <Typography
                 variant="body2"
@@ -879,6 +1011,7 @@ const HomePage = () => {
                   color: "text.secondary",
                   lineHeight: 1.7,
                   fontStyle: "italic",
+                  fontSize: { xs: "0.85rem", md: "0.95rem" },
                 }}
               >
                 "{review.text}"
@@ -889,35 +1022,41 @@ const HomePage = () => {
       </Container>
 
       {/* ───── CUSTOMER HIGHLIGHTS (Real Reviews from Ratings) ───── */}
-      {/* <LazySection>
-        <CustomerHighlights />
-      </LazySection> */}
+
+      {/* <CustomerHighlights /> */}
 
       {/* ───── HOW IT WORKS ───── */}
-      {/* <LazySection>
-        <HowItWorks />
-      </LazySection> */}
+
+      {/* <HowItWorks /> */}
 
       {/* ───── PAYMENT SECURITY ───── */}
-      {/* <LazySection>
-        <PaymentSecurity />
-      </LazySection> */}
+
+      {/* <PaymentSecurity /> */}
 
       {/* ───── Satisfaction Guarantee ───── */}
-      <Box sx={{ bgcolor: tokens.white, py: 6 }}>
+      <Box sx={{ bgcolor: tokens.white, py: { xs: 2, md: 3 } }}>
         <Container maxWidth="sm" sx={{ textAlign: "center" }}>
-          <Typography sx={{ fontSize: "3rem", mb: 2 }}>🛡️</Typography>
+          <Typography sx={{ fontSize: { xs: "2.5rem", md: "3rem" }, mb: 1 }}>
+            🛡️
+          </Typography>
           <Typography
-            variant="h5"
+            variant="h4"
             fontWeight="700"
-            sx={{ color: "text.primary", mb: 1 }}
+            sx={{
+              color: "text.primary",
+              mb: 1,
+              fontSize: { xs: "1.25rem", md: "1.5rem" },
+            }}
           >
             {t("common.satisfactionGuarantee")}
           </Typography>
           <Typography
             variant="body1"
             color="text.secondary"
-            sx={{ lineHeight: 1.7 }}
+            sx={{
+              lineHeight: 1.7,
+              fontSize: { xs: "0.9rem", md: "1rem" },
+            }}
           >
             {t("common.satisfactionDesc")}
           </Typography>
@@ -925,24 +1064,43 @@ const HomePage = () => {
       </Box>
 
       {/* ───── FAQ ───── */}
-      {/* <LazySection>
-          <FAQ />
-        </LazySection> */}
+
+      {/* <FAQ /> */}
 
       {/* ───── 6. NEWSLETTER SIGNUP ───── */}
       <Box
         sx={{
           background: `linear-gradient(135deg, ${tokens.primary} 0%, ${tokens.primaryDark} 100%)`,
           color: "white",
-          py: 8,
+          py: { xs: 2, md: 3 },
         }}
       >
         <Container maxWidth="sm" sx={{ textAlign: "center" }}>
-          <Email sx={{ fontSize: 48, mb: 2, opacity: 0.8 }} />
-          <Typography variant="h4" fontWeight="700" sx={{ mb: 1 }}>
+          <Email
+            sx={{
+              fontSize: { xs: 40, md: 48 },
+              mb: 1,
+              opacity: 0.8,
+            }}
+          />
+          <Typography
+            variant="h3"
+            fontWeight="700"
+            sx={{
+              mb: 1,
+              fontSize: { xs: "1.5rem", md: "1.75rem" },
+            }}
+          >
             {t("common.newsletterTitle")}
           </Typography>
-          <Typography variant="body1" sx={{ opacity: 0.85, mb: 4 }}>
+          <Typography
+            variant="body1"
+            sx={{
+              opacity: 0.85,
+              mb: 4,
+              fontSize: { xs: "0.9rem", md: "1rem" },
+            }}
+          >
             {t("common.newsletterDesc")}
           </Typography>
 
@@ -950,7 +1108,12 @@ const HomePage = () => {
             <Box>
               <Typography
                 variant="h6"
-                sx={{ color: tokens.accentLight, fontWeight: 700, mb: 2 }}
+                sx={{
+                  color: tokens.accentLight,
+                  fontWeight: 700,
+                  mb: 1,
+                  fontSize: { xs: "0.95rem", md: "1.1rem" },
+                }}
               >
                 ✅ {message}
               </Typography>
@@ -963,7 +1126,8 @@ const HomePage = () => {
                   gap: 1,
                   maxWidth: 440,
                   mx: "auto",
-                  mb: 2,
+                  mb: 1,
+                  flexDirection: { xs: "column", sm: "row" },
                 }}
               >
                 <TextField
@@ -995,9 +1159,10 @@ const HomePage = () => {
                     bgcolor: tokens.accent,
                     textTransform: "none",
                     fontWeight: 700,
-                    px: 3,
+                    px: 2,
                     borderRadius: 2,
                     whiteSpace: "nowrap",
+                    minHeight: 44,
                     "&:hover": { bgcolor: tokens.accentDark },
                     "&:disabled": { opacity: 0.6 },
                   }}
@@ -1006,7 +1171,14 @@ const HomePage = () => {
                 </Button>
               </Box>
               {error && (
-                <Typography variant="body2" sx={{ color: tokens.error, mb: 2 }}>
+                <Typography
+                  variant="body2"
+                  sx={{
+                    color: tokens.error,
+                    mb: 1,
+                    fontSize: "0.85rem",
+                  }}
+                >
                   {error}
                 </Typography>
               )}
@@ -1016,21 +1188,38 @@ const HomePage = () => {
       </Box>
 
       {/* ───── CTA Section ───── */}
-      <Box sx={{ bgcolor: tokens.gray100, py: 10 }}>
+      <Box
+        sx={{
+          bgcolor: tokens.gray100,
+          py: { xs: 2, md: 3 },
+        }}
+      >
         <Container maxWidth="md" sx={{ textAlign: "center" }}>
-          <Rocket sx={{ fontSize: 50, color: tokens.accent, mb: 2 }} />
+          <Rocket
+            sx={{
+              fontSize: { xs: 40, md: 50 },
+              color: tokens.accent,
+              mb: 1,
+            }}
+          />
           <Typography
-            variant="h4"
+            variant="h3"
             gutterBottom
             fontWeight="700"
-            sx={{ color: "text.primary" }}
+            sx={{
+              color: "text.primary",
+              fontSize: { xs: "1.5rem", md: "2rem" },
+            }}
           >
             {t("common.readyToShop")}
           </Typography>
           <Typography
             variant="body1"
             color="text.secondary"
-            sx={{ mb: 5, fontSize: "1.05rem" }}
+            sx={{
+              mb: 5,
+              fontSize: { xs: "0.95rem", md: "1.05rem" },
+            }}
           >
             {t("common.startShopping")}
           </Typography>
@@ -1041,11 +1230,12 @@ const HomePage = () => {
             sx={{
               bgcolor: tokens.accent,
               fontWeight: 700,
-              py: 1.8,
-              px: 5,
-              fontSize: "1.05rem",
+              py: 2,
+              px: 4,
+              fontSize: { xs: "0.95rem", md: "1.05rem" },
               borderRadius: 2,
               textTransform: "none",
+              minHeight: 44,
               "&:hover": {
                 bgcolor: tokens.accentDark,
                 boxShadow: `0 6px 20px ${tokens.accent}44`,
@@ -1058,13 +1248,17 @@ const HomePage = () => {
       </Box>
 
       {/* ───── Trust Section ───── */}
-      <Container maxWidth="lg" sx={{ py: 8 }}>
+      <Container maxWidth="lg" sx={{ py: { xs: 2, md: 3 } }}>
         <Typography
-          variant="h5"
+          variant="h4"
           align="center"
           gutterBottom
           fontWeight="700"
-          sx={{ mb: 6, color: "text.primary" }}
+          sx={{
+            mb: 2,
+            color: "text.primary",
+            fontSize: { xs: "1.25rem", md: "1.5rem" },
+          }}
         >
           {t("common.trustedByThousands")}
         </Typography>
@@ -1072,7 +1266,7 @@ const HomePage = () => {
           sx={{
             display: "grid",
             gridTemplateColumns: { xs: "1fr", md: "1fr 1fr 1fr" },
-            gap: 3,
+            gap: 1,
           }}
         >
           {[
@@ -1092,28 +1286,50 @@ const HomePage = () => {
               desc: t("common.sslEncrypted"),
             },
           ].map((trust, index) => (
-            <Box
+            <Card
               key={index}
               sx={{
-                p: 3,
+                p: { xs: 1, md: 2 },
                 border: `1px solid ${tokens.gray200}`,
-                borderRadius: 2,
+                height: "100%",
+                transition: "all 0.25s cubic-bezier(.4,0,.2,1)",
                 textAlign: "center",
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "center",
+                "&:hover": {
+                  boxShadow: "0 8px 24px rgba(0,0,0,0.08)",
+                  transform: "translateY(-3px)",
+                },
               }}
             >
-              <Typography sx={{ fontSize: "2.5rem", mb: 1 }}>
+              <Typography
+                sx={{
+                  fontSize: { xs: "2rem", md: "2.5rem" },
+                  mb: 0.5,
+                }}
+              >
                 {trust.icon}
               </Typography>
               <Typography
                 variant="h6"
-                sx={{ fontWeight: 700, mb: 1, color: "text.primary" }}
+                sx={{
+                  fontWeight: 700,
+                  mb: 0.5,
+                  color: "text.primary",
+                  fontSize: { xs: "1rem", md: "1.1rem" },
+                }}
               >
                 {trust.title}
               </Typography>
-              <Typography variant="body2" color="text.secondary">
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ fontSize: { xs: "0.85rem", md: "0.95rem" } }}
+              >
                 {trust.desc}
               </Typography>
-            </Box>
+            </Card>
           ))}
         </Box>
       </Container>

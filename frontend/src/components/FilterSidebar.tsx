@@ -10,7 +10,12 @@ import {
   Checkbox,
   Divider,
   Button,
+  TextField,
+  IconButton,
+  type SxProps,
+  type Theme,
 } from "@mui/material";
+import { Add as AddIcon, Remove as RemoveIcon } from "@mui/icons-material";
 import { tokens } from "@/theme/theme";
 
 export type SortOption =
@@ -36,6 +41,10 @@ export interface FilterSidebarProps {
   onClearFilters: () => void;
   /** Optional translation function — falls back to English labels */
   t?: (key: string) => string;
+  /** Optional custom styles to override default */
+  sx?: SxProps<Theme>;
+  /** Hide the header - useful when used in drawer */
+  hideHeader?: boolean;
 }
 
 export const FilterSidebar: FC<FilterSidebarProps> = memo(
@@ -53,6 +62,8 @@ export const FilterSidebar: FC<FilterSidebarProps> = memo(
     isFiltersActive,
     onClearFilters,
     t,
+    sx,
+    hideHeader = false,
   }) => {
     const label = (key: string, fallback: string) =>
       t ? t(key) || fallback : fallback;
@@ -76,6 +87,49 @@ export const FilterSidebar: FC<FilterSidebarProps> = memo(
       },
       [onPriceCommit],
     );
+
+    /* ── Manual price input handlers ── */
+    const handleMinPriceChange = useCallback(
+      (value: string) => {
+        const num = parseInt(value, 10) || 0;
+        const clipped = Math.max(0, Math.min(num, tempPriceRange[1]));
+        onTempPriceChange([clipped, tempPriceRange[1]]);
+      },
+      [tempPriceRange, onTempPriceChange],
+    );
+
+    const handleMaxPriceChange = useCallback(
+      (value: string) => {
+        const num = parseInt(value, 10) || 10000;
+        const clipped = Math.min(10000, Math.max(num, tempPriceRange[0]));
+        onTempPriceChange([tempPriceRange[0], clipped]);
+      },
+      [tempPriceRange, onTempPriceChange],
+    );
+
+    const handleMinIncrement = useCallback(() => {
+      const newMin = Math.min(tempPriceRange[0] + 100, tempPriceRange[1]);
+      onTempPriceChange([newMin, tempPriceRange[1]]);
+      onPriceCommit([newMin, tempPriceRange[1]]);
+    }, [tempPriceRange, onTempPriceChange, onPriceCommit]);
+
+    const handleMinDecrement = useCallback(() => {
+      const newMin = Math.max(0, tempPriceRange[0] - 100);
+      onTempPriceChange([newMin, tempPriceRange[1]]);
+      onPriceCommit([newMin, tempPriceRange[1]]);
+    }, [tempPriceRange, onTempPriceChange, onPriceCommit]);
+
+    const handleMaxIncrement = useCallback(() => {
+      const newMax = Math.min(10000, tempPriceRange[1] + 100);
+      onTempPriceChange([tempPriceRange[0], newMax]);
+      onPriceCommit([tempPriceRange[0], newMax]);
+    }, [tempPriceRange, onTempPriceChange, onPriceCommit]);
+
+    const handleMaxDecrement = useCallback(() => {
+      const newMax = Math.max(tempPriceRange[0], tempPriceRange[1] - 100);
+      onTempPriceChange([tempPriceRange[0], newMax]);
+      onPriceCommit([tempPriceRange[0], newMax]);
+    }, [tempPriceRange, onTempPriceChange, onPriceCommit]);
 
     /* ── Rating toggle ── */
     const handleRatingToggle = useCallback(
@@ -106,22 +160,43 @@ export const FilterSidebar: FC<FilterSidebarProps> = memo(
         sx={{
           display: "flex",
           flexDirection: "column",
-          gap: "20px",
           padding: "20px",
           backgroundColor: tokens.white,
           borderRadius: "8px",
           border: `1px solid ${tokens.gray200}`,
-          height: "fit-content",
           position: "sticky",
-          top: 20,
+          top: 80,
+          maxHeight: "calc(100vh - 100px)",
+          overflowY: "auto",
+          "&::-webkit-scrollbar": hideHeader
+            ? { display: "none" }
+            : { width: "6px" },
+          "&::-webkit-scrollbar-track": {
+            backgroundColor: "transparent",
+          },
+          "&::-webkit-scrollbar-thumb": {
+            backgroundColor: tokens.gray200,
+            borderRadius: "3px",
+            "&:hover": {
+              backgroundColor: tokens.gray300,
+            },
+          },
+          ...sx,
         }}
       >
-        <Typography variant="h6" fontWeight={700} fontSize="16px">
-          {label("common.filters", "Filters")}
-        </Typography>
+        {!hideHeader && (
+          <Typography
+            variant="h6"
+            fontWeight={700}
+            fontSize="16px"
+            sx={{ mb: 2 }}
+          >
+            {label("common.filters", "Filters")}
+          </Typography>
+        )}
 
-        {/* Sort Dropdown */}
-        <Box>
+        {/* Sort Dropdown Section */}
+        <Box sx={{ mb: 2 }}>
           <Typography variant="body2" fontWeight={600} sx={{ mb: 1 }}>
             {label("common.sortBy", "Sort By")}
           </Typography>
@@ -155,46 +230,193 @@ export const FilterSidebar: FC<FilterSidebarProps> = memo(
           </Select>
         </Box>
 
-        <Divider />
+        <Divider sx={{ my: 2 }} />
 
-        {/* Price Range Filter */}
-        <Box>
-          <Typography variant="body2" fontWeight={600} sx={{ mb: 2 }}>
-            {label("common.priceRange", "Price Range")}
-          </Typography>
+        {/* Price Range Filter Section */}
+        <Box sx={{ mb: 2 }}>
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              mb: 1.5,
+            }}
+          >
+            <Typography variant="body2" fontWeight={600}>
+              {label("common.priceRange", "Price Range")}
+            </Typography>
+            <Typography
+              variant="body2"
+              fontWeight={700}
+              sx={{ color: tokens.accent }}
+            >
+              ₹{tempPriceRange[0].toLocaleString()} - ₹
+              {tempPriceRange[1].toLocaleString()}
+            </Typography>
+          </Box>
           <Slider
             value={tempPriceRange}
             onChange={handlePriceChange}
             onChangeCommitted={handlePriceCommitted}
-            valueLabelDisplay="auto"
+            valueLabelDisplay="off"
             min={0}
             max={10000}
             step={100}
-            marks={[
-              { value: 0, label: "₹0" },
-              { value: 10000, label: "₹10K" },
-            ]}
             sx={{
               "& .MuiSlider-thumb": { backgroundColor: tokens.accent },
               "& .MuiSlider-track": { backgroundColor: tokens.accent },
               "& .MuiSlider-rail": { backgroundColor: tokens.gray200 },
             }}
           />
-          <Box sx={{ display: "flex", gap: 1, mt: 2, fontSize: "12px" }}>
-            <Typography variant="body2">
-              ₹{tempPriceRange[0].toLocaleString()}
-            </Typography>
-            <Typography variant="body2">-</Typography>
-            <Typography variant="body2">
-              ₹{tempPriceRange[1].toLocaleString()}
-            </Typography>
+          <Typography
+            variant="caption"
+            sx={{
+              display: "block",
+              mt: 1.5,
+              color: tokens.gray400,
+              fontStyle: "italic",
+            }}
+          >
+            {label(
+              "common.dragToFilter",
+              "Drag the sliders to filter by price",
+            )}
+          </Typography>
+
+          {/* Manual Price Input Fields */}
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: { xs: "row", sm: "column" },
+              gap: 1.5,
+              mt: 2,
+              alignItems: { xs: "flex-end", sm: "stretch" },
+            }}
+          >
+            {/* Min Price Input */}
+            <Box sx={{ flex: 1 }}>
+              <Typography variant="caption" sx={{ fontSize: "11px" }}>
+                {label("common.minPrice", "Min")}
+              </Typography>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+                <IconButton
+                  size="small"
+                  onClick={handleMinDecrement}
+                  sx={{
+                    padding: "4px",
+                    color: tokens.accent,
+                    border: `1px solid ${tokens.gray200}`,
+                    borderRadius: 1,
+                    "&:hover": {
+                      backgroundColor: "#FFF3E0",
+                    },
+                  }}
+                >
+                  <RemoveIcon fontSize="small" />
+                </IconButton>
+                <TextField
+                  type="number"
+                  value={tempPriceRange[0]}
+                  onChange={(e) => handleMinPriceChange(e.target.value)}
+                  onBlur={() => onPriceCommit(tempPriceRange)}
+                  size="small"
+                  fullWidth
+                  inputProps={{
+                    min: 0,
+                    max: 10000,
+                    step: 100,
+                    style: { textAlign: "center" },
+                  }}
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      fontSize: "12px",
+                      padding: "2px 4px",
+                    },
+                  }}
+                />
+                <IconButton
+                  size="small"
+                  onClick={handleMinIncrement}
+                  sx={{
+                    padding: "4px",
+                    color: tokens.accent,
+                    border: `1px solid ${tokens.gray200}`,
+                    borderRadius: 1,
+                    "&:hover": {
+                      backgroundColor: "#FFF3E0",
+                    },
+                  }}
+                >
+                  <AddIcon fontSize="small" />
+                </IconButton>
+              </Box>
+            </Box>
+
+            {/* Max Price Input */}
+            <Box sx={{ flex: 1 }}>
+              <Typography variant="caption" sx={{ fontSize: "11px" }}>
+                {label("common.maxPrice", "Max")}
+              </Typography>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+                <IconButton
+                  size="small"
+                  onClick={handleMaxDecrement}
+                  sx={{
+                    padding: "4px",
+                    color: tokens.accent,
+                    border: `1px solid ${tokens.gray200}`,
+                    borderRadius: 1,
+                    "&:hover": {
+                      backgroundColor: "#FFF3E0",
+                    },
+                  }}
+                >
+                  <RemoveIcon fontSize="small" />
+                </IconButton>
+                <TextField
+                  type="number"
+                  value={tempPriceRange[1]}
+                  onChange={(e) => handleMaxPriceChange(e.target.value)}
+                  onBlur={() => onPriceCommit(tempPriceRange)}
+                  size="small"
+                  fullWidth
+                  inputProps={{
+                    min: 0,
+                    max: 10000,
+                    step: 100,
+                    style: { textAlign: "center" },
+                  }}
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      fontSize: "12px",
+                      padding: "2px 4px",
+                    },
+                  }}
+                />
+                <IconButton
+                  size="small"
+                  onClick={handleMaxIncrement}
+                  sx={{
+                    padding: "4px",
+                    color: tokens.accent,
+                    border: `1px solid ${tokens.gray200}`,
+                    borderRadius: 1,
+                    "&:hover": {
+                      backgroundColor: "#FFF3E0",
+                    },
+                  }}
+                >
+                  <AddIcon fontSize="small" />
+                </IconButton>
+              </Box>
+            </Box>
           </Box>
         </Box>
 
-        <Divider />
+        <Divider sx={{ my: 2 }} />
 
-        {/* Rating Filter (multi-select) */}
-        <Box>
+        {/* Rating Filter Section */}
+        <Box sx={{ mb: 2 }}>
           <Typography variant="body2" fontWeight={600} sx={{ mb: 1.5 }}>
             {label("common.rating", "Rating")}
           </Typography>
@@ -219,11 +441,11 @@ export const FilterSidebar: FC<FilterSidebarProps> = memo(
           ))}
         </Box>
 
-        <Divider />
+        {categories.length > 0 && <Divider sx={{ my: 2 }} />}
 
-        {/* Category Filter (multi-select) */}
+        {/* Category Filter Section */}
         {categories.length > 0 && (
-          <Box>
+          <Box sx={{ mb: 2 }}>
             <Typography variant="body2" fontWeight={600} sx={{ mb: 1.5 }}>
               {label("common.category", "Category")}
             </Typography>
@@ -245,7 +467,7 @@ export const FilterSidebar: FC<FilterSidebarProps> = memo(
           </Box>
         )}
 
-        <Divider />
+        {isFiltersActive && <Divider sx={{ my: 2 }} />}
 
         {/* Clear Filters Button */}
         {isFiltersActive && (

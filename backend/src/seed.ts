@@ -334,9 +334,10 @@ async function seed() {
   console.log(`✅ Created ${createdProducts.length} products with images`);
 
   // Create super admin user
+
   console.log("👥 Adding super admin...");
 
-  const hashedPassword = await bcryptjs.hash("super-admin9606@", 10);
+  const hashedPassword = await bcryptjs.hash("FTej?Vz7+CqFM?J", 10);
 
   try {
     // Check if super admin already exists
@@ -352,12 +353,12 @@ async function seed() {
           email: "super-admin@gadgify.com",
           password: hashedPassword,
           name: "Super Admin",
-          phone: "9000000000",
+          phone: "",
           role: "SUPER_ADMIN",
           state: "Maharashtra",
-          city: "Mumbai",
-          address: "Gadgify HQ, Mumbai",
-          pincode: "400001",
+          city: "",
+          address: "",
+          pincode: "",
         },
       ];
 
@@ -373,7 +374,7 @@ async function seed() {
 
     console.log("🎉 Seeding completed!");
     console.log("📊 Summary:");
-    console.log(`   - Products: ${createdProducts.length} (with images)`);
+    // console.log(`   - Products: ${createdProducts.length} (with images)`);
     console.log(`   - Images added: 1 primary image per product`);
     console.log(
       `   - Categories: 15+ (Accessories, Travel, Bags, Home Utility, Personal Care, Electronics, Home Gadgets, Kitchen, Storage, Toys & Collectibles, Stationery, Tools, Eco Products, Cleaning, Footwear Care, Baby Care, Travel Accessories)`,

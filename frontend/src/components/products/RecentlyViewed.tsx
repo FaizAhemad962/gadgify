@@ -39,8 +39,8 @@ const RecentlyViewed = ({ excludeProductId }: RecentlyViewedProps) => {
   if (products.length === 0) return null;
 
   return (
-    <Box sx={{ mt: 8 }}>
-      <Divider sx={{ mb: 6, borderColor: tokens.gray200 }} />
+    <Box sx={{ my: 4 }}>
+      {/* <Divider sx={{ mb: 6, borderColor: tokens.gray200 }} /> */}
       <Typography
         variant="h5"
         gutterBottom

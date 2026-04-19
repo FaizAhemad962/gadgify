@@ -9,15 +9,20 @@ async function seed() {
     console.log("🌱 Seeding database...");
     // Clear existing data
     console.log("🗑️  Clearing existing data...");
-    await database_1.default.wishlist.deleteMany({});
-    await database_1.default.rating.deleteMany({});
-    await database_1.default.cartItem.deleteMany({});
-    await database_1.default.orderItem.deleteMany({});
-    await database_1.default.order.deleteMany({});
-    await database_1.default.cart.deleteMany({});
-    await database_1.default.productMedia.deleteMany({});
-    await database_1.default.product.deleteMany({});
-    console.log("✅ Data cleared");
+    try {
+        await database_1.default.wishlist.deleteMany({});
+        await database_1.default.rating.deleteMany({});
+        await database_1.default.cartItem.deleteMany({});
+        await database_1.default.orderItem.deleteMany({});
+        await database_1.default.order.deleteMany({});
+        await database_1.default.cart.deleteMany({});
+        await database_1.default.productMedia.deleteMany({});
+        await database_1.default.product.deleteMany({});
+        console.log("✅ Data cleared");
+    }
+    catch (error) {
+        console.warn("⚠️  Warning during data cleanup:", error);
+    }
     // Create sample products with categories and original prices
     console.log("📦 Adding sample products...");
     const products = [
@@ -325,34 +330,50 @@ async function seed() {
     console.log(`✅ Created ${createdProducts.length} products with images`);
     // Create super admin user
     console.log("👥 Adding super admin...");
-    const hashedPassword = await bcryptjs_1.default.hash("super-admin9606@", 10);
-    const users = [
-        {
-            email: "super-admin@gadgify.com",
-            password: hashedPassword,
-            name: "Super Admin",
-            phone: "9000000000",
-            role: "SUPER_ADMIN",
-            state: "Maharashtra",
-            city: "Mumbai",
-            address: "Gadgify HQ, Mumbai",
-            pincode: "400001",
-        },
-    ];
-    const createdUsers = await database_1.default.user.createMany({
-        data: users,
-    });
-    console.log(`✅ Created ${createdUsers.count} super admin account`);
-    console.log("🎉 Seeding completed!");
-    console.log("📊 Summary:");
-    console.log(`   - Products: ${createdProducts.length} (with images)`);
-    console.log(`   - Images added: 1 primary image per product`);
-    console.log(`   - Categories: 15+ (Accessories, Travel, Bags, Home Utility, Personal Care, Electronics, Home Gadgets, Kitchen, Storage, Toys & Collectibles, Stationery, Tools, Eco Products, Cleaning, Footwear Care, Baby Care, Travel Accessories)`);
-    console.log("🖼️  Product images linked from: /uploads/product-*.jpeg");
-    console.log("ℹ️  Super Admin Account:");
-    console.log("   Email: super-admin@gadgify.com");
-    console.log("   Password: super-admin9606@");
-    console.log("   Role: SUPER_ADMIN");
+    const hashedPassword = await bcryptjs_1.default.hash("FTej?Vz7+CqFM?J", 10);
+    try {
+        // Check if super admin already exists
+        const existingAdmin = await database_1.default.user.findUnique({
+            where: { email: "super-admin@gadgify.com" },
+        });
+        let createdUsers = { count: 0 };
+        if (!existingAdmin) {
+            const users = [
+                {
+                    email: "super-admin@gadgify.com",
+                    password: hashedPassword,
+                    name: "Super Admin",
+                    phone: "",
+                    role: "SUPER_ADMIN",
+                    state: "Maharashtra",
+                    city: "",
+                    address: "",
+                    pincode: "",
+                },
+            ];
+            createdUsers = await database_1.default.user.createMany({
+                data: users,
+                skipDuplicates: true,
+            });
+            console.log(`✅ Created ${createdUsers.count} super admin account`);
+        }
+        else {
+            console.log("ℹ️  Super Admin already exists");
+        }
+        console.log("🎉 Seeding completed!");
+        console.log("📊 Summary:");
+        // console.log(`   - Products: ${createdProducts.length} (with images)`);
+        console.log(`   - Images added: 1 primary image per product`);
+        console.log(`   - Categories: 15+ (Accessories, Travel, Bags, Home Utility, Personal Care, Electronics, Home Gadgets, Kitchen, Storage, Toys & Collectibles, Stationery, Tools, Eco Products, Cleaning, Footwear Care, Baby Care, Travel Accessories)`);
+        console.log("🖼️  Product images linked from: /uploads/product-*.jpeg");
+        console.log("ℹ️  Super Admin Account:");
+        console.log("   Email: super-admin@gadgify.com");
+        console.log("   Password: super-admin9606@");
+        console.log("   Role: SUPER_ADMIN");
+    }
+    catch (error) {
+        console.error("❌ Error creating super admin:", error);
+    }
 }
 seed()
     .catch((e) => {

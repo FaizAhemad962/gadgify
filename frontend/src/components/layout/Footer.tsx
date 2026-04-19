@@ -22,10 +22,7 @@ const Footer = () => {
         borderTop: "1px solid #222",
       }}
     >
-      <Container
-        maxWidth={false}
-        sx={{ maxWidth: "1500px", mx: "auto", px: { xs: 3, sm: 6 } }}
-      >
+      <Container maxWidth={false}>
         <Box
           sx={{
             display: "grid",
