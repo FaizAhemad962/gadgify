@@ -1,22 +1,17 @@
 import { Typography } from "@mui/material";
+import { useTranslation } from "react-i18next";
 import LegalLayout from "./LegalLayout";
 
 const ShippingPolicy = () => {
+  const { t } = useTranslation();
+
   return (
-    <LegalLayout title="Shipping Policy">
-      <Typography paragraph>
-        Orders placed on Gadgify are processed within 1–2 business days.
-      </Typography>
+    <LegalLayout title={t("legal.shippingPolicy.title")}>
+      <Typography paragraph>{t("legal.shippingPolicy.para1")}</Typography>
 
-      <Typography paragraph>
-        Delivery usually takes 4–7 business days depending on your location.
-        Shipping charges (if any) will be displayed at checkout.
-      </Typography>
+      <Typography paragraph>{t("legal.shippingPolicy.para2")}</Typography>
 
-      <Typography paragraph>
-        Delays may occur due to courier issues, weather conditions, or
-        unforeseen circumstances.
-      </Typography>
+      <Typography paragraph>{t("legal.shippingPolicy.para3")}</Typography>
     </LegalLayout>
   );
 };

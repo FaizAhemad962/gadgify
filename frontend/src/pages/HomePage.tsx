@@ -48,27 +48,28 @@ import {
 } from "@/components/sections";
 
 // Fake testimonials (static — replace with real API data when available)
+// Using translation keys now
 const TESTIMONIALS = [
   {
-    name: "Priya S.",
-    city: "Mumbai",
-    avatar: "P",
+    nameKey: "common.testimonial1Name",
+    cityKey: "common.testimonial1City",
+    avatarInitial: "P",
     rating: 5,
-    text: "Best electronics store in Maharashtra! Fast delivery and authentic products. I've ordered 3 times and never been disappointed.",
+    textKey: "common.testimonial1Text",
   },
   {
-    name: "Rahul M.",
-    city: "Pune",
-    avatar: "R",
+    nameKey: "common.testimonial2Name",
+    cityKey: "common.testimonial2City",
+    avatarInitial: "R",
     rating: 5,
-    text: "The product quality is excellent and customer support is very responsive. GST invoices are provided for every order.",
+    textKey: "common.testimonial2Text",
   },
   {
-    name: "Anita K.",
-    city: "Nagpur",
-    avatar: "A",
+    nameKey: "common.testimonial3Name",
+    cityKey: "common.testimonial3City",
+    avatarInitial: "A",
     rating: 4,
-    text: "Great prices and easy returns. I love the variety of gadgets available. My go-to store for tech purchases!",
+    textKey: "common.testimonial3Text",
   },
 ];
 
@@ -988,7 +989,7 @@ const HomePage = () => {
                       fontSize: "1rem",
                     }}
                   >
-                    {review.avatar}
+                    {review.avatarInitial}
                   </Avatar>
                   <Box>
                     <Typography
@@ -998,7 +999,7 @@ const HomePage = () => {
                         fontSize: { xs: "0.9rem", md: "0.95rem" },
                       }}
                     >
-                      {review.name}
+                      {t(review.nameKey)}
                     </Typography>
                     <Typography
                       variant="caption"
@@ -1007,7 +1008,7 @@ const HomePage = () => {
                         fontSize: "0.8rem",
                       }}
                     >
-                      {review.city}
+                      {t(review.cityKey)}
                     </Typography>
                   </Box>
                 </Box>
@@ -1026,7 +1027,7 @@ const HomePage = () => {
                     fontSize: { xs: "0.85rem", md: "0.95rem" },
                   }}
                 >
-                  "{review.text}"
+                  "{t(review.textKey)}"
                 </Typography>
               </Card>
             ))}

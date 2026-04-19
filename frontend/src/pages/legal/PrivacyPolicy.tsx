@@ -1,30 +1,19 @@
 import { Typography } from "@mui/material";
+import { useTranslation } from "react-i18next";
 import LegalLayout from "./LegalLayout";
 
 const PrivacyPolicy = () => {
+  const { t } = useTranslation();
+
   return (
-    <LegalLayout title="Privacy Policy">
-      <Typography paragraph>
-        At Gadgify, we respect your privacy and are committed to protecting
-        your personal information.
-      </Typography>
+    <LegalLayout title={t("legal.privacyPolicy.title")}>
+      <Typography paragraph>{t("legal.privacyPolicy.para1")}</Typography>
 
-      <Typography paragraph>
-        We collect information such as name, phone number, email address,
-        and shipping address only to process orders and provide customer
-        support.
-      </Typography>
+      <Typography paragraph>{t("legal.privacyPolicy.para2")}</Typography>
 
-      <Typography paragraph>
-        We do not sell or share your personal data with third parties,
-        except payment gateways and delivery partners required to fulfill
-        your order.
-      </Typography>
+      <Typography paragraph>{t("legal.privacyPolicy.para3")}</Typography>
 
-      <Typography paragraph>
-        All payments are processed securely using trusted payment providers.
-        By using our website, you agree to this Privacy Policy.
-      </Typography>
+      <Typography paragraph>{t("legal.privacyPolicy.para4")}</Typography>
     </LegalLayout>
   );
 };

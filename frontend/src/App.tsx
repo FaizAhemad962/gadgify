@@ -7,7 +7,9 @@ import { CouponProvider } from "./context/CouponContext";
 import { WishlistProvider } from "./context/WishlistContext";
 import { SearchProvider } from "./context/SearchContext";
 import { CompareProvider } from "./context/CompareContext";
+import { ErrorProvider } from "./context/ErrorContext";
 import ScrollToTop from "./components/ScrollToTop";
+import GlobalSnackbar from "./components/GlobalSnackbar";
 import AppRoutes from "./routes/AppRoutes";
 
 const queryClient = new QueryClient({
@@ -23,24 +25,27 @@ const queryClient = new QueryClient({
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeContextProvider>
-        <BrowserRouter>
-          <ScrollToTop />
-          <AuthProvider>
-            <CartProvider>
-              <CouponProvider>
-                <WishlistProvider>
-                  <SearchProvider>
-                    <CompareProvider>
-                      <AppRoutes />
-                    </CompareProvider>
-                  </SearchProvider>
-                </WishlistProvider>
-              </CouponProvider>
-            </CartProvider>
-          </AuthProvider>
-        </BrowserRouter>
-      </ThemeContextProvider>
+      <ErrorProvider>
+        <ThemeContextProvider>
+          <BrowserRouter>
+            <ScrollToTop />
+            <AuthProvider>
+              <CartProvider>
+                <CouponProvider>
+                  <WishlistProvider>
+                    <SearchProvider>
+                      <CompareProvider>
+                        <AppRoutes />
+                        <GlobalSnackbar />
+                      </CompareProvider>
+                    </SearchProvider>
+                  </WishlistProvider>
+                </CouponProvider>
+              </CartProvider>
+            </AuthProvider>
+          </BrowserRouter>
+        </ThemeContextProvider>
+      </ErrorProvider>
     </QueryClientProvider>
   );
 }

@@ -1,29 +1,19 @@
 import { Typography } from "@mui/material";
+import { useTranslation } from "react-i18next";
 import LegalLayout from "./LegalLayout";
 
 const TermsConditions = () => {
+  const { t } = useTranslation();
+
   return (
-    <LegalLayout title="Terms & Conditions">
-      <Typography paragraph>
-        By accessing and using Gadgify, you agree to comply with these terms
-        and conditions.
-      </Typography>
+    <LegalLayout title={t("legal.termsConditions.title")}>
+      <Typography paragraph>{t("legal.termsConditions.para1")}</Typography>
 
-      <Typography paragraph>
-        Product prices and availability are subject to change without
-        notice. We reserve the right to cancel orders in case of pricing
-        errors or stock unavailability.
-      </Typography>
+      <Typography paragraph>{t("legal.termsConditions.para2")}</Typography>
 
-      <Typography paragraph>
-        Users must provide accurate information while placing orders.
-        Misuse of the website may result in account suspension.
-      </Typography>
+      <Typography paragraph>{t("legal.termsConditions.para3")}</Typography>
 
-      <Typography paragraph>
-        All content on this website belongs to Gadgify and may not be copied
-        or reused without permission.
-      </Typography>
+      <Typography paragraph>{t("legal.termsConditions.para4")}</Typography>
     </LegalLayout>
   );
 };

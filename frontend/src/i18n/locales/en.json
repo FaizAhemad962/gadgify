@@ -122,7 +122,18 @@
     "invalidFileType": "Please select a valid image file",
     "fileTooLarge": "File size must be less than 5MB",
     "passwordTooShort": "Password must be at least 6 characters long",
-    "invalidCoupon": "Invalid coupon code"
+    "invalidCoupon": "Invalid coupon code",
+    "networkError": "Network connection failed. Please check your internet connection.",
+    "timeoutError": "Request timed out. Please try again.",
+    "serverError": "Server error occurred. Please try again later.",
+    "serviceUnavailable": "Service temporarily unavailable. Please try again later.",
+    "notFound": "Resource not found.",
+    "unauthorized": "Unauthorized. Please login again.",
+    "forbidden": "You don't have permission to access this resource.",
+    "tooManyRequests": "Too many requests. Please wait a moment and try again.",
+    "retrying": "Retrying request...",
+    "retryingNow": "Retrying now...",
+    "maxRetriesExceeded": "Failed after multiple retries. Please try again later."
   },
   "success": {
     "addedToCart": "Product added to cart",
@@ -440,6 +451,15 @@
     "limitedTimeOffer": "Limited Time Offer",
     "customerStories": "What Our Customers Say",
     "customerStoriesDesc": "Real reviews from real shoppers",
+    "testimonial1Name": "Priya S.",
+    "testimonial1City": "Mumbai",
+    "testimonial1Text": "Best electronics store in Maharashtra! Fast delivery and authentic products. I've ordered 3 times and never been disappointed.",
+    "testimonial2Name": "Rahul M.",
+    "testimonial2City": "Pune",
+    "testimonial2Text": "The product quality is excellent and customer support is very responsive. GST invoices are provided for every order.",
+    "testimonial3Name": "Anita K.",
+    "testimonial3City": "Nagpur",
+    "testimonial3Text": "Great prices and easy returns. I love the variety of gadgets available. My go-to store for tech purchases!",
     "newsletterTitle": "Stay in the Loop",
     "newsletterDesc": "Get exclusive deals, new arrivals & tech tips straight to your inbox",
     "emailPlaceholderShort": "you@example.com",
@@ -567,5 +587,40 @@
     "thane": "Thane",
     "naviMumbai": "Navi Mumbai",
     "other": "Other"
+  },
+  "legal": {
+    "privacyPolicy": {
+      "title": "Privacy Policy",
+      "para1": "At Gadgify, we respect your privacy and are committed to protecting your personal information.",
+      "para2": "We collect information such as name, phone number, email address, and shipping address only to process orders and provide customer support.",
+      "para3": "We do not sell or share your personal data with third parties, except payment gateways and delivery partners required to fulfill your order.",
+      "para4": "All payments are processed securely using trusted payment providers. By using our website, you agree to this Privacy Policy."
+    },
+    "termsConditions": {
+      "title": "Terms & Conditions",
+      "para1": "By accessing and using Gadgify, you agree to comply with these terms and conditions.",
+      "para2": "Product prices and availability are subject to change without notice. We reserve the right to cancel orders in case of pricing errors or stock unavailability.",
+      "para3": "Users must provide accurate information while placing orders. Misuse of the website may result in account suspension.",
+      "para4": "All content on this website belongs to Gadgify and may not be copied or reused without permission."
+    },
+    "refundPolicy": {
+      "title": "Refund & Return Policy",
+      "para1": "At Gadgify, we accept returns only for damaged, defective, or wrong products.",
+      "para2": "To be eligible for a return, you must raise a request within 48 hours of receiving the product. An unboxing video is mandatory for verification.",
+      "para3": "Products that are used, damaged after delivery, or returned due to change of mind are not eligible for return.",
+      "para4": "Once approved, refunds will be processed within 5–7 business days to the original payment method."
+    },
+    "shippingPolicy": {
+      "title": "Shipping Policy",
+      "para1": "Orders placed on Gadgify are processed within 1–2 business days.",
+      "para2": "Delivery usually takes 4–7 business days depending on your location. Shipping charges (if any) will be displayed at checkout.",
+      "para3": "Delays may occur due to courier issues, weather conditions, or unforeseen circumstances."
+    }
+  },
+  "notFound": {
+    "title": "404",
+    "heading": "Page Not Found",
+    "description": "The page you're looking for doesn't exist.",
+    "button": "Go to Home"
   }
 }
