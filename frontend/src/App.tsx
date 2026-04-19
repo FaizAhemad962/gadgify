@@ -7,6 +7,7 @@ import { CouponProvider } from "./context/CouponContext";
 import { WishlistProvider } from "./context/WishlistContext";
 import { SearchProvider } from "./context/SearchContext";
 import { CompareProvider } from "./context/CompareContext";
+import ScrollToTop from "./components/ScrollToTop";
 import AppRoutes from "./routes/AppRoutes";
 
 const queryClient = new QueryClient({
@@ -24,6 +25,7 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <ThemeContextProvider>
         <BrowserRouter>
+          <ScrollToTop />
           <AuthProvider>
             <CartProvider>
               <CouponProvider>

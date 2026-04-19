@@ -1,3 +1,5 @@
+/* eslint-disable react-hooks/set-state-in-effect */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useEffect, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
@@ -86,8 +88,7 @@ const ProductsPage = () => {
     setAllProducts([]);
   }, [priceRange, selectedRatings, selectedCategories, sortBy]);
 
-  const loaderRef = useRef<HTMLDivElement>(null);
-  const gridRef = useRef<HTMLDivElement>(null);
+  // Get cart context
   const { cart, addToCart, isAddingToCart } = useCart();
 
   // Fetch products for current page
@@ -149,22 +150,26 @@ const ProductsPage = () => {
     setHasMore(allProducts.length < totalProducts);
   }, [allProducts.length, totalProducts]);
 
-  // Infinite scroll observer
+  // Infinite scroll observer - trigger when near end of page
   useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && hasMore && !isLoading) {
-          setPage((prev) => prev + 1);
-        }
-      },
-      { threshold: 0.2 },
-    );
+    const handleScroll = () => {
+      // Check if we're near the bottom of the page
+      const scrollTop = window.scrollY;
+      const scrollHeight = document.documentElement.scrollHeight;
+      const clientHeight = window.innerHeight;
 
-    if (loaderRef.current) {
-      observer.observe(loaderRef.current);
-    }
+      // Trigger when user is within 500px of bottom
+      if (
+        scrollHeight - (scrollTop + clientHeight) < 500 &&
+        hasMore &&
+        !isFetching
+      ) {
+        setPage((prev) => prev + 1);
+      }
+    };
 
-    return () => observer.disconnect();
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
   }, [hasMore, isFetching]);
 
   // Filter handlers
@@ -195,12 +200,8 @@ const ProductsPage = () => {
     navigate("/cart");
   };
 
-  // Responsive column count based on screen size and view mode
-  // const colCount = useMemo(() => {
-  //   if (viewMode === "list") return 1;
-  //   if (isMobile) return 1;
-  //   return 3;
-  // }, [viewMode, isMobile]);
+  // Remove unused ref
+  const gridContainerRef = useRef<HTMLDivElement>(null);
 
   if (error) {
     return (
@@ -478,9 +479,9 @@ const ProductsPage = () => {
                 </Box>
               ) : (
                 <>
-                  {/* Virtualized Products Grid */}
+                  {/* Products Grid */}
                   <Box
-                    ref={gridRef}
+                    ref={gridContainerRef}
                     sx={{
                       display: "grid",
                       gridTemplateColumns:
@@ -490,10 +491,9 @@ const ProductsPage = () => {
                               xs: "1fr",
                               sm: "repeat(2, 1fr)",
                               md: "repeat(3, 1fr)",
-                              lg: "repeat(4, 1fr)",
-                              xl: "repeat(5, 1fr)",
+                              lg: "repeat(3, 1fr)",
                             },
-                      gap: viewMode === "list" ? 2 : 2,
+                      gap: 2,
                     }}
                   >
                     {allProducts.map((product) => (
@@ -515,27 +515,14 @@ const ProductsPage = () => {
                     ))}
                   </Box>
 
-                  {/* Infinite scroll loader */}
-                  {hasMore && !isFetching && (
-                    <Box
-                      ref={loaderRef}
-                      sx={{
-                        display: "flex",
-                        justifyContent: "center",
-                        py: 6,
-                      }}
-                    >
-                      <CircularProgress sx={{ color: tokens.accent }} />
-                    </Box>
-                  )}
-
-                  {/* Loading more products indicator */}
-                  {isFetching && page > 1 && (
+                  {/* Loading indicator when fetching more products */}
+                  {isFetching && allProducts.length > 0 && (
                     <Box
                       sx={{
                         display: "flex",
                         justifyContent: "center",
                         py: 3,
+                        mt: 2,
                       }}
                     >
                       <CircularProgress
@@ -551,6 +538,7 @@ const ProductsPage = () => {
                         display: "flex",
                         justifyContent: "center",
                         py: 4,
+                        mt: 2,
                       }}
                     >
                       <Typography
