@@ -2,16 +2,20 @@ import { Router } from "express";
 import {
   signup,
   login,
+  logout,
   getProfile,
   updateProfile,
   changePassword,
   updateProfilePhoto,
   forgotPassword,
   resetPassword,
+  verifyEmail,
+  resendVerificationEmail,
 } from "../controllers/authController";
 import { authenticate } from "../middlewares/auth";
 import { validate, validateMaharashtra } from "../middlewares/validate";
-import { authLimiter } from "../middlewares/rateLimiter";
+import { authLimiter, passwordResetLimiter } from "../middlewares/rateLimiter";
+import { getCSRFToken } from "../middlewares/csrfProtection";
 import {
   loginSchema,
   signupSchema,
@@ -20,7 +24,7 @@ import {
   forgotPasswordSchema,
   resetPasswordSchema,
 } from "../validators";
-import { upload } from "../middlewares/upload";
+import { upload, validateMagicBytesMiddleware } from "../middlewares/upload";
 
 const router = Router();
 
@@ -32,15 +36,16 @@ router.post(
   signup,
 );
 router.post("/login", authLimiter, validate(loginSchema), login);
+router.post("/logout", authenticate, logout);
 router.post(
   "/forgot-password",
-  authLimiter,
+  passwordResetLimiter,
   validate(forgotPasswordSchema),
   forgotPassword,
 );
 router.post(
   "/reset-password",
-  authLimiter,
+  passwordResetLimiter,
   validate(resetPasswordSchema),
   resetPassword,
 );
@@ -61,7 +66,15 @@ router.post(
   "/profile-photo",
   authenticate,
   upload.single("image"),
+  validateMagicBytesMiddleware(["jpg", "jpeg", "png", "gif", "webp"]),
   updateProfilePhoto,
 );
+
+// ✅ SECURITY: Email verification endpoints
+router.post("/verify-email", verifyEmail);
+router.post("/resend-verification-email", resendVerificationEmail);
+
+// ✅ SECURITY: Get CSRF token for client
+router.get("/csrf-token", getCSRFToken);
 
 export default router;

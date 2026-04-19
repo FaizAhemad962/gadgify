@@ -17,7 +17,11 @@ import { authenticate, authorize } from "../middlewares/auth";
 import { validate } from "../middlewares/validate";
 import { uploadLimiter } from "../middlewares/rateLimiter";
 import { productSchema, ratingSchema } from "../validators";
-import { upload, videoUpload } from "../middlewares/upload";
+import {
+  upload,
+  videoUpload,
+  validateMagicBytesMiddleware,
+} from "../middlewares/upload";
 import { Request, Response } from "express";
 
 const router = Router();
@@ -34,6 +38,7 @@ router.post(
   authorize("ADMIN", "SUPER_ADMIN"),
   uploadLimiter,
   upload.single("image"),
+  validateMagicBytesMiddleware(["jpg", "jpeg", "png", "gif", "webp"]),
   (req: Request, res: Response) => {
     if (!req.file) {
       return res.status(400).json({ message: "No file uploaded" });
@@ -60,8 +65,14 @@ router.post(
           .status(400)
           .json({ success: false, message: "No video file uploaded" });
       }
-      const videoUrl = `/uploads/${req.file.filename}`;
-      res.json({ success: true, videoUrl });
+
+      // ✅ SECURITY: Validate magic bytes before saving
+      validateMagicBytesMiddleware(["mp4", "webm"])(req, res, () => {
+        if (!res.headersSent) {
+          const videoUrl = `/uploads/${req.file?.filename}`;
+          res.json({ success: true, videoUrl });
+        }
+      });
     });
   },
 );

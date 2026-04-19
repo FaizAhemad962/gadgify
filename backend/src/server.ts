@@ -5,12 +5,23 @@ import { config } from "./config";
 import { errorHandler } from "./middlewares/errorHandler";
 import { sanitizeInput, sanitizeStrings } from "./middlewares/sanitize";
 import { logSecurityEvents } from "./middlewares/securityLogger";
+import { verifyCsrfToken } from "./middlewares/csrfProtection";
 import { apiLimiter } from "./middlewares/rateLimiter";
 import logger from "./utils/logger";
+
+// Extend Express Response type for custom setCookie method
+declare global {
+  namespace Express {
+    interface Response {
+      setCookie: (name: string, value: string, options?: any) => void;
+    }
+  }
+}
 import {
   initializeConnectionPool,
   checkConnectionHealth,
 } from "./utils/connectionPool";
+import { initializeRedis } from "./config/redis";
 import { runStartupDiagnostics } from "./utils/startupDiagnostics";
 import authRoutes from "./routes/authRoutes";
 import productRoutes from "./routes/productRoutes";
@@ -82,12 +93,52 @@ app.use(
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
+// Cookie parser - for secure httpOnly cookie handling
+// Supports both httpOnly cookies and query parameter fallback for legacy clients
+app.use((req: Request, res: Response, next) => {
+  // Parse cookies from headers
+  const cookieHeader = req.headers.cookie;
+  if (cookieHeader) {
+    const cookies: Record<string, string> = {};
+    cookieHeader.split(";").forEach((cookie) => {
+      const [key, val] = cookie.trim().split("=");
+      if (key && val) {
+        cookies[key] = decodeURIComponent(val);
+      }
+    });
+    (req as any).cookies = cookies;
+  }
+  next();
+});
+
+// Helper to set httpOnly cookie
+app.use((req: Request, res: Response, next) => {
+  res.setCookie = (name: string, value: string, options?: any) => {
+    const defaults = {
+      httpOnly: true,
+      secure: config.nodeEnv === "production",
+      sameSite: "strict" as const,
+      path: "/",
+      maxAge: 24 * 60 * 60 * 1000, // 24 hours
+    };
+    const finalOptions = { ...defaults, ...options };
+    res.setHeader(
+      "Set-Cookie",
+      `${name}=${value}; Path=${finalOptions.path}; ${finalOptions.httpOnly ? "HttpOnly; " : ""}${finalOptions.secure ? "Secure; " : ""}SameSite=${finalOptions.sameSite}; Max-Age=${finalOptions.maxAge / 1000}`,
+    );
+  };
+  next();
+});
+
 // Sanitize input
 app.use(sanitizeInput);
 app.use(sanitizeStrings);
 
 // Security logging
 app.use(logSecurityEvents);
+
+// ✅ SECURITY: CSRF protection
+app.use(verifyCsrfToken);
 
 // Rate limiting
 app.use("/api/", apiLimiter);
@@ -165,6 +216,9 @@ const startServer = async () => {
   try {
     // Initialize database connection pool
     await initializeConnectionPool();
+
+    // ✅ SECURITY: Initialize Redis for token blacklist and session management
+    await initializeRedis();
 
     app.listen(PORT, () => {
       logger.info(`🚀 Server running on port ${PORT}`);

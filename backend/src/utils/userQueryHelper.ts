@@ -20,7 +20,9 @@ export async function findUserByEmail(
     if (defaultRole && user.role !== defaultRole) return user;
     return user;
   } catch (error) {
-    console.error("Error in findUserByEmail:", error);
+    if (process.env.NODE_ENV === "development") {
+      console.error("Error in findUserByEmail:", error);
+    }
     return null;
   }
 }
@@ -43,7 +45,9 @@ export async function findUserByEmailWithMultipleCheck(
       allAccountsCount: activeUser ? 1 : 0,
     };
   } catch (error) {
-    console.error("Error in findUserByEmailWithMultipleCheck:", error);
+    if (process.env.NODE_ENV === "development") {
+      console.error("Error in findUserByEmailWithMultipleCheck:", error);
+    }
     return {
       user: null,
       otherAccounts: [],
@@ -69,7 +73,9 @@ export async function findAllAccountsByEmail(email: string) {
       orderBy: { createdAt: "asc" },
     });
   } catch (error) {
-    console.error("Error in findAllAccountsByEmail:", error);
+    if (process.env.NODE_ENV === "development") {
+      console.error("Error in findAllAccountsByEmail:", error);
+    }
     return [];
   }
 }
@@ -85,7 +91,9 @@ export async function userExists(
     const user = await prisma.user.findUnique({ where: { email } });
     return user !== null && !user.deletedAt && user.role === role;
   } catch (error) {
-    console.error("Error in userExists:", error);
+    if (process.env.NODE_ENV === "development") {
+      console.error("Error in userExists:", error);
+    }
     return false;
   }
 }
@@ -107,7 +115,9 @@ export async function isEmailRegisteredWithAnyRole(
     });
     return user !== null;
   } catch (error) {
-    console.error("Error in isEmailRegisteredWithAnyRole:", error);
+    if (process.env.NODE_ENV === "development") {
+      console.error("Error in isEmailRegisteredWithAnyRole:", error);
+    }
     return false;
   }
 }

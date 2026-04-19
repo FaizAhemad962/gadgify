@@ -1,4 +1,5 @@
 import { apiClient } from "./client";
+import { getCsrfToken } from "./csrfHelper";
 
 export interface FlashSale {
   id: string;
@@ -36,6 +37,7 @@ export const flashSaleApi = {
   getAll: async (params?: { page?: number; limit?: number }) => {
     const response = await apiClient.get<FlashSalesResponse>("/flash-sales", {
       params,
+      withCredentials: true,
     });
     return response.data.data;
   },
@@ -44,6 +46,7 @@ export const flashSaleApi = {
   getById: async (id: string) => {
     const response = await apiClient.get<FlashSaleResponse>(
       `/flash-sales/${id}`,
+      { withCredentials: true },
     );
     return response.data.data.flashSale;
   },
@@ -52,6 +55,7 @@ export const flashSaleApi = {
   getUpcoming: async () => {
     const response = await apiClient.get<FlashSalesResponse>(
       "/flash-sales/upcoming",
+      { withCredentials: true },
     );
     return response.data.data.flashSales;
   },

@@ -1,11 +1,19 @@
-import { createContext, useContext, useState, type ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useRef,
+  type ReactNode,
+} from "react";
 import type { User } from "../types";
+import { apiClient } from "../api/client";
 
 interface AuthContextType {
   user: User | null;
   token: string | null;
-  login: (token: string, user: User) => void;
-  logout: () => void;
+  login: (user: User) => void;
+  logout: () => Promise<void>;
   isAuthenticated: boolean;
   isAdmin: boolean; // ADMIN or SUPER_ADMIN
   isSuperAdmin: boolean; // SUPER_ADMIN only
@@ -15,34 +23,52 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Load from localStorage outside component to avoid cascading renders
-const getStoredAuth = () => {
-  const storedToken = localStorage.getItem("token");
+// ✅ SECURITY: Tokens are now stored in httpOnly cookies (managed by browser)
+// User data cached in state only - not in localStorage
+const getStoredUser = () => {
   const storedUser = localStorage.getItem("user");
-
-  if (storedToken && storedUser) {
-    return { token: storedToken, user: JSON.parse(storedUser) as User };
+  if (storedUser) {
+    return JSON.parse(storedUser) as User;
   }
-  return { token: null, user: null };
+  return null;
 };
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const stored = getStoredAuth();
-  const [user, setUser] = useState<User | null>(stored.user);
-  const [token, setToken] = useState<string | null>(stored.token);
+  const [user, setUser] = useState<User | null>(getStoredUser());
+  const [token, setToken] = useState<string | null>(
+    getStoredUser() ? "authenticated" : null,
+  ); // Set based on stored user
 
-  const login = (newToken: string, newUser: User) => {
-    setToken(newToken);
+  // ✅ SECURITY: No token verification on app mount
+  // httpOnly cookie is automatically sent with every request
+  // If token is valid, API calls will succeed. If not, we'll get 401 errors.
+
+  const login = (newUser: User) => {
+    // ✅ SECURITY: Backend sent token in httpOnly cookie (we don't handle it)
+    // We just store user data locally for UI purposes
+    setToken("authenticated");
     setUser(newUser);
-    localStorage.setItem("token", newToken);
     localStorage.setItem("user", JSON.stringify(newUser));
   };
 
-  const logout = () => {
-    setToken(null);
-    setUser(null);
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
+  const logout = async () => {
+    try {
+      // ✅ SECURITY: Call backend logout to clear httpOnly cookie
+      await apiClient.post(
+        "/auth/logout",
+        {},
+        { withCredentials: true }, // Send cookie to backend
+      );
+    } catch (error) {
+      console.error("Logout error:", error);
+    } finally {
+      // Clear frontend state
+      setToken(null);
+      setUser(null);
+      localStorage.removeItem("user");
+      // Redirect to login
+      window.location.href = "/login";
+    }
   };
 
   // Role checking helper

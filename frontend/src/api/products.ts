@@ -1,4 +1,5 @@
 import { apiClient } from "./client";
+import { getCsrfToken } from "./csrfHelper";
 import type {
   Product,
   CreateProductRequest,
@@ -34,7 +35,10 @@ export const productsApi = {
     if (filters?.page) params.page = filters.page;
     if (filters?.limit) params.limit = filters.limit ?? 24;
 
-    const { data } = await apiClient.get("/products", { params });
+    const { data } = await apiClient.get("/products", {
+      params,
+      withCredentials: true,
+    });
 
     // Support both API shapes:
     // 1) { products, total, page, limit }
@@ -60,7 +64,9 @@ export const productsApi = {
   },
 
   getById: async (id: string): Promise<Product> => {
-    const { data } = await apiClient.get(`/products/${id}`);
+    const { data } = await apiClient.get(`/products/${id}`, {
+      withCredentials: true,
+    });
     return data;
   },
 
@@ -77,12 +83,17 @@ export const productsApi = {
   > => {
     const { data } = await apiClient.get("/products/suggestions", {
       params: { q },
+      withCredentials: true,
     });
     return data.data;
   },
 
   create: async (payload: CreateProductRequest): Promise<Product> => {
-    const { data } = await apiClient.post("/products", payload);
+    const csrfToken = await getCsrfToken();
+    const { data } = await apiClient.post("/products", payload, {
+      withCredentials: true,
+      headers: { "x-csrf-token": csrfToken },
+    });
     return data;
   },
 
@@ -90,20 +101,31 @@ export const productsApi = {
     id: string,
     payload: UpdateProductRequest,
   ): Promise<Product> => {
-    const { data } = await apiClient.put(`/products/${id}`, payload);
+    const csrfToken = await getCsrfToken();
+    const { data } = await apiClient.put(`/products/${id}`, payload, {
+      withCredentials: true,
+      headers: { "x-csrf-token": csrfToken },
+    });
     return data;
   },
 
   delete: async (id: string): Promise<void> => {
-    await apiClient.delete(`/products/${id}`);
+    const csrfToken = await getCsrfToken();
+    await apiClient.delete(`/products/${id}`, {
+      withCredentials: true,
+      headers: { "x-csrf-token": csrfToken },
+    });
   },
 
   deleteMediaByUrlAndProductId: async (
     productId: string,
     url: string,
   ): Promise<void> => {
+    const csrfToken = await getCsrfToken();
     await apiClient.delete("/products/media", {
       data: { productId, url },
+      withCredentials: true,
+      headers: { "x-csrf-token": csrfToken },
     });
   },
 
@@ -115,6 +137,7 @@ export const productsApi = {
   ): Promise<{ products: Product[]; total: number }> => {
     const { data } = await apiClient.get("/admin/products", {
       params: { page, limit, search },
+      withCredentials: true,
     });
     return data;
   },
@@ -123,9 +146,11 @@ export const productsApi = {
   uploadImage: async (file: File): Promise<{ imageUrl: string }> => {
     const formData = new FormData();
     formData.append("image", file);
+    const csrfToken = await getCsrfToken();
 
     const { data } = await apiClient.post("/products/upload-image", formData, {
-      headers: { "Content-Type": "multipart/form-data" },
+      withCredentials: true,
+      headers: { "x-csrf-token": csrfToken },
     });
     return data;
   },
@@ -133,9 +158,11 @@ export const productsApi = {
   uploadVideo: async (file: File): Promise<{ videoUrl: string }> => {
     const formData = new FormData();
     formData.append("video", file);
+    const csrfToken = await getCsrfToken();
 
     const { data } = await apiClient.post("/products/upload-video", formData, {
-      headers: { "Content-Type": "multipart/form-data" },
+      withCredentials: true,
+      headers: { "x-csrf-token": csrfToken },
     });
     return data;
   },

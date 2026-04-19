@@ -1,4 +1,5 @@
 import { apiClient } from "./client";
+import { getCsrfToken } from "./csrfHelper";
 
 export interface Category {
   id: string;
@@ -24,7 +25,7 @@ export const categoriesApi = {
     const response = await apiClient.get<{
       success: boolean;
       data: Category[];
-    }>("/categories");
+    }>("/categories", { withCredentials: true });
     return response.data.data;
   },
 
@@ -33,16 +34,20 @@ export const categoriesApi = {
     const response = await apiClient.get<{
       success: boolean;
       data: Category[];
-    }>("/categories/all");
+    }>("/categories/all", { withCredentials: true });
     return response.data.data;
   },
 
   // Admin: create category
   create: async (data: CreateCategoryRequest): Promise<Category> => {
+    const csrfToken = await getCsrfToken();
     const response = await apiClient.post<{
       success: boolean;
       data: Category;
-    }>("/categories", data);
+    }>("/categories", data, {
+      withCredentials: true,
+      headers: { "x-csrf-token": csrfToken },
+    });
     return response.data.data;
   },
 
@@ -51,15 +56,23 @@ export const categoriesApi = {
     id: string,
     data: Partial<CreateCategoryRequest> & { isActive?: boolean },
   ): Promise<Category> => {
+    const csrfToken = await getCsrfToken();
     const response = await apiClient.put<{
       success: boolean;
       data: Category;
-    }>(`/categories/${id}`, data);
+    }>(`/categories/${id}`, data, {
+      withCredentials: true,
+      headers: { "x-csrf-token": csrfToken },
+    });
     return response.data.data;
   },
 
   // Admin: delete category
   delete: async (id: string): Promise<void> => {
-    await apiClient.delete(`/categories/${id}`);
+    const csrfToken = await getCsrfToken();
+    await apiClient.delete(`/categories/${id}`, {
+      withCredentials: true,
+      headers: { "x-csrf-token": csrfToken },
+    });
   },
 };

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, Link as RouterLink } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useMutation } from "@tanstack/react-query";
@@ -56,6 +56,13 @@ const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
 
+  // ✅ If user is already authenticated, redirect to home
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate("/", { replace: true });
+    }
+  }, [isAuthenticated, navigate]);
+
   const {
     register,
     handleSubmit,
@@ -66,16 +73,13 @@ const LoginPage = () => {
     reValidateMode: "onSubmit",
   });
 
-  if (isAuthenticated) {
-    navigate("/");
-  }
-
   const loginMutation = useMutation({
     mutationFn: authApi.login,
     onSuccess: (data) => {
       setError("");
-      login(data.token, data.user);
-      navigate("/");
+      // ✅ FIXED: login() expects only the user object, not token
+      login(data.user);
+      navigate("/", { replace: true });
     },
     onError: (error: AxiosError<{ message: string }>) => {
       const message = ErrorHandler.getUserFriendlyMessage(

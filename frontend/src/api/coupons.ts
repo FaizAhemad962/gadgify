@@ -1,4 +1,5 @@
 import { apiClient } from "./client";
+import { getCsrfToken } from "./csrfHelper";
 
 export interface Coupon {
   id: string;
@@ -40,10 +41,18 @@ export const couponsApi = {
     code: string,
     subtotal: number,
   ): Promise<CouponValidation> => {
+    const csrfToken = await getCsrfToken();
     const response = await apiClient.post<{
       success: boolean;
       data: CouponValidation;
-    }>("/coupons/validate", { code, subtotal });
+    }>(
+      "/coupons/validate",
+      { code, subtotal },
+      {
+        withCredentials: true,
+        headers: { "x-csrf-token": csrfToken },
+      },
+    );
     return response.data.data;
   },
 
@@ -51,15 +60,21 @@ export const couponsApi = {
   getAll: async (): Promise<Coupon[]> => {
     const response = await apiClient.get<{ success: boolean; data: Coupon[] }>(
       "/coupons",
+      { withCredentials: true },
     );
     return response.data.data;
   },
 
   // Admin: create coupon
   create: async (data: CreateCouponRequest): Promise<Coupon> => {
+    const csrfToken = await getCsrfToken();
     const response = await apiClient.post<{ success: boolean; data: Coupon }>(
       "/coupons",
       data,
+      {
+        withCredentials: true,
+        headers: { "x-csrf-token": csrfToken },
+      },
     );
     return response.data.data;
   },
@@ -69,15 +84,24 @@ export const couponsApi = {
     id: string,
     data: Partial<CreateCouponRequest> & { isActive?: boolean },
   ): Promise<Coupon> => {
+    const csrfToken = await getCsrfToken();
     const response = await apiClient.put<{ success: boolean; data: Coupon }>(
       `/coupons/${id}`,
       data,
+      {
+        withCredentials: true,
+        headers: { "x-csrf-token": csrfToken },
+      },
     );
     return response.data.data;
   },
 
   // Admin: delete coupon
   delete: async (id: string): Promise<void> => {
-    await apiClient.delete(`/coupons/${id}`);
+    const csrfToken = await getCsrfToken();
+    await apiClient.delete(`/coupons/${id}`, {
+      withCredentials: true,
+      headers: { "x-csrf-token": csrfToken },
+    });
   },
 };

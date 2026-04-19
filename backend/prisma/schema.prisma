@@ -21,6 +21,10 @@ model User {
   profilePhoto         String?
   resetToken           String?
   resetTokenExpiry     DateTime?
+  // ✅ SECURITY: Email verification fields
+  emailVerified        Boolean                @default(false)
+  emailVerificationToken String?
+  emailVerificationTokenExpiry DateTime?
   createdAt            DateTime               @default(now())
   updatedAt            DateTime               @updatedAt
   deletedAt            DateTime?

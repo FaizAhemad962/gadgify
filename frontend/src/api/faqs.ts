@@ -1,4 +1,5 @@
 import { apiClient } from "./client";
+import { getCsrfToken } from "./csrfHelper";
 
 export interface FAQ {
   id: string;
@@ -36,14 +37,21 @@ export const faqApi = {
     page?: number;
     limit?: number;
   }) => {
-    const response = await apiClient.get<FAQsResponse>("/faqs", { params });
+    const response = await apiClient.get<FAQsResponse>("/faqs", {
+      params,
+      withCredentials: true,
+    });
     return response.data.data;
   },
 
   // Get FAQ categories
   getCategories: async () => {
-    const response =
-      await apiClient.get<CategoriesResponse>("/faqs/categories");
+    const response = await apiClient.get<CategoriesResponse>(
+      "/faqs/categories",
+      {
+        withCredentials: true,
+      },
+    );
     return response.data.data.categories;
   },
 
@@ -54,10 +62,18 @@ export const faqApi = {
 
   // Increment FAQ view count
   incrementViews: async (faqId: string) => {
+    const csrfToken = await getCsrfToken();
     const response = await apiClient.patch<{
       success: boolean;
       data: { faq: FAQ };
-    }>(`/faqs/${faqId}/views`);
+    }>(
+      `/faqs/${faqId}/views`,
+      {},
+      {
+        withCredentials: true,
+        headers: { "x-csrf-token": csrfToken },
+      },
+    );
     return response.data.data.faq;
   },
 };

@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import { config } from "../config";
 import prisma from "../config/database";
+import { isTokenBlacklisted } from "../utils/tokenBlacklist";
 
 export interface AuthRequest extends Request {
   user?: {
@@ -17,10 +18,26 @@ export const authenticate = async (
   next: NextFunction,
 ): Promise<void> => {
   try {
-    const token = req.headers.authorization?.replace("Bearer ", "");
+    // SECURITY: Try to get token from httpOnly cookie first (more secure)
+    // Fallback to Authorization header for backward compatibility with mobile clients
+    let token = (req as any).cookies?.authToken;
+
+    // Fallback to Authorization header (for API clients, mobile apps)
+    if (!token) {
+      token = req.headers.authorization?.replace("Bearer ", "");
+    }
 
     if (!token) {
       res.status(401).json({ message: "Authentication required" });
+      return;
+    }
+
+    // ✅ SECURITY: Check if token is blacklisted (logged out)
+    const blacklisted = await isTokenBlacklisted(token);
+    if (blacklisted) {
+      res
+        .status(401)
+        .json({ message: "Token expired or revoked. Please login again." });
       return;
     }
 

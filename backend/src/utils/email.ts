@@ -342,3 +342,34 @@ export const sendNewsletterWelcomeEmail = async (to: string): Promise<void> => {
   `),
   );
 };
+
+// ── Email Verification ────────────────────────────────────────────
+export const sendEmailVerificationEmail = async (
+  to: string,
+  verificationToken: string,
+  name: string,
+): Promise<void> => {
+  const verificationUrl = `${config.frontendUrl}/verify-email?token=${verificationToken}`;
+
+  await sendEmail(
+    to,
+    "Verify Your Email — Gadgify",
+    emailLayout(`
+    <h2 style="color: #1B2A4A; font-size: 20px; margin-bottom: 12px;">Verify Your Email</h2>
+    <p style="color: #57534e; font-size: 14px; line-height: 1.6;">
+      Hi ${name}, thank you for signing up! Please verify your email address to complete your account setup.
+    </p>
+    <div style="text-align: center; margin: 28px 0;">
+      <a href="${verificationUrl}" style="background: ${brandColor}; color: #ffffff; text-decoration: none; padding: 12px 32px; border-radius: 8px; font-weight: 700; font-size: 14px; display: inline-block;">
+        Verify Email Address
+      </a>
+    </div>
+    <p style="color: #a8a29e; font-size: 12px; line-height: 1.5;">
+      Or copy this link: <a href="${verificationUrl}" style="color: ${brandColor}; text-decoration: none;">${verificationUrl}</a>
+    </p>
+    <p style="color: #666; font-size: 12px; line-height: 1.5; margin-top: 16px;">
+      This verification link will expire in 24 hours. If you didn't create this account, please ignore this email.
+    </p>
+  `),
+  );
+};

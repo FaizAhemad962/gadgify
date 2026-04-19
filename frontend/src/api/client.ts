@@ -13,15 +13,17 @@ export const apiClient = axios.create({
     "Content-Type": "application/json",
   },
   timeout: 30000, // 30 second timeout
+  // ✅ SECURITY: Enable httpOnly cookie support
+  withCredentials: true,
 });
 
-// Request interceptor to add auth token
+// Request interceptor to handle auth
 apiClient.interceptors.request.use(
   (config: any) => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
+    // ✅ SECURITY: Token is now in httpOnly cookie, sent automatically by browser
+    // No need to manually add Authorization header
+    config.withCredentials = true; // Ensure cookies are sent
+
     // Initialize retry count
     if (!config.retryCount) {
       config.retryCount = 0;
@@ -49,10 +51,9 @@ apiClient.interceptors.response.use(
       config?.url?.includes("/auth/signup");
     const status = error.response?.status;
 
-    // 401 Unauthorized - redirect to login
+    // ✅ SECURITY: 401 Unauthorized - redirect to login
+    // Browser will clear httpOnly cookie automatically
     if (status === 401 && !isAuthEndpoint) {
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
       window.location.href = "/login";
       return Promise.reject(error);
     }

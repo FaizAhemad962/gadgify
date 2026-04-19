@@ -33,6 +33,7 @@ import {
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm, Controller } from "react-hook-form";
 import { useTranslation } from "react-i18next";
+import { apiClient } from "../../api/client";
 import ChangeRoleDialog from "./ChangeRoleDialog";
 
 interface User {
@@ -61,51 +62,32 @@ export const RoleManagementDashboard: React.FC = () => {
     defaultValues: { email: "", canRemovePermission: false },
   });
 
-  // Fetch users
+  // ✅ SECURITY: Fetch users with httpOnly cookies
   const { data: users = [], isLoading: usersLoading } = useQuery({
     queryKey: ["users"],
     queryFn: async () => {
-      const response = await fetch("/api/admin/users", {
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-      });
-      if (!response.ok) throw new Error("Failed to fetch users");
-      return response.json();
+      const response = await apiClient.get("/admin/users");
+      return response.data;
     },
   });
 
-  // Fetch permissions
+  // ✅ SECURITY: Fetch permissions with httpOnly cookies
   const { data: permissions = [] } = useQuery({
     queryKey: ["permissions"],
     queryFn: async () => {
-      const response = await fetch("/api/role-change/permissions", {
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-      });
-      if (!response.ok) throw new Error("Failed to fetch permissions");
-      return response.json();
+      const response = await apiClient.get("/role-change/permissions");
+      return response.data;
     },
   });
 
-  // Grant permission mutation
+  // ✅ SECURITY: Grant permission with httpOnly cookies
   const grantPermissionMutation = useMutation({
     mutationFn: async (data: {
       email: string;
       canRemovePermission: boolean;
     }) => {
-      const response = await fetch("/api/role-change/grant", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-        body: JSON.stringify(data),
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || "Failed to grant permission");
-      }
-
-      return response.json();
+      const response = await apiClient.post("/role-change/grant", data);
+      return response.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["permissions"] });
@@ -114,18 +96,11 @@ export const RoleManagementDashboard: React.FC = () => {
     },
   });
 
-  // Revoke permission mutation
+  // ✅ SECURITY: Revoke permission with httpOnly cookies
   const revokePermissionMutation = useMutation({
     mutationFn: async (userId: string) => {
-      const response = await fetch(`/api/role-change/revoke/${userId}`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      });
-
-      if (!response.ok) throw new Error("Failed to revoke permission");
-      return response.json();
+      const response = await apiClient.delete(`/role-change/revoke/${userId}`);
+      return response.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["permissions"] });

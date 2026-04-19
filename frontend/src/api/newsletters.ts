@@ -1,4 +1,5 @@
 import { apiClient } from "./client";
+import { getCsrfToken } from "./csrfHelper";
 
 export interface Newsletter {
   id: string;
@@ -38,18 +39,28 @@ export interface NewsletterStatsResponse {
 export const newsletterApi = {
   // Subscribe email to newsletter
   subscribe: async (email: string) => {
+    const csrfToken = await getCsrfToken();
     const response = await apiClient.post<NewsletterResponse>(
       "/newsletters/subscribe",
       { email },
+      {
+        withCredentials: true,
+        headers: { "x-csrf-token": csrfToken },
+      },
     );
     return response.data;
   },
 
   // Unsubscribe email from newsletter
   unsubscribe: async (email: string) => {
+    const csrfToken = await getCsrfToken();
     const response = await apiClient.post<NewsletterResponse>(
       "/newsletters/unsubscribe",
       { email },
+      {
+        withCredentials: true,
+        headers: { "x-csrf-token": csrfToken },
+      },
     );
     return response.data;
   },
@@ -62,15 +73,17 @@ export const newsletterApi = {
   }) => {
     const response = await apiClient.get<NewsletterListResponse>(
       "/newsletters",
-      { params },
+      { params, withCredentials: true },
     );
     return response.data.data;
   },
 
   // Get newsletter statistics (Admin only)
   getStats: async () => {
-    const response =
-      await apiClient.get<NewsletterStatsResponse>("/newsletters/stats");
+    const response = await apiClient.get<NewsletterStatsResponse>(
+      "/newsletters/stats",
+      { withCredentials: true },
+    );
     return response.data.data;
   },
 };

@@ -23,19 +23,61 @@ export interface ResetPasswordRequest {
   newPassword: string;
 }
 
+// ✅ SECURITY: Get CSRF token from backend
+const getCsrfToken = async (): Promise<string> => {
+  try {
+    const response = await apiClient.get<{ csrfToken: string }>(
+      "/auth/csrf-token",
+      {
+        withCredentials: true,
+      },
+    );
+    return response.data.csrfToken;
+  } catch (error) {
+    console.error("Failed to get CSRF token:", error);
+    throw error;
+  }
+};
+
 export const authApi = {
   login: async (data: LoginRequest): Promise<AuthResponse> => {
-    const response = await apiClient.post<AuthResponse>("/auth/login", data);
+    // ✅ SECURITY: Get CSRF token before login
+    const csrfToken = await getCsrfToken();
+
+    const response = await apiClient.post<AuthResponse>(
+      "/auth/login",
+      data, // Do NOT include csrfToken in body - only in header
+      {
+        withCredentials: true, // ✅ SECURITY: Send cookies
+        headers: {
+          "x-csrf-token": csrfToken, // CSRF token only in header
+        },
+      },
+    );
     return response.data;
   },
 
   signup: async (data: SignupRequest): Promise<AuthResponse> => {
-    const response = await apiClient.post<AuthResponse>("/auth/signup", data);
+    // ✅ SECURITY: Get CSRF token before signup
+    const csrfToken = await getCsrfToken();
+
+    const response = await apiClient.post<AuthResponse>(
+      "/auth/signup",
+      data, // Do NOT include csrfToken in body - only in header
+      {
+        withCredentials: true, // ✅ SECURITY: Send cookies
+        headers: {
+          "x-csrf-token": csrfToken,
+        },
+      },
+    );
     return response.data;
   },
 
   getProfile: async (): Promise<User> => {
-    const response = await apiClient.get<User>("/auth/profile");
+    const response = await apiClient.get<User>("/auth/profile", {
+      withCredentials: true, // ✅ SECURITY: Send cookies
+    });
     return response.data;
   },
 
@@ -45,6 +87,7 @@ export const authApi = {
     const response = await apiClient.put<{ message: string; user: User }>(
       "/auth/profile",
       data,
+      { withCredentials: true }, // ✅ SECURITY: Send cookies
     );
     return response.data;
   },
@@ -55,6 +98,7 @@ export const authApi = {
     const response = await apiClient.post<{ message: string }>(
       "/auth/change-password",
       data,
+      { withCredentials: true }, // ✅ SECURITY: Send cookies
     );
     return response.data;
   },
@@ -65,6 +109,7 @@ export const authApi = {
     const response = await apiClient.post<{ message: string }>(
       "/auth/forgot-password",
       data,
+      { withCredentials: true }, // ✅ SECURITY: Send cookies
     );
     return response.data;
   },
@@ -75,6 +120,7 @@ export const authApi = {
     const response = await apiClient.post<{ message: string }>(
       "/auth/reset-password",
       data,
+      { withCredentials: true }, // ✅ SECURITY: Send cookies
     );
     return response.data;
   },
@@ -91,13 +137,22 @@ export const authApi = {
         headers: {
           "Content-Type": "multipart/form-data",
         },
+        withCredentials: true, // ✅ SECURITY: Send cookies
       },
     );
     return response.data;
   },
 
-  logout: () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
+  // ✅ SECURITY: Call backend logout endpoint to clear httpOnly cookie
+  logout: async () => {
+    try {
+      await apiClient.post(
+        "/auth/logout",
+        {},
+        { withCredentials: true }, // ✅ SECURITY: Send cookies
+      );
+    } catch (error) {
+      console.error("Logout error:", error);
+    }
   },
 };

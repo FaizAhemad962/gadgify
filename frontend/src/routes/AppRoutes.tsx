@@ -41,6 +41,13 @@ const ShippingPolicy = lazy(() => import("../pages/legal/ShippingPolicy"));
 // Loading fallback component
 const PageLoader = () => <SplashScreen isVisible={true} />;
 
+// ✅ Wrapper component - no longer needs to check loading
+const AuthLoadingWrapper = () => {
+  // Auth context doesn't have isLoading anymore
+  // Routes render immediately
+  return <AppRoutes />;
+};
+
 // Protected route wrapper
 const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated } = useAuth();
@@ -194,4 +201,4 @@ const AppRoutes = () => {
   );
 };
 
-export default AppRoutes;
+export default AuthLoadingWrapper;

@@ -1,4 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiClient } from "./client";
+import { getCsrfToken } from "./csrfHelper";
 
 export interface Order {
   id: string;
@@ -17,20 +19,14 @@ export interface Order {
   updatedAt: string;
 }
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || "/api";
-
 export const useOrders = () => {
   return useQuery({
     queryKey: ["orders"],
     queryFn: async () => {
-      const response = await fetch(`${API_BASE_URL}/orders`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
+      const response = await apiClient.get("/orders", {
+        withCredentials: true,
       });
-
-      if (!response.ok) throw new Error("Failed to fetch orders");
-      return response.json();
+      return response.data;
     },
   });
 };
@@ -39,14 +35,10 @@ export const useOrder = (orderId: string) => {
   return useQuery({
     queryKey: ["orders", orderId],
     queryFn: async () => {
-      const response = await fetch(`${API_BASE_URL}/orders/${orderId}`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
+      const response = await apiClient.get(`/orders/${orderId}`, {
+        withCredentials: true,
       });
-
-      if (!response.ok) throw new Error("Failed to fetch order");
-      return response.json();
+      return response.data;
     },
     enabled: !!orderId,
   });
@@ -57,18 +49,18 @@ export const useCreatePaymentIntent = () => {
 
   return useMutation({
     mutationFn: async (orderId: string) => {
-      const response = await fetch(
-        `${API_BASE_URL}/orders/${orderId}/payment-intent`,
+      const csrfToken = await getCsrfToken();
+      const response = await apiClient.post(
+        `/orders/${orderId}/payment-intent`,
+        {},
         {
-          method: "POST",
+          withCredentials: true,
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            "x-csrf-token": csrfToken,
           },
         },
       );
-
-      if (!response.ok) throw new Error("Failed to create payment intent");
-      return response.json();
+      return response.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["orders"] });
@@ -81,18 +73,18 @@ export const useRetryPayment = () => {
 
   return useMutation({
     mutationFn: async (orderId: string) => {
-      const response = await fetch(
-        `${API_BASE_URL}/orders/${orderId}/retry-payment`,
+      const csrfToken = await getCsrfToken();
+      const response = await apiClient.post(
+        `/orders/${orderId}/retry-payment`,
+        {},
         {
-          method: "POST",
+          withCredentials: true,
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            "x-csrf-token": csrfToken,
           },
         },
       );
-
-      if (!response.ok) throw new Error("Failed to retry payment");
-      return response.json();
+      return response.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["orders"] });
@@ -105,15 +97,14 @@ export const useCancelOrder = () => {
 
   return useMutation({
     mutationFn: async (orderId: string) => {
-      const response = await fetch(`${API_BASE_URL}/orders/${orderId}/cancel`, {
-        method: "DELETE",
+      const csrfToken = await getCsrfToken();
+      const response = await apiClient.delete(`/orders/${orderId}/cancel`, {
+        withCredentials: true,
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          "x-csrf-token": csrfToken,
         },
       });
-
-      if (!response.ok) throw new Error("Failed to cancel order");
-      return response.json();
+      return response.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["orders"] });
@@ -131,24 +122,16 @@ export const useConfirmPayment = () => {
       razorpay_payment_id: string;
       razorpay_signature: string;
     }) => {
-      const response = await fetch(
-        `${API_BASE_URL}/orders/${data.orderId}/confirm-payment`,
+      // ✅ SECURITY: apiClient handles httpOnly cookies automatically
+      const response = await apiClient.post(
+        `/orders/${data.orderId}/confirm-payment`,
         {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-          body: JSON.stringify({
-            razorpay_order_id: data.razorpay_order_id,
-            razorpay_payment_id: data.razorpay_payment_id,
-            razorpay_signature: data.razorpay_signature,
-          }),
+          razorpay_order_id: data.razorpay_order_id,
+          razorpay_payment_id: data.razorpay_payment_id,
+          razorpay_signature: data.razorpay_signature,
         },
       );
-
-      if (!response.ok) throw new Error("Failed to confirm payment");
-      return response.json();
+      return response.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["orders"] });

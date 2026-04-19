@@ -1,4 +1,5 @@
 import { apiClient } from "./client";
+import { getCsrfToken } from "./csrfHelper";
 
 export interface Address {
   id: string;
@@ -31,15 +32,23 @@ export const addressesApi = {
     const response = await apiClient.get<{
       success: boolean;
       data: Address[];
-    }>("/addresses");
+    }>("/addresses", {
+      withCredentials: true,
+    });
     return response.data.data;
   },
 
   create: async (data: CreateAddressRequest): Promise<Address> => {
+    const csrfToken = await getCsrfToken();
     const response = await apiClient.post<{
       success: boolean;
       data: Address;
-    }>("/addresses", data);
+    }>("/addresses", data, {
+      withCredentials: true,
+      headers: {
+        "x-csrf-token": csrfToken,
+      },
+    });
     return response.data.data;
   },
 
@@ -47,14 +56,26 @@ export const addressesApi = {
     id: string,
     data: Partial<CreateAddressRequest>,
   ): Promise<Address> => {
+    const csrfToken = await getCsrfToken();
     const response = await apiClient.put<{
       success: boolean;
       data: Address;
-    }>(`/addresses/${id}`, data);
+    }>(`/addresses/${id}`, data, {
+      withCredentials: true,
+      headers: {
+        "x-csrf-token": csrfToken,
+      },
+    });
     return response.data.data;
   },
 
   delete: async (id: string): Promise<void> => {
-    await apiClient.delete(`/addresses/${id}`);
+    const csrfToken = await getCsrfToken();
+    await apiClient.delete(`/addresses/${id}`, {
+      withCredentials: true,
+      headers: {
+        "x-csrf-token": csrfToken,
+      },
+    });
   },
 };

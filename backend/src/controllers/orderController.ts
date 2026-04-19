@@ -30,7 +30,10 @@ export const createOrder = async (
   next: NextFunction,
 ): Promise<void> => {
   try {
-    console.log("--------- req body", req.body);
+    // SECURITY: Do not log request body in production (may contain sensitive data)
+    if (process.env.NODE_ENV === "development") {
+      console.log("--------- req body", req.body);
+    }
     const { items, subtotal, shipping, total, shippingAddress, couponCode } =
       req.body;
     const userId = req.user!.id;
