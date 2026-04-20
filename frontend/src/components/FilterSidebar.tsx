@@ -160,6 +160,7 @@ export const FilterSidebar: FC<FilterSidebarProps> = memo(
         sx={{
           display: "flex",
           flexDirection: "column",
+          width: "100%",
           padding: "20px",
           backgroundColor: tokens.white,
           borderRadius: "8px",
@@ -168,6 +169,7 @@ export const FilterSidebar: FC<FilterSidebarProps> = memo(
           top: 80,
           maxHeight: "calc(100vh - 100px)",
           overflowY: "auto",
+          overflowX: "hidden",
           "&::-webkit-scrollbar": hideHeader
             ? { display: "none" }
             : { width: "6px" },
@@ -260,12 +262,42 @@ export const FilterSidebar: FC<FilterSidebarProps> = memo(
             onChangeCommitted={handlePriceCommitted}
             valueLabelDisplay="off"
             min={0}
-            max={10000}
+            max={5000}
             step={100}
             sx={{
-              "& .MuiSlider-thumb": { backgroundColor: tokens.accent },
-              "& .MuiSlider-track": { backgroundColor: tokens.accent },
-              "& .MuiSlider-rail": { backgroundColor: tokens.gray200 },
+              width: "90%",
+              marginLeft: 1,
+              "& .MuiSlider-thumb": {
+                width: 20,
+                height: 20,
+                backgroundColor: tokens.accent,
+                border: `2px solid white`,
+                boxShadow: `0 2px 6px rgba(0, 0, 0, 0.15)`,
+                transition: "all 0.2s ease",
+                "&:hover": {
+                  width: 24,
+                  height: 24,
+                  boxShadow: `0 4px 12px rgba(0, 0, 0, 0.25)`,
+                },
+                "&.Mui-active": {
+                  width: 26,
+                  height: 26,
+                  boxShadow: `0 4px 16px rgba(0, 0, 0, 0.3)`,
+                },
+              },
+              "& .MuiSlider-track": {
+                height: 6,
+                backgroundColor: tokens.accent,
+                border: "none",
+              },
+              "& .MuiSlider-rail": {
+                height: 6,
+                backgroundColor: tokens.gray200,
+                opacity: 1,
+              },
+              "& .MuiSlider-mark": {
+                display: "none",
+              },
             }}
           />
           <Typography

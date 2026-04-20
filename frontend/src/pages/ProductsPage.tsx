@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo, memo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -30,6 +30,96 @@ import { FilterSidebar, type SortOption } from "../components/FilterSidebar";
 import { tokens } from "@/theme/theme";
 
 const PRODUCTS_PER_PAGE = 24;
+
+// ✅ Memoized Products Grid Component - prevents re-render when sidebar/footer changes
+const ProductsGrid = memo(
+  ({
+    products,
+    viewMode,
+    onAddToCart,
+    onBuyNow,
+    onNavigate,
+    isInWishlist,
+    toggleWishlist,
+    isToggling,
+    isAddingToCart,
+    isFetching,
+    hasMore,
+    t,
+    sentinelRef,
+  }: any) => {
+    return (
+      <>
+        <Box
+          sx={{
+            display: "grid",
+            gridTemplateColumns:
+              viewMode === "list"
+                ? "1fr"
+                : {
+                    xs: "1fr",
+                    sm: "repeat(2, 1fr)",
+                    md: "repeat(3, 1fr)",
+                    lg: "repeat(3, 1fr)",
+                  },
+            gap: 2,
+          }}
+        >
+          {products.map((product: any) => (
+            <ProductCard
+              key={product.id}
+              product={product}
+              isInWishlist={isInWishlist}
+              toggleWishlist={toggleWishlist}
+              isToggling={isToggling}
+              onAddToCart={onAddToCart}
+              onBuyNow={onBuyNow}
+              onNavigate={onNavigate}
+              t={t}
+              isAddingToCart={isAddingToCart(product.id)}
+              viewMode={viewMode}
+            />
+          ))}
+        </Box>
+
+        {/* Sentinel element for infinite scroll - placed at end of grid */}
+        <Box ref={sentinelRef} sx={{ height: 0, mt: 2 }} />
+
+        {/* Loading indicator when fetching more products */}
+        {isFetching && products.length > 0 && (
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              py: 3,
+              mt: 2,
+            }}
+          >
+            <CircularProgress size={30} sx={{ color: tokens.accent }} />
+          </Box>
+        )}
+
+        {/* End of results message */}
+        {!hasMore && products.length > 0 && !isFetching && (
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              py: 4,
+              mt: 2,
+            }}
+          >
+            <Typography variant="body2" sx={{ color: "text.secondary" }}>
+              {t("common.endOfResults")}
+            </Typography>
+          </Box>
+        )}
+      </>
+    );
+  },
+);
+
+ProductsGrid.displayName = "ProductsGrid";
 
 const ProductsPage = () => {
   const { isInWishlist, toggleWishlist, isToggling } = useWishlist();
@@ -61,10 +151,20 @@ const ProductsPage = () => {
 
   // Fetch categories from API (same as HomePage)
   const { data: categoriesData = [] } = useCategories();
-  const categories = categoriesData.map((c) => c.name);
+  const categories = useMemo(
+    () => categoriesData.map((c) => c.name),
+    [categoriesData],
+  );
 
   // Combine all products from paginated responses
   const [allProducts, setAllProducts] = useState<any[]>([]);
+
+  // Sentinel ref for infinite scroll
+  const sentinelRef = useRef<HTMLDivElement>(null);
+
+  // Track if we should fetch more pages
+  const shouldFetchMore = useRef(true);
+  const currentPage = useRef(1);
 
   // Debounce search query and reset pagination only when query actually changes
   useEffect(() => {
@@ -85,6 +185,8 @@ const ProductsPage = () => {
   // Reset page when filters change
   useEffect(() => {
     setPage(1);
+    currentPage.current = 1;
+    shouldFetchMore.current = true;
     setAllProducts([]);
   }, [priceRange, selectedRatings, selectedCategories, sortBy]);
 
@@ -135,73 +237,107 @@ const ProductsPage = () => {
     if (page === 1) {
       // First page: replace all (including empty results)
       setAllProducts(products);
+      // ✅ Only set hasMore = false if we got fewer products than requested
+      // This means we're on the last page
+      shouldFetchMore.current = products.length >= PRODUCTS_PER_PAGE;
     } else if (products.length > 0) {
       // Subsequent pages: append new products (avoid duplicates)
       setAllProducts((prev) => {
         const existingIds = new Set(prev.map((p) => p.id));
         const newProducts = products.filter((p: any) => !existingIds.has(p.id));
+        // ✅ If we got fewer products than requested, we're on the last page
+        shouldFetchMore.current = newProducts.length >= PRODUCTS_PER_PAGE;
         return [...prev, ...newProducts];
       });
     }
   }, [response, page]);
 
-  // Use backend total to decide if more pages exist.
+  // Update hasMore based on ref (one-way sync from ref to state)
   useEffect(() => {
-    setHasMore(allProducts.length < totalProducts);
-  }, [allProducts.length, totalProducts]);
+    setHasMore(shouldFetchMore.current);
+  }, [response]);
 
-  // Infinite scroll observer - trigger when near end of page
+  // ✅ Keep page ref in sync with page state
   useEffect(() => {
-    const handleScroll = () => {
-      // Check if we're near the bottom of the page
-      const scrollTop = window.scrollY;
-      const scrollHeight = document.documentElement.scrollHeight;
-      const clientHeight = window.innerHeight;
+    currentPage.current = page;
+  }, [page]);
 
-      // Trigger when user is within 500px of bottom
-      if (
-        scrollHeight - (scrollTop + clientHeight) < 500 &&
-        hasMore &&
-        !isFetching
-      ) {
-        setPage((prev) => prev + 1);
-      }
-    };
+  // ✅ Use Intersection Observer for infinite scroll (stable dependencies)
+  useEffect(() => {
+    if (!sentinelRef.current) return;
 
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, [hasMore, isFetching]);
+    const observer = new IntersectionObserver(
+      (entries) => {
+        // Only trigger once when sentinel becomes visible
+        if (
+          entries[0].isIntersecting &&
+          shouldFetchMore.current &&
+          !isFetching &&
+          currentPage.current === page
+        ) {
+          currentPage.current = page + 1;
+          setPage((prev) => prev + 1);
+        }
+      },
+      {
+        rootMargin: "100px", // Start loading 100px before reaching the sentinel
+        threshold: 0,
+      },
+    );
 
-  // Filter handlers
-  const isFiltersActive =
-    priceRange[0] > 0 ||
-    priceRange[1] < 10000 ||
-    selectedRatings.length > 0 ||
-    selectedCategories.length > 0 ||
-    sortBy !== "popularity";
+    observer.observe(sentinelRef.current);
+    return () => observer.disconnect();
+  }, [page, isFetching]);
 
-  const handleClearFilters = () => {
+  // Filter handlers with useCallback
+  const isFiltersActive = useMemo(
+    () =>
+      priceRange[0] > 0 ||
+      priceRange[1] < 10000 ||
+      selectedRatings.length > 0 ||
+      selectedCategories.length > 0 ||
+      sortBy !== "popularity",
+    [priceRange, selectedRatings, selectedCategories, sortBy],
+  );
+
+  const handleClearFilters = useCallback(() => {
     setPriceRange([0, 10000]);
     setTempPriceRange([0, 10000]);
     setSelectedRatings([]);
     setSelectedCategories([]);
     setSortBy("popularity");
-  };
+  }, []);
 
-  const handleBuyNow = async (productId: string) => {
-    if (!isAuthenticated) {
-      navigate("/login");
-      return;
-    }
-    const cartItem = cart?.items?.find((item) => item.productId === productId);
-    if (!cartItem) {
-      await addToCart({ productId, quantity: 1 });
-    }
-    navigate("/cart");
-  };
+  const handleBuyNow = useCallback(
+    async (productId: string) => {
+      if (!isAuthenticated) {
+        navigate("/login");
+        return;
+      }
+      const cartItem = cart?.items?.find(
+        (item) => item.productId === productId,
+      );
+      if (!cartItem) {
+        await addToCart({ productId, quantity: 1 });
+      }
+      navigate("/cart");
+    },
+    [isAuthenticated, cart, addToCart, navigate],
+  );
 
-  // Remove unused ref
-  const gridContainerRef = useRef<HTMLDivElement>(null);
+  const handleAddToCart = useCallback(
+    (productId: string) => {
+      return addToCart({ productId, quantity: 1 });
+    },
+    [addToCart],
+  );
+
+  const handleNavigate = useCallback(
+    (productId: string) => {
+      navigate(`/products/${productId}`);
+    },
+    [navigate],
+  );
 
   if (error) {
     return (
@@ -478,78 +614,21 @@ const ProductsPage = () => {
                   </Typography>
                 </Box>
               ) : (
-                <>
-                  {/* Products Grid */}
-                  <Box
-                    ref={gridContainerRef}
-                    sx={{
-                      display: "grid",
-                      gridTemplateColumns:
-                        viewMode === "list"
-                          ? "1fr"
-                          : {
-                              xs: "1fr",
-                              sm: "repeat(2, 1fr)",
-                              md: "repeat(3, 1fr)",
-                              lg: "repeat(3, 1fr)",
-                            },
-                      gap: 2,
-                    }}
-                  >
-                    {allProducts.map((product) => (
-                      <ProductCard
-                        key={product.id}
-                        product={product}
-                        isInWishlist={isInWishlist}
-                        toggleWishlist={toggleWishlist}
-                        isToggling={isToggling}
-                        onAddToCart={(id) =>
-                          addToCart({ productId: id, quantity: 1 })
-                        }
-                        onBuyNow={(id) => handleBuyNow(id)}
-                        onNavigate={(id) => navigate(`/products/${id}`)}
-                        t={t}
-                        isAddingToCart={isAddingToCart(product.id)}
-                        viewMode={viewMode}
-                      />
-                    ))}
-                  </Box>
-
-                  {/* Loading indicator when fetching more products */}
-                  {isFetching && allProducts.length > 0 && (
-                    <Box
-                      sx={{
-                        display: "flex",
-                        justifyContent: "center",
-                        py: 3,
-                        mt: 2,
-                      }}
-                    >
-                      <CircularProgress
-                        size={30}
-                        sx={{ color: tokens.accent }}
-                      />
-                    </Box>
-                  )}
-
-                  {!hasMore && allProducts.length > 0 && !isFetching && (
-                    <Box
-                      sx={{
-                        display: "flex",
-                        justifyContent: "center",
-                        py: 4,
-                        mt: 2,
-                      }}
-                    >
-                      <Typography
-                        variant="body2"
-                        sx={{ color: "text.secondary" }}
-                      >
-                        {t("common.endOfResults")}
-                      </Typography>
-                    </Box>
-                  )}
-                </>
+                <ProductsGrid
+                  products={allProducts}
+                  viewMode={viewMode}
+                  onAddToCart={handleAddToCart}
+                  onBuyNow={handleBuyNow}
+                  onNavigate={handleNavigate}
+                  isInWishlist={isInWishlist}
+                  toggleWishlist={toggleWishlist}
+                  isToggling={isToggling}
+                  isAddingToCart={isAddingToCart}
+                  isFetching={isFetching}
+                  hasMore={hasMore}
+                  t={t}
+                  sentinelRef={sentinelRef}
+                />
               )}
             </Box>
           </Box>

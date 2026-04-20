@@ -1134,38 +1134,42 @@ const HomePage = () => {
                 </Typography>
               </Box>
             ) : (
-              <Box>
-                <Box
+              <Box sx={{ display: "flex", gap: 2 }}>
+                <TextField
+                  size="small"
+                  fullWidth
+                  variant="outlined"
+                  placeholder={t("common.emailPlaceholderShort")}
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  disabled={isPending}
+                  error={!!error}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <Email sx={{ color: tokens.gray400, ml: 1 }} />
+                      </InputAdornment>
+                    ),
+                  }}
                   sx={{
-                    display: "flex",
-                    gap: 1,
+                    bgcolor: "white",
+                    borderRadius: 2,
                     maxWidth: 440,
                     mx: "auto",
                     mb: 1,
-                    flexDirection: { xs: "column", sm: "row" },
-                  }}
-                >
-                  <TextField
-                    size="small"
-                    fullWidth
-                    placeholder={t("common.emailPlaceholderShort")}
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    disabled={isPending}
-                    error={!!error}
-                    InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <Email sx={{ color: tokens.gray400 }} />
-                        </InputAdornment>
-                      ),
-                    }}
-                    sx={{
-                      bgcolor: "white",
+                    display: "block",
+                    "& .MuiOutlinedInput-root": {
                       borderRadius: 2,
-                      "& .MuiOutlinedInput-root": { borderRadius: 2 },
-                    }}
-                  />
+                    },
+                    "& .MuiOutlinedInput-input": {
+                      paddingLeft: 0.5,
+                    },
+                    "& .MuiOutlinedInput-notchedOutline": {
+                      border: "none !important",
+                    },
+                  }}
+                />
+                <Box sx={{ textAlign: "center" }}>
                   <Button
                     variant="contained"
                     onClick={handleSubscribe}
@@ -1192,6 +1196,7 @@ const HomePage = () => {
                       color: tokens.error,
                       mb: 1,
                       fontSize: "0.85rem",
+                      textAlign: "center",
                     }}
                   >
                     {error}
