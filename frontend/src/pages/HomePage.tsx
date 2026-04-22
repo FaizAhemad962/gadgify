@@ -34,6 +34,7 @@ import { getCategoryColor } from "@/utils/categoryColorMapper";
 import ProductCard from "@/components/ProductCard";
 import RecentlyViewed from "@/components/products/RecentlyViewed";
 import InView from "@/components/InView";
+import HeroCarousel from "@/components/sections/HeroCarousel";
 import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
 import { tokens } from "@/theme/theme";
@@ -184,108 +185,8 @@ const HomePage = () => {
 
   return (
     <Box sx={{ bgcolor: tokens.gray50 }}>
-      {/* ───── Hero Section ───── */}
-      <Box
-        sx={{
-          background: `linear-gradient(135deg, ${tokens.primary} 0%, ${tokens.primaryDark} 100%)`,
-          color: "white",
-          py: { xs: 8, md: 12 },
-          textAlign: "center",
-          position: "relative",
-          overflow: "hidden",
-          "&::before": {
-            content: '""',
-            position: "absolute",
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            background: `radial-gradient(circle at 20% 50%, ${tokens.accent}18 0%, transparent 50%), radial-gradient(circle at 80% 80%, ${tokens.accent}18 0%, transparent 50%)`,
-            pointerEvents: "none",
-          },
-        }}
-      >
-        <Container maxWidth="md" sx={{ position: "relative", zIndex: 1 }}>
-          <Typography
-            variant="h2"
-            component="h1"
-            gutterBottom
-            fontWeight="900"
-            sx={{ fontSize: { xs: "2.5rem", md: "3.5rem" }, mb: 2 }}
-          >
-            {t("app.title")}
-          </Typography>
-          <Divider
-            sx={{
-              width: 80,
-              height: 4,
-              bgcolor: tokens.accent,
-              mx: "auto",
-              mb: 3,
-              borderRadius: 2,
-            }}
-          />
-          <Typography variant="h5" gutterBottom sx={{ fontWeight: 300, mb: 3 }}>
-            {t("app.subtitle")}
-          </Typography>
-          <Typography
-            variant="body1"
-            sx={{ mt: 3, mb: 5, fontSize: "1.1rem", opacity: 0.95 }}
-          >
-            {t("common.discoverLatest")}
-          </Typography>
-          <Box
-            sx={{
-              display: "flex",
-              gap: 2,
-              justifyContent: "center",
-              flexWrap: "wrap",
-            }}
-          >
-            <Button
-              variant="contained"
-              size="large"
-              onClick={() => navigate("/products")}
-              sx={{
-                bgcolor: tokens.accent,
-                fontWeight: 700,
-                py: 1.5,
-                px: 4,
-                borderRadius: 2,
-                textTransform: "none",
-                fontSize: { xs: "0.9rem", md: "1rem" },
-                "&:hover": {
-                  bgcolor: tokens.accentDark,
-                  boxShadow: `0 6px 20px ${tokens.accent}44`,
-                },
-              }}
-            >
-              🛍️ {t("products.title")}
-            </Button>
-            {!isAuthenticated && (
-              <Button
-                variant="outlined"
-                size="large"
-                sx={{
-                  color: "white",
-                  borderColor: "white",
-                  fontWeight: 700,
-                  py: 1,
-                  px: 2,
-                  minHeight: 44,
-                  "&:hover": {
-                    borderColor: tokens.accent,
-                    bgcolor: `${tokens.accent}18`,
-                  },
-                }}
-                onClick={() => navigate("/signup")}
-              >
-                {t("nav.signup")}
-              </Button>
-            )}
-          </Box>
-        </Container>
-      </Box>
+      {/* ───── Hero Carousel Section ───── */}
+      <HeroCarousel />
 
       {/* ───── Stats Section ───── */}
       <InView animationType="slideUp">

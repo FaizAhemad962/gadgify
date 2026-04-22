@@ -187,7 +187,8 @@ const ProductsPage = () => {
     setPage(1);
     currentPage.current = 1;
     shouldFetchMore.current = true;
-    setAllProducts([]);
+    // ✅ Don't clear products here - keep them visible while loading new filtered results
+    // setAllProducts([]) will happen automatically when new response arrives
   }, [priceRange, selectedRatings, selectedCategories, sortBy]);
 
   // Get cart context
@@ -433,9 +434,8 @@ const ProductsPage = () => {
             </Box>
           )}
         </Box>
-
         {/* Product count */}
-        {!isLoading && allProducts.length > 0 && (
+        {allProducts.length > 0 && (
           <Typography variant="body2" sx={{ color: "text.secondary", mt: 2 }}>
             {t("common.showingXofY", {
               shown: allProducts.length,
@@ -445,195 +445,187 @@ const ProductsPage = () => {
         )}
       </Box>
 
-      {/* Loading Initial Products */}
-      {isLoading && page === 1 ? (
-        <Box
+      {/* Main Layout: Two-Section Flex for Desktop, Single Column for Mobile */}
+      <Box
+        sx={{
+          display: "flex",
+          gap: 3,
+          flexDirection: { xs: "column", md: "row" },
+        }}
+      >
+        {/* Desktop Filter Sidebar - Left Section */}
+        {!isMobile && (
+          <Box
+            sx={{
+              width: { md: "280px", lg: "300px" },
+              flexShrink: 0,
+            }}
+          >
+            <FilterSidebar
+              sortBy={sortBy}
+              onSortChange={setSortBy}
+              tempPriceRange={tempPriceRange}
+              priceRange={priceRange}
+              onTempPriceChange={setTempPriceRange}
+              onPriceCommit={setPriceRange}
+              selectedRatings={selectedRatings}
+              onRatingsChange={setSelectedRatings}
+              selectedCategories={selectedCategories}
+              onCategoriesChange={setSelectedCategories}
+              categories={categories}
+              isFiltersActive={isFiltersActive}
+              onClearFilters={handleClearFilters}
+              t={t}
+            />
+          </Box>
+        )}
+
+        {/* Mobile Filter Drawer */}
+        <Drawer
+          anchor="left"
+          open={filterDrawerOpen}
+          onClose={() => setFilterDrawerOpen(false)}
+          keepMounted
+          disableEscapeKeyDown={false}
           sx={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            minHeight: "60vh",
-            flexDirection: "column",
-            gap: 2,
+            "& .MuiDrawer-paper": {
+              width: { xs: "100%", sm: 320 },
+              backgroundColor: tokens.white,
+              zIndex: 1300,
+              display: "flex",
+              flexDirection: "column",
+            },
           }}
         >
-          <CircularProgress
-            size={60}
-            thickness={4}
-            sx={{ color: tokens.accent }}
-          />
-          <Typography variant="body1" color="text.secondary">
-            {t("common.loading") || "Loading products..."}
-          </Typography>
-        </Box>
-      ) : (
-        <>
-          {/* Main Layout: Two-Section Flex for Desktop, Single Column for Mobile */}
           <Box
             sx={{
               display: "flex",
-              gap: 3,
-              flexDirection: { xs: "column", md: "row" },
+              justifyContent: "space-between",
+              alignItems: "center",
+              padding: "18px 20px",
+              borderBottom: `2px solid ${tokens.gray200}`,
+              backgroundColor: tokens.white,
+              position: "sticky",
+              top: 0,
+              zIndex: 10,
             }}
           >
-            {/* Desktop Filter Sidebar - Left Section */}
-            {!isMobile && (
-              <Box
-                sx={{
-                  width: { md: "280px", lg: "300px" },
-                  flexShrink: 0,
-                }}
+            <Box>
+              <Typography
+                fontWeight={700}
+                fontSize="20px"
+                sx={{ color: "text.primary" }}
               >
-                <FilterSidebar
-                  sortBy={sortBy}
-                  onSortChange={setSortBy}
-                  tempPriceRange={tempPriceRange}
-                  priceRange={priceRange}
-                  onTempPriceChange={setTempPriceRange}
-                  onPriceCommit={setPriceRange}
-                  selectedRatings={selectedRatings}
-                  onRatingsChange={setSelectedRatings}
-                  selectedCategories={selectedCategories}
-                  onCategoriesChange={setSelectedCategories}
-                  categories={categories}
-                  isFiltersActive={isFiltersActive}
-                  onClearFilters={handleClearFilters}
-                  t={t}
-                />
-              </Box>
-            )}
-
-            {/* Mobile Filter Drawer */}
-            <Drawer
-              anchor="left"
-              open={filterDrawerOpen}
-              onClose={() => setFilterDrawerOpen(false)}
-              keepMounted
-              disableEscapeKeyDown={false}
+                {t("common.filters")}
+              </Typography>
+              {isFiltersActive && (
+                <Typography variant="caption" sx={{ color: tokens.accent }}>
+                  {t("common.filtersActive", "Filters Active")} ✓
+                </Typography>
+              )}
+            </Box>
+            <IconButton
+              onClick={() => setFilterDrawerOpen(false)}
               sx={{
-                "& .MuiDrawer-paper": {
-                  width: { xs: "100%", sm: 320 },
-                  backgroundColor: tokens.white,
-                  zIndex: 1300,
-                  display: "flex",
-                  flexDirection: "column",
+                color: "text.primary",
+                "&:hover": {
+                  backgroundColor: tokens.gray100,
                 },
               }}
             >
-              <Box
-                sx={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  padding: "18px 20px",
-                  borderBottom: `2px solid ${tokens.gray200}`,
-                  backgroundColor: tokens.white,
-                  position: "sticky",
-                  top: 0,
-                  zIndex: 10,
-                }}
-              >
-                <Box>
-                  <Typography
-                    fontWeight={700}
-                    fontSize="20px"
-                    sx={{ color: "text.primary" }}
-                  >
-                    {t("common.filters")}
-                  </Typography>
-                  {isFiltersActive && (
-                    <Typography variant="caption" sx={{ color: tokens.accent }}>
-                      {t("common.filtersActive", "Filters Active")} ✓
-                    </Typography>
-                  )}
-                </Box>
-                <IconButton
-                  onClick={() => setFilterDrawerOpen(false)}
-                  sx={{
-                    color: "text.primary",
-                    "&:hover": {
-                      backgroundColor: tokens.gray100,
-                    },
-                  }}
-                >
-                  <CloseIcon />
-                </IconButton>
-              </Box>
+              <CloseIcon />
+            </IconButton>
+          </Box>
 
-              <Box
-                sx={{
-                  padding: "20px",
-                  overflowY: "auto",
-                  flex: 1,
-                }}
-              >
-                <FilterSidebar
-                  sortBy={sortBy}
-                  onSortChange={setSortBy}
-                  tempPriceRange={tempPriceRange}
-                  priceRange={priceRange}
-                  onTempPriceChange={setTempPriceRange}
-                  onPriceCommit={setPriceRange}
-                  selectedRatings={selectedRatings}
-                  onRatingsChange={setSelectedRatings}
-                  selectedCategories={selectedCategories}
-                  onCategoriesChange={setSelectedCategories}
-                  categories={categories}
-                  isFiltersActive={isFiltersActive}
-                  onClearFilters={handleClearFilters}
-                  t={t}
-                  hideHeader={true}
-                  sx={{
-                    position: "static",
-                    maxHeight: "none",
-                    border: "none",
-                    backgroundColor: "transparent",
-                    padding: 0,
-                    borderRadius: 0,
-                    overflowY: "visible",
-                  }}
-                />
-              </Box>
-            </Drawer>
+          <Box
+            sx={{
+              padding: "20px",
+              overflowY: "auto",
+              flex: 1,
+            }}
+          >
+            <FilterSidebar
+              sortBy={sortBy}
+              onSortChange={setSortBy}
+              tempPriceRange={tempPriceRange}
+              priceRange={priceRange}
+              onTempPriceChange={setTempPriceRange}
+              onPriceCommit={setPriceRange}
+              selectedRatings={selectedRatings}
+              onRatingsChange={setSelectedRatings}
+              selectedCategories={selectedCategories}
+              onCategoriesChange={setSelectedCategories}
+              categories={categories}
+              isFiltersActive={isFiltersActive}
+              onClearFilters={handleClearFilters}
+              t={t}
+              hideHeader={true}
+              sx={{
+                position: "static",
+                maxHeight: "none",
+                border: "none",
+                backgroundColor: "transparent",
+                padding: 0,
+                borderRadius: 0,
+                overflowY: "visible",
+              }}
+            />
+          </Box>
+        </Drawer>
 
-            {/* Products Section - Right Section */}
+        {/* Products Section - Right Section */}
+        <Box
+          sx={{
+            flex: 1,
+            minWidth: 0,
+          }}
+        >
+          {/* Show loading spinner only when first loading with no products yet */}
+          {isLoading && page === 1 && allProducts.length === 0 ? (
             <Box
               sx={{
-                flex: 1,
-                minWidth: 0,
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                minHeight: "60vh",
+                flexDirection: "column",
+                gap: 2,
               }}
             >
-              {allProducts.length === 0 ? (
-                <Box sx={{ textAlign: "center", py: 12 }}>
-                  <Typography
-                    variant="h6"
-                    color="text.secondary"
-                    sx={{ mb: 2 }}
-                  >
-                    {t("common.noProductsFound")}
-                  </Typography>
-                </Box>
-              ) : (
-                <ProductsGrid
-                  products={allProducts}
-                  viewMode={viewMode}
-                  onAddToCart={handleAddToCart}
-                  onBuyNow={handleBuyNow}
-                  onNavigate={handleNavigate}
-                  isInWishlist={isInWishlist}
-                  toggleWishlist={toggleWishlist}
-                  isToggling={isToggling}
-                  isAddingToCart={isAddingToCart}
-                  isFetching={isFetching}
-                  hasMore={hasMore}
-                  t={t}
-                  sentinelRef={sentinelRef}
-                />
-              )}
+              <CircularProgress
+                size={60}
+                thickness={4}
+                sx={{ color: tokens.accent }}
+              />
+              <Typography variant="body1" color="text.secondary">
+                {t("common.loading") || "Loading products..."}
+              </Typography>
             </Box>
-          </Box>
-        </>
-      )}
+          ) : allProducts.length === 0 ? (
+            <Box sx={{ textAlign: "center", py: 12 }}>
+              <Typography variant="h6" color="text.secondary" sx={{ mb: 2 }}>
+                {t("common.noProductsFound")}
+              </Typography>
+            </Box>
+          ) : (
+            <ProductsGrid
+              products={allProducts}
+              viewMode={viewMode}
+              onAddToCart={handleAddToCart}
+              onBuyNow={handleBuyNow}
+              onNavigate={handleNavigate}
+              isInWishlist={isInWishlist}
+              toggleWishlist={toggleWishlist}
+              isToggling={isToggling}
+              isAddingToCart={isAddingToCart}
+              isFetching={isFetching}
+              hasMore={hasMore}
+              t={t}
+              sentinelRef={sentinelRef}
+            />
+          )}
+        </Box>
+      </Box>
     </Container>
   );
 };
