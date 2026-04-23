@@ -89,10 +89,9 @@ export const productsApi = {
   },
 
   create: async (payload: CreateProductRequest): Promise<Product> => {
-    const csrfToken = await getCsrfToken();
+    // ✅ SECURITY: CSRF token is automatically added by apiClient interceptor
     const { data } = await apiClient.post("/products", payload, {
       withCredentials: true,
-      headers: { "x-csrf-token": csrfToken },
     });
     return data;
   },
@@ -101,19 +100,17 @@ export const productsApi = {
     id: string,
     payload: UpdateProductRequest,
   ): Promise<Product> => {
-    const csrfToken = await getCsrfToken();
+    // ✅ SECURITY: CSRF token is automatically added by apiClient interceptor
     const { data } = await apiClient.put(`/products/${id}`, payload, {
       withCredentials: true,
-      headers: { "x-csrf-token": csrfToken },
     });
     return data;
   },
 
   delete: async (id: string): Promise<void> => {
-    const csrfToken = await getCsrfToken();
+    // ✅ SECURITY: CSRF token is automatically added by apiClient interceptor
     await apiClient.delete(`/products/${id}`, {
       withCredentials: true,
-      headers: { "x-csrf-token": csrfToken },
     });
   },
 

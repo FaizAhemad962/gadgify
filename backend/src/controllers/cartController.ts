@@ -49,6 +49,7 @@ export const addToCart = async (
   next: NextFunction,
 ): Promise<void> => {
   try {
+    console.log(req, res);
     const { productId, quantity } = req.body;
     const userId = req.user!.id;
 
@@ -116,6 +117,7 @@ export const addToCart = async (
 
     res.json(updatedCart);
   } catch (error) {
+    console.log(error, "________________ERROR_________________");
     next(error);
   }
 };

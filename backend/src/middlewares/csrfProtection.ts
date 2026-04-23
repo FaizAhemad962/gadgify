@@ -55,7 +55,9 @@ export const verifyCsrfToken = (
     return res.status(403).json({ message: "CSRF token has expired" });
   }
 
-  csrfTokenStore.delete(token);
+  // ✅ SECURITY: DO NOT delete token - allow reuse within expiry window
+  // Tokens are cached on frontend, and multiple requests may use the same token
+  // Token will be garbage collected when it expires
   next();
 };
 

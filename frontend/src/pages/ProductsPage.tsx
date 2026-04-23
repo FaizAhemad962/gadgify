@@ -162,10 +162,6 @@ const ProductsPage = () => {
   // Sentinel ref for infinite scroll
   const sentinelRef = useRef<HTMLDivElement>(null);
 
-  // Track if we should fetch more pages
-  const shouldFetchMore = useRef(true);
-  const currentPage = useRef(1);
-
   // Debounce search query and reset pagination only when query actually changes
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -185,10 +181,7 @@ const ProductsPage = () => {
   // Reset page when filters change
   useEffect(() => {
     setPage(1);
-    currentPage.current = 1;
-    shouldFetchMore.current = true;
-    // ✅ Don't clear products here - keep them visible while loading new filtered results
-    // setAllProducts([]) will happen automatically when new response arrives
+    // setAllProducts([]);
   }, [priceRange, selectedRatings, selectedCategories, sortBy]);
 
   // Get cart context
@@ -235,60 +228,44 @@ const ProductsPage = () => {
     const total = Number(response.total ?? products.length);
     setTotalProducts(total);
 
+    // Track if we have more products to fetch
+    const hasMoreProducts = products.length >= PRODUCTS_PER_PAGE;
+
     if (page === 1) {
-      // First page: replace all (including empty results)
+      // First page: replace all products
       setAllProducts(products);
-      // ✅ Only set hasMore = false if we got fewer products than requested
-      // This means we're on the last page
-      shouldFetchMore.current = products.length >= PRODUCTS_PER_PAGE;
+      setHasMore(hasMoreProducts);
     } else if (products.length > 0) {
-      // Subsequent pages: append new products (avoid duplicates)
+      // Subsequent pages: append new products, avoiding duplicates
       setAllProducts((prev) => {
         const existingIds = new Set(prev.map((p) => p.id));
         const newProducts = products.filter((p: any) => !existingIds.has(p.id));
-        // ✅ If we got fewer products than requested, we're on the last page
-        shouldFetchMore.current = newProducts.length >= PRODUCTS_PER_PAGE;
         return [...prev, ...newProducts];
       });
+      setHasMore(hasMoreProducts);
+    } else {
+      // No products on this page = we've reached the end
+      setHasMore(false);
     }
   }, [response, page]);
 
-  // Update hasMore based on ref (one-way sync from ref to state)
+  // Intersection Observer for infinite scroll
   useEffect(() => {
-    setHasMore(shouldFetchMore.current);
-  }, [response]);
-
-  // ✅ Keep page ref in sync with page state
-  useEffect(() => {
-    currentPage.current = page;
-  }, [page]);
-
-  // ✅ Use Intersection Observer for infinite scroll (stable dependencies)
-  useEffect(() => {
-    if (!sentinelRef.current) return;
+    const sentinel = sentinelRef.current;
+    if (!sentinel) return;
 
     const observer = new IntersectionObserver(
       (entries) => {
-        // Only trigger once when sentinel becomes visible
-        if (
-          entries[0].isIntersecting &&
-          shouldFetchMore.current &&
-          !isFetching &&
-          currentPage.current === page
-        ) {
-          currentPage.current = page + 1;
+        if (entries[0].isIntersecting && hasMore && !isFetching) {
           setPage((prev) => prev + 1);
         }
       },
-      {
-        rootMargin: "100px", // Start loading 100px before reaching the sentinel
-        threshold: 0,
-      },
+      { rootMargin: "100px", threshold: 0 },
     );
 
-    observer.observe(sentinelRef.current);
+    observer.observe(sentinel);
     return () => observer.disconnect();
-  }, [page, isFetching]);
+  }, [hasMore, isFetching]);
 
   // Filter handlers with useCallback
   const isFiltersActive = useMemo(

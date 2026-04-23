@@ -1,6 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "./client";
-import { getCsrfToken } from "./csrfHelper";
 
 export interface Order {
   id: string;
@@ -44,20 +43,17 @@ export const useOrder = (orderId: string) => {
   });
 };
 
+// ✅ SECURITY: CSRF token is automatically added by apiClient interceptor
 export const useCreatePaymentIntent = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (orderId: string) => {
-      const csrfToken = await getCsrfToken();
       const response = await apiClient.post(
         `/orders/${orderId}/payment-intent`,
         {},
         {
           withCredentials: true,
-          headers: {
-            "x-csrf-token": csrfToken,
-          },
         },
       );
       return response.data;
@@ -68,20 +64,17 @@ export const useCreatePaymentIntent = () => {
   });
 };
 
+// ✅ SECURITY: CSRF token is automatically added by apiClient interceptor
 export const useRetryPayment = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (orderId: string) => {
-      const csrfToken = await getCsrfToken();
       const response = await apiClient.post(
         `/orders/${orderId}/retry-payment`,
         {},
         {
           withCredentials: true,
-          headers: {
-            "x-csrf-token": csrfToken,
-          },
         },
       );
       return response.data;
@@ -92,17 +85,14 @@ export const useRetryPayment = () => {
   });
 };
 
+// ✅ SECURITY: CSRF token is automatically added by apiClient interceptor
 export const useCancelOrder = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (orderId: string) => {
-      const csrfToken = await getCsrfToken();
       const response = await apiClient.delete(`/orders/${orderId}/cancel`, {
         withCredentials: true,
-        headers: {
-          "x-csrf-token": csrfToken,
-        },
       });
       return response.data;
     },
@@ -112,6 +102,7 @@ export const useCancelOrder = () => {
   });
 };
 
+// ✅ SECURITY: CSRF token is automatically added by apiClient interceptor
 export const useConfirmPayment = () => {
   const queryClient = useQueryClient();
 
@@ -122,7 +113,6 @@ export const useConfirmPayment = () => {
       razorpay_payment_id: string;
       razorpay_signature: string;
     }) => {
-      // ✅ SECURITY: apiClient handles httpOnly cookies automatically
       const response = await apiClient.post(
         `/orders/${data.orderId}/confirm-payment`,
         {
