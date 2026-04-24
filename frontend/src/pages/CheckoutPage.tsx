@@ -100,7 +100,7 @@ const CheckoutPage = () => {
           amount: paymentData.amount,
           currency: paymentData.currency,
           name: "Gadgify",
-          description: "Order Payment",
+          description: "Pay via UPI (Scan QR or enter UPI ID in next step)",
           order_id: paymentData.razorpayOrderId,
           handler: async function (response: {
             razorpay_order_id: string;
@@ -131,6 +131,25 @@ const CheckoutPage = () => {
           },
           theme: {
             color: tokens.primary,
+          },
+          // ✅ PAYMENT METHODS: Show only UPI, NetBanking, and Card
+          config: {
+            display: {
+              blocks: {
+                preferred: {
+                  name: "Pay using",
+                  instruments: [
+                    { method: "upi" },
+                    // { method: "card" },
+                    // { method: "netbanking" },
+                  ],
+                },
+              },
+              sequence: ["block.preferred"],
+              preferences: {
+                show_default_blocks: false, // 🔥 hides others
+              },
+            },
           },
         };
 
