@@ -3,7 +3,7 @@ import { categoriesApi } from "@/api/categories";
 import type { Category } from "@/api/categories";
 
 export interface CategoryWithIcon extends Category {
-  icon?: React.ReactNode;
+  iconNode?: React.ReactNode;
 }
 
 export const useCategories = () => {

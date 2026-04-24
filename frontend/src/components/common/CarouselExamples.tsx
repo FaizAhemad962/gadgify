@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /**
  * Carousel Component Usage Examples
  *
@@ -6,11 +7,12 @@
  */
 
 import { useQuery } from "@tanstack/react-query";
-import { Box, Card, CardMedia, CardContent, Typography } from "@mui/material";
-import { Carousel, CarouselProps } from "@/components/common";
+import { Box, Card, Typography } from "@mui/material";
+import { Carousel, type CarouselProps } from "@/components/common";
 import { productsApi } from "@/api/products";
 import ProductCard from "@/components/ProductCard";
 import { tokens } from "@/theme/theme";
+import React from "react";
 
 // ============================================================================
 // EXAMPLE 1: Basic Product Carousel
@@ -26,7 +28,31 @@ export const BasicProductCarousel = () => {
   return (
     <Carousel
       items={products.map((product) => (
-        <ProductCard key={product.id} product={product} />
+        <ProductCard
+          key={product.id}
+          product={product}
+          isInWishlist={function (_id: string): boolean {
+            throw new Error("Function not implemented.");
+          }}
+          isToggling={function (_id: string): boolean {
+            throw new Error("Function not implemented.");
+          }}
+          toggleWishlist={function (_id: string): Promise<void> {
+            throw new Error("Function not implemented.");
+          }}
+          onAddToCart={function (_id: string): void {
+            throw new Error("Function not implemented.");
+          }}
+          onBuyNow={function (_id: string): void {
+            throw new Error("Function not implemented.");
+          }}
+          onNavigate={function (_id: string): void {
+            throw new Error("Function not implemented.");
+          }}
+          t={function (_key: string): string {
+            throw new Error("Function not implemented.");
+          }}
+        />
       ))}
       slidesPerView={3}
       spaceBetween={16}
@@ -265,7 +291,31 @@ export const CoverflowtCarousel = () => {
   return (
     <Carousel
       items={products.map((product) => (
-        <ProductCard key={product.id} product={product} />
+        <ProductCard
+          key={product.id}
+          product={product}
+          isInWishlist={function (_id: string): boolean {
+            throw new Error("Function not implemented.");
+          }}
+          isToggling={function (_id: string): boolean {
+            throw new Error("Function not implemented.");
+          }}
+          toggleWishlist={function (_id: string): Promise<void> {
+            throw new Error("Function not implemented.");
+          }}
+          onAddToCart={function (_id: string): void {
+            throw new Error("Function not implemented.");
+          }}
+          onBuyNow={function (_id: string): void {
+            throw new Error("Function not implemented.");
+          }}
+          onNavigate={function (_id: string): void {
+            throw new Error("Function not implemented.");
+          }}
+          t={function (_key: string): string {
+            throw new Error("Function not implemented.");
+          }}
+        />
       ))}
       slidesPerView={3}
       spaceBetween={16}
@@ -293,7 +343,31 @@ export const MobileOptimizedCarousel = () => {
   return (
     <Carousel
       items={products.map((product) => (
-        <ProductCard key={product.id} product={product} />
+        <ProductCard
+          key={product.id}
+          product={product}
+          isInWishlist={function (_id: string): boolean {
+            throw new Error("Function not implemented.");
+          }}
+          isToggling={function (_id: string): boolean {
+            throw new Error("Function not implemented.");
+          }}
+          toggleWishlist={function (_id: string): Promise<void> {
+            throw new Error("Function not implemented.");
+          }}
+          onAddToCart={function (_id: string): void {
+            throw new Error("Function not implemented.");
+          }}
+          onBuyNow={function (_id: string): void {
+            throw new Error("Function not implemented.");
+          }}
+          onNavigate={function (_id: string): void {
+            throw new Error("Function not implemented.");
+          }}
+          t={function (_key: string): string {
+            throw new Error("Function not implemented.");
+          }}
+        />
       ))}
       slidesPerView={2}
       spaceBetween={8}
@@ -324,7 +398,31 @@ export const FullFeaturedCarousel = () => {
 
   const carouselProps: CarouselProps = {
     items: products.map((product) => (
-      <ProductCard key={product.id} product={product} />
+      <ProductCard
+        key={product.id}
+        product={product}
+        isInWishlist={function (_id: string): boolean {
+          throw new Error("Function not implemented.");
+        }}
+        isToggling={function (_id: string): boolean {
+          throw new Error("Function not implemented.");
+        }}
+        toggleWishlist={function (_id: string): Promise<void> {
+          throw new Error("Function not implemented.");
+        }}
+        onAddToCart={function (_id: string): void {
+          throw new Error("Function not implemented.");
+        }}
+        onBuyNow={function (_id: string): void {
+          throw new Error("Function not implemented.");
+        }}
+        onNavigate={function (_id: string): void {
+          throw new Error("Function not implemented.");
+        }}
+        t={function (_key: string): string {
+          throw new Error("Function not implemented.");
+        }}
+      />
     )),
     slidesPerView: 3,
     spaceBetween: 16,

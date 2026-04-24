@@ -90,7 +90,7 @@ const SignupPage = () => {
   const signupMutation = useMutation({
     mutationFn: authApi.signup,
     onSuccess: (data) => {
-      login(data.token, data.user);
+      login(data.user);
       navigate("/");
     },
     onError: (error: Error | unknown) => {

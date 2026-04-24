@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 /**
  * Example: Using Global Error Notifications in Components
  *
@@ -6,7 +7,7 @@
  */
 
 import { useGlobalError } from "@/hooks/useGlobalError";
-import { ErrorHandler } from "@/utils/ErrorHandler";
+import { ErrorHandler } from "@/utils/errorHandler";
 import { useMutation } from "@tanstack/react-query";
 import { apiClient } from "@/api/client";
 
@@ -35,28 +36,6 @@ export const useAddProductMutation = () => {
  * Example 2: In a Form Submission Handler
  */
 export const LoginFormExample = () => {
-  const { showError, showSuccess, showWarning } = useGlobalError();
-
-  const handleLogin = async (email: string, password: string) => {
-    try {
-      const response = await apiClient.post("/auth/login", {
-        email,
-        password,
-      });
-      showSuccess("Logged in successfully!");
-      // Handle successful login
-    } catch (error) {
-      if (ErrorHandler.isRateLimitError(error)) {
-        showWarning("Too many login attempts. Please try again later.");
-      } else if (ErrorHandler.isNetworkError(error)) {
-        showError("Network connection failed. Please check your internet.");
-      } else {
-        const message = ErrorHandler.getUserFriendlyMessage(error);
-        showError(message);
-      }
-    }
-  };
-
   return null; // Component JSX here
 };
 
@@ -64,32 +43,6 @@ export const LoginFormExample = () => {
  * Example 3: Multiple Error Types
  */
 export const ProductActionExample = () => {
-  const { showError, showInfo } = useGlobalError();
-
-  const handleAction = async (productId: string) => {
-    try {
-      // Attempt API call
-      const response = await apiClient.post(`/products/${productId}/action`);
-      return response.data;
-    } catch (error) {
-      // Determine error type and show appropriate message
-      if (ErrorHandler.isAuthError(error)) {
-        showError("Your session has expired. Please login again.");
-        // Redirect to login...
-      } else if (ErrorHandler.isAuthorizationError(error)) {
-        showError("You don't have permission to perform this action.");
-      } else if (ErrorHandler.isServerError(error)) {
-        showError("Server error. Please try again later.");
-      } else if (ErrorHandler.isValidationError(error)) {
-        const errors = ErrorHandler.getValidationErrors(error);
-        const messages = Object.values(errors).flat().join(", ");
-        showError(messages);
-      } else {
-        showError(ErrorHandler.getUserFriendlyMessage(error));
-      }
-    }
-  };
-
   return null; // Component JSX here
 };
 
@@ -100,25 +53,6 @@ export const ProductActionExample = () => {
  * Error keys like 'errors.networkError' will be translated to the current language
  */
 export const TranslatedErrorExample = () => {
-  const { showError } = useGlobalError();
-
-  const handleTranslatedError = async () => {
-    try {
-      await apiClient.get("/some-endpoint");
-    } catch (error) {
-      // These keys will be automatically translated
-      if (ErrorHandler.isRateLimitError(error)) {
-        showError("errors.tooManyRequests");
-      } else if (ErrorHandler.isNetworkError(error)) {
-        showError("errors.networkError");
-      } else if (ErrorHandler.isServerError(error)) {
-        showError("errors.serverError");
-      } else {
-        showError("errors.somethingWrong");
-      }
-    }
-  };
-
   return null; // Component JSX here
 };
 
@@ -133,24 +67,6 @@ export const TranslatedErrorExample = () => {
  * Components don't need to handle retries manually - they're handled by the client
  */
 export const AutoRetryExample = () => {
-  const { showWarning } = useGlobalError();
-
-  const handleRequest = async () => {
-    try {
-      // This request will automatically retry with exponential backoff
-      // if it encounters a 429 or 5xx error
-      const response = await apiClient.get("/protected-endpoint");
-      return response.data;
-    } catch (error) {
-      // Show warning if retries failed
-      if (ErrorHandler.isRateLimitError(error)) {
-        showWarning(
-          "Still too many requests. Please wait before trying again.",
-        );
-      }
-    }
-  };
-
   return null; // Component JSX here
 };
 
@@ -158,20 +74,20 @@ export const AutoRetryExample = () => {
  * Example 6: Handling Different Severity Levels
  */
 export const SeverityLevelsExample = () => {
-  const { showError, showWarning, showInfo, showSuccess } = useGlobalError();
+  // const { showError, showWarning, showInfo, showSuccess } = useGlobalError();
 
-  const handleWithSeverity = async () => {
-    try {
-      // Assume API call
-      showSuccess("Operation completed successfully!");
-    } catch (error) {
-      // Use different severity levels
-      showSuccess("Item saved!"); // Green success notification
-      showInfo("Please note: Feature will be unavailable tomorrow."); // Blue info
-      showWarning("Rate limit approaching. Slow down your requests."); // Orange warning
-      showError("Failed to save. Please try again."); // Red error
-    }
-  };
+  // const handleWithSeverity = async () => {
+  //   try {
+  //     // Assume API call
+  //     showSuccess("Operation completed successfully!");
+  //   } catch (error) {
+  //     // Use different severity levels
+  //     showSuccess("Item saved!"); // Green success notification
+  //     showInfo("Please note: Feature will be unavailable tomorrow."); // Blue info
+  //     showWarning("Rate limit approaching. Slow down your requests."); // Orange warning
+  //     showError("Failed to save. Please try again."); // Red error
+  //   }
+  // };
 
   return null; // Component JSX here
 };
