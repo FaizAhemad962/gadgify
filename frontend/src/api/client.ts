@@ -47,8 +47,8 @@ apiClient.interceptors.request.use(
 );
 
 // Exponential backoff delay function
-const getRetryDelay = (retryCount: number, maxDelay = 30000): number => {
-  const delay = Math.min(Math.pow(2, retryCount) * 1000, maxDelay);
+const getRetryDelay = (retryCount: number, maxDelay = 60000): number => {
+  const delay = Math.min(Math.pow(2, retryCount) * 2000, maxDelay);
   return delay;
 };
 
@@ -76,9 +76,9 @@ apiClient.interceptors.response.use(
       error.code === "ECONNABORTED" || // Timeout
       error.code === "ENOTFOUND"; // Network error
 
-    const maxRetriesFor429 = 5;
-    const maxRetriesFor5xx = 3;
-    const maxRetriesForNetwork = 3;
+    const maxRetriesFor429 = 1; // Single retry for rate limits
+    const maxRetriesFor5xx = 2;
+    const maxRetriesForNetwork = 2;
 
     let maxRetries = 1;
     if (status === 429) {
