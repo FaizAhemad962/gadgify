@@ -16,21 +16,21 @@ const validator_1 = __importDefault(require("validator"));
 const sanitizeInput = (req, res, next) => {
     try {
         // Sanitize body
-        if (req.body && typeof req.body === 'object') {
+        if (req.body && typeof req.body === "object") {
             req.body = sanitizeObject(req.body);
         }
         // Sanitize query
-        if (req.query && typeof req.query === 'object') {
+        if (req.query && typeof req.query === "object") {
             req.query = sanitizeObject(req.query);
         }
         // Sanitize params
-        if (req.params && typeof req.params === 'object') {
+        if (req.params && typeof req.params === "object") {
             req.params = sanitizeObject(req.params);
         }
         next();
     }
     catch (error) {
-        res.status(400).json({ message: 'Invalid input format' });
+        res.status(400).json({ message: "Invalid input format" });
     }
 };
 exports.sanitizeInput = sanitizeInput;
@@ -38,14 +38,14 @@ exports.sanitizeInput = sanitizeInput;
  * Sanitize string values - removes XSS vectors
  */
 const sanitizeStrings = (obj) => {
-    if (typeof obj === 'string') {
+    if (typeof obj === "string") {
         // Remove dangerous characters and HTML tags
         return validator_1.default.trim(validator_1.default.escape(obj));
     }
     if (Array.isArray(obj)) {
         return obj.map((item) => (0, exports.sanitizeStrings)(item));
     }
-    if (typeof obj === 'object' && obj !== null) {
+    if (typeof obj === "object" && obj !== null) {
         return sanitizeObject(obj);
     }
     return obj;
@@ -60,18 +60,18 @@ function sanitizeObject(obj) {
         if (Object.prototype.hasOwnProperty.call(obj, key)) {
             const value = obj[key];
             // Sanitize the value
-            if (typeof value === 'string') {
+            if (typeof value === "string") {
                 // Trim, escape HTML, and remove null bytes
                 sanitized[key] = value
-                    .replace(/\0/g, '')
-                    .replace(/\r/g, '')
-                    .replace(/\n/g, '')
+                    .replace(/\0/g, "")
+                    .replace(/\r/g, "")
+                    .replace(/\n/g, "")
                     .trim();
             }
             else if (Array.isArray(value)) {
                 sanitized[key] = value.map((item) => sanitizeObject(item));
             }
-            else if (typeof value === 'object' && value !== null) {
+            else if (typeof value === "object" && value !== null) {
                 sanitized[key] = sanitizeObject(value);
             }
             else {
@@ -94,20 +94,24 @@ exports.validateEmail = validateEmail;
  * - At least 1 uppercase letter
  * - At least 1 lowercase letter
  * - At least 1 number
+ * - At least 1 special character (!@#$%^&*)
  */
 const validatePasswordStrength = (password) => {
     const errors = [];
     if (password.length < 8) {
-        errors.push('Password must be at least 8 characters long');
+        errors.push("Password must be at least 8 characters long");
     }
     if (!/[A-Z]/.test(password)) {
-        errors.push('Password must contain at least one uppercase letter');
+        errors.push("Password must contain at least one uppercase letter");
     }
     if (!/[a-z]/.test(password)) {
-        errors.push('Password must contain at least one lowercase letter');
+        errors.push("Password must contain at least one lowercase letter");
     }
     if (!/[0-9]/.test(password)) {
-        errors.push('Password must contain at least one number');
+        errors.push("Password must contain at least one number");
+    }
+    if (!/[!@#$%^&*()_+=\-[\]{};':"\\|,.<>?]/.test(password)) {
+        errors.push("Password must contain at least one special character (!@#$%^&*)");
     }
     return {
         valid: errors.length === 0,
@@ -119,7 +123,7 @@ exports.validatePasswordStrength = validatePasswordStrength;
  * Validate phone number format (10 digits for India)
  */
 const validatePhoneNumber = (phone) => {
-    return /^[6-9]\d{9}$/.test(phone.replace(/\s/g, ''));
+    return /^[6-9]\d{9}$/.test(phone.replace(/\s/g, ""));
 };
 exports.validatePhoneNumber = validatePhoneNumber;
 /**

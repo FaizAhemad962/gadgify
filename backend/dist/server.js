@@ -10,9 +10,11 @@ const config_1 = require("./config");
 const errorHandler_1 = require("./middlewares/errorHandler");
 const sanitize_1 = require("./middlewares/sanitize");
 const securityLogger_1 = require("./middlewares/securityLogger");
+const csrfProtection_1 = require("./middlewares/csrfProtection");
 const rateLimiter_1 = require("./middlewares/rateLimiter");
 const logger_1 = __importDefault(require("./utils/logger"));
 const connectionPool_1 = require("./utils/connectionPool");
+const redis_1 = require("./config/redis");
 const authRoutes_1 = __importDefault(require("./routes/authRoutes"));
 const productRoutes_1 = __importDefault(require("./routes/productRoutes"));
 const cartRoutes_1 = __importDefault(require("./routes/cartRoutes"));
@@ -71,11 +73,45 @@ app.use((0, cors_1.default)({
 // Body parser with size limits
 app.use(express_1.default.json({ limit: "10mb" }));
 app.use(express_1.default.urlencoded({ extended: true, limit: "10mb" }));
+// Cookie parser - for secure httpOnly cookie handling
+// Supports both httpOnly cookies and query parameter fallback for legacy clients
+app.use((req, res, next) => {
+    // Parse cookies from headers
+    const cookieHeader = req.headers.cookie;
+    if (cookieHeader) {
+        const cookies = {};
+        cookieHeader.split(";").forEach((cookie) => {
+            const [key, val] = cookie.trim().split("=");
+            if (key && val) {
+                cookies[key] = decodeURIComponent(val);
+            }
+        });
+        req.cookies = cookies;
+    }
+    next();
+});
+// Helper to set httpOnly cookie
+app.use((req, res, next) => {
+    res.setCookie = (name, value, options) => {
+        const defaults = {
+            httpOnly: true,
+            secure: config_1.config.nodeEnv === "production",
+            sameSite: "strict",
+            path: "/",
+            maxAge: 24 * 60 * 60 * 1000, // 24 hours
+        };
+        const finalOptions = { ...defaults, ...options };
+        res.setHeader("Set-Cookie", `${name}=${value}; Path=${finalOptions.path}; ${finalOptions.httpOnly ? "HttpOnly; " : ""}${finalOptions.secure ? "Secure; " : ""}SameSite=${finalOptions.sameSite}; Max-Age=${finalOptions.maxAge / 1000}`);
+    };
+    next();
+});
 // Sanitize input
 app.use(sanitize_1.sanitizeInput);
 app.use(sanitize_1.sanitizeStrings);
 // Security logging
 app.use(securityLogger_1.logSecurityEvents);
+// ✅ SECURITY: CSRF protection
+app.use(csrfProtection_1.verifyCsrfToken);
 // Rate limiting
 app.use("/api/", rateLimiter_1.apiLimiter);
 // Serve uploaded files with proper path resolution
@@ -142,6 +178,8 @@ const startServer = async () => {
     try {
         // Initialize database connection pool
         await (0, connectionPool_1.initializeConnectionPool)();
+        // ✅ SECURITY: Initialize Redis for token blacklist and session management
+        await (0, redis_1.initializeRedis)();
         app.listen(PORT, () => {
             logger_1.default.info(`🚀 Server running on port ${PORT}`);
             logger_1.default.info(`📝 Environment: ${config_1.config.nodeEnv}`);

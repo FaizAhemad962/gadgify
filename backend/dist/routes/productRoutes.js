@@ -14,7 +14,7 @@ router.get("/suggestions", productController_1.getProductSuggestions);
 router.get("/search", productController_1.searchProducts);
 router.get("/:id", productController_1.getProductById);
 // Image upload endpoint (Admin only)
-router.post("/upload-image", auth_1.authenticate, (0, auth_1.authorize)("ADMIN", "SUPER_ADMIN"), rateLimiter_1.uploadLimiter, upload_1.upload.single("image"), (req, res) => {
+router.post("/upload-image", auth_1.authenticate, (0, auth_1.authorize)("ADMIN", "SUPER_ADMIN"), rateLimiter_1.uploadLimiter, upload_1.upload.single("image"), (0, upload_1.validateMagicBytesMiddleware)(["jpg", "jpeg", "png", "gif", "webp"]), (req, res) => {
     if (!req.file) {
         return res.status(400).json({ message: "No file uploaded" });
     }
@@ -33,8 +33,13 @@ router.post("/upload-video", auth_1.authenticate, (0, auth_1.authorize)("ADMIN",
                 .status(400)
                 .json({ success: false, message: "No video file uploaded" });
         }
-        const videoUrl = `/uploads/${req.file.filename}`;
-        res.json({ success: true, videoUrl });
+        // ✅ SECURITY: Validate magic bytes before saving
+        (0, upload_1.validateMagicBytesMiddleware)(["mp4", "webm"])(req, res, () => {
+            if (!res.headersSent) {
+                const videoUrl = `/uploads/${req.file?.filename}`;
+                res.json({ success: true, videoUrl });
+            }
+        });
     });
 });
 // Admin only

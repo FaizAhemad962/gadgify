@@ -15,12 +15,14 @@ const prisma = new client_1.PrismaClient();
 const subscribeToNewsletter = async (req, res, next) => {
     try {
         const { email } = req.body;
-        // console.log("____________________****************__________", email);
         // Check if email already exists
         const existingSubscriber = await prisma.newsletter.findUnique({
             where: { email },
         });
-        console.log("____________________****************__________", existingSubscriber);
+        // SECURITY: Do not log subscriber data in production
+        if (process.env.NODE_ENV === "development") {
+            console.log("____________________*** Newsletter Subscriber ***__________", existingSubscriber);
+        }
         if (existingSubscriber) {
             // Reactivate if previously unsubscribed
             if (!existingSubscriber.isActive) {

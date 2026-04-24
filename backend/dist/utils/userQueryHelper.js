@@ -29,7 +29,9 @@ async function findUserByEmail(email, defaultRole = "USER") {
         return user;
     }
     catch (error) {
-        console.error("Error in findUserByEmail:", error);
+        if (process.env.NODE_ENV === "development") {
+            console.error("Error in findUserByEmail:", error);
+        }
         return null;
     }
 }
@@ -48,7 +50,9 @@ async function findUserByEmailWithMultipleCheck(email, defaultRole = "USER") {
         };
     }
     catch (error) {
-        console.error("Error in findUserByEmailWithMultipleCheck:", error);
+        if (process.env.NODE_ENV === "development") {
+            console.error("Error in findUserByEmailWithMultipleCheck:", error);
+        }
         return {
             user: null,
             otherAccounts: [],
@@ -74,7 +78,9 @@ async function findAllAccountsByEmail(email) {
         });
     }
     catch (error) {
-        console.error("Error in findAllAccountsByEmail:", error);
+        if (process.env.NODE_ENV === "development") {
+            console.error("Error in findAllAccountsByEmail:", error);
+        }
         return [];
     }
 }
@@ -87,7 +93,9 @@ async function userExists(email, role = "USER") {
         return user !== null && !user.deletedAt && user.role === role;
     }
     catch (error) {
-        console.error("Error in userExists:", error);
+        if (process.env.NODE_ENV === "development") {
+            console.error("Error in userExists:", error);
+        }
         return false;
     }
 }
@@ -107,7 +115,9 @@ async function isEmailRegisteredWithAnyRole(email) {
         return user !== null;
     }
     catch (error) {
-        console.error("Error in isEmailRegisteredWithAnyRole:", error);
+        if (process.env.NODE_ENV === "development") {
+            console.error("Error in isEmailRegisteredWithAnyRole:", error);
+        }
         return false;
     }
 }

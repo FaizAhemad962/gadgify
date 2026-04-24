@@ -7,11 +7,26 @@ exports.authorize = exports.authenticate = void 0;
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const config_1 = require("../config");
 const database_1 = __importDefault(require("../config/database"));
+const tokenBlacklist_1 = require("../utils/tokenBlacklist");
 const authenticate = async (req, res, next) => {
     try {
-        const token = req.headers.authorization?.replace("Bearer ", "");
+        // SECURITY: Try to get token from httpOnly cookie first (more secure)
+        // Fallback to Authorization header for backward compatibility with mobile clients
+        let token = req.cookies?.authToken;
+        // Fallback to Authorization header (for API clients, mobile apps)
+        if (!token) {
+            token = req.headers.authorization?.replace("Bearer ", "");
+        }
         if (!token) {
             res.status(401).json({ message: "Authentication required" });
+            return;
+        }
+        // ✅ SECURITY: Check if token is blacklisted (logged out)
+        const blacklisted = await (0, tokenBlacklist_1.isTokenBlacklisted)(token);
+        if (blacklisted) {
+            res
+                .status(401)
+                .json({ message: "Token expired or revoked. Please login again." });
             return;
         }
         const decoded = jsonwebtoken_1.default.verify(token, config_1.config.jwtSecret);

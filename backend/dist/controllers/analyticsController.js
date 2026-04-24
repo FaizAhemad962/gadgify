@@ -5,6 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getDashboardAnalytics = void 0;
 const database_1 = __importDefault(require("../config/database"));
+const logger_1 = __importDefault(require("../utils/logger"));
 const getDashboardAnalytics = async (req, res, next) => {
     try {
         const now = new Date();
@@ -82,57 +83,42 @@ const getDashboardAnalytics = async (req, res, next) => {
                 take: 10,
             }),
         ]);
-        // Fetch product names for top products
-        const topProductIds = topProducts.map((p) => p.productId);
-        const productDetails = topProductIds.length > 0
-            ? await database_1.default.product.findMany({
-                where: { id: { in: topProductIds } },
-                select: { id: true, name: true },
-            })
-            : [];
-        const productNameMap = new Map(productDetails.map((p) => [p.id, p.name]));
-        // Build daily revenue array (fill missing days with 0)
-        const dailyRevenueMap = new Map(dailyRevenue.map((d) => [d.date, d]));
-        const revenueChart = [];
-        for (let i = 29; i >= 0; i--) {
-            const d = new Date(now);
-            d.setDate(d.getDate() - i);
-            const key = d.toISOString().split("T")[0];
-            const entry = dailyRevenueMap.get(key);
-            revenueChart.push({
-                date: key,
-                revenue: entry ? Number(entry.revenue) : 0,
-                orders: entry ? Number(entry.orders) : 0,
+        // Format status distribution
+        const statusDistribution = ordersByStatus.map((item) => ({
+            status: item.status,
+            count: item._count.id,
+        }));
+        // Format revenue chart
+        const revenueChart = dailyRevenue.map((item) => ({
+            date: item.date,
+            revenue: item.revenue,
+            orders: item.orders,
+        }));
+        // Format top products with product details
+        const topProductsData = await Promise.all(topProducts.map(async (item) => {
+            const product = await database_1.default.product.findUnique({
+                where: { id: item.productId },
+                select: { id: true, name: true, price: true, category: true },
             });
-        }
-        // Format order status distribution
-        const statusDistribution = ordersByStatus.map((s) => ({
-            status: s.status,
-            count: s._count.id,
+            return {
+                productId: item.productId,
+                name: product?.name || "Unknown",
+                price: product?.price || 0,
+                category: product?.category || "Unknown",
+                totalQuantitySold: item._sum.quantity || 0,
+                totalRevenue: item._sum.price || 0,
+            };
         }));
-        // Format top products
-        const topProductsFormatted = topProducts.map((p) => ({
-            name: productNameMap.get(p.productId) || "Unknown",
-            unitsSold: p._sum.quantity || 0,
-            revenue: p._sum.price || 0,
-        }));
-        // Revenue comparison
-        const thisMonthRevenue = revenueThisMonth._sum.total || 0;
-        const lastMonthRevenue = revenueLastMonth._sum.total || 0;
-        const revenueGrowth = lastMonthRevenue > 0
-            ? ((thisMonthRevenue - lastMonthRevenue) / lastMonthRevenue) * 100
-            : thisMonthRevenue > 0
-                ? 100
-                : 0;
         // Format recent orders
         const formattedRecentOrders = recentOrders.map((order) => ({
             id: order.id,
-            customer: order.user?.name || "N/A",
-            email: order.user?.email || "",
-            total: order.total,
+            userId: order.userId,
+            userName: order.user?.name || "Unknown",
+            userEmail: order.user?.email || "Unknown",
             status: order.status,
             paymentStatus: order.paymentStatus,
-            itemCount: order.items.reduce((sum, i) => sum + i.quantity, 0),
+            total: order.total,
+            itemCount: order.items.reduce((sum, item) => sum + item.quantity, 0),
             createdAt: order.createdAt,
         }));
         res.json({
@@ -142,20 +128,20 @@ const getDashboardAnalytics = async (req, res, next) => {
                     totalUsers,
                     totalProducts,
                     totalOrders,
-                    thisMonthRevenue,
-                    lastMonthRevenue,
-                    revenueGrowth: Math.round(revenueGrowth * 10) / 10,
+                    revenueThisMonth: revenueThisMonth._sum.total || 0,
+                    revenueLastMonth: revenueLastMonth._sum.total || 0,
                 },
-                revenueChart,
                 statusDistribution,
-                topProducts: topProductsFormatted,
+                revenueChart,
+                topProducts: topProductsData,
                 recentOrders: formattedRecentOrders,
                 lowStockProducts,
             },
         });
     }
     catch (error) {
-        console.log(error);
+        // SECURITY: Log error to logger, not to console (may expose sensitive data)
+        logger_1.default.error(`Analytics error: ${error instanceof Error ? error.message : String(error)}`);
         next(error);
     }
 };

@@ -1,267 +1,186 @@
-/**
- * ✅ SECURITY: Email verification service
- * Generates tokens, sends verification emails, and validates verification
- */
-
 import crypto from "crypto";
-import nodemailer, { Transporter } from "nodemailer";
+import { Resend } from "resend";
 import { config } from "../config";
 import logger from "./logger";
 
+/**
+ * ✅ Token interfaces (kept from your old code)
+ */
 export interface EmailVerificationToken {
   token: string;
-  hash: string; // Hash of token for secure storage
+  hash: string;
   expiresAt: Date;
 }
 
-export interface EmailServiceConfig {
-  host: string;
-  port: number;
-  secure: boolean;
-  auth: {
-    user: string;
-    pass: string;
-  };
-}
-
-class EmailService {
-  private transporter: Transporter | null = null;
-  private isConfigured = false;
-
-  /**
-   * Initialize email service with nodemailer
-   */
-  async initialize(): Promise<void> {
-    try {
-      // For development, use nodemailer test account
-      if (config.nodeEnv === "development") {
-        const testAccount = await nodemailer.createTestAccount();
-        this.transporter = nodemailer.createTransport({
-          host: "smtp.ethereal.email",
-          port: 587,
-          secure: false,
-          auth: {
-            user: testAccount.user,
-            pass: testAccount.pass,
-          },
-        });
-        logger.info(
-          "[EMAIL] Using test account for development (Ethereal Email)",
-        );
-      } else {
-        // For production, use configured SMTP
-        if (!config.emailProvider) {
-          throw new Error("Email provider not configured for production");
-        }
-
-        this.transporter = nodemailer.createTransport(config.emailProvider);
-      }
-
-      // Verify connection
-      await this.transporter.verify();
-      this.isConfigured = true;
-      logger.info("[EMAIL] Service initialized successfully");
-    } catch (error) {
-      logger.error(
-        `[EMAIL] Failed to initialize: ${error instanceof Error ? error.message : String(error)}`,
-      );
-      // Don't throw - allow server to start without email service
-    }
-  }
-
-  /**
-   * Generate email verification token
-   * Returns both the token (for sending to user) and hash (for storing in DB)
-   */
-  generateVerificationToken(): EmailVerificationToken {
-    const token = crypto.randomBytes(32).toString("hex");
-    const hash = crypto.createHash("sha256").update(token).digest("hex");
-    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
-
-    return { token, hash, expiresAt };
-  }
-
-  /**
-   * Hash token for comparison with stored value
-   */
-  hashToken(token: string): string {
-    return crypto.createHash("sha256").update(token).digest("hex");
-  }
-
-  /**
-   * Send verification email
-   */
-  async sendVerificationEmail(
-    email: string,
-    verificationToken: string,
-    userName: string = "",
-  ): Promise<void> {
-    if (!this.isConfigured || !this.transporter) {
-      logger.warn(
-        "[EMAIL] Service not configured, skipping verification email",
-      );
-      return;
-    }
-
-    try {
-      const verificationUrl = `${config.frontendUrl}/verify-email?token=${verificationToken}`;
-
-      const mailOptions = {
-        from: `Gadgify <${config.emailFrom || "noreply@gadgify.com"}>`,
-        to: email,
-        subject: "Verify Your Email - Gadgify",
-        html: `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-            <div style="background-color: #f5f5f5; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
-              <h2 style="color: #333; margin-top: 0;">Welcome to Gadgify! 🎉</h2>
-              <p style="color: #666; font-size: 14px;">Hi ${userName},</p>
-              
-              <p style="color: #666; line-height: 1.6;">
-                Thank you for signing up. Please verify your email address to complete your account setup.
-              </p>
-              
-              <div style="text-align: center; margin: 30px 0;">
-                <a href="${verificationUrl}" style="
-                  background-color: #007bff;
-                  color: white;
-                  padding: 12px 30px;
-                  text-decoration: none;
-                  border-radius: 4px;
-                  display: inline-block;
-                  font-weight: bold;
-                ">
-                  Verify Email Address
-                </a>
-              </div>
-              
-              <p style="color: #999; font-size: 12px;">
-                Or copy this link: ${verificationUrl}
-              </p>
-              
-              <p style="color: #666; font-size: 12px; line-height: 1.6;">
-                This verification link will expire in 24 hours.
-              </p>
-            </div>
-            
-            <p style="color: #999; font-size: 12px; border-top: 1px solid #ddd; padding-top: 15px;">
-              If you didn't create this account, please ignore this email.
-            </p>
-          </div>
-        `,
-      };
-
-      const info = await this.transporter.sendMail(mailOptions);
-
-      // For development with test account, log preview URL
-      if (config.nodeEnv === "development") {
-        logger.info(`[EMAIL] Preview: ${nodemailer.getTestMessageUrl(info)}`);
-      }
-
-      logger.info(`[EMAIL] Verification email sent to ${email}`);
-    } catch (error) {
-      logger.error(
-        `[EMAIL] Failed to send verification email: ${error instanceof Error ? error.message : String(error)}`,
-      );
-      // Don't throw - let signup complete even if email fails
-    }
-  }
-
-  /**
-   * Send password reset email
-   */
-  async sendPasswordResetEmail(
-    email: string,
-    resetToken: string,
-    userName: string = "",
-  ): Promise<void> {
-    if (!this.isConfigured || !this.transporter) {
-      logger.warn(
-        "[EMAIL] Service not configured, skipping password reset email",
-      );
-      return;
-    }
-
-    try {
-      const resetUrl = `${config.frontendUrl}/reset-password?token=${resetToken}`;
-
-      const mailOptions = {
-        from: `Gadgify <${config.emailFrom || "noreply@gadgify.com"}>`,
-        to: email,
-        subject: "Reset Your Password - Gadgify",
-        html: `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-            <div style="background-color: #f5f5f5; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
-              <h2 style="color: #333; margin-top: 0;">Password Reset Request</h2>
-              <p style="color: #666; font-size: 14px;">Hi ${userName},</p>
-              
-              <p style="color: #666; line-height: 1.6;">
-                We received a request to reset your password. Click the button below to set a new password.
-              </p>
-              
-              <div style="text-align: center; margin: 30px 0;">
-                <a href="${resetUrl}" style="
-                  background-color: #dc3545;
-                  color: white;
-                  padding: 12px 30px;
-                  text-decoration: none;
-                  border-radius: 4px;
-                  display: inline-block;
-                  font-weight: bold;
-                ">
-                  Reset Password
-                </a>
-              </div>
-              
-              <p style="color: #999; font-size: 12px;">
-                Or copy this link: ${resetUrl}
-              </p>
-              
-              <p style="color: #666; font-size: 12px; line-height: 1.6;">
-                This reset link will expire in 1 hour. If you didn't request this, please ignore this email.
-              </p>
-            </div>
-            
-            <p style="color: #999; font-size: 12px; border-top: 1px solid #ddd; padding-top: 15px;">
-              For security, never share this link with anyone.
-            </p>
-          </div>
-        `,
-      };
-
-      const info = await this.transporter.sendMail(mailOptions);
-
-      if (config.nodeEnv === "development") {
-        logger.info(`[EMAIL] Preview: ${nodemailer.getTestMessageUrl(info)}`);
-      }
-
-      logger.info(`[EMAIL] Password reset email sent to ${email}`);
-    } catch (error) {
-      logger.error(
-        `[EMAIL] Failed to send password reset email: ${error instanceof Error ? error.message : String(error)}`,
-      );
-    }
-  }
-}
-
-// Singleton instance
-let emailService: EmailService | null = null;
-
 /**
- * Get or create email service instance
+ * ✅ Resend Client Singleton
  */
-export const getEmailService = (): EmailService => {
-  if (!emailService) {
-    emailService = new EmailService();
+let resend: Resend | null = null;
+
+const getResendClient = (): Resend => {
+  if (!resend) {
+    if (!config.resendApiKey) {
+      throw new Error("RESEND_API_KEY is not configured");
+    }
+    resend = new Resend(config.resendApiKey);
   }
-  return emailService;
+  return resend;
 };
 
 /**
- * Initialize email service (call during server startup)
+ * ✅ Shared Email Layout
  */
-export const initializeEmailService = async (): Promise<void> => {
-  const service = getEmailService();
-  await service.initialize();
+const brandColor = "#FF6B2C";
+
+const emailLayout = (body: string) => `
+  <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 560px; margin: 0 auto; padding: 32px; background: #ffffff; border-radius: 12px;">
+    <div style="text-align: center; margin-bottom: 24px;">
+      <h1 style="color: #1B2A4A; font-size: 24px; margin: 0;">Gadgify</h1>
+    </div>
+    ${body}
+    <hr style="border: none; border-top: 1px solid #E7E5E4; margin: 24px 0;" />
+    <p style="color: #a8a29e; font-size: 11px; text-align: center;">
+      © ${new Date().getFullYear()} Gadgify. All rights reserved.
+    </p>
+  </div>
+`;
+
+/**
+ * ✅ Core Send Function
+ */
+const sendEmail = async (
+  to: string,
+  subject: string,
+  html: string,
+): Promise<void> => {
+  try {
+    const { error } = await getResendClient().emails.send({
+      from: config.emailFrom,
+      to,
+      subject,
+      html,
+    });
+
+    if (error) {
+      throw error;
+    }
+
+    logger.info(`[EMAIL] "${subject}" sent to ${to}`);
+  } catch (error) {
+    logger.error(
+      `[EMAIL] Failed: ${
+        error instanceof Error ? error.message : String(error)
+      }`,
+    );
+    throw error;
+  }
 };
 
-export default EmailService;
+/**
+ * ✅ TOKEN FUNCTIONS (from your old system)
+ */
+export const generateVerificationToken = (): EmailVerificationToken => {
+  const token = crypto.randomBytes(32).toString("hex");
+  const hash = crypto.createHash("sha256").update(token).digest("hex");
+  const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
+
+  return { token, hash, expiresAt };
+};
+
+export const hashToken = (token: string): string => {
+  return crypto.createHash("sha256").update(token).digest("hex");
+};
+
+/**
+ * ✅ EMAIL VERIFICATION
+ */
+export const sendEmailVerificationEmail = async (
+  to: string,
+  verificationToken: string,
+  name: string,
+): Promise<void> => {
+  const verificationUrl = `${config.frontendUrl}/verify-email?token=${verificationToken}`;
+
+  await sendEmail(
+    to,
+    "Verify Your Email — Gadgify",
+    emailLayout(`
+      <h2 style="color: #1B2A4A;">Verify Your Email</h2>
+      <p>Hi ${name}, please verify your email.</p>
+
+      <div style="text-align:center;margin:24px 0;">
+        <a href="${verificationUrl}" style="
+          background:${brandColor};
+          color:#fff;
+          padding:12px 28px;
+          border-radius:6px;
+          text-decoration:none;
+        ">
+          Verify Email
+        </a>
+      </div>
+
+      <p>${verificationUrl}</p>
+    `),
+  );
+};
+
+/**
+ * ✅ PASSWORD RESET
+ */
+export const sendPasswordResetEmail = async (
+  to: string,
+  resetToken: string,
+): Promise<void> => {
+  const resetUrl = `${config.frontendUrl}/reset-password?token=${resetToken}`;
+
+  await sendEmail(
+    to,
+    "Reset Your Password — Gadgify",
+    emailLayout(`
+      <h2>Password Reset</h2>
+      <p>Click below to reset your password (valid for 1 hour)</p>
+
+      <div style="text-align:center;margin:24px 0;">
+        <a href="${resetUrl}" style="
+          background:${brandColor};
+          color:#fff;
+          padding:12px 28px;
+          border-radius:6px;
+          text-decoration:none;
+        ">
+          Reset Password
+        </a>
+      </div>
+    `),
+  );
+};
+
+/**
+ * ✅ WELCOME EMAIL
+ */
+export const sendWelcomeEmail = async (
+  to: string,
+  name: string,
+): Promise<void> => {
+  await sendEmail(
+    to,
+    "Welcome to Gadgify 🎉",
+    emailLayout(`
+      <h2>Welcome ${name}!</h2>
+      <p>Your account is ready.</p>
+
+      <div style="text-align:center;margin:24px 0;">
+        <a href="${config.frontendUrl}" style="
+          background:${brandColor};
+          color:#fff;
+          padding:12px 28px;
+          border-radius:6px;
+          text-decoration:none;
+        ">
+          Start Shopping
+        </a>
+      </div>
+    `),
+  );
+};
