@@ -7,8 +7,8 @@ const isDevelopment = process.env.NODE_ENV === "development";
 // General API rate limit - per IP
 export const apiLimiter = rateLimit({
   windowMs: isDevelopment ? 60 * 60 * 1000 : 15 * 60 * 1000, // 1 hour (dev) or 15 minutes (prod)
-  max: isDevelopment ? 5000 : 500, // 5000/hour (dev) or 500/15min (prod)
-  skip: () => isDevelopment, // Skip rate limiting entirely in development
+  max: isDevelopment ? 5000 : 1500, // 5000/hour (dev) or 1500/15min (prod) - increased from 500
+  skip: (req: Request) => isDevelopment || req.method === "GET", // Skip for dev mode or GET requests (safe, read-only)
   message: "Too many requests, please try again later.",
   standardHeaders: true,
   legacyHeaders: false,
