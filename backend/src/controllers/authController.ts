@@ -30,6 +30,7 @@ import {
   findUserByEmail,
   isEmailRegisteredWithAnyRole,
 } from "../utils/userQueryHelper";
+import { setAuthCookie, clearAuthCookie } from "../utils/cookieHelper";
 
 // SECURITY: Track failed login attempts (use Redis in production)
 const failedLoginAttempts = new Map<
@@ -191,10 +192,7 @@ export const signup = async (
 
     // SECURITY: Set httpOnly cookie for new signup (httpOnly = not accessible via JavaScript)
     const oneDay = 24 * 60 * 60 * 1000;
-    res.setHeader(
-      "Set-Cookie",
-      `authToken=${token}; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=${oneDay / 1000}`,
-    );
+    setAuthCookie(res, token, { maxAge: oneDay });
 
     logger.info(`User signup: ${normalizedEmail} (email verification pending)`);
 
@@ -313,10 +311,7 @@ export const login = async (
 
     // SECURITY: Set httpOnly cookie (httpOnly = not accessible via JavaScript, Secure = HTTPS only)
     const oneDay = 24 * 60 * 60 * 1000;
-    res.setHeader(
-      "Set-Cookie",
-      `authToken=${token}; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=${oneDay / 1000}`,
-    );
+    setAuthCookie(res, token, { maxAge: oneDay });
 
     const { password: _, ...userWithoutPassword } = user;
 
@@ -814,10 +809,7 @@ export const logout = async (
     }
 
     // Clear the httpOnly cookie by setting it to expire immediately
-    res.setHeader(
-      "Set-Cookie",
-      "authToken=; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=0",
-    );
+    clearAuthCookie(res);
 
     // ✅ SECURITY: Log logout event
     const ipAddress = getIpAddress(req);
