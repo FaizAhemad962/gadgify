@@ -114,6 +114,20 @@ app.use((req: Request, res: Response, next) => {
 // Helper to set httpOnly cookie
 app.use((req: Request, res: Response, next) => {
   res.setCookie = (name: string, value: string, options?: any) => {
+    // Extract domain from FRONTEND_URL
+    const getDomain = () => {
+      try {
+        const urlObj = new URL(config.frontendUrl);
+        const hostname = urlObj.hostname;
+        if (hostname === "localhost" || hostname === "127.0.0.1") {
+          return "";
+        }
+        return `; Domain=.${hostname}`;
+      } catch {
+        return "";
+      }
+    };
+
     const defaults = {
       httpOnly: true,
       secure: config.nodeEnv === "production",
@@ -124,7 +138,7 @@ app.use((req: Request, res: Response, next) => {
     const finalOptions = { ...defaults, ...options };
     res.setHeader(
       "Set-Cookie",
-      `${name}=${value}; Path=${finalOptions.path}; ${finalOptions.httpOnly ? "HttpOnly; " : ""}${finalOptions.secure ? "Secure; " : ""}SameSite=${finalOptions.sameSite}; Max-Age=${finalOptions.maxAge / 1000}`,
+      `${name}=${value}; Path=${finalOptions.path}${getDomain()}; ${finalOptions.httpOnly ? "HttpOnly; " : ""}${finalOptions.secure ? "Secure; " : ""}SameSite=${finalOptions.sameSite}; Max-Age=${finalOptions.maxAge / 1000}`,
     );
   };
   next();

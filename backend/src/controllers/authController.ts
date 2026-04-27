@@ -31,6 +31,7 @@ import {
   isEmailRegisteredWithAnyRole,
 } from "../utils/userQueryHelper";
 import { setAuthCookie, clearAuthCookie } from "../utils/cookieHelper";
+import { storeCSRFToken } from "../middlewares/csrfProtection";
 
 // SECURITY: Track failed login attempts (use Redis in production)
 const failedLoginAttempts = new Map<
@@ -832,5 +833,35 @@ export const logout = async (
     });
   } catch (error) {
     next(error);
+  }
+};
+
+/**
+ * ✅ SECURITY: Get CSRF token for client
+ * Frontend calls this endpoint before login/signup to get a fresh CSRF token
+ * Token is cached on frontend for 50 seconds before fetching a new one
+ */
+export const getCsrfToken = async (
+  req: Request,
+  res: Response,
+): Promise<void> => {
+  try {
+    // Generate a new CSRF token
+    const token = crypto.randomBytes(32).toString("hex");
+
+    // Store token in the CSRF token store so it can be validated on subsequent requests
+    const sessionId = (req as any).sessionID || (req as any).user?.id || req.ip;
+    storeCSRFToken(token, sessionId);
+
+    // Return the token to be included in subsequent POST/PUT/DELETE/PATCH requests
+    res.json({
+      success: true,
+      csrfToken: token,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Failed to generate CSRF token",
+    });
   }
 };

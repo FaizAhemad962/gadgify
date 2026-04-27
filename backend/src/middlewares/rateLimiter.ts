@@ -21,14 +21,13 @@ export const authLimiter = rateLimit({
   skipSuccessfulRequests: true,
   message: "Too many login attempts, please try again after 15 minutes.",
   keyGenerator: (req: Request) => {
-    // Use email from body for login/signup, fallback to IP
+    // Use email from body for login/signup (not IP to avoid IPv6 issues with custom keyGenerator)
     const email = (
       req.body?.email ||
       req.body?.username ||
-      req.ip ||
-      ""
+      "unknown"
     ).toLowerCase();
-    return email || req.ip || "unknown";
+    return email;
   },
 });
 
@@ -39,9 +38,9 @@ export const passwordResetLimiter = rateLimit({
   message: "Too many password reset attempts, please try again after 1 hour.",
   skipSuccessfulRequests: false,
   keyGenerator: (req: Request) => {
-    // Use email from body, fallback to IP
-    const email = (req.body?.email || req.ip || "").toLowerCase();
-    return email || req.ip || "unknown";
+    // Use email from body (not IP to avoid IPv6 issues with custom keyGenerator)
+    const email = (req.body?.email || "unknown").toLowerCase();
+    return email;
   },
 });
 
@@ -51,8 +50,8 @@ export const paymentLimiter = rateLimit({
   max: 50, // 50 payment attempts per hour
   message: "Too many payment attempts, please try again later.",
   keyGenerator: (req: Request) => {
-    // Use user ID if authenticated, fallback to IP
-    const userId = (req as any).user?.id || req.ip || "unknown";
+    // Use user ID if authenticated, or a placeholder (not IP to avoid IPv6 issues with custom keyGenerator)
+    const userId = (req as any).user?.id || "anonymous";
     return String(userId);
   },
 });
@@ -63,8 +62,8 @@ export const uploadLimiter = rateLimit({
   max: 50, // 50 uploads per hour
   message: "Too many file uploads, please try again later.",
   keyGenerator: (req: Request) => {
-    // Use user ID if authenticated, fallback to IP
-    const userId = (req as any).user?.id || req.ip || "unknown";
+    // Use user ID if authenticated, or a placeholder (not IP to avoid IPv6 issues with custom keyGenerator)
+    const userId = (req as any).user?.id || "anonymous";
     return String(userId);
   },
 });

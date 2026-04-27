@@ -18,6 +18,19 @@ export const generateCSRFToken = (): string => {
   return crypto.randomBytes(32).toString("hex");
 };
 
+/**
+ * ✅ SECURITY: Store CSRF token in the token store
+ * Can be called from controller or middleware
+ */
+export const storeCSRFToken = (token: string, sessionId?: string): void => {
+  csrfTokenStore.set(token, {
+    timestamp: Date.now(),
+    usageCount: 0,
+    lastUsed: Date.now(),
+    sessionId,
+  });
+};
+
 export const csrfTokenGenerator = (
   req: Request,
   res: Response,
@@ -28,12 +41,8 @@ export const csrfTokenGenerator = (
 
   const token = generateCSRFToken();
 
-  csrfTokenStore.set(token, {
-    timestamp: Date.now(),
-    usageCount: 0,
-    lastUsed: Date.now(),
-    sessionId,
-  });
+  // Store the token in the token store
+  storeCSRFToken(token, sessionId);
 
   res.locals.csrfToken = token;
   (req as any).csrfToken = token;

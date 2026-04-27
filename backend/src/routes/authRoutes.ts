@@ -11,11 +11,11 @@ import {
   resetPassword,
   verifyEmail,
   resendVerificationEmail,
+  getCsrfToken,
 } from "../controllers/authController";
 import { authenticate } from "../middlewares/auth";
 import { validate, validateMaharashtra } from "../middlewares/validate";
 import { authLimiter, passwordResetLimiter } from "../middlewares/rateLimiter";
-import { getCSRFToken } from "../middlewares/csrfProtection";
 import {
   loginSchema,
   signupSchema,
