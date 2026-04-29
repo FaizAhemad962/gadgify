@@ -1,4 +1,3 @@
-import React from "react";
 import { Typography, type TypographyProps } from "@mui/material";
 
 interface CustomTypographyProps extends TypographyProps {

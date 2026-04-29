@@ -1,4 +1,3 @@
-import React from "react";
 import { Chip, type ChipProps } from "@mui/material";
 import { tokens } from "@/theme/theme";
 

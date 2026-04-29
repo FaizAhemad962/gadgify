@@ -1,7 +1,6 @@
 import React from "react";
 import { Box, Typography, Breadcrumbs, Link } from "@mui/material";
 import { Link as RouterLink } from "react-router-dom";
-import { tokens } from "@/theme/theme";
 
 interface BreadcrumbItem {
   label: string;

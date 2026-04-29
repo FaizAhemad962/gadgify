@@ -1,4 +1,3 @@
-import React from "react";
 import { IconButton, type IconButtonProps } from "@mui/material";
 
 export const CustomIconButton = (props: IconButtonProps) => {

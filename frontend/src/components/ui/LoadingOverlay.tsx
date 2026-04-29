@@ -1,4 +1,3 @@
-import React from "react";
 import { Box, CircularProgress, Backdrop } from "@mui/material";
 import { tokens } from "@/theme/theme";
 

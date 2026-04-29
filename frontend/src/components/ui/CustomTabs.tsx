@@ -1,7 +1,7 @@
 import { Tabs, Tab, type TabsProps, type TabProps, styled } from "@mui/material";
 import { tokens } from "@/theme/theme";
 
-const StyledTabs = styled(Tabs)<TabsProps>(({ theme }) => ({
+const StyledTabs = styled(Tabs)<TabsProps>(() => ({
   minHeight: 48,
   "& .MuiTabs-indicator": {
     height: 3,
@@ -10,7 +10,7 @@ const StyledTabs = styled(Tabs)<TabsProps>(({ theme }) => ({
   },
 }));
 
-const StyledTab = styled(Tab)<TabProps>(({ theme }) => ({
+const StyledTab = styled(Tab)<TabProps>(() => ({
   textTransform: "none",
   fontWeight: 600,
   fontSize: "0.95rem",

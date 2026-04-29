@@ -28,7 +28,7 @@ const StyledMenu = styled((props: MenuProps) => (
   },
 }));
 
-const StyledMenuItem = styled(MenuItem)<MenuItemProps>(({ theme }) => ({
+const StyledMenuItem = styled(MenuItem)<MenuItemProps>(() => ({
   fontSize: "0.9rem",
   fontWeight: 500,
   padding: "10px 16px",

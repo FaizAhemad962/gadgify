@@ -1,4 +1,3 @@
-import React from "react";
 import { Paper, type PaperProps, styled } from "@mui/material";
 import { tokens } from "@/theme/theme";
 

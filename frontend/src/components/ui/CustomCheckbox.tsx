@@ -1,7 +1,7 @@
 import { Checkbox, type CheckboxProps, styled } from "@mui/material";
 import { tokens } from "@/theme/theme";
 
-const StyledCheckbox = styled(Checkbox)<CheckboxProps>(({ theme }) => ({
+const StyledCheckbox = styled(Checkbox)<CheckboxProps>(() => ({
   color: tokens.gray400,
   "&.Mui-checked": {
     color: tokens.accent,

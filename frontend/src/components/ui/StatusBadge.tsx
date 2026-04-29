@@ -1,4 +1,3 @@
-import React from "react";
 import { CustomChip } from "./CustomChip";
 import { tokens } from "@/theme/theme";
 
