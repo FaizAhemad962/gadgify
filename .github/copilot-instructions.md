@@ -12,8 +12,8 @@ Gadgify is a full-stack e-commerce platform for electronics in Maharashtra, Indi
 
 ## Architecture
 
-- See [PROJECT_CONTEXT.md](.github/PROJECT_CONTEXT.md) for full architecture diagrams
-- See [CODE_PATTERNS.md](.github/CODE_PATTERNS.md) for implementation examples
+- See [.github/instructions/architecture.instructions.md](.github/instructions/architecture.instructions.md) for full architecture diagrams
+- See [.github/instructions/patterns.instructions.md](.github/instructions/patterns.instructions.md) for implementation examples
 
 ## Code Style
 
@@ -82,6 +82,9 @@ When generating plans, reviews, or implementations, prioritize these workspace a
 - `.github/instructions/backend.instructions.md`
 - `.github/instructions/frontend.instructions.md`
 - `.github/instructions/prisma.instructions.md`
+- `.github/instructions/architecture.instructions.md`
+- `.github/instructions/patterns.instructions.md`
+- `.github/instructions/localization.instructions.md`
 - `.github/instructions/business-goals.instructions.md`
 - `.github/instructions/delivery-support-readiness.instructions.md`
 
@@ -93,10 +96,27 @@ When generating plans, reviews, or implementations, prioritize these workspace a
 - `.github/roles/delivery-staff.role.md`
 - `.github/roles/support-staff.role.md`
 
-3. Plans
+### 3. Plans
 
 - `.github/plan/end-to-end.plan.md`
 - `.github/plan/feature-gap.plan.md`
+
+## AI Agent & Task Routing
+
+### Execution Policy
+
+- For project status requests, use `project-audit` skill or `project-auditor` agent behavior.
+- For building missing features, use `feature-gap-execution` skill and `expert-fullstack-dev` agent behavior.
+- Keep implementation evidence-based: verify docs against code.
+- Preserve security and Maharashtra validation requirements.
+
+### Task Routing
+
+- **New feature implementation**: use `.github/prompts/new-feature.prompt.md` or `.github/prompts/implement-priority-gap.prompt.md`.
+- **New backend endpoint**: use `.github/prompts/new-endpoint.prompt.md`.
+- **Debugging**: use `.github/prompts/debug.prompt.md`.
+- **End-to-end review**: use `.github/prompts/project-review.prompt.md`.
+- **Localization check**: use `.github/skills/localization-audit/SKILL.md`.
 
 4. Skills
 

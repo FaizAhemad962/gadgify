@@ -1,4 +1,3 @@
-import React from "react";
 import { CustomDialog } from "./CustomDialog";
 import { CustomButton } from "./CustomButton";
 import { Typography, Box } from "@mui/material";

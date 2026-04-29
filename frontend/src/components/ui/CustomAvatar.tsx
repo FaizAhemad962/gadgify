@@ -1,7 +1,7 @@
 import { Avatar, type AvatarProps, styled } from "@mui/material";
 import { tokens } from "@/theme/theme";
 
-const StyledAvatar = styled(Avatar)<AvatarProps>(({ theme }) => ({
+const StyledAvatar = styled(Avatar)<AvatarProps>(() => ({
   backgroundColor: tokens.gray100,
   color: tokens.primary,
   fontWeight: 600,
