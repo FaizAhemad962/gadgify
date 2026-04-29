@@ -188,518 +188,493 @@ const HomePage = () => {
       <HeroCarousel />
 
       {/* ───── Stats Section ───── */}
-      <InView animationType="slideUp">
-        <Container maxWidth="lg" sx={{ py: 6 }}>
-          <Box
-            sx={{
-              display: "grid",
-              gridTemplateColumns: { xs: "1fr 1fr", md: "1fr 1fr 1fr 1fr" },
-              gap: { xs: 2, md: 3 },
-            }}
-          >
-            {[
-              { number: "10K+", label: t("common.happyCustomers") },
-              { number: "5K+", label: t("common.products") },
-              { number: "24/7", label: t("common.support") },
-              { number: "100%", label: t("common.authentic") },
-            ].map((stat, index) => (
-              <Box key={index} sx={{ textAlign: "center" }}>
-                <Typography
-                  variant="h4"
-                  sx={{
-                    fontWeight: 900,
-                    color: tokens.accent,
-                    mb: 0.5,
-                    fontSize: { xs: "1.75rem", sm: "2rem", md: "2.5rem" },
-                  }}
-                >
-                  {stat.number}
-                </Typography>
-                <Typography
-                  variant="body2"
-                  sx={{
-                    color: "text.secondary",
-                    fontWeight: 600,
-                    fontSize: { xs: "0.85rem", md: "0.95rem" },
-                  }}
-                >
-                  {stat.label}
-                </Typography>
-              </Box>
-            ))}
-          </Box>
-        </Container>
-      </InView>
-
-      {/* ───── 1. SHOP BY CATEGORY ───── */}
-      <InView animationType="slideUp">
-        <Box sx={{ bgcolor: tokens.white, py: { xs: 2, md: 3 } }}>
-          <Container maxWidth="lg">
-            <Box sx={{ textAlign: "center", mb: 2 }}>
+      <Container maxWidth="lg" sx={{ py: 6 }}>
+        <Box
+          sx={{
+            display: "grid",
+            gridTemplateColumns: { xs: "1fr 1fr", md: "1fr 1fr 1fr 1fr" },
+            gap: { xs: 2, md: 3 },
+          }}
+        >
+          {[
+            { number: "10K+", label: t("common.happyCustomers") },
+            { number: "5K+", label: t("common.products") },
+            { number: "24/7", label: t("common.support") },
+            { number: "100%", label: t("common.authentic") },
+          ].map((stat, index) => (
+            <Box key={index} sx={{ textAlign: "center" }}>
               <Typography
-                variant="h3"
-                fontWeight="700"
+                variant="h4"
                 sx={{
-                  color: "text.primary",
-                  mb: 1,
-                  fontSize: { xs: "1.5rem", sm: "1.75rem", md: "2rem" },
+                  fontWeight: 900,
+                  color: tokens.accent,
+                  mb: 0.5,
+                  fontSize: { xs: "1.75rem", sm: "2rem", md: "2.5rem" },
                 }}
               >
-                {t("common.shopByCategory")}
-              </Typography>
-              <Typography
-                variant="body1"
-                sx={{
-                  color: "text.secondary",
-                  fontSize: { xs: "0.9rem", md: "1rem" },
-                }}
-              >
-                {t("common.shopByCategoryDesc")}
-              </Typography>
-            </Box>
-            <Box
-              sx={{
-                display: "grid",
-                gridTemplateColumns: {
-                  xs: "repeat(1, 1fr)",
-                  sm: "repeat(2, 1fr)",
-                  md: "repeat(4, 1fr)",
-                },
-                gap: 2,
-              }}
-            >
-              {categoriesData.map((category, i) => (
-                <Card
-                  key={category.id}
-                  onClick={() =>
-                    navigate(
-                      `/products?category=${encodeURIComponent(category.name)}`,
-                    )
-                  }
-                  sx={{
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                    gap: 0.5,
-                    p: { xs: 1, md: 2 },
-                    cursor: "pointer",
-                    border: `1px solid ${tokens.gray200}`,
-                    height: "100%",
-                    transition: "all 0.25s cubic-bezier(.4,0,.2,1)",
-                    minHeight: 160,
-                    justifyContent: "center",
-                    "&:hover": {
-                      borderColor: getCategoryColor(category.name, i),
-                      boxShadow: `0 8px 24px ${getCategoryColor(category.name, i)}30`,
-                      transform: "translateY(-4px)",
-                    },
-                  }}
-                >
-                  <Box
-                    sx={{
-                      color: getCategoryColor(category.name, i),
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      bgcolor: `${getCategoryColor(category.name, i)}10`,
-                      borderRadius: 2,
-                      width: { xs: 56, md: 64 },
-                      height: { xs: 56, md: 64 },
-                      fontSize: { xs: "1.75rem", md: "2rem" },
-                    }}
-                  >
-                    {getCategoryIcon(category.name)}
-                  </Box>
-                  <Typography
-                    variant="body2"
-                    sx={{
-                      fontWeight: 600,
-                      color: "text.primary",
-                      textAlign: "center",
-                      fontSize: { xs: "0.8rem", sm: "0.9rem", md: "0.95rem" },
-                    }}
-                  >
-                    {category.name}
-                  </Typography>
-                </Card>
-              ))}
-            </Box>
-          </Container>
-        </Box>
-      </InView>
-
-      {/* ───── 2. TRENDING NOW ───── */}
-      <InView animationType="slideUp">
-        <Container maxWidth="lg" sx={{ py: { xs: 2, md: 3 } }}>
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: { xs: "flex-start", sm: "center" },
-              flexDirection: { xs: "column", sm: "row" },
-              gap: 1,
-              mb: 1,
-            }}
-          >
-            <Box>
-              <Typography
-                variant="h3"
-                fontWeight="700"
-                sx={{
-                  color: "text.primary",
-                  fontSize: { xs: "1.5rem", sm: "1.75rem", md: "2rem" },
-                }}
-              >
-                🔥 {t("common.trendingNow")}
+                {stat.number}
               </Typography>
               <Typography
                 variant="body2"
                 sx={{
                   color: "text.secondary",
-                  mt: 0.5,
+                  fontWeight: 600,
                   fontSize: { xs: "0.85rem", md: "0.95rem" },
                 }}
               >
-                {t("common.trendingDesc")}
+                {stat.label}
               </Typography>
             </Box>
-            <Button
-              endIcon={<ArrowForward />}
-              onClick={() => navigate("/products?sortBy=popularity")}
+          ))}
+        </Box>
+      </Container>
+
+      {/* ───── 1. SHOP BY CATEGORY ───── */}
+      <Box sx={{ bgcolor: tokens.white, py: { xs: 2, md: 3 } }}>
+        <Container maxWidth="lg">
+          <Box sx={{ textAlign: "center", mb: 2 }}>
+            <Typography
+              variant="h3"
+              fontWeight="700"
               sx={{
-                textTransform: "none",
-                fontWeight: 600,
-                color: tokens.primary,
-                minHeight: 44,
-                px: 2,
+                color: "text.primary",
+                mb: 1,
+                fontSize: { xs: "1.5rem", sm: "1.75rem", md: "2rem" },
               }}
             >
-              {t("common.viewAll")}
-            </Button>
+              {t("common.shopByCategory")}
+            </Typography>
+            <Typography
+              variant="body1"
+              sx={{
+                color: "text.secondary",
+                fontSize: { xs: "0.9rem", md: "1rem" },
+              }}
+            >
+              {t("common.shopByCategoryDesc")}
+            </Typography>
           </Box>
-          {!trendingLoading && (
-            <Box
+          <Box
+            sx={{
+              display: "grid",
+              gridTemplateColumns: {
+                xs: "repeat(2, 1fr)",
+                sm: "repeat(3, 1fr)",
+                md: "repeat(4, 1fr)",
+              },
+              gap: 2,
+            }}
+          >
+            {categoriesData.map((category, i) => (
+              <Card
+                key={category.id}
+                onClick={() =>
+                  navigate(
+                    `/products?category=${encodeURIComponent(category.name)}`,
+                  )
+                }
+                sx={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  gap: 1.5,
+                  p: { xs: 2, md: 3 },
+                  cursor: "pointer",
+                  border: `1px solid ${tokens.gray200}`,
+                  height: "100%",
+                  transition: "all 0.25s cubic-bezier(.4,0,.2,1)",
+                  minHeight: { xs: 120, md: 160 },
+                  justifyContent: "center",
+                  bgcolor: tokens.white,
+                  borderRadius: 4,
+                  "&:hover": {
+                    borderColor: getCategoryColor(category.name, i),
+                    boxShadow: `0 8px 24px ${getCategoryColor(category.name, i)}30`,
+                    transform: "translateY(-4px)",
+                  },
+                }}
+              >
+                <Box
+                  sx={{
+                    color: getCategoryColor(category.name, i),
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    bgcolor: `${getCategoryColor(category.name, i)}10`,
+                    borderRadius: 2,
+                    width: { xs: 56, md: 64 },
+                    height: { xs: 56, md: 64 },
+                    fontSize: { xs: "1.75rem", md: "2rem" },
+                  }}
+                >
+                  {getCategoryIcon(category.name)}
+                </Box>
+                <Typography
+                  variant="body2"
+                  sx={{
+                    fontWeight: 600,
+                    color: "text.primary",
+                    textAlign: "center",
+                    fontSize: { xs: "0.8rem", sm: "0.9rem", md: "0.95rem" },
+                  }}
+                >
+                  {category.name}
+                </Typography>
+              </Card>
+            ))}
+          </Box>
+        </Container>
+      </Box>
+
+      {/* ───── 2. TRENDING NOW ───── */}
+      <Container maxWidth="lg" sx={{ py: { xs: 2, md: 3 } }}>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: { xs: "flex-start", sm: "center" },
+            flexDirection: { xs: "column", sm: "row" },
+            gap: 1,
+            mb: 1,
+          }}
+        >
+          <Box>
+            <Typography
+              variant="h3"
+              fontWeight="700"
               sx={{
-                display: "grid",
-                gridTemplateColumns: {
-                  xs: "1fr",
-                  sm: "repeat(2, 1fr)",
-                  md: "repeat(4, 1fr)",
-                },
-                gap: 2,
+                color: "text.primary",
+                fontSize: { xs: "1.5rem", sm: "1.75rem", md: "2rem" },
               }}
             >
-              {trendingProducts.map((product) => (
-                <ProductCard
-                  key={product.id}
-                  product={product}
-                  isInWishlist={isInWishlist}
-                  isToggling={isToggling}
-                  toggleWishlist={toggleWishlist}
-                  onAddToCart={handleAddToCart}
-                  onBuyNow={handleBuyNow}
-                  onNavigate={(id) => navigate(`/products/${id}`)}
-                  t={t}
-                />
-              ))}
-            </Box>
-          )}
-        </Container>
-      </InView>
+              🔥 {t("common.trendingNow")}
+            </Typography>
+            <Typography
+              variant="body2"
+              sx={{
+                color: "text.secondary",
+                mt: 0.5,
+                fontSize: { xs: "0.85rem", md: "0.95rem" },
+              }}
+            >
+              {t("common.trendingDesc")}
+            </Typography>
+          </Box>
+          <Button
+            endIcon={<ArrowForward />}
+            onClick={() => navigate("/products?sortBy=popularity")}
+            sx={{
+              textTransform: "none",
+              fontWeight: 600,
+              color: tokens.primary,
+              minHeight: 44,
+              px: 2,
+            }}
+          >
+            {t("common.viewAll")}
+          </Button>
+        </Box>
+        {!trendingLoading && (
+          <Box
+            sx={{
+              display: "grid",
+              gridTemplateColumns: {
+                xs: "repeat(2, 1fr)", // 2 columns on mobile for consistency
+                sm: "repeat(2, 1fr)",
+                md: "repeat(4, 1fr)",
+              },
+              gridAutoRows: "1fr", // Force rows to have equal height
+              gap: 2,
+            }}
+          >
+            {trendingProducts.map((product) => (
+              <ProductCard
+                key={product.id}
+                product={product}
+                isInWishlist={isInWishlist}
+                isToggling={isToggling}
+                toggleWishlist={toggleWishlist}
+                onAddToCart={handleAddToCart}
+                onBuyNow={handleBuyNow}
+                onNavigate={(id) => navigate(`/products/${id}`)}
+                t={t}
+              />
+            ))}
+          </Box>
+        )}
+      </Container>
 
       {/* ───── FLASH SALE ───── */}
       <FlashSale />
 
       {/* ───── 3. DEAL OF THE DAY ───── */}
       {dealProduct && (
-        <InView animationType="slideUp">
-          <Box sx={{ bgcolor: tokens.white, py: { xs: 2, md: 3 } }}>
-            <Container maxWidth="lg">
+        <Box sx={{ bgcolor: tokens.white, py: { xs: 2, md: 3 } }}>
+          <Container maxWidth="lg">
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: { xs: "column", md: "row" },
+                gap: { xs: 2, md: 3 },
+                p: { xs: 2, md: 3 },
+                borderRadius: 4,
+                background: `linear-gradient(135deg, ${tokens.primaryDark} 0%, ${tokens.primary} 100%)`,
+                color: "white",
+                position: "relative",
+                overflow: "hidden",
+              }}
+            >
               <Box
                 sx={{
-                  display: "flex",
-                  flexDirection: { xs: "column", md: "row" },
-                  gap: { xs: 2, md: 3 },
-                  p: { xs: 2, md: 3 },
-                  borderRadius: 4,
-                  background: `linear-gradient(135deg, ${tokens.primaryDark} 0%, ${tokens.primary} 100%)`,
-                  color: "white",
-                  position: "relative",
-                  overflow: "hidden",
+                  position: "absolute",
+                  top: 1,
+                  right: 1,
                 }}
               >
                 <Box
                   sx={{
-                    position: "absolute",
-                    top: 1,
-                    right: 1,
-                  }}
-                >
-                  <Box
-                    sx={{
-                      bgcolor: tokens.accent,
-                      px: 1,
-                      py: 1,
-                      borderRadius: 2,
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 0.5,
-                    }}
-                  >
-                    <Timer sx={{ fontSize: 16 }} />
-                    <Typography
-                      variant="caption"
-                      sx={{ fontWeight: 700, fontSize: "0.8rem" }}
-                    >
-                      {t("common.limitedTimeOffer")}
-                    </Typography>
-                  </Box>
-                </Box>
-                <Box
-                  sx={{
-                    flex: "0 0 auto",
+                    bgcolor: tokens.accent,
+                    px: 1,
+                    py: 1,
+                    borderRadius: 2,
                     display: "flex",
                     alignItems: "center",
-                    justifyContent: "center",
+                    gap: 0.5,
                   }}
                 >
-                  <Box
-                    component="img"
-                    src={
-                      dealProduct.media?.find((m) => m.isPrimary)?.url ||
-                      dealProduct.media?.[0]?.url ||
-                      ""
-                    }
-                    alt={dealProduct.name}
-                    sx={{
-                      width: { xs: 160, sm: 200, md: 280 },
-                      height: { xs: 160, sm: 200, md: 280 },
-                      objectFit: "contain",
-                      borderRadius: 3,
-                      bgcolor: "white",
-                      p: 1,
-                    }}
-                  />
+                  <Timer sx={{ fontSize: 16 }} />
+                  <Typography
+                    variant="caption"
+                    sx={{ fontWeight: 700, fontSize: "0.8rem" }}
+                  >
+                    {t("common.limitedTimeOffer")}
+                  </Typography>
                 </Box>
+              </Box>
+              <Box
+                sx={{
+                  flex: "0 0 auto",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <Box
+                  component="img"
+                  src={
+                    dealProduct.media?.find((m) => m.isPrimary)?.url ||
+                    dealProduct.media?.[0]?.url ||
+                    ""
+                  }
+                  alt={dealProduct.name}
+                  sx={{
+                    width: { xs: 160, sm: 200, md: 280 },
+                    height: { xs: 160, sm: 200, md: 280 },
+                    objectFit: "contain",
+                    borderRadius: 3,
+                    bgcolor: "white",
+                    p: 1,
+                  }}
+                />
+              </Box>
+              <Box
+                sx={{
+                  flex: 1,
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "center",
+                }}
+              >
+                <Typography
+                  variant="overline"
+                  sx={{
+                    color: tokens.accent,
+                    fontWeight: 700,
+                    letterSpacing: 2,
+                    fontSize: "0.8rem",
+                  }}
+                >
+                  {t("common.dealOfTheDay")}
+                </Typography>
+                <Typography
+                  variant="h3"
+                  sx={{
+                    fontWeight: 800,
+                    mt: 0.5,
+                    mb: 1,
+                    fontSize: { xs: "1.5rem", md: "2rem" },
+                  }}
+                >
+                  {dealProduct.name}
+                </Typography>
+                <Typography
+                  variant="body1"
+                  sx={{
+                    opacity: 0.85,
+                    mb: 2,
+                    lineHeight: 1.7,
+                    fontSize: { xs: "0.9rem", md: "1rem" },
+                  }}
+                >
+                  {dealProduct.description?.substring(0, 150)}...
+                </Typography>
                 <Box
                   sx={{
-                    flex: 1,
                     display: "flex",
-                    flexDirection: "column",
-                    justifyContent: "center",
+                    alignItems: "center",
+                    gap: 1,
+                    mb: 2,
                   }}
                 >
-                  <Typography
-                    variant="overline"
-                    sx={{
-                      color: tokens.accent,
-                      fontWeight: 700,
-                      letterSpacing: 2,
-                      fontSize: "0.8rem",
-                    }}
-                  >
-                    {t("common.dealOfTheDay")}
-                  </Typography>
                   <Typography
                     variant="h3"
                     sx={{
                       fontWeight: 800,
-                      mt: 0.5,
-                      mb: 1,
-                      fontSize: { xs: "1.5rem", md: "2rem" },
+                      color: tokens.accent,
+                      fontSize: { xs: "1.75rem", md: "2.25rem" },
                     }}
                   >
-                    {dealProduct.name}
+                    ₹{dealProduct.price.toLocaleString()}
                   </Typography>
-                  <Typography
-                    variant="body1"
-                    sx={{
-                      opacity: 0.85,
-                      mb: 2,
-                      lineHeight: 1.7,
-                      fontSize: { xs: "0.9rem", md: "1rem" },
-                    }}
-                  >
-                    {dealProduct.description?.substring(0, 150)}...
-                  </Typography>
-                  <Box
-                    sx={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 1,
-                      mb: 2,
-                    }}
-                  >
-                    <Typography
-                      variant="h3"
-                      sx={{
-                        fontWeight: 800,
-                        color: tokens.accent,
-                        fontSize: { xs: "1.75rem", md: "2.25rem" },
-                      }}
-                    >
-                      ₹{dealProduct.price.toLocaleString()}
-                    </Typography>
-                  </Box>
-                  {/* Countdown */}
-                  <Box
-                    sx={{
-                      display: "flex",
-                      gap: 1,
-                      mb: 2,
-                      flexWrap: "wrap",
-                    }}
-                  >
-                    <Typography
-                      variant="body2"
-                      sx={{
-                        opacity: 0.7,
-                        fontSize: { xs: "0.85rem", md: "0.95rem" },
-                      }}
-                    >
-                      {t("common.dealEndsIn")}:
-                    </Typography>
-                    {[
-                      { val: timeLeft.hours, label: t("common.hours") },
-                      { val: timeLeft.minutes, label: t("common.minutes") },
-                      { val: timeLeft.seconds, label: t("common.seconds") },
-                    ].map((t, i) => (
-                      <Box
-                        key={i}
-                        sx={{
-                          bgcolor: "rgba(255,255,255,0.15)",
-                          px: 1,
-                          py: 1,
-                          borderRadius: 1.5,
-                          textAlign: "center",
-                          minWidth: 48,
-                        }}
-                      >
-                        <Typography
-                          variant="h6"
-                          sx={{
-                            fontWeight: 800,
-                            fontSize: "1rem",
-                          }}
-                        >
-                          {String(t.val).padStart(2, "0")}
-                        </Typography>
-                        <Typography
-                          variant="caption"
-                          sx={{
-                            opacity: 0.7,
-                            fontSize: "0.65rem",
-                            display: "block",
-                          }}
-                        >
-                          {t.label}
-                        </Typography>
-                      </Box>
-                    ))}
-                  </Box>
-                  <Button
-                    variant="contained"
-                    size="large"
-                    onClick={() => navigate(`/products/${dealProduct.id}`)}
-                    sx={{
-                      bgcolor: tokens.accent,
-                      fontWeight: 700,
-                      py: 1,
-                      px: 3,
-                      borderRadius: 2,
-                      textTransform: "none",
-                      alignSelf: "flex-start",
-                      minHeight: 44,
-                      fontSize: { xs: "0.9rem", md: "1rem" },
-                      "&:hover": { bgcolor: tokens.accentDark },
-                    }}
-                  >
-                    {t("products.buyNow")} →
-                  </Button>
                 </Box>
+                {/* Countdown */}
+                <Box
+                  sx={{
+                    display: "flex",
+                    gap: 1,
+                    mb: 2,
+                  }}
+                >
+                  {[
+                    { label: "Hrs", value: timeLeft.hours },
+                    { label: "Min", value: timeLeft.minutes },
+                    { label: "Sec", value: timeLeft.seconds },
+                  ].map((unit, idx) => (
+                    <Box
+                      key={idx}
+                      sx={{
+                        bgcolor: "rgba(255,255,255,0.1)",
+                        px: 1.5,
+                        py: 0.5,
+                        borderRadius: 2,
+                        textAlign: "center",
+                        minWidth: 50,
+                      }}
+                    >
+                      <Typography
+                        variant="h6"
+                        sx={{ fontWeight: 800, lineHeight: 1 }}
+                      >
+                        {unit.value.toString().padStart(2, "0")}
+                      </Typography>
+                      <Typography variant="caption" sx={{ opacity: 0.7 }}>
+                        {unit.label}
+                      </Typography>
+                    </Box>
+                  ))}
+                </Box>
+                <Button
+                  variant="contained"
+                  onClick={() => navigate(`/products/${dealProduct.id}`)}
+                  sx={{
+                    bgcolor: "white",
+                    color: tokens.primary,
+                    fontWeight: 700,
+                    alignSelf: "flex-start",
+                    px: 4,
+                    py: 1.5,
+                    borderRadius: 2,
+                    "&:hover": {
+                      bgcolor: tokens.accent,
+                      color: "white",
+                    },
+                  }}
+                >
+                  {t("common.grabDealNow")} →
+                </Button>
               </Box>
-            </Container>
-          </Box>
-        </InView>
+            </Box>
+          </Container>
+        </Box>
       )}
 
       {/* ───── 4. NEW ARRIVALS ───── */}
-      <InView animationType="slideUp">
-        <Container maxWidth="lg" sx={{ py: { xs: 2, md: 3 } }}>
-          <Box
+      <Container maxWidth="lg" sx={{ py: { xs: 2, md: 3 } }}>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: { xs: "flex-start", sm: "center" },
+            flexDirection: { xs: "column", sm: "row" },
+            gap: 1,
+            mb: 1,
+          }}
+        >
+          <Box>
+            <Typography
+              variant="h3"
+              fontWeight="700"
+              sx={{
+                color: "text.primary",
+                fontSize: { xs: "1.5rem", sm: "1.75rem", md: "2rem" },
+              }}
+            >
+              ✨ {t("common.newArrivals")}
+            </Typography>
+            <Typography
+              variant="body2"
+              sx={{
+                color: "text.secondary",
+                mt: 0.5,
+                fontSize: { xs: "0.85rem", md: "0.95rem" },
+              }}
+            >
+              {t("common.newArrivalsDesc")}
+            </Typography>
+          </Box>
+          <Button
+            endIcon={<ArrowForward />}
+            onClick={() => navigate("/products?sortBy=newest")}
             sx={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: { xs: "flex-start", sm: "center" },
-              flexDirection: { xs: "column", sm: "row" },
-              gap: 1,
-              mb: 1,
+              textTransform: "none",
+              fontWeight: 600,
+              color: tokens.primary,
+              minHeight: 44,
+              px: 2,
             }}
           >
-            <Box>
-              <Typography
-                variant="h3"
-                fontWeight="700"
-                sx={{
-                  color: "text.primary",
-                  fontSize: { xs: "1.5rem", sm: "1.75rem", md: "2rem" },
-                }}
-              >
-                ✨ {t("common.newArrivals")}
-              </Typography>
-              <Typography
-                variant="body2"
-                sx={{
-                  color: "text.secondary",
-                  mt: 0.5,
-                  fontSize: { xs: "0.85rem", md: "0.95rem" },
-                }}
-              >
-                {t("common.newArrivalsDesc")}
-              </Typography>
-            </Box>
-            <Button
-              endIcon={<ArrowForward />}
-              onClick={() => navigate("/products?sortBy=newest")}
-              sx={{
-                textTransform: "none",
-                fontWeight: 600,
-                color: tokens.primary,
-                minHeight: 44,
-                px: 2,
-              }}
-            >
-              {t("common.viewAll")}
-            </Button>
+            {t("common.viewAll")}
+          </Button>
+        </Box>
+        {!newArrivalsLoading && (
+          <Box
+            sx={{
+              display: "grid",
+              gridTemplateColumns: {
+                xs: "repeat(2, 1fr)", // 2 columns on mobile
+                sm: "repeat(2, 1fr)",
+                md: "repeat(4, 1fr)",
+              },
+              gridAutoRows: "1fr",
+              gap: 2,
+            }}
+          >
+            {newArrivals.map((product) => (
+              <ProductCard
+                key={product.id}
+                product={product}
+                isInWishlist={isInWishlist}
+                isToggling={isToggling}
+                toggleWishlist={toggleWishlist}
+                onAddToCart={handleAddToCart}
+                onBuyNow={handleBuyNow}
+                onNavigate={(id) => navigate(`/products/${id}`)}
+                t={t}
+              />
+            ))}
           </Box>
-          {!newArrivalsLoading && (
-            <Box
-              sx={{
-                display: "grid",
-                gridTemplateColumns: {
-                  xs: "1fr",
-                  sm: "repeat(2, 1fr)",
-                  md: "repeat(4, 1fr)",
-                },
-                gap: 2,
-              }}
-            >
-              {newArrivals.map((product) => (
-                <ProductCard
-                  key={product.id}
-                  product={product}
-                  isInWishlist={isInWishlist}
-                  isToggling={isToggling}
-                  toggleWishlist={toggleWishlist}
-                  onAddToCart={handleAddToCart}
-                  onBuyNow={handleBuyNow}
-                  onNavigate={(id) => navigate(`/products/${id}`)}
-                  t={t}
-                />
-              ))}
-            </Box>
-          )}
-        </Container>
+        )}
+      </Container>
 
         {/* ───── BEST SELLERS ───── */}
         <BestSellers />
@@ -816,7 +791,6 @@ const HomePage = () => {
             </Box>
           </Container>
         </Box>
-      </InView>
 
       {/* ───── FEATURED BRANDS ───── */}
       {/* <FeaturedBrands /> */}
@@ -1034,56 +1008,69 @@ const HomePage = () => {
                 </Typography>
               </Box>
             ) : (
-              <Box sx={{ display: "flex", gap: 2 }}>
-                <TextField
-                  size="small"
-                  fullWidth
-                  variant="outlined"
-                  placeholder={t("common.emailPlaceholderShort")}
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  disabled={isPending}
-                  error={!!error}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <Email sx={{ color: tokens.gray400, ml: 1 }} />
-                      </InputAdornment>
-                    ),
-                  }}
+              <>
+                <Box
                   sx={{
-                    bgcolor: "white",
-                    borderRadius: 2,
-                    maxWidth: 440,
+                    display: "flex",
+                    flexDirection: { xs: "column", sm: "row" },
+                    gap: 1.5,
+                    maxWidth: 500,
                     mx: "auto",
-                    mb: 1,
-                    display: "block",
-                    "& .MuiOutlinedInput-root": {
-                      borderRadius: 2,
-                    },
-                    "& .MuiOutlinedInput-input": {
-                      paddingLeft: 0.5,
-                    },
-                    "& .MuiOutlinedInput-notchedOutline": {
-                      border: "none !important",
-                    },
+                    alignItems: "flex-start",
                   }}
-                />
-                <Box sx={{ textAlign: "center" }}>
+                >
+                  <TextField
+                    size="small"
+                    fullWidth
+                    variant="outlined"
+                    placeholder={t("common.emailPlaceholderShort")}
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    disabled={isPending}
+                    error={!!error}
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <Email sx={{ color: tokens.gray400, ml: 1 }} />
+                        </InputAdornment>
+                      ),
+                    }}
+                    sx={{
+                      bgcolor: "white",
+                      borderRadius: 2,
+                      "& .MuiOutlinedInput-root": {
+                        borderRadius: 2,
+                        height: 48,
+                      },
+                      "& .MuiOutlinedInput-input": {
+                        paddingLeft: 0.5,
+                      },
+                      "& .MuiOutlinedInput-notchedOutline": {
+                        border: "none !important",
+                      },
+                    }}
+                  />
                   <Button
                     variant="contained"
                     onClick={handleSubscribe}
                     disabled={isPending || !email.trim()}
                     sx={{
                       bgcolor: tokens.accent,
+                      color: "white",
                       textTransform: "none",
                       fontWeight: 700,
-                      px: 2,
+                      px: 4,
                       borderRadius: 2,
                       whiteSpace: "nowrap",
-                      minHeight: 44,
-                      "&:hover": { bgcolor: tokens.accentDark },
-                      "&:disabled": { opacity: 0.6 },
+                      height: 48,
+                      width: { xs: "100%", sm: "auto" },
+                      "&:hover": {
+                        bgcolor: tokens.accentDark,
+                      },
+                      "&.Mui-disabled": {
+                        bgcolor: "rgba(255, 255, 255, 0.12)",
+                        color: "rgba(255, 255, 255, 0.3)",
+                      },
                     }}
                   >
                     {isPending ? t("common.loading") : t("common.subscribe")}
@@ -1093,8 +1080,8 @@ const HomePage = () => {
                   <Typography
                     variant="body2"
                     sx={{
-                      color: tokens.error,
-                      mb: 1,
+                      color: "#ffcdd2", // Lighter red for dark background
+                      mt: 1,
                       fontSize: "0.85rem",
                       textAlign: "center",
                     }}
@@ -1102,7 +1089,7 @@ const HomePage = () => {
                     {error}
                   </Typography>
                 )}
-              </Box>
+              </>
             )}
           </Container>
         </Box>

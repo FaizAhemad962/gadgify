@@ -99,26 +99,26 @@ const BestSellers: React.FC<BestSellersProps> = ({
           sx={{
             display: "grid",
             gridTemplateColumns: {
-              xs: "1fr",
+              xs: "repeat(2, 1fr)", // 2 columns on mobile
               sm: "repeat(2, 1fr)",
               md: "repeat(4, 1fr)",
             },
-            gap: 3,
+            gridAutoRows: "1fr",
+            gap: 2,
           }}
         >
           {products.map((product) => (
-            <Box key={product.id}>
-              <ProductCard
-                product={product}
-                isInWishlist={isInWishlist}
-                isToggling={isToggling}
-                toggleWishlist={toggleWishlist}
-                onAddToCart={handleAddToCart}
-                onBuyNow={handleBuyNow}
-                onNavigate={(id) => navigate(`/products/${id}`)}
-                t={t}
-              />
-            </Box>
+            <ProductCard
+              key={product.id}
+              product={product}
+              isInWishlist={isInWishlist}
+              isToggling={isToggling}
+              toggleWishlist={toggleWishlist}
+              onAddToCart={handleAddToCart}
+              onBuyNow={handleBuyNow}
+              onNavigate={(id) => navigate(`/products/${id}`)}
+              t={t}
+            />
           ))}
         </Box>
       )}

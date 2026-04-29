@@ -155,27 +155,26 @@ const FlashSale: React.FC<FlashSaleProps> = ({
           sx={{
             display: "grid",
             gridTemplateColumns: {
-              xs: "1fr",
+              xs: "repeat(2, 1fr)", // 2 columns on mobile for better fit
               sm: "repeat(2, 1fr)",
               md: "repeat(4, 1fr)",
-              lg: "repeat(4, 1fr)",
             },
-            gap: 2.5,
+            gridAutoRows: "1fr",
+            gap: 2,
           }}
         >
           {products.map((product) => (
-            <Box key={product.id}>
-              <ProductCard
-                product={product}
-                isInWishlist={isInWishlist}
-                isToggling={isToggling}
-                toggleWishlist={toggleWishlist}
-                onAddToCart={handleAddToCart}
-                onBuyNow={handleBuyNow}
-                onNavigate={(id) => navigate(`/products/${id}`)}
-                t={t}
-              />
-            </Box>
+            <ProductCard
+              key={product.id}
+              product={product}
+              isInWishlist={isInWishlist}
+              isToggling={isToggling}
+              toggleWishlist={toggleWishlist}
+              onAddToCart={handleAddToCart}
+              onBuyNow={handleBuyNow}
+              onNavigate={(id) => navigate(`/products/${id}`)}
+              t={t}
+            />
           ))}
         </Box>
       </Container>

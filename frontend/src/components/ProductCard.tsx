@@ -1,4 +1,4 @@
-import React from "react";
+import React, { memo } from "react";
 import {
   Card,
   CardContent,
@@ -20,14 +20,7 @@ import LazyImage from "../components/common/LazyImage";
 import { StarRating } from "../components/common/StarRating";
 import { useCompare } from "../context/CompareContext";
 import { tokens } from "@/theme/theme";
-
-interface ProductMedia {
-  url: string;
-  type: string;
-  isPrimary?: boolean;
-}
-
-import type { Product } from "../types";
+import type { Product, ProductMedia } from "../types";
 
 interface ProductCardProps {
   product: Product;
@@ -42,7 +35,7 @@ interface ProductCardProps {
   viewMode?: "grid" | "list";
 }
 
-const ProductCard: React.FC<ProductCardProps> = ({
+const ProductCard: React.FC<ProductCardProps> = memo(({
   product,
   isInWishlist,
   isToggling,
@@ -63,7 +56,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
         display: "flex",
         flexDirection: isList ? "row" : "column",
         overflow: "hidden",
-        height: isList ? "auto" : "100%",
+        height: "100%", // Always take full height of grid cell
         border: `1px solid ${tokens.gray200}`,
         borderRadius: isList ? 3 : 4,
         transition: "all 0.25s cubic-bezier(.4,0,.2,1)",
@@ -86,10 +79,11 @@ const ProductCard: React.FC<ProductCardProps> = ({
           alignItems: "center",
           justifyContent: "center",
           bgcolor: tokens.gray50,
+          width: "100%",
+          height: isList ? 200 : 280, // Fixed height for consistency
           ...(isList && {
             width: 220,
             minWidth: 220,
-            height: 200,
           }),
         }}
         onClick={() => onNavigate(product.id)}
@@ -106,11 +100,9 @@ const ProductCard: React.FC<ProductCardProps> = ({
             ""
           }
           alt={product.name}
-          height={isList ? 200 : 320}
+          height="100%"
           objectFit="cover"
         />
-
-        {/* Discount badge removed - not available */}
 
         {/* Wishlist toggle */}
         <IconButton
@@ -198,17 +190,17 @@ const ProductCard: React.FC<ProductCardProps> = ({
         <Typography
           onClick={() => onNavigate(product.id)}
           sx={{
-            overflow: "hidden",
-            textOverflow: "ellipsis",
+            fontWeight: 600,
+            fontSize: isList ? "1.1rem" : "0.95rem",
+            color: tokens.primary,
+            cursor: "pointer",
+            mb: 0.5,
             display: "-webkit-box",
             WebkitLineClamp: 2,
             WebkitBoxOrient: "vertical",
-            fontWeight: 600,
-            fontSize: "0.9375rem",
-            color: tokens.gray900,
-            lineHeight: 1.4,
-            cursor: "pointer",
-            transition: "color 0.15s",
+            overflow: "hidden",
+            lineHeight: 1.3,
+            height: "2.6rem", // Strict height for title consistency
             "&:hover": { color: tokens.accent },
           }}
         >
@@ -216,133 +208,171 @@ const ProductCard: React.FC<ProductCardProps> = ({
         </Typography>
 
         {/* Rating */}
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-          <StarRating
-            rating={product.averageRating || 0}
-            totalRatings={product.totalRatings}
-            size="small"
-          />
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            gap: 0.5,
+            mb: 1,
+            height: "1.25rem", // Fixed height for rating row
+          }}
+        >
+          <StarRating rating={product.averageRating || 0} size="small" />
           <Typography variant="caption" color="text.secondary">
-            {product.totalRatings && product.totalRatings > 0
-              ? `(${product.totalRatings})`
-              : "No reviews"}
+            ({product.totalRatings || 0})
           </Typography>
+        </Box>
+
+        {/* Stock Status */}
+        <Box sx={{ mb: 1, height: "1.25rem" }}>
+          {product.stock > 0 ? (
+            <Typography
+              variant="caption"
+              sx={{
+                color: product.stock > 10 ? tokens.success : tokens.warning,
+                fontWeight: 600,
+              }}
+            >
+              {product.stock > 10
+                ? t("products.inStock")
+                : `${t("products.only")} ${product.stock} ${t("products.left")}`}
+            </Typography>
+          ) : (
+            <Typography
+              variant="caption"
+              sx={{ color: tokens.error, fontWeight: 700 }}
+            >
+              {t("products.outOfStock")}
+            </Typography>
+          )}
         </Box>
 
         {/* Price */}
-        <Box sx={{ display: "flex", alignItems: "baseline", gap: 1, mt: 0.5 }}>
+        <Box
+          sx={{
+            mt: "auto",
+            display: "flex",
+            alignItems: "baseline",
+            gap: 1,
+            flexWrap: "wrap",
+          }}
+        >
           <Typography
-            sx={{ fontSize: "1.25rem", fontWeight: 800, color: tokens.gray900 }}
+            variant="h6"
+            sx={{
+              color: tokens.accent,
+              fontWeight: 700,
+              fontSize: isList ? "1.5rem" : "1.25rem",
+            }}
           >
             ₹{product.price.toLocaleString()}
           </Typography>
-          {/* Discount price display removed - not available in Product type */}
+          {/* Original price removed - not available */}
         </Box>
 
-        {/* Stock chip */}
-        <Box sx={{ mt: "auto", pt: 0.5 }}>
-          {product.stock > 0 ? (
-            <Chip
-              label={
-                product.stock > 10 ? "In Stock" : `Only ${product.stock} left`
+        {/* Action buttons (only for list view) */}
+        {isList && (
+          <CardActions sx={{ p: 0, mt: 2, gap: 2 }}>
+            <Button
+              variant="contained"
+              startIcon={
+                isAddingToCart ? (
+                  <CircularProgress size={20} color="inherit" />
+                ) : (
+                  <ShoppingCart />
+                )
               }
-              size="small"
+              onClick={() => onAddToCart(product.id)}
+              disabled={isAddingToCart}
               sx={{
-                bgcolor:
-                  product.stock > 10
-                    ? tokens.successLight
-                    : tokens.warningLight,
-                color: product.stock > 10 ? tokens.success : tokens.warning,
-                fontWeight: 600,
-                fontSize: "0.7rem",
-                height: 24,
+                bgcolor: tokens.primary,
+                "&:hover": { bgcolor: tokens.primaryDark },
+                px: 3,
+                borderRadius: 2,
               }}
-            />
-          ) : (
-            <Chip
-              label="Out of Stock"
-              size="small"
+            >
+              {t("common.addToCart")}
+            </Button>
+            <Button
+              variant="outlined"
+              onClick={() => onBuyNow(product.id)}
               sx={{
-                bgcolor: tokens.errorLight,
-                color: tokens.error,
-                fontWeight: 600,
-                fontSize: "0.7rem",
-                height: 24,
+                color: tokens.primary,
+                borderColor: tokens.primary,
+                "&:hover": {
+                  borderColor: tokens.primaryDark,
+                  bgcolor: "rgba(27,42,74,0.04)",
+                },
+                px: 3,
+                borderRadius: 2,
               }}
-            />
-          )}
-        </Box>
+            >
+              {t("common.buyNow")}
+            </Button>
+          </CardActions>
+        )}
       </CardContent>
 
-      {/* Actions */}
-      <CardActions
-        sx={{
-          display: "flex",
-          flexDirection: isList ? "row" : "column",
-          gap: 1,
-          px: 2,
-          pb: 2,
-          pt: isList ? 2 : 0,
-          "& > :not(style) + :not(style)": { ml: 0 },
-          ...(isList && {
-            minWidth: 200,
-            alignItems: "center",
-            flexDirection: "column",
-            justifyContent: "center",
-          }),
-        }}
-      >
-        <Button
-          variant="contained"
-          fullWidth
-          size="small"
-          onClick={() => onBuyNow(product.id)}
-          disabled={product.stock === 0}
+      {/* Grid view actions (hover overlay or bottom bar) */}
+      {!isList && (
+        <CardActions
           sx={{
-            fontWeight: 700,
-            fontSize: "0.8125rem",
-            bgcolor: tokens.accent,
-            color: "#fff",
-            py: 1,
-            borderRadius: 2,
-            textTransform: "none",
-            transition: "all 0.2s",
-            "&:hover": {
-              bgcolor: tokens.accentDark,
-              transform: "translateY(-1px)",
-              boxShadow: `0 4px 14px ${tokens.accent}44`,
-            },
+            p: 1.5,
+            pt: 0,
+            display: "flex",
+            gap: 1,
           }}
         >
-          {t("products.buyNow")}
-        </Button>
-        <Button
-          variant="outlined"
-          fullWidth
-          size="small"
-          onClick={() => onAddToCart(product.id)}
-          disabled={product.stock === 0 || isAddingToCart}
-          startIcon={<ShoppingCart sx={{ fontSize: 18 }} />}
-          sx={{
-            fontWeight: 600,
-            fontSize: "0.8125rem",
-            borderColor: tokens.accent,
-            color: tokens.accent,
-            py: 1,
-            borderRadius: 2,
-            textTransform: "none",
-            transition: "all 0.2s",
-            "&:hover": {
-              bgcolor: `${tokens.accent}0A`,
-              borderColor: tokens.accent,
-            },
-          }}
-        >
-          {isAddingToCart ? "Adding..." : t("products.addToCart")}
-        </Button>
-      </CardActions>
+          <Button
+            fullWidth
+            variant="contained"
+            size="small"
+            startIcon={
+              isAddingToCart ? (
+                <CircularProgress size={16} color="inherit" />
+              ) : (
+                <ShoppingCart sx={{ fontSize: 16 }} />
+              )
+            }
+            onClick={() => onAddToCart(product.id)}
+            disabled={isAddingToCart}
+            sx={{
+              bgcolor: tokens.primary,
+              "&:hover": { bgcolor: tokens.primaryDark },
+              borderRadius: 2,
+              py: 1,
+              fontSize: "0.75rem",
+              fontWeight: 600,
+            }}
+          >
+            {t("common.add")}
+          </Button>
+          <Button
+            fullWidth
+            variant="outlined"
+            size="small"
+            onClick={() => onBuyNow(product.id)}
+            sx={{
+              color: tokens.primary,
+              borderColor: tokens.primary,
+              "&:hover": {
+                borderColor: tokens.primaryDark,
+                bgcolor: "rgba(27,42,74,0.04)",
+              },
+              borderRadius: 2,
+              py: 1,
+              fontSize: "0.75rem",
+              fontWeight: 600,
+            }}
+          >
+            {t("common.buy")}
+          </Button>
+        </CardActions>
+      )}
     </Card>
   );
-};
+});
+
+ProductCard.displayName = "ProductCard";
 
 export default ProductCard;

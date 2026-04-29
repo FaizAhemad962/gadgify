@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, memo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
@@ -46,7 +46,7 @@ import {
 } from "../../utils/roleHelper";
 import styles from "./Navbar.module.css";
 
-const Navbar = () => {
+const Navbar = memo(() => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { isAuthenticated, isAdmin, logout, user } = useAuth();
@@ -488,6 +488,8 @@ const Navbar = () => {
       </Container>
     </AppBar>
   );
-};
+});
+
+Navbar.displayName = "Navbar";
 
 export default Navbar;

@@ -1,3 +1,4 @@
+import React, { memo } from "react";
 import {
   Box,
   Container,
@@ -9,7 +10,7 @@ import {
 import { useTranslation } from "react-i18next";
 import { Facebook, Twitter, Instagram, LinkedIn } from "@mui/icons-material";
 
-const Footer = () => {
+const Footer = memo(() => {
   const { t } = useTranslation();
 
   return (
@@ -457,6 +458,8 @@ const Footer = () => {
       </Container>
     </Box>
   );
-};
+});
+
+Footer.displayName = "Footer";
 
 export default Footer;

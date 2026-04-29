@@ -57,11 +57,11 @@ const ProductsGrid = memo(
               viewMode === "list"
                 ? "1fr"
                 : {
-                    xs: "1fr",
+                    xs: "repeat(2, 1fr)",
                     sm: "repeat(2, 1fr)",
                     md: "repeat(3, 1fr)",
-                    lg: "repeat(3, 1fr)",
                   },
+            gridAutoRows: viewMode === "list" ? "auto" : "1fr", // Force rows to have equal height in grid view
             gap: 2,
           }}
         >
@@ -298,7 +298,7 @@ const ProductsPage = () => {
       if (!cartItem) {
         await addToCart({ productId, quantity: 1 });
       }
-      navigate("/cart");
+      navigate("/checkout");
     },
     [isAuthenticated, cart, addToCart, navigate],
   );
@@ -331,7 +331,7 @@ const ProductsPage = () => {
   }
 
   return (
-    <Container maxWidth={false} sx={{ py: 4, px: { xs: 1, sm: 2, md: 3 } }}>
+    <Container maxWidth="lg" sx={{ py: 4, px: { xs: 1, sm: 2, md: 3 } }}>
       {/* Header Section */}
       <Box sx={{ mb: 4 }}>
         <Box

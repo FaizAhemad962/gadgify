@@ -136,23 +136,27 @@ const ProductDetailPage = () => {
     setZoomStyle({});
   }, []);
 
-  const handleAddToCart = async () => {
+  const handleAddToCart = async (productId?: string) => {
     if (!isAuthenticated) {
       navigate("/login");
       return;
     }
-    if (product) {
-      await addToCart({ productId: product.id, quantity });
+    const targetId = productId || product?.id;
+    if (targetId) {
+      await addToCart({ productId: targetId, quantity: productId ? 1 : quantity });
     }
   };
 
-  const handleBuyNow = async () => {
+  const handleBuyNow = async (productId?: string) => {
     if (!isAuthenticated) {
       navigate("/login");
       return;
     }
-    await handleAddToCart();
-    navigate("/cart");
+    const targetId = productId || product?.id;
+    if (targetId) {
+      await addToCart({ productId: targetId, quantity: productId ? 1 : quantity });
+      navigate("/checkout");
+    }
   };
 
   const handleShare = async () => {
@@ -488,7 +492,7 @@ const ProductDetailPage = () => {
               variant="outlined"
               size="large"
               startIcon={<ShoppingCart />}
-              onClick={handleAddToCart}
+              onClick={() => handleAddToCart()}
               disabled={product.stock === 0 || isAddingToCart(product.id)}
               sx={{ flex: 1, fontWeight: 600, minHeight: 48 }}
             >
@@ -499,7 +503,7 @@ const ProductDetailPage = () => {
             <Button
               variant="contained"
               size="large"
-              onClick={handleBuyNow}
+              onClick={() => handleBuyNow()}
               disabled={product.stock === 0}
               sx={{
                 flex: 1,
@@ -585,14 +589,12 @@ const ProductDetailPage = () => {
             </Paper>
           </Box>
 
-          {/* Color Selection */}
-          {product.colors && (
+          {/* Color Selector */}
+          {product.colors && product.colors.trim() && (
             <Box>
               <Typography
                 variant="subtitle2"
-                gutterBottom
-                fontWeight="600"
-                sx={{ color: "text.primary", mb: 2 }}
+                sx={{ fontWeight: 600, color: "text.primary", mb: 1.5 }}
               >
                 {t("products.availableColors")}
               </Typography>
@@ -654,6 +656,7 @@ const ProductDetailPage = () => {
             sx={{
               display: "grid",
               gridTemplateColumns: { xs: "1fr", md: "1fr 1fr 1fr 1fr" },
+              gridAutoRows: "1fr", // Force rows to have equal height
               gap: 3,
             }}
           >
@@ -664,13 +667,8 @@ const ProductDetailPage = () => {
                 isInWishlist={isInWishlist}
                 isToggling={isToggling}
                 toggleWishlist={toggleWishlist}
-                onAddToCart={(pid) =>
-                  addToCart({ productId: pid, quantity: 1 })
-                }
-                onBuyNow={(pid) => {
-                  addToCart({ productId: pid, quantity: 1 });
-                  navigate("/cart");
-                }}
+                onAddToCart={handleAddToCart}
+                onBuyNow={handleBuyNow}
                 onNavigate={(pid) => navigate(`/products/${pid}`)}
                 t={t}
               />

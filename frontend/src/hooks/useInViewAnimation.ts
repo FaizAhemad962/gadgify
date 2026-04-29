@@ -11,7 +11,7 @@ interface UseInViewAnimationOptions {
  * Returns ref to attach to element and isVisible state
  */
 export const useInViewAnimation = (options: UseInViewAnimationOptions = {}) => {
-  const { threshold = 0.1, rootMargin = "0px", triggerOnce = true } = options;
+  const { threshold = 0.05, rootMargin = "200px", triggerOnce = true } = options;
 
   const elementRef = useRef<HTMLDivElement>(null);
   const [isVisible, setIsVisible] = useState(false);

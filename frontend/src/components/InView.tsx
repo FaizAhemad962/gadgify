@@ -63,7 +63,7 @@ export const InView = forwardRef<HTMLDivElement, InViewProps>(
 
       return {
         ...baseAnimation,
-        transition: isVisible ? `all 0.6s ease-out ${delay}ms` : "none",
+        transition: isVisible ? `all 0.4s ease-out ${delay}ms` : "none",
       };
     };
 
