@@ -9,7 +9,7 @@ import {
 import { ExpandMore as ExpandMoreIcon } from "@mui/icons-material";
 import { tokens } from "@/theme/theme";
 
-const StyledAccordion = styled(Accordion)<AccordionProps>(({ theme }) => ({
+const StyledAccordion = styled(Accordion)<AccordionProps>(() => ({
   backgroundColor: tokens.white,
   borderRadius: "12px !important",
   boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
@@ -23,7 +23,7 @@ const StyledAccordion = styled(Accordion)<AccordionProps>(({ theme }) => ({
   },
 }));
 
-const StyledAccordionSummary = styled(AccordionSummary)(({ theme }) => ({
+const StyledAccordionSummary = styled(AccordionSummary)(() => ({
   padding: "8px 20px",
   "& .MuiAccordionSummary-content": {
     margin: "12px 0",
@@ -36,7 +36,7 @@ const StyledAccordionSummary = styled(AccordionSummary)(({ theme }) => ({
   },
 }));
 
-const StyledAccordionDetails = styled(AccordionDetails)(({ theme }) => ({
+const StyledAccordionDetails = styled(AccordionDetails)(() => ({
   padding: "0 20px 20px",
   borderTop: `1px solid ${tokens.gray100}`,
 }));
