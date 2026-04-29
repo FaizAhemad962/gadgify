@@ -23,54 +23,20 @@ export interface ResetPasswordRequest {
   newPassword: string;
 }
 
-// ✅ SECURITY: Get CSRF token from backend
-const getCsrfToken = async (): Promise<string> => {
-  try {
-    const response = await apiClient.get<{ csrfToken: string }>(
-      "/auth/csrf-token",
-      {
-        withCredentials: true,
-      },
-    );
-    return response.data.csrfToken;
-  } catch (error) {
-    console.error("Failed to get CSRF token:", error);
-    throw error;
-  }
-};
-
 export const authApi = {
   login: async (data: LoginRequest): Promise<AuthResponse> => {
-    // ✅ SECURITY: Get CSRF token before login
-    const csrfToken = await getCsrfToken();
-
-    const response = await apiClient.post<AuthResponse>(
-      "/auth/login",
-      data, // Do NOT include csrfToken in body - only in header
-      {
-        withCredentials: true, // ✅ SECURITY: Send cookies
-        headers: {
-          "x-csrf-token": csrfToken, // CSRF token only in header
-        },
-      },
-    );
+    // apiClient interceptor will automatically add CSRF token
+    const response = await apiClient.post<AuthResponse>("/auth/login", data, {
+      withCredentials: true, // ✅ SECURITY: Send cookies
+    });
     return response.data;
   },
 
   signup: async (data: SignupRequest): Promise<AuthResponse> => {
-    // ✅ SECURITY: Get CSRF token before signup
-    const csrfToken = await getCsrfToken();
-
-    const response = await apiClient.post<AuthResponse>(
-      "/auth/signup",
-      data, // Do NOT include csrfToken in body - only in header
-      {
-        withCredentials: true, // ✅ SECURITY: Send cookies
-        headers: {
-          "x-csrf-token": csrfToken,
-        },
-      },
-    );
+    // apiClient interceptor will automatically add CSRF token
+    const response = await apiClient.post<AuthResponse>("/auth/signup", data, {
+      withCredentials: true, // ✅ SECURITY: Send cookies
+    });
     return response.data;
   },
 

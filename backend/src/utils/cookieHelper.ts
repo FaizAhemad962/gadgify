@@ -28,7 +28,7 @@ const getDomainFromUrl = (url: string): string | null => {
  * Helper function to set auth cookies with proper security flags
  * - Secure flag: Only in production (HTTPS)
  * - HttpOnly: Always (prevents XSS access)
- * - SameSite=Strict: Always (prevents CSRF)
+ * - SameSite=Lax: Modern security standard (prevents CSRF while allowing navigation)
  * - Domain: Extracted from FRONTEND_URL to allow cross-subdomain sharing
  */
 export const setAuthCookie = (
@@ -48,7 +48,7 @@ export const setAuthCookie = (
   const domain = getDomainFromUrl(config.frontendUrl);
   const domainFlag = domain ? `Domain=${domain}; ` : "";
 
-  const cookieValue = `authToken=${token}; Path=/; ${domainFlag}HttpOnly; ${secureFlag}SameSite=Strict; Max-Age=${maxAgeSeconds}`;
+  const cookieValue = `authToken=${token}; Path=/; ${domainFlag}HttpOnly; ${secureFlag}SameSite=Lax; Max-Age=${maxAgeSeconds}`;
 
   res.setHeader("Set-Cookie", cookieValue);
 };
@@ -64,7 +64,7 @@ export const clearAuthCookie = (res: Response): void => {
   const domain = getDomainFromUrl(config.frontendUrl);
   const domainFlag = domain ? `Domain=${domain}; ` : "";
 
-  const cookieValue = `authToken=; Path=/; ${domainFlag}HttpOnly; ${secureFlag}SameSite=Strict; Max-Age=0`;
+  const cookieValue = `authToken=; Path=/; ${domainFlag}HttpOnly; ${secureFlag}SameSite=Lax; Max-Age=0`;
 
   res.setHeader("Set-Cookie", cookieValue);
 };

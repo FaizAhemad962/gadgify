@@ -65,6 +65,8 @@ apiClient.interceptors.response.use(
     // ✅ SECURITY: 401 Unauthorized - redirect to login
     // Browser will clear httpOnly cookie automatically
     if (status === 401 && !isAuthEndpoint) {
+      // Clear local storage to prevent redirect loop in AuthContext/LoginPage
+      localStorage.removeItem("user");
       window.location.href = "/login";
       return Promise.reject(error);
     }

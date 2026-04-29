@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, type ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, type ReactNode } from "react";
 import type { User } from "../types";
 import { apiClient } from "../api/client";
 
@@ -19,9 +19,14 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 // ✅ SECURITY: Tokens are now stored in httpOnly cookies (managed by browser)
 // User data cached in state only - not in localStorage
 const getStoredUser = () => {
-  const storedUser = localStorage.getItem("user");
-  if (storedUser) {
-    return JSON.parse(storedUser) as User;
+  try {
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      return JSON.parse(storedUser) as User;
+    }
+  } catch (error) {
+    console.error("Failed to parse stored user:", error);
+    localStorage.removeItem("user");
   }
   return null;
 };
@@ -30,7 +35,26 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(getStoredUser());
   const [token, setToken] = useState<string | null>(
     getStoredUser() ? "authenticated" : null,
-  ); // Set based on stored user
+  );
+
+  // ✅ SECURITY: Sync auth state across tabs
+  useEffect(() => {
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === "user") {
+        if (!e.newValue) {
+          setUser(null);
+          setToken(null);
+        } else {
+          const newUser = JSON.parse(e.newValue);
+          setUser(newUser);
+          setToken("authenticated");
+        }
+      }
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
+  }, []);
 
   // ✅ SECURITY: No token verification on app mount
   // httpOnly cookie is automatically sent with every request

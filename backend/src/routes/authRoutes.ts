@@ -75,6 +75,6 @@ router.post("/verify-email", verifyEmail);
 router.post("/resend-verification-email", resendVerificationEmail);
 
 // ✅ SECURITY: Get CSRF token for client
-router.get("/csrf-token", getCSRFToken);
+router.get("/csrf-token", getCsrfToken);
 
 export default router;
