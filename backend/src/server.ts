@@ -151,14 +151,24 @@ app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 // Cookie parser - for secure httpOnly cookie handling
 // Supports both httpOnly cookies and query parameter fallback for legacy clients
 app.use((req: Request, res: Response, next) => {
-  // Parse cookies from headers
+  // Parse cookies from headers manually since we don't use cookie-parser
   const cookieHeader = req.headers.cookie;
+  (req as any).cookies = {};
+
   if (cookieHeader) {
     const cookies: Record<string, string> = {};
     cookieHeader.split(";").forEach((cookie) => {
-      const [key, val] = cookie.trim().split("=");
-      if (key && val) {
-        cookies[key] = decodeURIComponent(val);
+      const parts = cookie.split("=");
+      if (parts.length >= 2) {
+        const key = parts[0].trim();
+        const val = parts.slice(1).join("=").trim();
+        if (key && val) {
+          try {
+            cookies[key] = decodeURIComponent(val);
+          } catch (e) {
+            cookies[key] = val; // Fallback if decode fails
+          }
+        }
       }
     });
     (req as any).cookies = cookies;

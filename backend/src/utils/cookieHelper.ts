@@ -19,10 +19,15 @@ export const setAuthCookie = (
   const isProduction = process.env.NODE_ENV === "production";
   const secureFlag = isProduction ? "Secure; " : "";
 
+  // ✅ SECURITY: In production, we use SameSite=None to support cross-site setups
+  // (e.g. frontend on gadgify.com and backend on api.gadgify.com or Render subdomains).
+  // SameSite=None REQUIRES the Secure flag.
+  const sameSite = isProduction ? "None" : "Lax";
+
   // ✅ SECURITY: Use host-only cookies by NOT setting the Domain attribute.
   // This is safer and more compatible with modern browsers and public suffixes
   // like .onrender.com or .vercel.app where browsers block cookies with Domain set.
-  const cookieValue = `authToken=${token}; Path=/; HttpOnly; ${secureFlag}SameSite=Lax; Max-Age=${maxAgeSeconds}`;
+  const cookieValue = `authToken=${token}; Path=/; HttpOnly; ${secureFlag}SameSite=${sameSite}; Max-Age=${maxAgeSeconds}`;
 
   res.setHeader("Set-Cookie", cookieValue);
 };
@@ -33,8 +38,9 @@ export const setAuthCookie = (
 export const clearAuthCookie = (res: Response): void => {
   const isProduction = process.env.NODE_ENV === "production";
   const secureFlag = isProduction ? "Secure; " : "";
+  const sameSite = isProduction ? "None" : "Lax";
 
-  const cookieValue = `authToken=; Path=/; HttpOnly; ${secureFlag}SameSite=Lax; Max-Age=0`;
+  const cookieValue = `authToken=; Path=/; HttpOnly; ${secureFlag}SameSite=${sameSite}; Max-Age=0`;
 
   res.setHeader("Set-Cookie", cookieValue);
 };

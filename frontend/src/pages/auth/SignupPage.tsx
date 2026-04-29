@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, Link as RouterLink } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useMutation } from "@tanstack/react-query";
@@ -84,9 +84,14 @@ const SignupPage = () => {
       city: "",
     },
   });
-  if (isAuthenticated) {
-    navigate("/");
-  }
+
+  // ✅ If user is already authenticated, redirect to home
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate("/", { replace: true });
+    }
+  }, [isAuthenticated, navigate]);
+
   const signupMutation = useMutation({
     mutationFn: authApi.signup,
     onSuccess: (data) => {
