@@ -84,7 +84,62 @@ app.use(
 // CORS
 app.use(
   cors({
-    origin: config.frontendUrl,
+    origin: (origin, callback) => {
+      // Allow requests with no origin (like mobile apps or curl)
+      if (!origin) return callback(null, true);
+
+      // Clean the incoming origin (remove trailing slash if any)
+      const cleanOrigin = origin.replace(/\/$/, "");
+
+      const allowedOrigins = [config.frontendUrl.replace(/\/$/, "")];
+
+      // Add common development origins if in development mode
+      if (process.env.NODE_ENV !== "production") {
+        allowedOrigins.push("http://localhost:3000");
+        allowedOrigins.push("http://localhost:5173");
+        allowedOrigins.push("http://127.0.0.1:3000");
+        allowedOrigins.push("http://127.0.0.1:5173");
+        allowedOrigins.push("http://[::1]:3000");
+        allowedOrigins.push("http://[::1]:5173");
+      }
+
+      // Automatically allow www/non-www variations of the frontend URL
+      try {
+        const url = new URL(config.frontendUrl);
+        const hostname = url.hostname;
+        const protocol = url.protocol;
+        const port = url.port ? `:${url.port}` : "";
+
+        if (
+          hostname !== "localhost" &&
+          hostname !== "127.0.0.1" &&
+          hostname !== "[::1]"
+        ) {
+          if (hostname.startsWith("www.")) {
+            allowedOrigins.push(
+              `${protocol}//${hostname.replace("www.", "")}${port}`,
+            );
+          } else {
+            allowedOrigins.push(`${protocol}//www.${hostname}${port}`);
+          }
+        }
+      } catch (err) {
+        // Fallback to just the config URL if parsing fails
+      }
+
+      // Check if the clean origin is in our allowed list
+      const isAllowed = allowedOrigins.some(
+        (allowed) => allowed.replace(/\/$/, "") === cleanOrigin,
+      );
+
+      if (isAllowed) {
+        callback(null, true);
+      } else {
+        logger.error(`CORS blocked request from origin: ${origin}`);
+        logger.debug(`Allowed origins were: ${allowedOrigins.join(", ")}`);
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
     credentials: true,
   }),
 );
@@ -108,39 +163,6 @@ app.use((req: Request, res: Response, next) => {
     });
     (req as any).cookies = cookies;
   }
-  next();
-});
-
-// Helper to set httpOnly cookie
-app.use((req: Request, res: Response, next) => {
-  res.setCookie = (name: string, value: string, options?: any) => {
-    // Extract domain from FRONTEND_URL
-    const getDomain = () => {
-      try {
-        const urlObj = new URL(config.frontendUrl);
-        const hostname = urlObj.hostname;
-        if (hostname === "localhost" || hostname === "127.0.0.1") {
-          return "";
-        }
-        return `; Domain=.${hostname}`;
-      } catch {
-        return "";
-      }
-    };
-
-    const defaults = {
-      httpOnly: true,
-      secure: config.nodeEnv === "production",
-      sameSite: "strict" as const,
-      path: "/",
-      maxAge: 24 * 60 * 60 * 1000, // 24 hours
-    };
-    const finalOptions = { ...defaults, ...options };
-    res.setHeader(
-      "Set-Cookie",
-      `${name}=${value}; Path=${finalOptions.path}${getDomain()}; ${finalOptions.httpOnly ? "HttpOnly; " : ""}${finalOptions.secure ? "Secure; " : ""}SameSite=${finalOptions.sameSite}; Max-Age=${finalOptions.maxAge / 1000}`,
-    );
-  };
   next();
 });
 

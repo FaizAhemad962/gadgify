@@ -8,7 +8,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { Box, Card, Typography } from "@mui/material";
-import { Carousel, type CarouselProps } from "@/components/common";
+import { CustomCarousel, type CarouselProps } from "@/components/ui";
 import { productsApi } from "@/api/products";
 import ProductCard from "@/components/ProductCard";
 import { tokens } from "@/theme/theme";
@@ -26,7 +26,7 @@ export const BasicProductCarousel = () => {
   const products = data?.products || [];
 
   return (
-    <Carousel
+    <CustomCarousel
       items={products.map((product) => (
         <ProductCard
           key={product.id}
@@ -88,7 +88,7 @@ export const HeroBannerCarousel = () => {
   ];
 
   return (
-    <Carousel
+    <CustomCarousel
       items={banners.map((banner) => (
         <Box
           key={banner.id}
@@ -148,7 +148,7 @@ export const BrandLogosCarousel = () => {
   ];
 
   return (
-    <Carousel
+    <CustomCarousel
       items={brands.map((brand) => (
         <Box
           key={brand.id}
@@ -218,7 +218,7 @@ export const TestimonialsCarousel = () => {
   ];
 
   return (
-    <Carousel
+    <CustomCarousel
       items={testimonials.map((testimonial) => (
         <Card
           key={testimonial.id}
@@ -289,7 +289,7 @@ export const CoverflowtCarousel = () => {
   const products = data?.products || [];
 
   return (
-    <Carousel
+    <CustomCarousel
       items={products.map((product) => (
         <ProductCard
           key={product.id}
@@ -341,7 +341,7 @@ export const MobileOptimizedCarousel = () => {
   const products = data?.products || [];
 
   return (
-    <Carousel
+    <CustomCarousel
       items={products.map((product) => (
         <ProductCard
           key={product.id}
@@ -454,7 +454,7 @@ export const FullFeaturedCarousel = () => {
 
   return (
     <Box>
-      <Carousel {...carouselProps} />
+      <CustomCarousel {...carouselProps} />
       <Typography
         variant="caption"
         sx={{

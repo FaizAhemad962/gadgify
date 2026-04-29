@@ -5,12 +5,15 @@ describe("CustomDialog", () => {
   const defaultProps = {
     open: true,
     title: "Confirm Action",
-    contentNode: <p>Are you sure?</p>,
     onClose: jest.fn(),
   };
 
   it("renders title and content when open", () => {
-    render(<CustomDialog {...defaultProps} />);
+    render(
+      <CustomDialog {...defaultProps}>
+        <p>Are you sure?</p>
+      </CustomDialog>
+    );
     expect(screen.getByText("Confirm Action")).toBeInTheDocument();
     expect(screen.getByText("Are you sure?")).toBeInTheDocument();
   });

@@ -1,7 +1,7 @@
 import { Box, Container, Typography, Button, Divider } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Carousel } from "@/components/common";
+import { CustomCarousel } from "@/components/ui";
 import { tokens } from "@/theme/theme";
 
 /**
@@ -493,7 +493,7 @@ const HeroCarousel = () => {
 
   return (
     <Box sx={{ width: "100%" }}>
-      <Carousel
+      <CustomCarousel
         items={slides}
         slidesPerView={1}
         spaceBetween={0}

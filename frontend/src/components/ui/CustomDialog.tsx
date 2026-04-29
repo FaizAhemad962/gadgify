@@ -1,3 +1,4 @@
+import React from "react";
 import {
   Dialog,
   type DialogProps,
@@ -8,16 +9,15 @@ import {
 } from "@mui/material";
 import { tokens } from "@/theme/theme";
 
-interface CustomDialogProps extends Omit<DialogProps, "children"> {
+interface CustomDialogProps extends DialogProps {
   title: string;
-  contentNode: React.ReactNode;
   actions?: React.ReactNode;
   onClose: () => void;
 }
 
 export const CustomDialog = ({
   title,
-  contentNode,
+  children,
   actions,
   onClose,
   ...props
@@ -51,7 +51,7 @@ export const CustomDialog = ({
           backgroundImage: "none",
         }}
       >
-        <Box sx={{ mt: 2 }}>{contentNode}</Box>
+        <Box sx={{ mt: 2 }}>{children}</Box>
       </DialogContent>
       {actions && (
         <DialogActions
