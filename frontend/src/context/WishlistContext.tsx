@@ -41,7 +41,7 @@ export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const [wishlistItems, setWishlistItems] = useState<WishlistItem[]>([]);
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, authChecked } = useAuth();
 
   // Track which products are currently being toggled
   const [togglingProducts, setTogglingProducts] = useState<Set<string>>(
@@ -63,7 +63,7 @@ export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({
       // Don't set state here - let the mutations handle state updates
       return response.data;
     },
-    enabled: isAuthenticated,
+    enabled: isAuthenticated && authChecked, // Only fetch if authenticated and initial auth check is done
     staleTime: 5 * 60 * 1000, // 5 minutes
     retry: false,
   });
@@ -71,6 +71,7 @@ export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({
   // Update wishlistItems when data is loaded, but only if we don't have temp items
   React.useEffect(() => {
     if (data) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setWishlistItems((prev) => {
         const hasTempItems = prev.some((item) => item.id.startsWith("temp-"));
         return hasTempItems ? prev : data;

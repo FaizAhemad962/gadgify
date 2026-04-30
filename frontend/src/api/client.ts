@@ -61,13 +61,19 @@ apiClient.interceptors.response.use(
       config?.url?.includes("/auth/login") ||
       config?.url?.includes("/auth/signup");
     const status = error.response?.status;
-
+    console.log(status);
+    console.log("401 error on:", config.url);
+    console.log("Response:", error.response);
     // ✅ SECURITY: 401 Unauthorized - redirect to login
     // Browser will clear httpOnly cookie automatically
+    // if (status === 401 && !isAuthEndpoint) {
+    //   // Clear local storage to prevent redirect loop in AuthContext/LoginPage
+    //   localStorage.removeItem("user");
+    //   window.location.href = "/login";
+    //   return Promise.reject(error);
+    // }
     if (status === 401 && !isAuthEndpoint) {
-      // Clear local storage to prevent redirect loop in AuthContext/LoginPage
-      localStorage.removeItem("user");
-      window.location.href = "/login";
+      console.warn("401 error from:", config.url);
       return Promise.reject(error);
     }
 
