@@ -1,5 +1,4 @@
 import { Response } from "express";
-import { config } from "../config";
 
 /**
  * Helper function to set auth cookies with proper security flags
@@ -12,24 +11,16 @@ export const setAuthCookie = (
   token: string,
   options?: { maxAge?: number },
 ): void => {
-  const maxAge = options?.maxAge || 24 * 60 * 60 * 1000; // 24 hours default
-  const maxAgeSeconds = Math.floor(maxAge / 1000);
-
-  // Only add Secure flag in production (HTTPS)
+  const maxAge = options?.maxAge || 24 * 60 * 60 * 1000;
   const isProduction = process.env.NODE_ENV === "production";
-  const secureFlag = isProduction ? "Secure; " : "";
 
-  // ✅ SECURITY: In production, we use SameSite=None to support cross-site setups
-  // (e.g. frontend on gadgify.com and backend on api.gadgify.com or Render subdomains).
-  // SameSite=None REQUIRES the Secure flag.
-  const sameSite = isProduction ? "None" : "Lax";
-
-  // ✅ SECURITY: Use host-only cookies by NOT setting the Domain attribute.
-  // This is safer and more compatible with modern browsers and public suffixes
-  // like .onrender.com or .vercel.app where browsers block cookies with Domain set.
-  const cookieValue = `authToken=${token}; Path=/; HttpOnly; ${secureFlag}SameSite=${sameSite}; Max-Age=${maxAgeSeconds}`;
-
-  res.setHeader("Set-Cookie", cookieValue);
+  res.cookie("authToken", token, {
+    httpOnly: true,
+    secure: isProduction,
+    sameSite: isProduction ? "none" : "lax",
+    path: "/",
+    maxAge,
+  });
 };
 
 /**
@@ -37,10 +28,11 @@ export const setAuthCookie = (
  */
 export const clearAuthCookie = (res: Response): void => {
   const isProduction = process.env.NODE_ENV === "production";
-  const secureFlag = isProduction ? "Secure; " : "";
-  const sameSite = isProduction ? "None" : "Lax";
 
-  const cookieValue = `authToken=; Path=/; HttpOnly; ${secureFlag}SameSite=${sameSite}; Max-Age=0`;
-
-  res.setHeader("Set-Cookie", cookieValue);
+  res.clearCookie("authToken", {
+    httpOnly: true,
+    secure: isProduction,
+    sameSite: isProduction ? "none" : "lax",
+    path: "/",
+  });
 };

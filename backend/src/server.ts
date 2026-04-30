@@ -8,6 +8,7 @@ import { logSecurityEvents } from "./middlewares/securityLogger";
 import { verifyCsrfToken } from "./middlewares/csrfProtection";
 import { apiLimiter } from "./middlewares/rateLimiter";
 import logger from "./utils/logger";
+import cookieParser from "cookie-parser";
 
 // Extend Express Response type for custom setCookie method
 declare global {
@@ -147,34 +148,34 @@ app.use(
 // Body parser with size limits
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
+app.use(cookieParser());
+// // Cookie parser - for secure httpOnly cookie handling
+// // Supports both httpOnly cookies and query parameter fallback for legacy clients
+// app.use((req: Request, res: Response, next) => {
+//   // Parse cookies from headers manually since we don't use cookie-parser
+//   const cookieHeader = req.headers.cookie;
+//   (req as any).cookies = {};
 
-// Cookie parser - for secure httpOnly cookie handling
-// Supports both httpOnly cookies and query parameter fallback for legacy clients
-app.use((req: Request, res: Response, next) => {
-  // Parse cookies from headers manually since we don't use cookie-parser
-  const cookieHeader = req.headers.cookie;
-  (req as any).cookies = {};
-
-  if (cookieHeader) {
-    const cookies: Record<string, string> = {};
-    cookieHeader.split(";").forEach((cookie) => {
-      const parts = cookie.split("=");
-      if (parts.length >= 2) {
-        const key = parts[0].trim();
-        const val = parts.slice(1).join("=").trim();
-        if (key && val) {
-          try {
-            cookies[key] = decodeURIComponent(val);
-          } catch (e) {
-            cookies[key] = val; // Fallback if decode fails
-          }
-        }
-      }
-    });
-    (req as any).cookies = cookies;
-  }
-  next();
-});
+//   if (cookieHeader) {
+//     const cookies: Record<string, string> = {};
+//     cookieHeader.split(";").forEach((cookie) => {
+//       const parts = cookie.split("=");
+//       if (parts.length >= 2) {
+//         const key = parts[0].trim();
+//         const val = parts.slice(1).join("=").trim();
+//         if (key && val) {
+//           try {
+//             cookies[key] = decodeURIComponent(val);
+//           } catch (e) {
+//             cookies[key] = val; // Fallback if decode fails
+//           }
+//         }
+//       }
+//     });
+//     (req as any).cookies = cookies;
+//   }
+//   next();
+// });
 
 // Sanitize input
 app.use(sanitizeInput);
