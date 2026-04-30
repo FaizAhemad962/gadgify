@@ -1,4 +1,10 @@
-import { createContext, useContext, useState, useEffect, type ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  type ReactNode,
+} from "react";
 import type { User } from "../types";
 import { apiClient } from "../api/client";
 
@@ -12,6 +18,7 @@ interface AuthContextType {
   isSuperAdmin: boolean; // SUPER_ADMIN only
   hasAdminAccess: boolean; // Alias for isAdmin
   isStaff: boolean; // DELIVERY_STAFF or SUPPORT_STAFF
+  authChecked: boolean; // Indicates if initial auth check is done
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -36,7 +43,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [token, setToken] = useState<string | null>(
     getStoredUser() ? "authenticated" : null,
   );
-
+  const [authChecked, setAuthChecked] = useState(false);
   // ✅ SECURITY: Sync auth state across tabs
   useEffect(() => {
     const handleStorageChange = (e: StorageEvent) => {
@@ -54,6 +61,25 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     window.addEventListener("storage", handleStorageChange);
     return () => window.removeEventListener("storage", handleStorageChange);
+  }, []);
+
+  useEffect(() => {
+    const verifyAuth = async () => {
+      try {
+        const res = await apiClient.get("/auth/me"); // or /auth/session
+        setUser(res.data);
+        setToken("authenticated");
+        localStorage.setItem("user", JSON.stringify(res.data));
+      } catch {
+        setUser(null);
+        setToken(null);
+        localStorage.removeItem("user");
+      } finally {
+        setAuthChecked(true);
+      }
+    };
+
+    verifyAuth();
   }, []);
 
   // ✅ SECURITY: No token verification on app mount
@@ -110,6 +136,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     isSuperAdmin: roleFlags.isSuperAdmin,
     hasAdminAccess: roleFlags.hasAdminAccess,
     isStaff: roleFlags.isStaff,
+    authChecked,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

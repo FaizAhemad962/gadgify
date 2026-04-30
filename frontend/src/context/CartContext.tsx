@@ -24,7 +24,7 @@ interface CartContextType {
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export const CartProvider = ({ children }: { children: ReactNode }) => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, authChecked } = useAuth();
   const queryClient = useQueryClient();
   const [pendingProducts, setPendingProducts] = useState<Set<string>>(
     new Set(),
@@ -34,8 +34,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   const { data: cart, isLoading } = useQuery({
     queryKey: ["cart"],
     queryFn: cartApi.get,
-    enabled: isAuthenticated,
-    // Avoid immediate refetch resets while rapidly mutating
+    enabled: isAuthenticated && authChecked, // Avoid immediate refetch resets while rapidly mutating
     staleTime: 5 * 1000,
     refetchOnWindowFocus: false,
   });
