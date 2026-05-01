@@ -1,5 +1,6 @@
 import { apiClient } from "./client";
 import type { Cart, AddToCartRequest, UpdateCartItemRequest } from "../types";
+import { getProtectedHeaders } from "./csrfHelper";
 
 // ✅ SECURITY: CSRF token is automatically added by apiClient interceptor
 export const cartApi = {
@@ -10,11 +11,22 @@ export const cartApi = {
     return response.data;
   },
 
+  // addItem: async (data: AddToCartRequest): Promise<Cart> => {
+  //   // ✅ SECURITY: CSRF token is automatically added by apiClient interceptor
+  //   const response = await apiClient.post<Cart>("/cart/items", data, {
+  //     withCredentials: true,
+  //   });
+  //   return response.data;
+  // },
+
   addItem: async (data: AddToCartRequest): Promise<Cart> => {
-    // ✅ SECURITY: CSRF token is automatically added by apiClient interceptor
-    const response = await apiClient.post<Cart>("/cart/items", data, {
+    const headers = await getProtectedHeaders();
+
+    const response = await apiClient.post("/cart/items", data, {
+      headers,
       withCredentials: true,
     });
+
     return response.data;
   },
 
