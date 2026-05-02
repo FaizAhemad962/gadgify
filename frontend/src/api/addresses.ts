@@ -1,5 +1,4 @@
 import { apiClient } from "./client";
-import { getCsrfToken } from "./csrfHelper";
 
 export interface Address {
   id: string;
@@ -39,15 +38,12 @@ export const addressesApi = {
   },
 
   create: async (data: CreateAddressRequest): Promise<Address> => {
-    const csrfToken = await getCsrfToken();
+    // ✅ SECURITY: CSRF token is automatically added by apiClient interceptor
     const response = await apiClient.post<{
       success: boolean;
       data: Address;
     }>("/addresses", data, {
       withCredentials: true,
-      headers: {
-        "x-csrf-token": csrfToken,
-      },
     });
     return response.data.data;
   },
@@ -56,26 +52,20 @@ export const addressesApi = {
     id: string,
     data: Partial<CreateAddressRequest>,
   ): Promise<Address> => {
-    const csrfToken = await getCsrfToken();
+    // ✅ SECURITY: CSRF token is automatically added by apiClient interceptor
     const response = await apiClient.put<{
       success: boolean;
       data: Address;
     }>(`/addresses/${id}`, data, {
       withCredentials: true,
-      headers: {
-        "x-csrf-token": csrfToken,
-      },
     });
     return response.data.data;
   },
 
   delete: async (id: string): Promise<void> => {
-    const csrfToken = await getCsrfToken();
+    // ✅ SECURITY: CSRF token is automatically added by apiClient interceptor
     await apiClient.delete(`/addresses/${id}`, {
       withCredentials: true,
-      headers: {
-        "x-csrf-token": csrfToken,
-      },
     });
   },
 };

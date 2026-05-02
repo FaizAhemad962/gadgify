@@ -1,6 +1,5 @@
 import { apiClient } from "./client";
 import type { Cart, AddToCartRequest, UpdateCartItemRequest } from "../types";
-import { getProtectedHeaders } from "./csrfHelper";
 
 // ✅ SECURITY: CSRF token is automatically added by apiClient interceptor
 export const cartApi = {
@@ -11,46 +10,36 @@ export const cartApi = {
     return response.data;
   },
 
-  // addItem: async (data: AddToCartRequest): Promise<Cart> => {
-  //   // ✅ SECURITY: CSRF token is automatically added by apiClient interceptor
-  //   const response = await apiClient.post<Cart>("/cart/items", data, {
-  //     withCredentials: true,
-  //   });
-  //   return response.data;
-  // },
-
+  // ✅ SECURITY: CSRF token is automatically added by apiClient interceptor
   addItem: async (data: AddToCartRequest): Promise<Cart> => {
-    const headers = await getProtectedHeaders();
-
-    const response = await apiClient.post("/cart/items", data, {
-      headers,
+    const response = await apiClient.post<Cart>("/cart/items", data, {
       withCredentials: true,
     });
 
     return response.data;
   },
 
+  // ✅ SECURITY: CSRF token is automatically added by apiClient interceptor
   updateItem: async (
     itemId: string,
     data: UpdateCartItemRequest,
   ): Promise<Cart> => {
-    // ✅ SECURITY: CSRF token is automatically added by apiClient interceptor
     const response = await apiClient.put<Cart>(`/cart/items/${itemId}`, data, {
       withCredentials: true,
     });
     return response.data;
   },
 
+  // ✅ SECURITY: CSRF token is automatically added by apiClient interceptor
   removeItem: async (itemId: string): Promise<Cart> => {
-    // ✅ SECURITY: CSRF token is automatically added by apiClient interceptor
     const response = await apiClient.delete<Cart>(`/cart/items/${itemId}`, {
       withCredentials: true,
     });
     return response.data;
   },
 
+  // ✅ SECURITY: CSRF token is automatically added by apiClient interceptor
   clear: async (): Promise<void> => {
-    // ✅ SECURITY: CSRF token is automatically added by apiClient interceptor
     await apiClient.delete("/cart", {
       withCredentials: true,
     });

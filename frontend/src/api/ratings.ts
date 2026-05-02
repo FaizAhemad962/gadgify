@@ -1,6 +1,5 @@
 // src/api/ratings.ts
 import { apiClient } from "./client";
-import { getCsrfToken } from "./csrfHelper";
 
 export interface Rating {
   id: string;
@@ -47,23 +46,21 @@ export const ratingsApi = {
     productId: string,
     payload: CreateRatingData,
   ): Promise<Rating> => {
-    const csrfToken = await getCsrfToken();
+    // ✅ SECURITY: CSRF token is automatically added by apiClient interceptor
     const { data } = await apiClient.post(
       `/products/${productId}/ratings`,
       payload,
       {
         withCredentials: true,
-        headers: { "x-csrf-token": csrfToken },
       },
     );
     return data;
   },
 
   deleteRating: async (productId: string, ratingId: string): Promise<void> => {
-    const csrfToken = await getCsrfToken();
+    // ✅ SECURITY: CSRF token is automatically added by apiClient interceptor
     await apiClient.delete(`/products/${productId}/ratings/${ratingId}`, {
       withCredentials: true,
-      headers: { "x-csrf-token": csrfToken },
     });
   },
 };

@@ -1,5 +1,4 @@
 import { apiClient } from "./client";
-import { getCsrfToken } from "./csrfHelper";
 
 export interface FAQ {
   id: string;
@@ -62,7 +61,7 @@ export const faqApi = {
 
   // Increment FAQ view count
   incrementViews: async (faqId: string) => {
-    const csrfToken = await getCsrfToken();
+    // ✅ SECURITY: CSRF token is automatically added by apiClient interceptor
     const response = await apiClient.patch<{
       success: boolean;
       data: { faq: FAQ };
@@ -71,7 +70,6 @@ export const faqApi = {
       {},
       {
         withCredentials: true,
-        headers: { "x-csrf-token": csrfToken },
       },
     );
     return response.data.data.faq;

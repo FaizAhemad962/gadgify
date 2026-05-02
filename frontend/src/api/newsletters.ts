@@ -1,5 +1,4 @@
 import { apiClient } from "./client";
-import { getCsrfToken } from "./csrfHelper";
 
 export interface Newsletter {
   id: string;
@@ -39,13 +38,12 @@ export interface NewsletterStatsResponse {
 export const newsletterApi = {
   // Subscribe email to newsletter
   subscribe: async (email: string) => {
-    const csrfToken = await getCsrfToken();
+    // ✅ SECURITY: CSRF token is automatically added by apiClient interceptor
     const response = await apiClient.post<NewsletterResponse>(
       "/newsletters/subscribe",
       { email },
       {
         withCredentials: true,
-        headers: { "x-csrf-token": csrfToken },
       },
     );
     return response.data;
@@ -53,13 +51,12 @@ export const newsletterApi = {
 
   // Unsubscribe email from newsletter
   unsubscribe: async (email: string) => {
-    const csrfToken = await getCsrfToken();
+    // ✅ SECURITY: CSRF token is automatically added by apiClient interceptor
     const response = await apiClient.post<NewsletterResponse>(
       "/newsletters/unsubscribe",
       { email },
       {
         withCredentials: true,
-        headers: { "x-csrf-token": csrfToken },
       },
     );
     return response.data;

@@ -1,5 +1,4 @@
 import { apiClient } from "./client";
-import { getCsrfToken } from "./csrfHelper";
 
 export interface Category {
   id: string;
@@ -40,13 +39,12 @@ export const categoriesApi = {
 
   // Admin: create category
   create: async (data: CreateCategoryRequest): Promise<Category> => {
-    const csrfToken = await getCsrfToken();
+    // ✅ SECURITY: CSRF token is automatically added by apiClient interceptor
     const response = await apiClient.post<{
       success: boolean;
       data: Category;
     }>("/categories", data, {
       withCredentials: true,
-      headers: { "x-csrf-token": csrfToken },
     });
     return response.data.data;
   },
@@ -56,23 +54,21 @@ export const categoriesApi = {
     id: string,
     data: Partial<CreateCategoryRequest> & { isActive?: boolean },
   ): Promise<Category> => {
-    const csrfToken = await getCsrfToken();
+    // ✅ SECURITY: CSRF token is automatically added by apiClient interceptor
     const response = await apiClient.put<{
       success: boolean;
       data: Category;
     }>(`/categories/${id}`, data, {
       withCredentials: true,
-      headers: { "x-csrf-token": csrfToken },
     });
     return response.data.data;
   },
 
   // Admin: delete category
   delete: async (id: string): Promise<void> => {
-    const csrfToken = await getCsrfToken();
+    // ✅ SECURITY: CSRF token is automatically added by apiClient interceptor
     await apiClient.delete(`/categories/${id}`, {
       withCredentials: true,
-      headers: { "x-csrf-token": csrfToken },
     });
   },
 };

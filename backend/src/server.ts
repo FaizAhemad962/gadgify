@@ -231,8 +231,13 @@ app.get("/health", async (req: Request, res: Response) => {
   }
 });
 
+// ✅ SECURITY: Apply CSRF middleware BEFORE auth routes to protect login/signup
+app.use(verifyCsrfToken);
+
 // Routes
-app.use("/api/auth", authRoutes);
+app.use("/api/auth", authRoutes); // includes login + csrf route
+
+app.use("/api/cart", cartRoutes);
 app.use("/api/products/media", mediaRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/cart", cartRoutes);

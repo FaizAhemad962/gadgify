@@ -1,5 +1,4 @@
 import { apiClient } from "./client";
-import { getCsrfToken } from "./csrfHelper";
 
 export interface Coupon {
   id: string;
@@ -41,7 +40,7 @@ export const couponsApi = {
     code: string,
     subtotal: number,
   ): Promise<CouponValidation> => {
-    const csrfToken = await getCsrfToken();
+    // ✅ SECURITY: CSRF token is automatically added by apiClient interceptor
     const response = await apiClient.post<{
       success: boolean;
       data: CouponValidation;
@@ -50,7 +49,6 @@ export const couponsApi = {
       { code, subtotal },
       {
         withCredentials: true,
-        headers: { "x-csrf-token": csrfToken },
       },
     );
     return response.data.data;
@@ -67,13 +65,12 @@ export const couponsApi = {
 
   // Admin: create coupon
   create: async (data: CreateCouponRequest): Promise<Coupon> => {
-    const csrfToken = await getCsrfToken();
+    // ✅ SECURITY: CSRF token is automatically added by apiClient interceptor
     const response = await apiClient.post<{ success: boolean; data: Coupon }>(
       "/coupons",
       data,
       {
         withCredentials: true,
-        headers: { "x-csrf-token": csrfToken },
       },
     );
     return response.data.data;
@@ -84,13 +81,12 @@ export const couponsApi = {
     id: string,
     data: Partial<CreateCouponRequest> & { isActive?: boolean },
   ): Promise<Coupon> => {
-    const csrfToken = await getCsrfToken();
+    // ✅ SECURITY: CSRF token is automatically added by apiClient interceptor
     const response = await apiClient.put<{ success: boolean; data: Coupon }>(
       `/coupons/${id}`,
       data,
       {
         withCredentials: true,
-        headers: { "x-csrf-token": csrfToken },
       },
     );
     return response.data.data;
@@ -98,10 +94,9 @@ export const couponsApi = {
 
   // Admin: delete coupon
   delete: async (id: string): Promise<void> => {
-    const csrfToken = await getCsrfToken();
+    // ✅ SECURITY: CSRF token is automatically added by apiClient interceptor
     await apiClient.delete(`/coupons/${id}`, {
       withCredentials: true,
-      headers: { "x-csrf-token": csrfToken },
     });
   },
 };

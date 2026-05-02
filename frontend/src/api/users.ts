@@ -1,5 +1,4 @@
 import { apiClient } from "./client";
-import { getCsrfToken } from "./csrfHelper";
 
 export interface AdminUser {
   id: string;
@@ -22,7 +21,7 @@ export const usersApi = {
   },
 
   updateRole: async (id: string, role: string): Promise<void> => {
-    const csrfToken = await getCsrfToken();
+    // ✅ SECURITY: CSRF token is automatically added by apiClient interceptor
     await apiClient.patch(
       `/admin/users/${encodeURIComponent(id)}/role`,
       {
@@ -30,16 +29,14 @@ export const usersApi = {
       },
       {
         withCredentials: true,
-        headers: { "x-csrf-token": csrfToken },
       },
     );
   },
 
   delete: async (id: string): Promise<void> => {
-    const csrfToken = await getCsrfToken();
+    // ✅ SECURITY: CSRF token is automatically added by apiClient interceptor
     await apiClient.delete(`/admin/users/${encodeURIComponent(id)}`, {
       withCredentials: true,
-      headers: { "x-csrf-token": csrfToken },
     });
   },
 };

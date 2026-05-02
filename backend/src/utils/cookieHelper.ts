@@ -1,4 +1,5 @@
 import { Response } from "express";
+import { config } from "../config";
 
 /**
  * Helper function to set auth cookies with proper security flags
@@ -12,27 +13,30 @@ export const setAuthCookie = (
   options?: { maxAge?: number },
 ): void => {
   const maxAge = options?.maxAge || 24 * 60 * 60 * 1000;
-  const isProduction = process.env.NODE_ENV === "production";
+  const isProduction = config.nodeEnv === "production";
 
   res.cookie("authToken", token, {
     httpOnly: true,
     secure: isProduction,
     sameSite: "lax",
     path: "/",
+    domain: config.cookieDomain,
     maxAge,
   });
 };
 
 /**
  * Helper function to clear auth cookie
+ * ✅ SECURITY: Uses same SameSite=Lax for logout as login to ensure cookie is cleared
  */
 export const clearAuthCookie = (res: Response): void => {
-  const isProduction = process.env.NODE_ENV === "production";
+  const isProduction = config.nodeEnv === "production";
 
   res.clearCookie("authToken", {
     httpOnly: true,
     secure: isProduction,
-    sameSite: isProduction ? "none" : "lax",
+    sameSite: "lax",
     path: "/",
+    domain: config.cookieDomain,
   });
 };

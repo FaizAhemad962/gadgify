@@ -1,5 +1,4 @@
 import { apiClient } from "./client";
-import { getCsrfToken } from "./csrfHelper";
 import type {
   Product,
   CreateProductRequest,
@@ -118,11 +117,10 @@ export const productsApi = {
     productId: string,
     url: string,
   ): Promise<void> => {
-    const csrfToken = await getCsrfToken();
+    // ✅ SECURITY: CSRF token is automatically added by apiClient interceptor
     await apiClient.delete("/products/media", {
       data: { productId, url },
       withCredentials: true,
-      headers: { "x-csrf-token": csrfToken },
     });
   },
 
@@ -143,11 +141,10 @@ export const productsApi = {
   uploadImage: async (file: File): Promise<{ imageUrl: string }> => {
     const formData = new FormData();
     formData.append("image", file);
-    const csrfToken = await getCsrfToken();
+    // ✅ SECURITY: CSRF token is automatically added by apiClient interceptor
 
     const { data } = await apiClient.post("/products/upload-image", formData, {
       withCredentials: true,
-      headers: { "x-csrf-token": csrfToken },
     });
     return data;
   },
@@ -155,11 +152,10 @@ export const productsApi = {
   uploadVideo: async (file: File): Promise<{ videoUrl: string }> => {
     const formData = new FormData();
     formData.append("video", file);
-    const csrfToken = await getCsrfToken();
+    // ✅ SECURITY: CSRF token is automatically added by apiClient interceptor
 
     const { data } = await apiClient.post("/products/upload-video", formData, {
       withCredentials: true,
-      headers: { "x-csrf-token": csrfToken },
     });
     return data;
   },
