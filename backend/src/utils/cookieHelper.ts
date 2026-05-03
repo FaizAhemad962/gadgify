@@ -17,14 +17,25 @@ export const setAuthCookie = (
   const isProduction = config.nodeEnv === "production";
   const isCrossDomain = process.env.CROSS_DOMAIN_COOKIES === "true";
 
-  res.cookie("authToken", token, {
+  const cookieOptions: any = {
     httpOnly: true,
-    secure: isProduction, // ✅ Required for SameSite=None in production
-    sameSite: isCrossDomain ? "none" : "lax", // ✅ Use 'none' for cross-domain
+    secure: isProduction,
+    sameSite: isCrossDomain ? "none" : "lax",
     path: "/",
-    domain: config.cookieDomain,
     maxAge,
-  });
+  };
+
+  // ✅ Only set domain if it's valid
+  if (
+    config.cookieDomain &&
+    !config.cookieDomain.includes("http") &&
+    !config.cookieDomain.includes("/") &&
+    !config.cookieDomain.includes(":")
+  ) {
+    cookieOptions.domain = config.cookieDomain;
+  }
+  console.log(isCrossDomain);
+  res.cookie("authToken", token, cookieOptions);
 };
 
 /**
