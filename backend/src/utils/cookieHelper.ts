@@ -20,7 +20,7 @@ export const setAuthCookie = (
   const cookieOptions: any = {
     httpOnly: true,
     secure: isProduction,
-    sameSite: isCrossDomain ? "none" : "lax",
+    sameSite: "none",
     path: "/",
     maxAge,
   };
