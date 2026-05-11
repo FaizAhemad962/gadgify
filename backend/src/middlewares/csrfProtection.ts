@@ -59,6 +59,19 @@ export const verifyCsrfToken = (
     return next();
   }
 
+  const csrfExemptPaths = new Set([
+    "/api/auth/login",
+    "/api/auth/signup",
+    "/api/auth/forgot-password",
+    "/api/auth/reset-password",
+    "/api/auth/verify-email",
+    "/api/auth/resend-verification-email",
+  ]);
+
+  if (csrfExemptPaths.has(req.path)) {
+    return next();
+  }
+
   const token = (req.headers["x-csrf-token"] as string) || req.body?.csrfToken;
 
   if (!token) {

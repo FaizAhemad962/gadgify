@@ -17,10 +17,11 @@ export const setAuthCookie = (
   const isProduction = config.nodeEnv === "production";
   const isCrossDomain = process.env.CROSS_DOMAIN_COOKIES === "true";
 
+  const sameSite = isCrossDomain ? "none" : "lax";
   const cookieOptions: any = {
     httpOnly: true,
-    secure: isProduction,
-    sameSite: "none",
+    secure: sameSite === "none" ? true : isProduction,
+    sameSite,
     path: "/",
     maxAge,
   };
@@ -34,7 +35,6 @@ export const setAuthCookie = (
   ) {
     cookieOptions.domain = config.cookieDomain;
   }
-  console.log(isCrossDomain);
   res.cookie("authToken", token, cookieOptions);
 };
 
@@ -45,12 +45,23 @@ export const setAuthCookie = (
 export const clearAuthCookie = (res: Response): void => {
   const isProduction = config.nodeEnv === "production";
   const isCrossDomain = process.env.CROSS_DOMAIN_COOKIES === "true";
+  const sameSite = isCrossDomain ? "none" : "lax";
 
-  res.clearCookie("authToken", {
+  const clearOptions: any = {
     httpOnly: true,
-    secure: isProduction,
-    sameSite: isCrossDomain ? "none" : "lax", // ✅ Match setAuthCookie behavior
+    secure: sameSite === "none" ? true : isProduction,
+    sameSite,
     path: "/",
-    domain: config.cookieDomain,
-  });
+  };
+
+  if (
+    config.cookieDomain &&
+    !config.cookieDomain.includes("http") &&
+    !config.cookieDomain.includes("/") &&
+    !config.cookieDomain.includes(":")
+  ) {
+    clearOptions.domain = config.cookieDomain;
+  }
+
+  res.clearCookie("authToken", clearOptions);
 };

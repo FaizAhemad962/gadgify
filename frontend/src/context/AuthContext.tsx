@@ -66,7 +66,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const verifyAuth = async () => {
       try {
-        const res = await apiClient.get("/auth/me"); // or /auth/session
+        const res = await apiClient.get("/auth/profile");
         setUser(res.data);
         setToken("authenticated");
         localStorage.setItem("user", JSON.stringify(res.data));
