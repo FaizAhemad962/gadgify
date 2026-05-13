@@ -5,7 +5,6 @@ const authController_1 = require("../controllers/authController");
 const auth_1 = require("../middlewares/auth");
 const validate_1 = require("../middlewares/validate");
 const rateLimiter_1 = require("../middlewares/rateLimiter");
-const csrfProtection_1 = require("../middlewares/csrfProtection");
 const validators_1 = require("../validators");
 const upload_1 = require("../middlewares/upload");
 const router = (0, express_1.Router)();
@@ -22,5 +21,5 @@ router.post("/profile-photo", auth_1.authenticate, upload_1.upload.single("image
 router.post("/verify-email", authController_1.verifyEmail);
 router.post("/resend-verification-email", authController_1.resendVerificationEmail);
 // ✅ SECURITY: Get CSRF token for client
-router.get("/csrf-token", csrfProtection_1.getCSRFToken);
+router.get("/csrf-token", authController_1.getCsrfToken);
 exports.default = router;

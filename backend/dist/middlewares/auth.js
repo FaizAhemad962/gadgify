@@ -8,6 +8,7 @@ const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const config_1 = require("../config");
 const database_1 = __importDefault(require("../config/database"));
 const tokenBlacklist_1 = require("../utils/tokenBlacklist");
+const cookieHelper_1 = require("../utils/cookieHelper");
 const authenticate = async (req, res, next) => {
     try {
         // SECURITY: Try to get token from httpOnly cookie first (more secure)
@@ -36,6 +37,7 @@ const authenticate = async (req, res, next) => {
             select: { id: true, email: true, role: true },
         });
         if (!user) {
+            (0, cookieHelper_1.clearAuthCookie)(res);
             res.status(401).json({ message: "User not found" });
             return;
         }
@@ -43,6 +45,7 @@ const authenticate = async (req, res, next) => {
         next();
     }
     catch (error) {
+        (0, cookieHelper_1.clearAuthCookie)(res);
         res.status(401).json({ message: "Invalid or expired token" });
     }
 };

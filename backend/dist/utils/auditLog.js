@@ -57,9 +57,17 @@ const getIpAddress = (req) => {
     // Check for IP in headers (proxies)
     const forwarded = req.headers["x-forwarded-for"];
     if (forwarded) {
-        return typeof forwarded === "string"
+        const raw = typeof forwarded === "string"
             ? forwarded.split(",")[0].trim()
             : forwarded[0];
+        if (raw.startsWith("[") && raw.includes("]")) {
+            return raw.slice(1, raw.indexOf("]"));
+        }
+        const ipv4WithPort = raw.match(/^(\d{1,3}(?:\.\d{1,3}){3}):\d+$/);
+        if (ipv4WithPort?.[1]) {
+            return ipv4WithPort[1];
+        }
+        return raw;
     }
     return req.socket?.remoteAddress || req.ip;
 };

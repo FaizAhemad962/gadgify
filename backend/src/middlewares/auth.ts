@@ -3,6 +3,7 @@ import jwt from "jsonwebtoken";
 import { config } from "../config";
 import prisma from "../config/database";
 import { isTokenBlacklisted } from "../utils/tokenBlacklist";
+import { clearAuthCookie } from "../utils/cookieHelper";
 
 export interface AuthRequest extends Request {
   user?: {
@@ -54,6 +55,7 @@ export const authenticate = async (
     });
 
     if (!user) {
+      clearAuthCookie(res);
       res.status(401).json({ message: "User not found" });
       return;
     }
@@ -61,6 +63,7 @@ export const authenticate = async (
     req.user = user;
     next();
   } catch (error) {
+    clearAuthCookie(res);
     res.status(401).json({ message: "Invalid or expired token" });
   }
 };

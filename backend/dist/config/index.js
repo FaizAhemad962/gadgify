@@ -39,6 +39,8 @@ exports.config = {
     resendApiKey: process.env.RESEND_API_KEY || "",
     emailFrom: process.env.EMAIL_FROM || "Gadgify <onboarding@resend.dev>",
     adminEmail: process.env.ADMIN_EMAIL || "",
+    // ✅ SECURITY: Cookie domain for production
+    cookieDomain: process.env.COOKIE_DOMAIN || undefined,
     // ✅ SECURITY: Email service configuration for SMTP
     emailProvider: process.env.SMTP_HOST
         ? {

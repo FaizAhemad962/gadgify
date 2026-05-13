@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getCSRFToken = exports.cleanupExpiredTokens = exports.verifyCsrfToken = exports.csrfTokenGenerator = exports.generateCSRFToken = void 0;
+exports.getCSRFToken = exports.cleanupExpiredTokens = exports.verifyCsrfToken = exports.csrfTokenGenerator = exports.storeCSRFToken = exports.generateCSRFToken = void 0;
 const crypto_1 = __importDefault(require("crypto"));
 // Store CSRF tokens in memory (use Redis in production)
 const csrfTokenStore = new Map();
@@ -13,16 +13,25 @@ const generateCSRFToken = () => {
     return crypto_1.default.randomBytes(32).toString("hex");
 };
 exports.generateCSRFToken = generateCSRFToken;
-const csrfTokenGenerator = (req, res, next) => {
-    // Safely derive an identifier
-    const sessionId = req.sessionID || req.user?.id || req.ip;
-    const token = (0, exports.generateCSRFToken)();
+/**
+ * ✅ SECURITY: Store CSRF token in the token store
+ * Can be called from controller or middleware
+ */
+const storeCSRFToken = (token, sessionId) => {
     csrfTokenStore.set(token, {
         timestamp: Date.now(),
         usageCount: 0,
         lastUsed: Date.now(),
         sessionId,
     });
+};
+exports.storeCSRFToken = storeCSRFToken;
+const csrfTokenGenerator = (req, res, next) => {
+    // Safely derive an identifier
+    const sessionId = req.sessionID || req.user?.id || req.ip;
+    const token = (0, exports.generateCSRFToken)();
+    // Store the token in the token store
+    (0, exports.storeCSRFToken)(token, sessionId);
     res.locals.csrfToken = token;
     req.csrfToken = token;
     next();
@@ -30,6 +39,17 @@ const csrfTokenGenerator = (req, res, next) => {
 exports.csrfTokenGenerator = csrfTokenGenerator;
 const verifyCsrfToken = (req, res, next) => {
     if (["GET", "HEAD", "OPTIONS"].includes(req.method)) {
+        return next();
+    }
+    const csrfExemptPaths = new Set([
+        "/api/auth/login",
+        "/api/auth/signup",
+        "/api/auth/forgot-password",
+        "/api/auth/reset-password",
+        "/api/auth/verify-email",
+        "/api/auth/resend-verification-email",
+    ]);
+    if (csrfExemptPaths.has(req.path)) {
         return next();
     }
     const token = req.headers["x-csrf-token"] || req.body?.csrfToken;

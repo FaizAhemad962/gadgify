@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.logout = exports.changePassword = exports.resetPassword = exports.forgotPassword = exports.resendVerificationEmail = exports.verifyEmail = exports.updateProfilePhoto = exports.updateProfile = exports.getProfile = exports.login = exports.signup = void 0;
+exports.getCsrfToken = exports.logout = exports.changePassword = exports.resetPassword = exports.forgotPassword = exports.resendVerificationEmail = exports.verifyEmail = exports.updateProfilePhoto = exports.updateProfile = exports.getProfile = exports.login = exports.signup = void 0;
 const crypto_1 = __importDefault(require("crypto"));
 const database_1 = __importDefault(require("../config/database"));
 const auth_1 = require("../utils/auth");
@@ -13,6 +13,8 @@ const logger_1 = __importDefault(require("../utils/logger"));
 const tokenBlacklist_1 = require("../utils/tokenBlacklist");
 const auditLog_1 = require("../utils/auditLog");
 const userQueryHelper_1 = require("../utils/userQueryHelper");
+const cookieHelper_1 = require("../utils/cookieHelper");
+const csrfProtection_1 = require("../middlewares/csrfProtection");
 // SECURITY: Track failed login attempts (use Redis in production)
 const failedLoginAttempts = new Map();
 const MAX_FAILED_ATTEMPTS = 5;
@@ -132,7 +134,7 @@ const signup = async (req, res, next) => {
         });
         // SECURITY: Set httpOnly cookie for new signup (httpOnly = not accessible via JavaScript)
         const oneDay = 24 * 60 * 60 * 1000;
-        res.setHeader("Set-Cookie", `authToken=${token}; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=${oneDay / 1000}`);
+        (0, cookieHelper_1.setAuthCookie)(res, token, { maxAge: oneDay });
         logger_1.default.info(`User signup: ${normalizedEmail} (email verification pending)`);
         // ✅ SECURITY: Log signup event
         const ipAddress = (0, auditLog_1.getIpAddress)(req);
@@ -209,7 +211,7 @@ const login = async (req, res, next) => {
         });
         // SECURITY: Set httpOnly cookie (httpOnly = not accessible via JavaScript, Secure = HTTPS only)
         const oneDay = 24 * 60 * 60 * 1000;
-        res.setHeader("Set-Cookie", `authToken=${token}; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=${oneDay / 1000}`);
+        (0, cookieHelper_1.setAuthCookie)(res, token, { maxAge: oneDay });
         const { password: _, ...userWithoutPassword } = user;
         // Log successful login
         await (0, auditLog_1.logAuditEvent)({
@@ -611,7 +613,7 @@ const logout = async (req, res, next) => {
             }
         }
         // Clear the httpOnly cookie by setting it to expire immediately
-        res.setHeader("Set-Cookie", "authToken=; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=0");
+        (0, cookieHelper_1.clearAuthCookie)(res);
         // ✅ SECURITY: Log logout event
         const ipAddress = (0, auditLog_1.getIpAddress)(req);
         const userAgent = (0, auditLog_1.getUserAgent)(req);
@@ -635,3 +637,29 @@ const logout = async (req, res, next) => {
     }
 };
 exports.logout = logout;
+/**
+ * ✅ SECURITY: Get CSRF token for client
+ * Frontend calls this endpoint before login/signup to get a fresh CSRF token
+ * Token is cached on frontend for 50 seconds before fetching a new one
+ */
+const getCsrfToken = async (req, res) => {
+    try {
+        // Generate a new CSRF token
+        const token = crypto_1.default.randomBytes(32).toString("hex");
+        // Store token in the CSRF token store so it can be validated on subsequent requests
+        const sessionId = req.sessionID || req.user?.id || req.ip;
+        (0, csrfProtection_1.storeCSRFToken)(token, sessionId);
+        // Return the token to be included in subsequent POST/PUT/DELETE/PATCH requests
+        res.json({
+            success: true,
+            csrfToken: token,
+        });
+    }
+    catch (error) {
+        res.status(500).json({
+            success: false,
+            message: "Failed to generate CSRF token",
+        });
+    }
+};
+exports.getCsrfToken = getCsrfToken;
