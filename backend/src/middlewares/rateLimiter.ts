@@ -1,8 +1,30 @@
 import rateLimit from "express-rate-limit";
 import { Request } from "express";
+import { config } from "../config";
 
 // Development mode: disable rate limiting to allow rapid testing
-const isDevelopment = process.env.NODE_ENV === "development";
+const isDevelopment = config.nodeEnv === "development";
+
+const getClientIp = (req: Request): string => {
+  const forwarded = req.headers["x-forwarded-for"];
+  const forwardedIp =
+    typeof forwarded === "string"
+      ? forwarded.split(",")[0]?.trim()
+      : forwarded?.[0]?.trim();
+
+  const raw = forwardedIp || req.socket?.remoteAddress || req.ip || "";
+
+  if (raw.startsWith("[") && raw.includes("]")) {
+    return raw.slice(1, raw.indexOf("]"));
+  }
+
+  const ipv4WithPort = raw.match(/^(\d{1,3}(?:\.\d{1,3}){3}):\d+$/);
+  if (ipv4WithPort?.[1]) {
+    return ipv4WithPort[1];
+  }
+
+  return raw.replace(/^::ffff:/, "");
+};
 
 // General API rate limit - per IP
 export const apiLimiter = rateLimit({
@@ -12,6 +34,7 @@ export const apiLimiter = rateLimit({
   message: "Too many requests, please try again later.",
   standardHeaders: true,
   legacyHeaders: false,
+  keyGenerator: (req: Request) => getClientIp(req),
 });
 
 // Auth endpoints - per email/username to avoid blocking other users
