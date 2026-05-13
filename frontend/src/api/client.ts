@@ -21,6 +21,18 @@ apiClient.interceptors.request.use(
     // No need to manually add Authorization header
     config.withCredentials = true; // Ensure cookies are sent
 
+    const isFormData =
+      typeof FormData !== "undefined" && config.data instanceof FormData;
+    if (isFormData && config.headers) {
+      if (typeof config.headers.delete === "function") {
+        config.headers.delete("Content-Type");
+        config.headers.delete("content-type");
+      } else {
+        delete config.headers["Content-Type"];
+        delete config.headers["content-type"];
+      }
+    }
+
     // Initialize retry count
     if (!config.retryCount) {
       config.retryCount = 0;
