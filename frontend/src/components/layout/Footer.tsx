@@ -6,9 +6,9 @@ import {
   Link,
   Divider,
   IconButton,
-} from "@mui/material";
+} from "@/mui/material";
 import { useTranslation } from "react-i18next";
-import { Facebook, Twitter, Instagram, LinkedIn } from "@mui/icons-material";
+import { Facebook, Twitter, Instagram, LinkedIn } from "@/mui/icons";
 
 const Footer = memo(() => {
   const { t } = useTranslation();
@@ -357,7 +357,7 @@ const Footer = memo(() => {
           sx={{
             display: "flex",
             gap: 4,
-            mb: 4,
+            pb: 4,
             alignItems: { xs: "center", md: "flex-start" },
             justifyContent: "space-between",
             flexWrap: "wrap",

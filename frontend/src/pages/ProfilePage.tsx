@@ -16,8 +16,8 @@ import {
   IconButton,
   Avatar,
   Badge,
-} from "@mui/material";
-import { ArrowBack, Edit, Save, Cancel, CameraAlt } from "@mui/icons-material";
+} from "@/mui/material";
+import { ArrowBack, Edit, Save, Cancel, CameraAlt } from "@/mui/icons";
 import { useAuth } from "../context/AuthContext";
 import { tokens } from "@/theme/theme";
 import { ErrorHandler } from "../utils/errorHandler";

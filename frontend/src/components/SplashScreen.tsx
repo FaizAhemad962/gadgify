@@ -1,4 +1,4 @@
-import { Box, Typography, keyframes } from "@mui/material";
+import { Box, Typography, keyframes } from "@/mui/material";
 import { tokens } from "@/theme/theme";
 
 // Animations

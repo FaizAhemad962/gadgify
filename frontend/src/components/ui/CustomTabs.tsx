@@ -1,4 +1,4 @@
-import { Tabs, Tab, type TabsProps, type TabProps, styled } from "@mui/material";
+import { Tabs, Tab, type TabsProps, type TabProps, styled } from "@/mui/material";
 import { tokens } from "@/theme/theme";
 
 const StyledTabs = styled(Tabs)<TabsProps>(() => ({

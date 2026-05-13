@@ -19,14 +19,14 @@ import {
   Alert,
   IconButton,
   InputAdornment,
-} from "@mui/material";
+} from "@/mui/material";
 import {
   ArrowBack,
   LockReset,
   CheckCircle,
   Visibility,
   VisibilityOff,
-} from "@mui/icons-material";
+} from "@/mui/icons";
 import { tokens } from "@/theme/theme";
 import { authApi } from "@/api/auth";
 

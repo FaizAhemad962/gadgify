@@ -10,8 +10,8 @@ import {
   Chip,
   Skeleton,
   Alert,
-} from '@mui/material'
-import { Delete as DeleteIcon, ShoppingCart as ShoppingCartIcon } from '@mui/icons-material'
+} from '@/mui/material'
+import { Delete as DeleteIcon, ShoppingCart as ShoppingCartIcon } from '@/mui/icons'
 import { useQuery } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
 import { apiClient } from '../api/client'

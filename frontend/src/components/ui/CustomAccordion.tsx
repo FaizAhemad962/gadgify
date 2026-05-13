@@ -5,8 +5,8 @@ import {
   AccordionDetails,
   type AccordionProps,
   styled,
-} from "@mui/material";
-import { ExpandMore as ExpandMoreIcon } from "@mui/icons-material";
+} from "@/mui/material";
+import { ExpandMore as ExpandMoreIcon } from "@/mui/icons";
 import { tokens } from "@/theme/theme";
 
 const StyledAccordion = styled(Accordion)<AccordionProps>(() => ({

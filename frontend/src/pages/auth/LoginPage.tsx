@@ -19,8 +19,8 @@ import {
   Alert,
   InputAdornment,
   IconButton,
-} from "@mui/material";
-import { Visibility, VisibilityOff } from "@mui/icons-material";
+} from "@/mui/material";
+import { Visibility, VisibilityOff } from "@/mui/icons";
 import { authApi } from "../../api/auth";
 import { useAuth } from "../../context/AuthContext";
 import { ErrorHandler } from "../../utils/errorHandler";

@@ -1,41 +1,20 @@
-import { useEffect } from "react";
-import { useLocation, useNavigationType } from "react-router-dom";
+import { useEffect, useLayoutEffect } from "react";
+import { useLocation } from "react-router-dom";
 
 const ScrollToTop = () => {
-  const { pathname } = useLocation();
-  const navigationType = useNavigationType();
+  const location = useLocation();
 
-  // Helper function to scroll to top
-  const scrollToTopHelper = () => {
-    // Use requestAnimationFrame to ensure DOM is ready
-    requestAnimationFrame(() => {
-      window.scrollTo(0, 0);
-      document.documentElement.scrollTop = 0;
-      document.body.scrollTop = 0;
-    });
-
-    // Also add a small timeout as backup
-    setTimeout(() => {
-      window.scrollTo(0, 0);
-      document.documentElement.scrollTop = 0;
-      document.body.scrollTop = 0;
-    }, 0);
-  };
-
-  // Scroll on route change
   useEffect(() => {
-    scrollToTopHelper();
-  }, [pathname]);
-
-  // Scroll on any navigation action (including same route)
-  useEffect(() => {
-    scrollToTopHelper();
-  }, [navigationType]);
-
-  // Scroll on initial mount (page refresh)
-  useEffect(() => {
-    scrollToTopHelper();
+    const prev = window.history.scrollRestoration;
+    window.history.scrollRestoration = "manual";
+    return () => {
+      window.history.scrollRestoration = prev;
+    };
   }, []);
+
+  useLayoutEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+  }, [location.key]);
 
   return null;
 };

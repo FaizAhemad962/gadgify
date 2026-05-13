@@ -6,7 +6,7 @@ import {
   DialogContent,
   DialogActions,
   Box,
-} from "@mui/material";
+} from "@/mui/material";
 import { tokens } from "@/theme/theme";
 
 interface CustomDialogProps extends DialogProps {

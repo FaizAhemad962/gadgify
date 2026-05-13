@@ -16,8 +16,8 @@ import {
   TableRow,
   IconButton,
   Chip,
-} from "@mui/material";
-import { ArrowBack, Close } from "@mui/icons-material";
+} from "@/mui/material";
+import { ArrowBack, Close } from "@/mui/icons";
 import { productsApi } from "../api/products";
 import { useCompare } from "../context/CompareContext";
 import { tokens } from "@/theme/theme";

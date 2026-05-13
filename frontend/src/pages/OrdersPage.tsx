@@ -14,8 +14,8 @@ import {
   Button,
   TextField,
   InputAdornment,
-} from "@mui/material";
-import { ShoppingBag, Search, Replay } from "@mui/icons-material";
+} from "@/mui/material";
+import { ShoppingBag, Search, Replay } from "@/mui/icons";
 import { ordersApi } from "../api/orders";
 import { useCart } from "../context/CartContext";
 import { formatDate } from "../utils/dateFormatter";

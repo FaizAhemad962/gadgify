@@ -17,7 +17,7 @@ import {
   ListItem,
   ListItemIcon,
   ListItemText,
-} from "@mui/material";
+} from "@/mui/material";
 import {
   ArrowBack,
   Visibility,
@@ -25,7 +25,7 @@ import {
   LockReset,
   CheckCircle,
   Cancel,
-} from "@mui/icons-material";
+} from "@/mui/icons";
 import { authApi } from "../api/auth";
 import { ErrorHandler } from "../utils/errorHandler";
 import { tokens } from "@/theme/theme";

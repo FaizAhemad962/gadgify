@@ -1,7 +1,7 @@
 import { useTranslation } from "react-i18next";
 import i18n from "i18next";
-import { Box, TextField, MenuItem, IconButton } from "@mui/material";
-import { Language } from "@mui/icons-material";
+import { Box, TextField, MenuItem, IconButton } from "@/mui/material";
+import { Language } from "@/mui/icons";
 
 const LanguageSelector = ({
   color,

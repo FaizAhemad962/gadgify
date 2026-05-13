@@ -1,4 +1,4 @@
-import { Avatar, type AvatarProps, styled } from "@mui/material";
+import { Avatar, type AvatarProps, styled } from "@/mui/material";
 import { tokens } from "@/theme/theme";
 
 const StyledAvatar = styled(Avatar)<AvatarProps>(() => ({

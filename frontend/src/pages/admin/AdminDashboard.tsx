@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
-import { Paper, Typography, Box, Chip, Skeleton, Alert } from "@mui/material";
+import { Paper, Typography, Box, Chip, Skeleton, Alert } from "@/mui/material";
 import {
   Inventory,
   ShoppingCart,
@@ -9,7 +9,7 @@ import {
   TrendingUp,
   TrendingDown,
   Warning,
-} from "@mui/icons-material";
+} from "@/mui/icons";
 import {
   AreaChart,
   Area,

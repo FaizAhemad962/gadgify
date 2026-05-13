@@ -1,4 +1,4 @@
-import { Switch, type SwitchProps, styled } from "@mui/material";
+import { Switch, type SwitchProps, styled } from "@/mui/material";
 import { tokens } from "@/theme/theme";
 
 const StyledSwitch = styled(Switch)<SwitchProps>(({ theme }) => ({

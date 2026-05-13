@@ -1,4 +1,4 @@
-import { Box, CircularProgress, Backdrop } from "@mui/material";
+import { Box, CircularProgress, Backdrop } from "@/mui/material";
 import { tokens } from "@/theme/theme";
 
 interface LoadingOverlayProps {

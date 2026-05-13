@@ -1,5 +1,5 @@
 import { type GridColDef, type GridRenderCellParams } from "@mui/x-data-grid";
-import { Chip, Select, MenuItem } from "@mui/material";
+import { Chip, Select, MenuItem } from "@/mui/material";
 import { useTranslation } from "react-i18next";
 import { AppDataGrid } from "../ui/AppDataGrid";
 import type { Order } from "../../types";

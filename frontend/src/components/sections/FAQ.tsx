@@ -9,8 +9,8 @@ import {
   AccordionSummary,
   AccordionDetails,
   Skeleton,
-} from "@mui/material";
-import { ExpandMore, HelpOutline } from "@mui/icons-material";
+} from "@/mui/material";
+import { ExpandMore, HelpOutline } from "@/mui/icons";
 import { faqApi } from "../../api/faqs";
 import { tokens } from "../../theme/theme";
 

@@ -10,8 +10,8 @@ import {
   Avatar,
   Rating,
   Skeleton,
-} from "@mui/material";
-import { VerifiedUser, Favorite } from "@mui/icons-material";
+} from "@/mui/material";
+import { VerifiedUser, Favorite } from "@/mui/icons";
 import { productsApi } from "../../api/products";
 import { tokens } from "../../theme/theme";
 

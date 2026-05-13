@@ -8,13 +8,13 @@ import {
   IconButton,
   Typography,
   CircularProgress,
-} from "@mui/material";
+} from "@/mui/material";
 import {
   ShoppingCart,
   Favorite,
   FavoriteBorder,
   CompareArrows,
-} from "@mui/icons-material";
+} from "@/mui/icons";
 import LazyImage from "../components/common/LazyImage";
 import { StarRating } from "../components/common/StarRating";
 import { useCompare } from "../context/CompareContext";

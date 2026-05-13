@@ -1,7 +1,7 @@
 import { CustomDialog } from "./CustomDialog";
 import { CustomButton } from "./CustomButton";
-import { Typography, Box } from "@mui/material";
-import { WarningAmber as WarningIcon } from "@mui/icons-material";
+import { Typography, Box } from "@/mui/material";
+import { WarningAmber as WarningIcon } from "@/mui/icons";
 import { tokens } from "@/theme/theme";
 
 interface ConfirmDialogProps {

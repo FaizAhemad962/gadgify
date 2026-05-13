@@ -1,4 +1,4 @@
-import { Checkbox, type CheckboxProps, styled } from "@mui/material";
+import { Checkbox, type CheckboxProps, styled } from "@/mui/material";
 import { tokens } from "@/theme/theme";
 
 const StyledCheckbox = styled(Checkbox)<CheckboxProps>(() => ({

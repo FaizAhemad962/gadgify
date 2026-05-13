@@ -1,13 +1,24 @@
-import { useState, useEffect } from "react";
-import { Fab } from "@mui/material";
-import { KeyboardArrowUp } from "@mui/icons-material";
+import { useState, useEffect, useRef } from "react";
+import { Fab } from "@/mui/material";
+import { KeyboardArrowUp } from "@/mui/icons";
 import { tokens } from "@/theme/theme";
 
 const ScrollToTopButton = () => {
   const [showButton, setShowButton] = useState(false);
+  const showButtonRef = useRef(false);
+  const rafRef = useRef<number | null>(null);
 
   const handleScroll = () => {
-    setShowButton(window.scrollY > 300);
+    if (rafRef.current != null) return;
+
+    rafRef.current = window.requestAnimationFrame(() => {
+      rafRef.current = null;
+      const next = window.scrollY > 300;
+      if (showButtonRef.current !== next) {
+        showButtonRef.current = next;
+        setShowButton(next);
+      }
+    });
   };
 
   const scrollToTop = () => {
@@ -15,8 +26,15 @@ const ScrollToTopButton = () => {
   };
 
   useEffect(() => {
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+    handleScroll();
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      if (rafRef.current != null) {
+        window.cancelAnimationFrame(rafRef.current);
+        rafRef.current = null;
+      }
+    };
   }, []);
 
   return (

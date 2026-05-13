@@ -1,4 +1,4 @@
-import { Box, Container, Typography, Button, Divider } from "@mui/material";
+import { Box, Container, Typography, Button, Divider } from "@/mui/material";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { CustomCarousel } from "@/components/ui";

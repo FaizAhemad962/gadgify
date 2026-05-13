@@ -13,9 +13,9 @@ import {
   IconButton,
   type SxProps,
   type Theme,
-} from "@mui/material";
+} from "@/mui/material";
 import { CustomSlider } from "@/components/ui";
-import { Add as AddIcon, Remove as RemoveIcon } from "@mui/icons-material";
+import { Add as AddIcon, Remove as RemoveIcon } from "@/mui/icons";
 import { tokens } from "@/theme/theme";
 
 export type SortOption =

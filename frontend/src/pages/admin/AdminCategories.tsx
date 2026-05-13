@@ -21,12 +21,12 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-} from "@mui/material";
+} from "@/mui/material";
 import {
   Add as AddIcon,
   Edit as EditIcon,
   Delete as DeleteIcon,
-} from "@mui/icons-material";
+} from "@/mui/icons";
 import {
   categoriesApi,
   type Category,

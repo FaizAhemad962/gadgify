@@ -13,7 +13,7 @@ import {
   SportsEsports,
   Construction,
   FavoriteBorder,
-} from "@mui/icons-material";
+} from "@/mui/icons";
 
 // Map category names to MUI icons
 const iconMap: Record<string, React.ReactNode> = {

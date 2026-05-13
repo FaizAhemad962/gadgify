@@ -1,7 +1,16 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useState, useEffect, useRef, useCallback, useMemo, memo } from "react";
+import {
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+  useMemo,
+  memo,
+  useLayoutEffect,
+} from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useWindowVirtualizer } from "@tanstack/react-virtual";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
@@ -16,8 +25,8 @@ import {
   ToggleButton,
   Drawer,
   IconButton,
-} from "@mui/material";
-import { ViewModule, ViewList, Close as CloseIcon } from "@mui/icons-material";
+} from "@/mui/material";
+import { ViewModule, ViewList, Close as CloseIcon } from "@/mui/icons";
 import { productsApi } from "../api/products";
 import { useCart } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
@@ -31,11 +40,11 @@ import { tokens } from "@/theme/theme";
 
 const PRODUCTS_PER_PAGE = 24;
 
-// ✅ Memoized Products Grid Component - prevents re-render when sidebar/footer changes
 const ProductsGrid = memo(
   ({
     products,
     viewMode,
+    columns,
     onAddToCart,
     onBuyNow,
     onNavigate,
@@ -45,45 +54,97 @@ const ProductsGrid = memo(
     isAddingToCart,
     isFetching,
     hasMore,
+    onEndReached,
     t,
-    sentinelRef,
   }: any) => {
+    const parentRef = useRef<HTMLDivElement | null>(null);
+    const [scrollMargin, setScrollMargin] = useState(0);
+    const rowCount = Math.ceil(products.length / columns);
+    const rowHeight = viewMode === "list" ? 260 : 560;
+
+    useLayoutEffect(() => {
+      const el = parentRef.current;
+      if (!el) return;
+      const update = () => {
+        const next = el.getBoundingClientRect().top + window.scrollY;
+        setScrollMargin(next);
+      };
+      update();
+      window.addEventListener("resize", update);
+      return () => window.removeEventListener("resize", update);
+    }, [columns, viewMode]);
+
+    const rowVirtualizer = useWindowVirtualizer({
+      count: rowCount,
+      estimateSize: () => rowHeight,
+      overscan: 4,
+      scrollMargin,
+    });
+
+    const virtualRows = rowVirtualizer.getVirtualItems();
+
+    useEffect(() => {
+      if (!hasMore || isFetching) return;
+      if (window.scrollY < 10) return;
+
+      const last = virtualRows[virtualRows.length - 1];
+      if (!last) return;
+      if (last.index >= rowCount - 2) onEndReached();
+    }, [virtualRows, rowCount, hasMore, isFetching, onEndReached]);
+
     return (
       <>
-        <Box
-          sx={{
-            display: "grid",
-            gridTemplateColumns:
-              viewMode === "list"
-                ? "1fr"
-                : {
-                    xs: "repeat(2, 1fr)",
-                    sm: "repeat(2, 1fr)",
-                    md: "repeat(3, 1fr)",
-                  },
-            gridAutoRows: viewMode === "list" ? "auto" : "1fr", // Force rows to have equal height in grid view
-            gap: 2,
-          }}
-        >
-          {products.map((product: any) => (
-            <ProductCard
-              key={product.id}
-              product={product}
-              isInWishlist={isInWishlist}
-              toggleWishlist={toggleWishlist}
-              isToggling={isToggling}
-              onAddToCart={onAddToCart}
-              onBuyNow={onBuyNow}
-              onNavigate={onNavigate}
-              t={t}
-              isAddingToCart={isAddingToCart(product.id)}
-              viewMode={viewMode}
-            />
-          ))}
-        </Box>
+        <Box ref={parentRef}>
+          <Box
+            sx={{
+              height: rowVirtualizer.getTotalSize(),
+              width: "100%",
+              position: "relative",
+            }}
+          >
+            {virtualRows.map((virtualRow) => {
+              const startIndex = virtualRow.index * columns;
+              const rowItems = products.slice(startIndex, startIndex + columns);
 
-        {/* Sentinel element for infinite scroll - placed at end of grid */}
-        <Box ref={sentinelRef} sx={{ height: 0, mt: 2 }} />
+              return (
+                <Box
+                  key={virtualRow.key}
+                  sx={{
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    width: "100%",
+                    height: rowHeight,
+                    transform: `translateY(${virtualRow.start - rowVirtualizer.options.scrollMargin}px)`,
+                    display: "grid",
+                    gridTemplateColumns:
+                      viewMode === "list"
+                        ? "1fr"
+                        : `repeat(${columns}, minmax(0, 1fr))`,
+                    gap: 2,
+                    alignItems: "stretch",
+                  }}
+                >
+                  {rowItems.map((product: any) => (
+                    <ProductCard
+                      key={product.id}
+                      product={product}
+                      isInWishlist={isInWishlist}
+                      toggleWishlist={toggleWishlist}
+                      isToggling={isToggling}
+                      onAddToCart={onAddToCart}
+                      onBuyNow={onBuyNow}
+                      onNavigate={onNavigate}
+                      t={t}
+                      isAddingToCart={isAddingToCart(product.id)}
+                      viewMode={viewMode}
+                    />
+                  ))}
+                </Box>
+              );
+            })}
+          </Box>
+        </Box>
 
         {/* Loading indicator when fetching more products */}
         {isFetching && products.length > 0 && (
@@ -128,6 +189,7 @@ const ProductsPage = () => {
   const { isAuthenticated } = useAuth();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+  const isMdUp = useMediaQuery(theme.breakpoints.up("md"));
 
   // State for search only
   const { searchQuery = "" } = useSearch();
@@ -158,9 +220,6 @@ const ProductsPage = () => {
 
   // Combine all products from paginated responses
   const [allProducts, setAllProducts] = useState<any[]>([]);
-
-  // Sentinel ref for infinite scroll
-  const sentinelRef = useRef<HTMLDivElement>(null);
 
   // Debounce search query and reset pagination only when query actually changes
   useEffect(() => {
@@ -249,22 +308,16 @@ const ProductsPage = () => {
     }
   }, [response, page]);
 
-  // Intersection Observer for infinite scroll
+  const loadMoreLockRef = useRef(false);
+
   useEffect(() => {
-    const sentinel = sentinelRef.current;
-    if (!sentinel) return;
+    if (!isFetching) loadMoreLockRef.current = false;
+  }, [isFetching]);
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && hasMore && !isFetching) {
-          setPage((prev) => prev + 1);
-        }
-      },
-      { rootMargin: "100px", threshold: 0 },
-    );
-
-    observer.observe(sentinel);
-    return () => observer.disconnect();
+  const handleEndReached = useCallback(() => {
+    if (!hasMore || isFetching || loadMoreLockRef.current) return;
+    loadMoreLockRef.current = true;
+    setPage((prev) => prev + 1);
   }, [hasMore, isFetching]);
 
   // Filter handlers with useCallback
@@ -588,6 +641,7 @@ const ProductsPage = () => {
             <ProductsGrid
               products={allProducts}
               viewMode={viewMode}
+              columns={viewMode === "list" ? 1 : isMdUp ? 3 : 2}
               onAddToCart={handleAddToCart}
               onBuyNow={handleBuyNow}
               onNavigate={handleNavigate}
@@ -597,8 +651,8 @@ const ProductsPage = () => {
               isAddingToCart={isAddingToCart}
               isFetching={isFetching}
               hasMore={hasMore}
+              onEndReached={handleEndReached}
               t={t}
-              sentinelRef={sentinelRef}
             />
           )}
         </Box>

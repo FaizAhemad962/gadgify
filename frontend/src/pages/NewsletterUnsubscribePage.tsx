@@ -9,13 +9,13 @@ import {
   CardContent,
   CircularProgress,
   Alert,
-} from "@mui/material";
+} from "@/mui/material";
 import {
   Mail,
   CheckCircle,
   Error as ErrorIcon,
   Home,
-} from "@mui/icons-material";
+} from "@/mui/icons";
 import { useTranslation } from "react-i18next";
 import { newsletterApi } from "@/api/newsletters";
 import { tokens } from "@/theme/theme";

@@ -1,4 +1,4 @@
-import { Card, type CardProps } from "@mui/material";
+import { Card, type CardProps } from "@/mui/material";
 import { tokens } from "@/theme/theme";
 
 interface CustomCardProps extends CardProps {

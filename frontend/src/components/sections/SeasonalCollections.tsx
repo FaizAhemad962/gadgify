@@ -1,8 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Container, Box, Typography, Button, Skeleton } from "@mui/material";
-import { ArrowForward } from "@mui/icons-material";
+import { Container, Box, Typography, Button, Skeleton } from "@/mui/material";
+import { ArrowForward } from "@/mui/icons";
 import { productsApi } from "../../api/products";
 import { tokens } from "../../theme/theme";
 

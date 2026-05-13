@@ -7,7 +7,7 @@
  */
 
 import { useQuery } from "@tanstack/react-query";
-import { Box, Card, Typography } from "@mui/material";
+import { Box, Card, Typography } from "@/mui/material";
 import { CustomCarousel, type CarouselProps } from "@/components/ui";
 import { productsApi } from "@/api/products";
 import ProductCard from "@/components/ProductCard";

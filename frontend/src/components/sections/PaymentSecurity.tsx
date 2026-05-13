@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next";
-import { Container, Box, Typography } from "@mui/material";
+import { Container, Box, Typography } from "@/mui/material";
 import {
   Lock,
   CreditCard,
@@ -7,7 +7,7 @@ import {
   PrivacyTip,
   Gavel,
   Support,
-} from "@mui/icons-material";
+} from "@/mui/icons";
 import { tokens } from "../../theme/theme";
 
 interface SecurityFeature {

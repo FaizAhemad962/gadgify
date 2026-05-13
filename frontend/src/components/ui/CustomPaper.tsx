@@ -1,4 +1,4 @@
-import { Paper, type PaperProps, styled } from "@mui/material";
+import { Paper, type PaperProps, styled } from "@/mui/material";
 import { tokens } from "@/theme/theme";
 
 const StyledPaper = styled(Paper)<PaperProps & { subtle?: boolean }>(

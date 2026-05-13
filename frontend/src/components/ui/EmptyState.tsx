@@ -1,6 +1,6 @@
 import React from "react";
-import { Box, Typography, type BoxProps } from "@mui/material";
-import { ErrorOutline as ErrorIcon } from "@mui/icons-material";
+import { Box, Typography, type BoxProps } from "@/mui/material";
+import { ErrorOutline as ErrorIcon } from "@/mui/icons";
 import { tokens } from "@/theme/theme";
 import { CustomButton } from "./CustomButton";
 

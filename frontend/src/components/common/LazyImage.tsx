@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Box, Skeleton } from "@mui/material";
+import { Box, Skeleton } from "@/mui/material";
 
 interface LazyImageProps {
   src: string;

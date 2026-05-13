@@ -7,11 +7,11 @@ import {
   useTheme,
   type SxProps,
   type Theme,
-} from "@mui/material";
+} from "@/mui/material";
 import {
   ChevronLeft as ChevronLeftIcon,
   ChevronRight as ChevronRightIcon,
-} from "@mui/icons-material";
+} from "@/mui/icons";
 import type { Swiper as SwiperType } from "swiper";
 import { Swiper, SwiperSlide } from "swiper/react";
 import {

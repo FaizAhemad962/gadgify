@@ -1,4 +1,4 @@
-import { Menu, MenuItem, type MenuProps, type MenuItemProps, styled } from "@mui/material";
+import { Menu, MenuItem, type MenuProps, type MenuItemProps, styled } from "@/mui/material";
 import { tokens } from "@/theme/theme";
 
 const StyledMenu = styled((props: MenuProps) => (

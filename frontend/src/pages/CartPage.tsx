@@ -13,8 +13,8 @@ import {
   InputAdornment,
   Alert,
   Chip,
-} from "@mui/material";
-import { Delete, ShoppingCartOutlined, LocalOffer } from "@mui/icons-material";
+} from "@/mui/material";
+import { Delete, ShoppingCartOutlined, LocalOffer } from "@/mui/icons";
 import QuantityInput from "../components/common/QuantityInput";
 import { useCart } from "../context/CartContext";
 import { useCoupon } from "../hooks/useCoupon";

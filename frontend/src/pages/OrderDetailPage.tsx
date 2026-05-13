@@ -13,8 +13,8 @@ import {
   Button,
   Divider,
   Card,
-} from "@mui/material";
-import { ArrowBack, Download, CreditCard, Refresh } from "@mui/icons-material";
+} from "@/mui/material";
+import { ArrowBack, Download, CreditCard, Refresh } from "@/mui/icons";
 import { ordersApi } from "../api/orders";
 import { formatDate } from "../utils/dateFormatter";
 import { generateInvoicePDF } from "../utils/generateInvoice";

@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Box } from "@mui/material";
+import { Box } from "@/mui/material";
 import { useInViewAnimation } from "../hooks/useInViewAnimation";
 import { forwardRef } from "react";
 import type { ComponentProps } from "react";

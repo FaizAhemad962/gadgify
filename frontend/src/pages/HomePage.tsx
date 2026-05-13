@@ -11,7 +11,7 @@ import {
   InputAdornment,
   Avatar,
   Rating,
-} from "@mui/material";
+} from "@/mui/material";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
@@ -23,7 +23,7 @@ import {
   ArrowForward,
   Email,
   Timer,
-} from "@mui/icons-material";
+} from "@/mui/icons";
 import { useAuth } from "@/context/AuthContext";
 import { productsApi } from "@/api/products";
 import { useNewsletterSubscribe } from "@/hooks/useNewsletter";

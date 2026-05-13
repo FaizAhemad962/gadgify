@@ -1,4 +1,4 @@
-import { Slider, type SliderProps, styled } from "@mui/material";
+import { Slider, type SliderProps, styled } from "@/mui/material";
 import { tokens } from "@/theme/theme";
 
 const StyledSlider = styled(Slider)<SliderProps>(() => ({

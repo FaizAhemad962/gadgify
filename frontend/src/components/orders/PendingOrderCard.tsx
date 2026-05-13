@@ -14,11 +14,11 @@ import {
   Alert,
   CircularProgress,
   Typography,
-} from "@mui/material";
+} from "@/mui/material";
 import {
   Delete as DeleteIcon,
   Refresh as RefreshIcon,
-} from "@mui/icons-material";
+} from "@/mui/icons";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 

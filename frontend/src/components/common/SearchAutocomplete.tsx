@@ -8,8 +8,8 @@ import {
   Typography,
   InputAdornment,
   Avatar,
-} from "@mui/material";
-import { Search as SearchIcon } from "@mui/icons-material";
+} from "@/mui/material";
+import { Search as SearchIcon } from "@/mui/icons";
 import { useQuery } from "@tanstack/react-query";
 import { productsApi } from "../../api/products";
 import { useSearch } from "../../context/SearchContext";

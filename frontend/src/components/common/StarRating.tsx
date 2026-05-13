@@ -1,6 +1,6 @@
 import React from 'react'
-import { Box, Typography } from '@mui/material'
-import { Star, StarHalf, StarBorder } from '@mui/icons-material'
+import { Box, Typography } from '@/mui/material'
+import { Star, StarHalf, StarBorder } from '@/mui/icons'
 
 interface StarRatingProps {
   rating: number

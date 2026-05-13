@@ -26,11 +26,11 @@ import {
   DialogContentText,
   DialogActions,
   Button,
-} from "@mui/material";
+} from "@/mui/material";
 import {
   Delete as DeleteIcon,
   Search as SearchIcon,
-} from "@mui/icons-material";
+} from "@/mui/icons";
 import { usersApi, type AdminUser } from "../../api/users";
 import { useAuth } from "../../context/AuthContext";
 import { getAssignableRoles } from "../../utils/roleHelper";

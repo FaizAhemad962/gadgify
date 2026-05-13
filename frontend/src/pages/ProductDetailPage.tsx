@@ -15,7 +15,7 @@ import {
   IconButton,
   Tooltip,
   Snackbar,
-} from "@mui/material";
+} from "@/mui/material";
 
 import {
   ShoppingCart,
@@ -24,7 +24,7 @@ import {
   Add,
   Remove,
   NotificationsActive,
-} from "@mui/icons-material";
+} from "@/mui/icons";
 import { productsApi } from "../api/products";
 import { ratingsApi } from "../api/ratings";
 import { useCart } from "../context/CartContext";

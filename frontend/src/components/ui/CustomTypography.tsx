@@ -1,4 +1,4 @@
-import { Typography, type TypographyProps } from "@mui/material";
+import { Typography, type TypographyProps } from "@/mui/material";
 
 interface CustomTypographyProps extends TypographyProps {
   /**

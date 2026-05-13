@@ -9,10 +9,10 @@ import {
   ListItemText,
   Divider,
   IconButton,
-} from "@mui/material";
+} from "@/mui/material";
 import brandIcon from "../../assets/brand-icon.png";
 import { useTranslation } from "react-i18next";
-import {CloseSharp } from "@mui/icons-material";
+import {CloseSharp } from "@/mui/icons";
 
 /* ---------- Types ---------- */
 

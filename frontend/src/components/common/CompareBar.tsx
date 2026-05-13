@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Box, Button, Chip, Slide } from "@mui/material";
-import { CompareArrows, Close } from "@mui/icons-material";
+import { Box, Button, Chip, Slide } from "@/mui/material";
+import { CompareArrows, Close } from "@/mui/icons";
 import { useCompare } from "../../context/CompareContext";
 import { tokens } from "@/theme/theme";
 

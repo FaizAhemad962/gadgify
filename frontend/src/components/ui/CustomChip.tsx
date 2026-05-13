@@ -1,4 +1,4 @@
-import { Chip, type ChipProps } from "@mui/material";
+import { Chip, type ChipProps } from "@/mui/material";
 import { tokens } from "@/theme/theme";
 
 export const CustomChip = (props: ChipProps) => {

@@ -13,8 +13,8 @@ import {
   Link,
   Box,
   Alert,
-} from "@mui/material";
-import { ArrowBack, Email } from "@mui/icons-material";
+} from "@/mui/material";
+import { ArrowBack, Email } from "@/mui/icons";
 import { tokens } from "@/theme/theme";
 import { authApi } from "@/api/auth";
 

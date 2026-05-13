@@ -6,14 +6,14 @@ import {
   Stepper,
   Step,
   StepLabel,
-} from "@mui/material";
+} from "@/mui/material";
 import {
   Search,
   ShoppingCart,
   Payment,
   LocalShipping,
   CheckCircle,
-} from "@mui/icons-material";
+} from "@/mui/icons";
 import { tokens } from "../../theme/theme";
 
 interface StepItem {

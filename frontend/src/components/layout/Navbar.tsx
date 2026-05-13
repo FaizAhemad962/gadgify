@@ -17,7 +17,7 @@ import {
   ListItemIcon,
   ListItemText,
   Chip,
-} from "@mui/material";
+} from "@/mui/material";
 
 import BrandIcon from "../../assets/brand-icon.png";
 
@@ -32,7 +32,7 @@ import {
   Dashboard,
   Person,
   Logout,
-} from "@mui/icons-material";
+} from "@/mui/icons";
 import { useAuth } from "../../context/AuthContext";
 import { useCart } from "../../context/CartContext";
 import { useWishlist } from "../../context/WishlistContext";

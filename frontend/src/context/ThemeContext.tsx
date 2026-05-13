@@ -1,7 +1,7 @@
 /* eslint-disable react-refresh/only-export-components */
 import { useState, useEffect, type ReactNode, useContext } from "react";
-import { ThemeProvider as MuiThemeProvider } from "@mui/material/styles";
-import CssBaseline from "@mui/material/CssBaseline";
+import { ThemeProvider as MuiThemeProvider } from "@/mui/styles";
+import { CssBaseline } from "@/mui/material";
 import { theme as lightTheme, darkTheme } from "@/theme/theme";
 import { createContext } from "react";
 

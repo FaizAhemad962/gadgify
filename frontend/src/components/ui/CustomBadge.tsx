@@ -1,4 +1,4 @@
-import { Badge, type BadgeProps, styled } from "@mui/material";
+import { Badge, type BadgeProps, styled } from "@/mui/material";
 import { tokens } from "@/theme/theme";
 
 const StyledBadge = styled(Badge)<BadgeProps>(({ theme }) => ({

@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useQueries } from "@tanstack/react-query";
-import { Box, Typography } from "@mui/material";
+import { Box, Typography } from "@/mui/material";
 import { productsApi } from "../../api/products";
 import { useCart } from "../../context/CartContext";
 import { useWishlist } from "../../context/WishlistContext";

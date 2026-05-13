@@ -1,7 +1,7 @@
-import { Container, Typography, Button } from "@mui/material";
+import { Container, Typography, Button } from "@/mui/material";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { ErrorOutline } from "@mui/icons-material";
+import { ErrorOutline } from "@/mui/icons";
 
 const NotFoundPage = () => {
   const { t } = useTranslation();

@@ -1,5 +1,5 @@
 import React from "react";
-import { Box, Typography, Breadcrumbs, Link } from "@mui/material";
+import { Box, Typography, Breadcrumbs, Link } from "@/mui/material";
 import { Link as RouterLink } from "react-router-dom";
 
 interface BreadcrumbItem {

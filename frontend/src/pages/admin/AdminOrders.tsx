@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
-import { Box, Typography, TextField, InputAdornment } from "@mui/material";
-import { Search } from "@mui/icons-material";
+import { Box, Typography, TextField, InputAdornment } from "@/mui/material";
+import { Search } from "@/mui/icons";
 import { ordersApi } from "../../api/orders";
 import { AdminOrdersDataGrid } from "../../components/admin/AdminOrdersDataGrid";
 import type { Order } from "../../types";

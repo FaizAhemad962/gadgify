@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next";
-import { Box, Typography, useTheme } from "@mui/material";
+import { Box, Typography, useTheme } from "@/mui/material";
 import {
   CheckCircle,
   RadioButtonChecked,
@@ -9,7 +9,7 @@ import {
   Settings,
   LocalShipping,
   Inventory,
-} from "@mui/icons-material";
+} from "@/mui/icons";
 
 interface OrderTimelineProps {
   status: string;

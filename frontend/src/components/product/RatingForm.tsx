@@ -6,8 +6,8 @@ import {
   Typography,
   Rating,
   Paper,
-} from '@mui/material'
-import { Star } from '@mui/icons-material'
+} from '@/mui/material'
+import { Star } from '@/mui/icons'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { ratingsApi, type CreateRatingData } from '../../api/ratings'
 import { useTranslation } from 'react-i18next'

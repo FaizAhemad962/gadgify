@@ -6,7 +6,7 @@ import {
   type GridFilterModel,
   type DataGridProps,
 } from "@mui/x-data-grid";
-import { Box, type SxProps, type Theme } from "@mui/material";
+import { Box, type SxProps, type Theme } from "@/mui/material";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { tokens } from "../../theme/theme";

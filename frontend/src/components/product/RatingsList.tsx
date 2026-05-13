@@ -10,8 +10,8 @@ import {
   Divider,
   CircularProgress,
   Button,
-} from '@mui/material'
-import { Delete, Star } from '@mui/icons-material'
+} from '@/mui/material'
+import { Delete, Star } from '@/mui/icons'
 import {
   useQuery,
   useMutation,

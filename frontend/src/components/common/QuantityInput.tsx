@@ -1,6 +1,6 @@
 import React from 'react';
-import { Box, IconButton, Typography } from '@mui/material';
-import { Add, Remove } from '@mui/icons-material';
+import { Box, IconButton, Typography } from '@/mui/material';
+import { Add, Remove } from '@/mui/icons';
 
 interface QuantityInputProps {
   value: number;

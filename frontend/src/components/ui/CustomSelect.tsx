@@ -5,7 +5,7 @@ import {
   MenuItem,
   type SelectProps,
   type FormControlProps,
-} from "@mui/material";
+} from "@/mui/material";
 import { tokens } from "@/theme/theme";
 
 interface CustomSelectProps extends Omit<SelectProps, "children"> {

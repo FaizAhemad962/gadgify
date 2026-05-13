@@ -27,8 +27,8 @@ import {
   Select,
   MenuItem,
   IconButton,
-} from "@mui/material";
-import { Upload, Search, Star, Delete, AddSharp } from "@mui/icons-material";
+} from "@/mui/material";
+import { Upload, Search, Star, Delete, AddSharp } from "@/mui/icons";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";

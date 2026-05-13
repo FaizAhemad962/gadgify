@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { Button, CircularProgress } from "@mui/material";
-import { ShoppingCart } from "@mui/icons-material";
+import { Button, CircularProgress } from "@/mui/material";
+import { ShoppingCart } from "@/mui/icons";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "../../context/CartContext";
 import { useAuth } from "../../context/AuthContext";

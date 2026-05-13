@@ -1,5 +1,5 @@
 import React from "react";
-import { Box, useTheme, useMediaQuery } from "@mui/material";
+import { Box, useTheme, useMediaQuery } from "@/mui/material";
 
 interface PageContainerProps {
   children: React.ReactNode;

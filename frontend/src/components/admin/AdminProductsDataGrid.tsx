@@ -1,6 +1,6 @@
 import { type GridColDef, type GridRenderCellParams } from "@mui/x-data-grid";
-import { Box, IconButton, Skeleton } from "@mui/material";
-import { Edit, Delete } from "@mui/icons-material";
+import { Box, IconButton, Skeleton } from "@/mui/material";
+import { Edit, Delete } from "@/mui/icons";
 import { useTranslation } from "react-i18next";
 import { AppDataGrid } from "../ui/AppDataGrid";
 import type { Product } from "../../types";

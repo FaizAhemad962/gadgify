@@ -1,4 +1,4 @@
-import { Radio, type RadioProps, styled } from "@mui/material";
+import { Radio, type RadioProps, styled } from "@/mui/material";
 import { tokens } from "@/theme/theme";
 
 const StyledRadio = styled(Radio)<RadioProps>(() => ({

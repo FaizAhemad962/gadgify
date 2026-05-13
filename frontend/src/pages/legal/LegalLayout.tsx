@@ -1,5 +1,5 @@
-import { Container, Box, Typography, Button } from "@mui/material";
-import { ArrowBack } from "@mui/icons-material";
+import { Container, Box, Typography, Button } from "@/mui/material";
+import { ArrowBack } from "@/mui/icons";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { tokens } from "@/theme/theme";

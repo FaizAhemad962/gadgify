@@ -1,4 +1,4 @@
-import { Alert, type AlertProps } from "@mui/material";
+import { Alert, type AlertProps } from "@/mui/material";
 
 export const CustomAlert = (props: AlertProps) => {
   return (

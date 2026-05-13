@@ -1,5 +1,5 @@
 import React from "react";
-import { Snackbar, Alert, Stack } from "@mui/material";
+import { Snackbar, Alert, Stack } from "@/mui/material";
 import { useGlobalError } from "@/hooks/useGlobalError";
 
 export const GlobalSnackbar: React.FC = () => {
