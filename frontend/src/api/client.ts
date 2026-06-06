@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import axios from "axios";
-import { getCsrfToken } from "./csrfHelper";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
@@ -38,18 +37,7 @@ apiClient.interceptors.request.use(
       config.retryCount = 0;
     }
 
-    // ✅ SECURITY: Add CSRF token for POST/PUT/DELETE/PATCH requests
-    if (
-      ["POST", "PUT", "DELETE", "PATCH"].includes(config.method?.toUpperCase())
-    ) {
-      try {
-        const csrfToken = await getCsrfToken();
-        config.headers["x-csrf-token"] = csrfToken;
-      } catch (error) {
-        console.error("Failed to get CSRF token:", error);
-        // Continue anyway - server will return 403 if token is actually required
-      }
-    }
+    // CSRF tokens removed: do not attach x-csrf-token header
 
     return config;
   },

@@ -5,7 +5,6 @@ import { config } from "./config";
 import { errorHandler } from "./middlewares/errorHandler";
 import { sanitizeInput, sanitizeStrings } from "./middlewares/sanitize";
 import { logSecurityEvents } from "./middlewares/securityLogger";
-import { verifyCsrfToken } from "./middlewares/csrfProtection";
 import { apiLimiter } from "./middlewares/rateLimiter";
 import logger from "./utils/logger";
 import cookieParser from "cookie-parser";
@@ -184,8 +183,7 @@ app.use(sanitizeStrings);
 // Security logging
 app.use(logSecurityEvents);
 
-// ✅ SECURITY: CSRF protection
-app.use(verifyCsrfToken);
+// CSRF protection removed: backend no longer requires x-csrf-token headers
 
 // Rate limiting
 app.use("/api/", apiLimiter);

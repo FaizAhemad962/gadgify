@@ -11,7 +11,6 @@ import {
   resetPassword,
   verifyEmail,
   resendVerificationEmail,
-  getCsrfToken,
 } from "../controllers/authController";
 import { authenticate } from "../middlewares/auth";
 import { validate, validateMaharashtra } from "../middlewares/validate";
@@ -74,7 +73,6 @@ router.post(
 router.post("/verify-email", verifyEmail);
 router.post("/resend-verification-email", resendVerificationEmail);
 
-// ✅ SECURITY: Get CSRF token for client
-router.get("/csrf-token", getCsrfToken);
+// CSRF token endpoint removed
 
 export default router;
