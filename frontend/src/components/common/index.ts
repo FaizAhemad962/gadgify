@@ -7,3 +7,4 @@ export { default as LanguageSelector } from "./LanguageSelector";
 export { default as SearchAutocomplete } from "./SearchAutocomplete";
 export { default as AddToCartButton } from "./AddToCartButton";
 export { default as CompareBar } from "./CompareBar";
+export { default as BrandMark } from "./BrandMark";

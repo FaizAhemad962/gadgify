@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
   Container,
@@ -73,6 +73,66 @@ const TESTIMONIALS = [
   },
 ];
 
+const getEndOfDayTimeLeft = () => {
+  const now = new Date();
+  const end = new Date(now);
+  end.setHours(23, 59, 59, 999);
+  const diff = Math.max(0, end.getTime() - now.getTime());
+
+  return {
+    hours: Math.floor(diff / 3600000),
+    minutes: Math.floor((diff % 3600000) / 60000),
+    seconds: Math.floor((diff % 60000) / 1000),
+  };
+};
+
+const DealCountdown = () => {
+  const [timeLeft, setTimeLeft] = useState(getEndOfDayTimeLeft);
+
+  useEffect(() => {
+    const interval = window.setInterval(() => {
+      setTimeLeft(getEndOfDayTimeLeft());
+    }, 1000);
+
+    return () => window.clearInterval(interval);
+  }, []);
+
+  return (
+    <Box
+      sx={{
+        display: "flex",
+        gap: 1,
+        mb: 2,
+      }}
+    >
+      {[
+        { label: "Hrs", value: timeLeft.hours },
+        { label: "Min", value: timeLeft.minutes },
+        { label: "Sec", value: timeLeft.seconds },
+      ].map((unit) => (
+        <Box
+          key={unit.label}
+          sx={{
+            bgcolor: "rgba(255,255,255,0.1)",
+            px: 1.5,
+            py: 0.5,
+            borderRadius: 2,
+            textAlign: "center",
+            minWidth: 50,
+          }}
+        >
+          <Typography variant="h6" sx={{ fontWeight: 800, lineHeight: 1 }}>
+            {unit.value.toString().padStart(2, "0")}
+          </Typography>
+          <Typography variant="caption" sx={{ opacity: 0.7 }}>
+            {unit.label}
+          </Typography>
+        </Box>
+      ))}
+    </Box>
+  );
+};
+
 const HomePage = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -95,36 +155,6 @@ const HomePage = () => {
     useNewsletterSubscribe();
   const [email, setEmail] = useState("");
   const [subscribed, setSubscribed] = useState(false);
-
-  // Deal countdown timer
-  const [timeLeft, setTimeLeft] = useState({
-    hours: 0,
-    minutes: 0,
-    seconds: 0,
-  });
-
-  const getEndOfDay = useCallback(() => {
-    const now = new Date();
-    const end = new Date(now);
-    end.setHours(23, 59, 59, 999);
-    return end;
-  }, []);
-
-  useEffect(() => {
-    const tick = () => {
-      const now = new Date();
-      const end = getEndOfDay();
-      const diff = Math.max(0, end.getTime() - now.getTime());
-      setTimeLeft({
-        hours: Math.floor(diff / 3600000),
-        minutes: Math.floor((diff % 3600000) / 60000),
-        seconds: Math.floor((diff % 60000) / 1000),
-      });
-    };
-    tick();
-    const interval = setInterval(tick, 1000);
-    return () => clearInterval(interval);
-  }, [getEndOfDay]);
 
   // Fetch trending products (sort by popularity)
   const { data: trendingData, isLoading: trendingLoading } = useQuery({
@@ -537,42 +567,7 @@ const HomePage = () => {
                     ₹{dealProduct.price.toLocaleString()}
                   </Typography>
                 </Box>
-                {/* Countdown */}
-                <Box
-                  sx={{
-                    display: "flex",
-                    gap: 1,
-                    mb: 2,
-                  }}
-                >
-                  {[
-                    { label: "Hrs", value: timeLeft.hours },
-                    { label: "Min", value: timeLeft.minutes },
-                    { label: "Sec", value: timeLeft.seconds },
-                  ].map((unit, idx) => (
-                    <Box
-                      key={idx}
-                      sx={{
-                        bgcolor: "rgba(255,255,255,0.1)",
-                        px: 1.5,
-                        py: 0.5,
-                        borderRadius: 2,
-                        textAlign: "center",
-                        minWidth: 50,
-                      }}
-                    >
-                      <Typography
-                        variant="h6"
-                        sx={{ fontWeight: 800, lineHeight: 1 }}
-                      >
-                        {unit.value.toString().padStart(2, "0")}
-                      </Typography>
-                      <Typography variant="caption" sx={{ opacity: 0.7 }}>
-                        {unit.label}
-                      </Typography>
-                    </Box>
-                  ))}
-                </Box>
+                <DealCountdown />
                 <Button
                   variant="contained"
                   onClick={() => navigate(`/products/${dealProduct.id}`)}

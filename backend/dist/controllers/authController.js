@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getCsrfToken = exports.logout = exports.changePassword = exports.resetPassword = exports.forgotPassword = exports.resendVerificationEmail = exports.verifyEmail = exports.updateProfilePhoto = exports.updateProfile = exports.getProfile = exports.login = exports.signup = void 0;
+exports.logout = exports.changePassword = exports.resetPassword = exports.forgotPassword = exports.resendVerificationEmail = exports.verifyEmail = exports.updateProfilePhoto = exports.updateProfile = exports.getProfile = exports.login = exports.signup = void 0;
 const crypto_1 = __importDefault(require("crypto"));
 const database_1 = __importDefault(require("../config/database"));
 const auth_1 = require("../utils/auth");
@@ -14,7 +14,6 @@ const tokenBlacklist_1 = require("../utils/tokenBlacklist");
 const auditLog_1 = require("../utils/auditLog");
 const userQueryHelper_1 = require("../utils/userQueryHelper");
 const cookieHelper_1 = require("../utils/cookieHelper");
-const csrfProtection_1 = require("../middlewares/csrfProtection");
 // SECURITY: Track failed login attempts (use Redis in production)
 const failedLoginAttempts = new Map();
 const MAX_FAILED_ATTEMPTS = 5;
@@ -642,24 +641,4 @@ exports.logout = logout;
  * Frontend calls this endpoint before login/signup to get a fresh CSRF token
  * Token is cached on frontend for 50 seconds before fetching a new one
  */
-const getCsrfToken = async (req, res) => {
-    try {
-        // Generate a new CSRF token
-        const token = crypto_1.default.randomBytes(32).toString("hex");
-        // Store token in the CSRF token store so it can be validated on subsequent requests
-        const sessionId = req.sessionID || req.user?.id || req.ip;
-        (0, csrfProtection_1.storeCSRFToken)(token, sessionId);
-        // Return the token to be included in subsequent POST/PUT/DELETE/PATCH requests
-        res.json({
-            success: true,
-            csrfToken: token,
-        });
-    }
-    catch (error) {
-        res.status(500).json({
-            success: false,
-            message: "Failed to generate CSRF token",
-        });
-    }
-};
-exports.getCsrfToken = getCsrfToken;
+// CSRF token endpoint removed; server uses httpOnly auth cookies and no longer issues CSRF tokens

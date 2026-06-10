@@ -19,8 +19,6 @@ import {
   Chip,
 } from "@/mui/material";
 
-import BrandIcon from "../../assets/brand-icon.png";
-
 import {
   Menu as MenuIcon,
   ShoppingCart,
@@ -37,6 +35,7 @@ import { useAuth } from "../../context/AuthContext";
 import { useCart } from "../../context/CartContext";
 import { useWishlist } from "../../context/WishlistContext";
 import LanguageSelector from "../common/LanguageSelector";
+import BrandMark from "../common/BrandMark";
 import { AppDrawer } from "../ui/Drawer";
 import { tokens } from "@/theme/theme";
 import {
@@ -44,7 +43,6 @@ import {
   getRoleLabel,
   getRoleColor,
 } from "../../utils/roleHelper";
-import styles from "./Navbar.module.css";
 
 const Navbar = memo(() => {
   const { t } = useTranslation();
@@ -186,35 +184,15 @@ const Navbar = memo(() => {
           }}
         >
           {/* ── Brand ── */}
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              mr: { xs: 0, md: 3 },
-              cursor: "pointer",
-            }}
+          <BrandMark
+            showText
+            textColor="#fff"
             onClick={() => handleNavClick("/")}
-          >
-            <img
-              alt="Gadgify"
-              height={40}
-              width={40}
-              src={BrandIcon}
-              className={styles.navbarImg}
-            />
-            <Typography
-              variant="h6"
-              sx={{
-                fontWeight: 800,
-                fontSize: "1.25rem",
-                color: "#fff",
-                letterSpacing: "-0.02em",
-                display: { xs: "none", sm: "block" },
-              }}
-            >
-              Gadgify
-            </Typography>
-          </Box>
+            sx={{
+              mr: { xs: 0, md: 3 },
+              "& > span": { display: { xs: "none", sm: "block" } },
+            }}
+          />
 
           {/* ── Search Bar ── */}
           {/* <Box sx={{ display: { xs: "none", md: "flex" }, mx: 2 }}>

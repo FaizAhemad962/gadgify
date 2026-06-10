@@ -1,143 +1,97 @@
 import {
   createContext,
+  useCallback,
   useContext,
-  useState,
   useEffect,
+  useMemo,
+  useState,
   type ReactNode,
 } from "react";
+import { authApi } from "../api/auth";
 import type { User } from "../types";
-import { apiClient } from "../api/client";
 
 interface AuthContextType {
   user: User | null;
-  token: string | null;
   login: (user: User) => void;
+  updateUser: (user: User) => void;
   logout: () => Promise<void>;
   isAuthenticated: boolean;
-  isAdmin: boolean; // ADMIN or SUPER_ADMIN
-  isSuperAdmin: boolean; // SUPER_ADMIN only
-  hasAdminAccess: boolean; // Alias for isAdmin
-  isStaff: boolean; // DELIVERY_STAFF or SUPPORT_STAFF
-  authChecked: boolean; // Indicates if initial auth check is done
+  isAdmin: boolean;
+  isSuperAdmin: boolean;
+  hasAdminAccess: boolean;
+  isStaff: boolean;
+  authChecked: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// ✅ SECURITY: Tokens are now stored in httpOnly cookies (managed by browser)
-// User data cached in state only - not in localStorage
-const getStoredUser = () => {
-  try {
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      return JSON.parse(storedUser) as User;
-    }
-  } catch (error) {
-    console.error("Failed to parse stored user:", error);
-    localStorage.removeItem("user");
-  }
-  return null;
-};
-
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<User | null>(getStoredUser());
-  const [token, setToken] = useState<string | null>(
-    getStoredUser() ? "authenticated" : null,
-  );
+  const [user, setUser] = useState<User | null>(null);
   const [authChecked, setAuthChecked] = useState(false);
-  // ✅ SECURITY: Sync auth state across tabs
+
   useEffect(() => {
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === "user") {
-        if (!e.newValue) {
-          setUser(null);
-          setToken(null);
-        } else {
-          const newUser = JSON.parse(e.newValue);
-          setUser(newUser);
-          setToken("authenticated");
+    let active = true;
+
+    authApi
+      .getProfile()
+      .then((currentUser) => {
+        if (active) {
+          setUser(currentUser);
         }
-      }
-    };
+      })
+      .catch(() => {
+        if (active) {
+          setUser(null);
+        }
+      })
+      .finally(() => {
+        if (active) {
+          setAuthChecked(true);
+        }
+      });
 
-    window.addEventListener("storage", handleStorageChange);
-    return () => window.removeEventListener("storage", handleStorageChange);
+    return () => {
+      active = false;
+    };
   }, []);
 
-  useEffect(() => {
-    const verifyAuth = async () => {
-      try {
-        const res = await apiClient.get("/auth/profile");
-        setUser(res.data);
-        setToken("authenticated");
-        localStorage.setItem("user", JSON.stringify(res.data));
-      } catch {
-        setUser(null);
-        setToken(null);
-        localStorage.removeItem("user");
-      } finally {
-        setAuthChecked(true);
-      }
-    };
-
-    verifyAuth();
+  const login = useCallback((authenticatedUser: User) => {
+    setUser(authenticatedUser);
+    setAuthChecked(true);
   }, []);
 
-  // ✅ SECURITY: No token verification on app mount
-  // httpOnly cookie is automatically sent with every request
-  // If token is valid, API calls will succeed. If not, we'll get 401 errors.
+  const updateUser = useCallback((updatedUser: User) => {
+    setUser(updatedUser);
+  }, []);
 
-  const login = (newUser: User) => {
-    // ✅ SECURITY: Backend sent token in httpOnly cookie (we don't handle it)
-    // We just store user data locally for UI purposes
-    setToken("authenticated");
-    setUser(newUser);
-    localStorage.setItem("user", JSON.stringify(newUser));
-  };
-
-  const logout = async () => {
+  const logout = useCallback(async () => {
     try {
-      // ✅ SECURITY: Call backend logout to clear httpOnly cookie
-      await apiClient.post(
-        "/auth/logout",
-        {},
-        { withCredentials: true }, // Send cookie to backend
-      );
+      await authApi.logout();
     } catch (error) {
       console.error("Logout error:", error);
     } finally {
-      // Clear frontend state
-      setToken(null);
       setUser(null);
-      localStorage.removeItem("user");
-      // Redirect to login
       window.location.href = "/login";
     }
-  };
+  }, []);
 
-  // Role checking helper
-  const getRoleFlags = (userRole: string | undefined) => {
+  const value = useMemo<AuthContextType>(() => {
+    const role = user?.role;
+    const isAdmin = role === "ADMIN" || role === "SUPER_ADMIN";
+
     return {
-      isAdmin: userRole === "ADMIN" || userRole === "SUPER_ADMIN",
-      isSuperAdmin: userRole === "SUPER_ADMIN",
-      hasAdminAccess: userRole === "ADMIN" || userRole === "SUPER_ADMIN",
-      isStaff: userRole === "DELIVERY_STAFF" || userRole === "SUPPORT_STAFF",
+      user,
+      login,
+      updateUser,
+      logout,
+      isAuthenticated: user !== null,
+      isAdmin,
+      isSuperAdmin: role === "SUPER_ADMIN",
+      hasAdminAccess: isAdmin,
+      isStaff: role === "DELIVERY_STAFF" || role === "SUPPORT_STAFF",
+      authChecked,
     };
-  };
-
-  const roleFlags = getRoleFlags(user?.role);
-
-  const value = {
-    user,
-    token,
-    login,
-    logout,
-    isAuthenticated: !!token && !!user,
-    isAdmin: roleFlags.isAdmin,
-    isSuperAdmin: roleFlags.isSuperAdmin,
-    hasAdminAccess: roleFlags.hasAdminAccess,
-    isStaff: roleFlags.isStaff,
-    authChecked,
-  };
+  }, [authChecked, login, logout, updateUser, user]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

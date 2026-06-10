@@ -10,9 +10,9 @@ import {
   Divider,
   IconButton,
 } from "@/mui/material";
-import brandIcon from "../../assets/brand-icon.png";
 import { useTranslation } from "react-i18next";
-import {CloseSharp } from "@/mui/icons";
+import { CloseSharp } from "@/mui/icons";
+import BrandMark from "../common/BrandMark";
 
 /* ---------- Types ---------- */
 
@@ -24,6 +24,7 @@ export type DrawerItem = {
   icon?: React.ReactNode;
   onClick?: () => void;
   position?: DrawerItemPosition;
+  selected?: boolean;
 };
 
 export interface AppDrawerProps {
@@ -70,12 +71,42 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
   };
 
   const renderItems = (list: DrawerItem[]) => (
-    <List>
+    <List sx={{ px: 1, py: 1 }}>
       {list.map((item) => (
         <ListItem key={item.id} disablePadding>
-          <ListItemButton onClick={() => handleItemClick(item)}>
-            {item.icon && <ListItemIcon>{item.icon}</ListItemIcon>}
-            <ListItemText primary={item.label} />
+          <ListItemButton
+            selected={item.selected}
+            onClick={() => handleItemClick(item)}
+            sx={{
+              borderRadius: 2,
+              mb: 0.5,
+              minHeight: 46,
+              color: item.selected ? "primary.main" : "text.primary",
+              "&.Mui-selected": {
+                bgcolor: "rgba(255, 107, 44, 0.12)",
+              },
+              "&.Mui-selected:hover": {
+                bgcolor: "rgba(255, 107, 44, 0.18)",
+              },
+            }}
+          >
+            {item.icon && (
+              <ListItemIcon
+                sx={{
+                  minWidth: 40,
+                  color: item.selected ? "primary.main" : "text.secondary",
+                }}
+              >
+                {item.icon}
+              </ListItemIcon>
+            )}
+            <ListItemText
+              primary={item.label}
+              primaryTypographyProps={{
+                fontWeight: item.selected ? 700 : 600,
+                fontSize: "0.95rem",
+              }}
+            />
           </ListItemButton>
         </ListItem>
       ))}
@@ -98,10 +129,18 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
 
       <Drawer
         closeAfterTransition
-        disableScrollLock
         open={open}
         anchor={anchor}
         onClose={() => setOpen(false)}
+        slotProps={{
+          paper: {
+            sx: {
+              borderTopRightRadius: anchor === "left" ? 20 : 0,
+              borderBottomRightRadius: anchor === "left" ? 20 : 0,
+              boxShadow: "0 24px 70px rgba(15, 23, 42, 0.22)",
+            },
+          },
+        }}
       >
         <Box
           sx={{
@@ -115,21 +154,18 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
           <>
             <Box
               sx={{
-                height: 120,
+                height: 112,
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-between",
                 px: 2,
                 py: 2,
+                background:
+                  "linear-gradient(135deg, rgba(27,42,74,0.06), rgba(255,107,44,0.08))",
               }}
             >
-              <IconButton>
-                <img
-                  alt={t("app.title")}
-                  height={130}
-                  width={100}
-                  src={brandIcon}
-                ></img>
+              <IconButton aria-label={t("app.title")}>
+                <BrandMark size={56} showText textColor="text.primary" />
               </IconButton>
               <IconButton onClick={() => setOpen(false)} aria-label="menu">
                 <CloseSharp />

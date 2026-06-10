@@ -21,6 +21,7 @@ import {
 } from "@/mui/icons";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
+import { apiClient } from "@/api/client";
 
 interface OrderCardProps {
   orderId: string;
@@ -44,19 +45,11 @@ export const PendingOrderCard: React.FC<OrderCardProps> = ({
   const queryClient = useQueryClient();
   const retryPaymentMutation = useMutation({
     mutationFn: async () => {
-      const response = await fetch(`/api/orders/${orderId}/retry-payment`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || "Failed to retry payment");
-      }
-
-      return response.json();
+      const response = await apiClient.post(
+        `/orders/${orderId}/retry-payment`,
+        {},
+      );
+      return response.data;
     },
     onSuccess: (data) => {
       // Open Razorpay payment gateway
@@ -84,19 +77,8 @@ export const PendingOrderCard: React.FC<OrderCardProps> = ({
 
   const cancelOrderMutation = useMutation({
     mutationFn: async () => {
-      const response = await fetch(`/api/orders/${orderId}/cancel`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || "Failed to cancel order");
-      }
-
-      return response.json();
+      const response = await apiClient.delete(`/orders/${orderId}/cancel`);
+      return response.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["orders"] });

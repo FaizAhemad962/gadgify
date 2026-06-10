@@ -113,7 +113,8 @@ export interface SignupRequest {
 }
 
 export interface AuthResponse {
-  token: string;
+  success: boolean;
+  message: string;
   user: User;
 }
 

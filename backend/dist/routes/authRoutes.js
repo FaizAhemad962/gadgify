@@ -20,6 +20,5 @@ router.post("/profile-photo", auth_1.authenticate, upload_1.upload.single("image
 // ✅ SECURITY: Email verification endpoints
 router.post("/verify-email", authController_1.verifyEmail);
 router.post("/resend-verification-email", authController_1.resendVerificationEmail);
-// ✅ SECURITY: Get CSRF token for client
-router.get("/csrf-token", authController_1.getCsrfToken);
+// CSRF token endpoint removed
 exports.default = router;

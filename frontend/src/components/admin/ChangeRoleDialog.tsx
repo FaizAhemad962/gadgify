@@ -12,9 +12,10 @@ import {
   Box,
   Typography,
 } from "@/mui/material";
-import { useForm, Controller } from "react-hook-form";
+import { useForm, Controller, useWatch } from "react-hook-form";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
+import { apiClient } from "@/api/client";
 
 const AVAILABLE_ROLES = [
   { value: "USER", label: "User" },
@@ -43,29 +44,19 @@ export const ChangeRoleDialog: React.FC<ChangeRoleDialogProps> = ({
 }) => {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
-  const { control, handleSubmit, reset, watch } = useForm({
+  const { control, handleSubmit, reset } = useForm({
     defaultValues: { role: currentRole },
   });
 
-  const selectedRole = watch("role");
+  const selectedRole = useWatch({ control, name: "role" });
 
   const changeRoleMutation = useMutation({
     mutationFn: async (data: { role: string }) => {
-      const response = await fetch(`/api/role-change/change-role/${userId}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-        body: JSON.stringify(data),
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || "Failed to change role");
-      }
-
-      return response.json();
+      const response = await apiClient.patch(
+        `/role-change/change-role/${userId}`,
+        data,
+      );
+      return response.data;
     },
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     onSuccess: (_data) => {

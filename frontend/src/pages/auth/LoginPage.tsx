@@ -6,7 +6,6 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { type AxiosError } from "axios";
-import BrandIcon from "../../assets/brand-icon.png";
 
 import {
   Container,
@@ -25,6 +24,7 @@ import { authApi } from "../../api/auth";
 import { useAuth } from "../../context/AuthContext";
 import { ErrorHandler } from "../../utils/errorHandler";
 import LanguageSelector from "../../components/common/LanguageSelector";
+import BrandMark from "../../components/common/BrandMark";
 import { tokens } from "@/theme/theme";
 
 const inputSx = {
@@ -151,7 +151,7 @@ const LoginPage = () => {
             <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
               <Box sx={{ textAlign: "center" }}>
                 <IconButton disableRipple onClick={() => navigate("/")}>
-                  <img alt="gadgify" height={130} width={120} src={BrandIcon} />
+                  <BrandMark size={96} showText textColor={tokens.primary} />
                 </IconButton>
                 <Typography sx={{ color: tokens.gray500 }}>
                   {t("app.subtitle")}

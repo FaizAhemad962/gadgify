@@ -10,7 +10,6 @@ const config_1 = require("./config");
 const errorHandler_1 = require("./middlewares/errorHandler");
 const sanitize_1 = require("./middlewares/sanitize");
 const securityLogger_1 = require("./middlewares/securityLogger");
-const csrfProtection_1 = require("./middlewares/csrfProtection");
 const rateLimiter_1 = require("./middlewares/rateLimiter");
 const logger_1 = __importDefault(require("./utils/logger"));
 const cookie_parser_1 = __importDefault(require("cookie-parser"));
@@ -152,8 +151,7 @@ app.use(sanitize_1.sanitizeInput);
 app.use(sanitize_1.sanitizeStrings);
 // Security logging
 app.use(securityLogger_1.logSecurityEvents);
-// ✅ SECURITY: CSRF protection
-app.use(csrfProtection_1.verifyCsrfToken);
+// CSRF protection removed: backend no longer requires x-csrf-token headers
 // Rate limiting
 app.use("/api/", rateLimiter_1.apiLimiter);
 // Serve uploaded files with proper path resolution

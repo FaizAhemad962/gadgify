@@ -31,7 +31,7 @@ import { authApi } from "../api/auth";
 const ProfilePage = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { user, logout } = useAuth();
+  const { user, updateUser, logout } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
@@ -132,11 +132,17 @@ const ProfilePage = () => {
       setSuccess(t("common.profileUpdateSuccess"));
       setIsEditing(false);
 
-      // Update user in context
       if (response.user) {
-        localStorage.setItem("user", JSON.stringify(response.user));
-        // Force page reload to update context
-        window.location.reload();
+        updateUser(response.user);
+        setFormData({
+          name: response.user.name,
+          email: response.user.email,
+          phone: response.user.phone,
+          state: response.user.state,
+          city: response.user.city,
+          address: response.user.address,
+          pincode: response.user.pincode,
+        });
       }
     } catch (err: Error | unknown) {
       const message = ErrorHandler.getUserFriendlyMessage(
@@ -180,10 +186,8 @@ const ProfilePage = () => {
 
       setSuccess(t("common.profilePhotoUpdated"));
 
-      // Update user in localStorage and reload
       if (response.user) {
-        localStorage.setItem("user", JSON.stringify(response.user));
-        window.location.reload();
+        updateUser(response.user);
       }
     } catch (err: Error | unknown) {
       const message = ErrorHandler.getUserFriendlyMessage(

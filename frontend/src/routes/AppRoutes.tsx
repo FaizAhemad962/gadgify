@@ -3,7 +3,6 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import Layout from "../components/layout/Layout";
 import { SplashScreen } from "../components/SplashScreen";
-import PageTransition from "../components/PageTransition";
 
 // Lazy load all page components
 const HomePage = lazy(() => import("../pages/HomePage"));
@@ -43,20 +42,33 @@ const PageLoader = () => <SplashScreen isVisible={true} />;
 
 // ✅ Wrapper component - no longer needs to check loading
 const AuthLoadingWrapper = () => {
-  // Auth context doesn't have isLoading anymore
-  // Routes render immediately
+  const { authChecked } = useAuth();
+
+  if (!authChecked) {
+    return <PageLoader />;
+  }
+
   return <AppRoutes />;
 };
 
 // Protected route wrapper
 const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
-  const { isAuthenticated } = useAuth();
+  const { authChecked, isAuthenticated } = useAuth();
+
+  if (!authChecked) {
+    return <PageLoader />;
+  }
+
   return isAuthenticated ? <>{children}</> : <Navigate to="/login" replace />;
 };
 
 // Admin/Super Admin route wrapper
 const AdminRoute = ({ children }: { children: React.ReactNode }) => {
-  const { isAuthenticated, isAdmin } = useAuth();
+  const { authChecked, isAuthenticated, isAdmin } = useAuth();
+
+  if (!authChecked) {
+    return <PageLoader />;
+  }
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
@@ -71,7 +83,11 @@ const AdminRoute = ({ children }: { children: React.ReactNode }) => {
 
 // Super Admin only route wrapper
 const SuperAdminRoute = ({ children }: { children: React.ReactNode }) => {
-  const { isAuthenticated, isSuperAdmin } = useAuth();
+  const { authChecked, isAuthenticated, isSuperAdmin } = useAuth();
+
+  if (!authChecked) {
+    return <PageLoader />;
+  }
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
@@ -86,118 +102,116 @@ const SuperAdminRoute = ({ children }: { children: React.ReactNode }) => {
 
 const AppRoutes = () => {
   return (
-    <PageTransition>
-      <Suspense fallback={<PageLoader />}>
-        <Routes>
-          {/* Public routes */}
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/signup" element={<SignupPage />} />
-          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-          <Route path="/reset-password" element={<ResetPasswordPage />} />
+    <Suspense fallback={<PageLoader />}>
+      <Routes>
+        {/* Public routes */}
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/signup" element={<SignupPage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
+        <Route
+          path="/newsletters/unsubscribe"
+          element={<NewsletterUnsubscribePage />}
+        />
+        <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+        <Route path="/terms-conditions" element={<TermsConditions />} />
+        <Route path="/refund-policy" element={<RefundPolicy />} />
+        <Route path="/shipping-policy" element={<ShippingPolicy />} />
+
+        {/* User routes */}
+        <Route element={<Layout />}>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/products" element={<ProductsPage />} />
+          <Route path="/products/:id" element={<ProductDetailPage />} />
+          <Route path="/compare" element={<ComparisonPage />} />
+
+          {/* Protected routes */}
           <Route
-            path="/newsletters/unsubscribe"
-            element={<NewsletterUnsubscribePage />}
-          />
-          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-          <Route path="/terms-conditions" element={<TermsConditions />} />
-          <Route path="/refund-policy" element={<RefundPolicy />} />
-          <Route path="/shipping-policy" element={<ShippingPolicy />} />
-
-          {/* User routes */}
-          <Route element={<Layout />}>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/products" element={<ProductsPage />} />
-            <Route path="/products/:id" element={<ProductDetailPage />} />
-            <Route path="/compare" element={<ComparisonPage />} />
-
-            {/* Protected routes */}
-            <Route
-              path="/cart"
-              element={
-                <PrivateRoute>
-                  <CartPage />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/checkout"
-              element={
-                <PrivateRoute>
-                  <CheckoutPage />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/wishlist"
-              element={
-                <PrivateRoute>
-                  <WishlistPage />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/orders"
-              element={
-                <PrivateRoute>
-                  <OrdersPage />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/orders/:id"
-              element={
-                <PrivateRoute>
-                  <OrderDetailPage />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/profile"
-              element={
-                <PrivateRoute>
-                  <ProfilePage />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/change-password"
-              element={
-                <PrivateRoute>
-                  <ChangePasswordPage />
-                </PrivateRoute>
-              }
-            />
-          </Route>
-
-          {/* Admin routes - all using unified Layout component */}
-          <Route
-            path="/admin"
+            path="/cart"
             element={
-              <AdminRoute>
-                <Layout />
-              </AdminRoute>
+              <PrivateRoute>
+                <CartPage />
+              </PrivateRoute>
             }
-          >
-            <Route index element={<AdminDashboard />} />
-            <Route path="products" element={<AdminProducts />} />
-            <Route path="orders" element={<AdminOrders />} />
-            <Route path="coupons" element={<AdminCoupons />} />
-            <Route path="categories" element={<AdminCategories />} />
-            <Route
-              path="users"
-              element={
-                <SuperAdminRoute>
-                  <AdminUsers />
-                </SuperAdminRoute>
-              }
-            />
-          </Route>
+          />
+          <Route
+            path="/checkout"
+            element={
+              <PrivateRoute>
+                <CheckoutPage />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/wishlist"
+            element={
+              <PrivateRoute>
+                <WishlistPage />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/orders"
+            element={
+              <PrivateRoute>
+                <OrdersPage />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/orders/:id"
+            element={
+              <PrivateRoute>
+                <OrderDetailPage />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/profile"
+            element={
+              <PrivateRoute>
+                <ProfilePage />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/change-password"
+            element={
+              <PrivateRoute>
+                <ChangePasswordPage />
+              </PrivateRoute>
+            }
+          />
+        </Route>
 
-          {/* 404 */}
-          <Route path="*" element={<NotFoundPage />} />
-        </Routes>
-      </Suspense>
-    </PageTransition>
+        {/* Admin routes - all using unified Layout component */}
+        <Route
+          path="/admin"
+          element={
+            <AdminRoute>
+              <Layout />
+            </AdminRoute>
+          }
+        >
+          <Route index element={<AdminDashboard />} />
+          <Route path="products" element={<AdminProducts />} />
+          <Route path="orders" element={<AdminOrders />} />
+          <Route path="coupons" element={<AdminCoupons />} />
+          <Route path="categories" element={<AdminCategories />} />
+          <Route
+            path="users"
+            element={
+              <SuperAdminRoute>
+                <AdminUsers />
+              </SuperAdminRoute>
+            }
+          />
+        </Route>
+
+        {/* 404 */}
+        <Route path="*" element={<NotFoundPage />} />
+      </Routes>
+    </Suspense>
   );
 };
 
