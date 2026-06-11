@@ -3,6 +3,7 @@ import { CustomButton } from "./CustomButton";
 import { Typography, Box } from "@/mui/material";
 import { WarningAmber as WarningIcon } from "@/mui/icons";
 import { tokens } from "@/theme/theme";
+import { appIconSx } from "./navigationStyles";
 
 interface ConfirmDialogProps {
   open: boolean;
@@ -50,7 +51,7 @@ export const ConfirmDialog = ({
     >
       <Box sx={{ display: "flex", gap: 2, alignItems: "flex-start", mt: 1 }}>
         {type === "danger" && (
-          <WarningIcon sx={{ color: tokens.error, fontSize: 32 }} />
+          <WarningIcon sx={{ ...appIconSx.card, color: tokens.error }} />
         )}
         <Typography variant="body1">{message}</Typography>
       </Box>

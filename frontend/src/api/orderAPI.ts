@@ -1,5 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "./client";
+import { invalidateOrderData } from "@/lib/queryInvalidation";
+import { queryKeys } from "@/lib/queryKeys";
 
 export interface Order {
   id: string;
@@ -12,15 +14,15 @@ export interface Order {
   shipping?: number;
   discount?: number;
   couponCode?: string;
-  shippingAddress: any;
-  items: any[];
+  shippingAddress: Record<string, unknown>;
+  items: unknown[];
   createdAt: string;
   updatedAt: string;
 }
 
 export const useOrders = () => {
   return useQuery({
-    queryKey: ["orders"],
+    queryKey: queryKeys.orders.all,
     queryFn: async () => {
       const response = await apiClient.get("/orders", {
         withCredentials: true,
@@ -32,7 +34,7 @@ export const useOrders = () => {
 
 export const useOrder = (orderId: string) => {
   return useQuery({
-    queryKey: ["orders", orderId],
+    queryKey: queryKeys.orders.detail(orderId),
     queryFn: async () => {
       const response = await apiClient.get(`/orders/${orderId}`, {
         withCredentials: true,
@@ -58,8 +60,8 @@ export const useCreatePaymentIntent = () => {
       );
       return response.data;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["orders"] });
+    onSuccess: (_, orderId) => {
+      invalidateOrderData(queryClient, orderId);
     },
   });
 };
@@ -79,8 +81,8 @@ export const useRetryPayment = () => {
       );
       return response.data;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["orders"] });
+    onSuccess: (_, orderId) => {
+      invalidateOrderData(queryClient, orderId);
     },
   });
 };
@@ -96,8 +98,8 @@ export const useCancelOrder = () => {
       });
       return response.data;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["orders"] });
+    onSuccess: (_, orderId) => {
+      invalidateOrderData(queryClient, orderId);
     },
   });
 };
@@ -123,8 +125,8 @@ export const useConfirmPayment = () => {
       );
       return response.data;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["orders"] });
+    onSuccess: (_, variables) => {
+      invalidateOrderData(queryClient, variables.orderId);
     },
   });
 };

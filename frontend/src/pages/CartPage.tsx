@@ -14,10 +14,16 @@ import {
   Alert,
   Chip,
 } from "@/mui/material";
-import { Delete, ShoppingCartOutlined, LocalOffer } from "@/mui/icons";
+import {
+  ArrowForward,
+  Delete,
+  LocalOffer,
+  ShoppingCartOutlined,
+} from "@/mui/icons";
 import QuantityInput from "../components/common/QuantityInput";
 import { useCart } from "../context/CartContext";
 import { useCoupon } from "../hooks/useCoupon";
+import { appIconSx } from "@/components/ui/navigationStyles";
 
 const CartPage = () => {
   const { t } = useTranslation();
@@ -53,7 +59,10 @@ const CartPage = () => {
 
   if (isLoading) {
     return (
-      <Container sx={{ py: 4 }}>
+      <Container
+        maxWidth={false}
+        sx={{ maxWidth: tokens.appMaxWidth, py: 5, px: tokens.pagePaddingX }}
+      >
         <Typography>{t("common.loading")}</Typography>
       </Container>
     );
@@ -61,9 +70,17 @@ const CartPage = () => {
 
   if (!cart?.items || cart.items.length === 0) {
     return (
-      <Container sx={{ py: 8, textAlign: "center" }}>
+      <Container
+        maxWidth={false}
+        sx={{
+          maxWidth: tokens.appMaxWidth,
+          py: { xs: 6, md: 9 },
+          px: tokens.pagePaddingX,
+          textAlign: "center",
+        }}
+      >
         <ShoppingCartOutlined
-          sx={{ fontSize: 100, color: "text.secondary", mb: 2 }}
+          sx={{ ...appIconSx.hero, color: tokens.accent, mb: 2 }}
         />
         <Typography variant="h5" gutterBottom>
           {t("cart.empty")}
@@ -71,7 +88,15 @@ const CartPage = () => {
         <Button
           variant="contained"
           onClick={() => navigate("/products")}
-          sx={{ mt: 2 }}
+          endIcon={<ArrowForward sx={appIconSx.lg} />}
+          sx={{
+            mt: 2,
+            bgcolor: tokens.accent,
+            borderRadius: "999px",
+            px: 3,
+            fontWeight: 800,
+            "&:hover": { bgcolor: tokens.accentDark },
+          }}
         >
           {t("cart.continueShopping")}
         </Button>
@@ -85,15 +110,49 @@ const CartPage = () => {
   const total = subtotalAfterDiscount + shipping;
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
-      <Typography
-        variant="h4"
-        gutterBottom
-        fontWeight="700"
-        sx={{ mb: 4, color: "text.primary" }}
+    <Container
+      maxWidth={false}
+      sx={{
+        maxWidth: tokens.appMaxWidth,
+        py: { xs: 3, md: 5 },
+        px: tokens.pagePaddingX,
+      }}
+    >
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: { xs: "flex-start", sm: "center" },
+          flexDirection: { xs: "column", sm: "row" },
+          gap: 2,
+          mb: 3,
+        }}
       >
-        {t("cart.title")}
-      </Typography>
+        <Box>
+          <Typography
+            variant="h3"
+            sx={{ fontWeight: 900, color: tokens.gray900 }}
+          >
+            {t("cart.title")}
+          </Typography>
+          <Typography sx={{ mt: 0.75, color: tokens.gray600 }}>
+            {cart.items.length} item{cart.items.length === 1 ? "" : "s"} ready
+            for checkout
+          </Typography>
+        </Box>
+        <Button
+          variant="outlined"
+          onClick={() => navigate("/products")}
+          sx={{
+            borderRadius: "999px",
+            borderColor: tokens.gray300,
+            color: tokens.primary,
+            fontWeight: 800,
+          }}
+        >
+          {t("cart.continueShopping")}
+        </Button>
+      </Box>
 
       <Box
         sx={{
@@ -106,7 +165,20 @@ const CartPage = () => {
           {cart.items.map((item) => (
             <Paper
               key={item.id}
-              sx={{ mb: 3, p: 0, overflow: "hidden", border: "1px solid #eee" }}
+              elevation={0}
+              sx={{
+                mb: 2,
+                p: 0,
+                overflow: "hidden",
+                border: `1px solid ${tokens.gray200}`,
+                borderRadius: `${tokens.radiusXl}px`,
+                boxShadow: tokens.shadowSm,
+                transition: "border-color 180ms ease, box-shadow 180ms ease",
+                "&:hover": {
+                  borderColor: tokens.gray300,
+                  boxShadow: tokens.shadowMd,
+                },
+              }}
             >
               <Box
                 sx={{
@@ -122,12 +194,16 @@ const CartPage = () => {
                     sx={{
                       width: "100%",
                       height: 180,
-                      borderRadius: 1.5,
+                      borderRadius: `${tokens.radiusLg}px`,
                       overflow: "hidden",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
+                      bgcolor: tokens.gray50,
+                      border: `1px solid ${tokens.gray200}`,
+                      cursor: "pointer",
                     }}
+                    onClick={() => navigate(`/products/${item.product.id}`)}
                   >
                     <img
                       src={
@@ -159,7 +235,14 @@ const CartPage = () => {
                   <Box>
                     <Typography
                       variant="h6"
-                      sx={{ fontWeight: 700, mb: 1, color: "text.primary" }}
+                      sx={{
+                        fontWeight: 800,
+                        mb: 1,
+                        color: tokens.gray900,
+                        cursor: "pointer",
+                        "&:hover": { color: tokens.primary },
+                      }}
+                      onClick={() => navigate(`/products/${item.product.id}`)}
                     >
                       {item.product.name}
                     </Typography>
@@ -214,9 +297,14 @@ const CartPage = () => {
                       ).toLocaleString()}
                     </Typography>
                     <IconButton
-                      color="error"
                       onClick={() => handleRemove(item.id)}
-                      sx={{ ml: "auto" }}
+                      sx={{
+                        ml: "auto",
+                        color: tokens.error,
+                        border: `1px solid ${tokens.errorLight}`,
+                        bgcolor: tokens.errorLight,
+                        "&:hover": { bgcolor: "#fecaca" },
+                      }}
                     >
                       <Delete />
                     </IconButton>
@@ -244,11 +332,14 @@ const CartPage = () => {
         {/* Order Summary */}
         <Box sx={{ flex: { md: 1 } }}>
           <Paper
+            elevation={0}
             sx={{
               p: 3.5,
               position: "sticky",
-              top: 20,
-              border: "1px solid #eee",
+              top: tokens.filterStickyTop,
+              border: `1px solid ${tokens.gray200}`,
+              borderRadius: `${tokens.radiusXl}px`,
+              boxShadow: tokens.shadowMd,
             }}
           >
             <Typography
@@ -358,7 +449,7 @@ const CartPage = () => {
                     variant="body2"
                     sx={{ fontWeight: 600, color: "text.primary", mb: 1 }}
                   >
-                    🎟️ {t("common.applyCoupon")}
+                    {t("common.applyCoupon")}
                   </Typography>
                   <Box sx={{ display: "flex", gap: 1, mb: 1 }}>
                     <TextField
@@ -372,7 +463,7 @@ const CartPage = () => {
                         startAdornment: (
                           <InputAdornment position="start">
                             <LocalOffer
-                              sx={{ fontSize: 18, color: tokens.gray400 }}
+                              sx={{ ...appIconSx.md, color: tokens.gray400 }}
                             />
                           </InputAdornment>
                         ),
@@ -410,7 +501,7 @@ const CartPage = () => {
                     variant="caption"
                     sx={{ color: "text.secondary" }}
                   >
-                    💡 Tip: Coupon will be carried to checkout
+                    Coupon will be carried to checkout
                   </Typography>
                 </>
               ) : (
@@ -462,7 +553,7 @@ const CartPage = () => {
                         whiteSpace: "nowrap",
                       }}
                     >
-                      ✓ {t("common.couponApplied")}
+                      {t("common.couponApplied")}
                     </Typography>
                   </Box>
                   <Button
@@ -476,7 +567,7 @@ const CartPage = () => {
                       whiteSpace: "nowrap",
                     }}
                   >
-                    Remove
+                    {t("common.remove")}
                   </Button>
                 </Box>
               )}
@@ -489,11 +580,13 @@ const CartPage = () => {
               variant="contained"
               size="large"
               onClick={() => navigate("/checkout")}
+              endIcon={<ArrowForward />}
               sx={{
                 mb: 2,
                 fontWeight: 700,
                 py: 1.5,
                 bgcolor: tokens.accent,
+                borderRadius: "999px",
                 "&:hover": {
                   bgcolor: tokens.accentDark,
                 },

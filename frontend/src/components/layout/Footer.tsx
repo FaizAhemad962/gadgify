@@ -6,451 +6,277 @@ import {
   Link,
   Divider,
   IconButton,
+  Stack,
 } from "@/mui/material";
 import { useTranslation } from "react-i18next";
-import { Facebook, Twitter, Instagram, LinkedIn } from "@/mui/icons";
+import {
+  Facebook,
+  Twitter,
+  Instagram,
+  LinkedIn,
+  Email,
+  Phone,
+  AccessTime,
+  LocalShipping,
+  Security,
+  Verified,
+} from "@/mui/icons";
+import BrandMark from "../common/BrandMark";
+import { tokens } from "@/theme/theme";
+import { appIconSx } from "@/components/ui/navigationStyles";
+
+const footerLinks = [
+  { href: "/", key: "nav.home" },
+  { href: "/products", key: "nav.products" },
+  { href: "/orders", key: "nav.orders" },
+  { href: "/cart", key: "nav.cart" },
+];
+
+const policyLinks = [
+  { href: "/privacy-policy", key: "footer.privacyPolicy" },
+  { href: "/terms-conditions", key: "footer.termsOfService" },
+  { href: "/refund-policy", key: "footer.returnPolicy" },
+  { href: "/shipping-policy", key: "footer.shippingPolicy" },
+];
+
+const socialLinks = [
+  { label: "Facebook", href: "#", icon: <Facebook sx={appIconSx.lg} /> },
+  { label: "Twitter", href: "#", icon: <Twitter sx={appIconSx.lg} /> },
+  { label: "Instagram", href: "#", icon: <Instagram sx={appIconSx.lg} /> },
+  { label: "LinkedIn", href: "#", icon: <LinkedIn sx={appIconSx.lg} /> },
+];
+
+const trustItems = [
+  { icon: <Verified sx={appIconSx.lg} />, key: "common.authentic" },
+  { icon: <Security sx={appIconSx.lg} />, key: "common.securePayment" },
+  { icon: <LocalShipping sx={appIconSx.lg} />, key: "common.fastDelivery" },
+];
 
 const Footer = memo(() => {
   const { t } = useTranslation();
+  const year = new Date().getFullYear();
+
+  const linkSx = {
+    color: "rgba(255,255,255,0.72)",
+    textDecoration: "none",
+    fontSize: "0.92rem",
+    lineHeight: 1.8,
+    transition: "color 0.2s ease",
+    "&:hover": {
+      color: tokens.accentLight,
+    },
+  };
+
+  const sectionTitleSx = {
+    color: tokens.white,
+    fontWeight: 800,
+    mb: 2,
+    fontSize: "0.95rem",
+    letterSpacing: "0.01em",
+  };
 
   return (
     <Box
       component="footer"
       sx={{
         mt: "auto",
-        backgroundColor: "#0f1419",
-        color: "#fff",
-        borderTop: "1px solid #222",
+        color: tokens.white,
+        background: `linear-gradient(180deg, ${tokens.primaryDark} 0%, #08111f 100%)`,
+        borderTop: "1px solid rgba(255,255,255,0.08)",
       }}
     >
-      <Container maxWidth={false}>
+      <Container
+        maxWidth={false}
+        sx={{
+          px: tokens.pagePaddingX,
+          maxWidth: tokens.appMaxWidth,
+          py: { xs: 4, md: 5 },
+        }}
+      >
         <Box
           sx={{
             display: "grid",
             gridTemplateColumns: {
               xs: "1fr",
               sm: "1fr 1fr",
-              md: "1fr 1fr 1fr 1fr",
+              md: "1.35fr 0.8fr 1fr 1fr",
             },
-            gap: { xs: 4, md: 5 },
-            py: 4,
+            gap: { xs: 3, md: 4 },
           }}
         >
-          {/* About Section */}
           <Box>
-            <Typography
-              variant="h6"
-              gutterBottom
-              fontWeight="800"
-              sx={{ color: "#fff", mb: 3, fontSize: "1.1rem" }}
-            >
-              🛍️ {t("app.title")}
-            </Typography>
+            <BrandMark showText textColor={tokens.white} sx={{ mb: 2 }} />
             <Typography
               variant="body2"
               sx={{
-                color: "#a0a0a0",
-                mb: 2.5,
+                color: "rgba(255,255,255,0.72)",
                 lineHeight: 1.8,
-                fontSize: "0.95rem",
+                maxWidth: 360,
+                mb: 2,
               }}
             >
               {t("footer.aboutDesc")}
             </Typography>
-            <Typography
-              variant="caption"
-              sx={{
-                color: "#707070",
-                fontSize: "0.85rem",
-                lineHeight: 1.6,
-                display: "block",
-              }}
-            >
-              ✓ {t("common.availableInMaharashtra")}
-            </Typography>
+            <Stack direction="row" flexWrap="wrap" gap={1}>
+              {trustItems.map((item) => (
+                <Box
+                  key={item.key}
+                  sx={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 0.75,
+                    px: 1.25,
+                    py: 0.75,
+                    borderRadius: "999px",
+                    bgcolor: "rgba(255,255,255,0.06)",
+                    border: "1px solid rgba(255,255,255,0.1)",
+                    color: "rgba(255,255,255,0.82)",
+                  }}
+                >
+                  <Box sx={{ color: tokens.accentLight, display: "flex" }}>
+                    {item.icon}
+                  </Box>
+                  <Typography variant="caption" fontWeight={700}>
+                    {t(item.key)}
+                  </Typography>
+                </Box>
+              ))}
+            </Stack>
           </Box>
 
-          {/* Quick Links */}
           <Box>
-            <Typography
-              variant="h6"
-              gutterBottom
-              fontWeight="800"
-              sx={{ color: "#fff", mb: 3, fontSize: "1.1rem" }}
-            >
+            <Typography sx={sectionTitleSx}>
               {t("footer.quickNavigation")}
             </Typography>
-            <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-              <Link
-                href="/"
-                sx={{
-                  color: "#a0a0a0",
-                  textDecoration: "none",
-                  fontSize: "0.95rem",
-                  transition: "all 0.3s",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 1,
-                  "&:hover": {
-                    color: "#ff9800",
-                    transform: "translateX(4px)",
-                  },
-                }}
-              >
-                → {t("nav.home")}
-              </Link>
-              <Link
-                href="/products"
-                sx={{
-                  color: "#a0a0a0",
-                  textDecoration: "none",
-                  fontSize: "0.95rem",
-                  transition: "all 0.3s",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 1,
-                  "&:hover": {
-                    color: "#ff9800",
-                    transform: "translateX(4px)",
-                  },
-                }}
-              >
-                → {t("nav.products")}
-              </Link>
-              <Link
-                href="/orders"
-                sx={{
-                  color: "#a0a0a0",
-                  textDecoration: "none",
-                  fontSize: "0.95rem",
-                  transition: "all 0.3s",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 1,
-                  "&:hover": {
-                    color: "#ff9800",
-                    transform: "translateX(4px)",
-                  },
-                }}
-              >
-                → {t("nav.orders")}
-              </Link>
-            </Box>
+            <Stack spacing={0.75}>
+              {footerLinks.map((link) => (
+                <Link key={link.href} href={link.href} sx={linkSx}>
+                  {t(link.key)}
+                </Link>
+              ))}
+            </Stack>
           </Box>
 
-          {/* Customer Support */}
           <Box>
-            <Typography
-              variant="h6"
-              gutterBottom
-              fontWeight="800"
-              sx={{ color: "#fff", mb: 3, fontSize: "1.1rem" }}
-            >
-              🤝 {t("footer.support")}
-            </Typography>
-            <Box sx={{ display: "flex", flexDirection: "column", gap: 2.5 }}>
-              <Box>
-                <Typography
-                  variant="caption"
+            <Typography sx={sectionTitleSx}>{t("footer.support")}</Typography>
+            <Stack spacing={1.5}>
+              <Stack direction="row" gap={1.25} alignItems="flex-start">
+                <Email sx={{ ...appIconSx.lg, color: tokens.accentLight, mt: 0.25 }} />
+                <Box>
+                  <Typography variant="caption" sx={{ color: "rgba(255,255,255,0.5)" }}>
+                    {t("footer.email")}
+                  </Typography>
+                  <Link href="mailto:support@gadgify.com" sx={linkSx}>
+                    support@gadgify.com
+                  </Link>
+                </Box>
+              </Stack>
+              <Stack direction="row" gap={1.25} alignItems="flex-start">
+                <Phone sx={{ ...appIconSx.lg, color: tokens.accentLight, mt: 0.25 }} />
+                <Box>
+                  <Typography variant="caption" sx={{ color: "rgba(255,255,255,0.5)" }}>
+                    {t("footer.phone")}
+                  </Typography>
+                  <Link href="tel:18008004255" sx={linkSx}>
+                    1-800-GADGIFY
+                  </Link>
+                </Box>
+              </Stack>
+              <Stack direction="row" gap={1.25} alignItems="flex-start">
+                <AccessTime sx={{ ...appIconSx.lg, color: tokens.accentLight, mt: 0.25 }} />
+                <Box>
+                  <Typography variant="caption" sx={{ color: "rgba(255,255,255,0.5)" }}>
+                    {t("footer.availability")}
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: "rgba(255,255,255,0.72)" }}>
+                    {t("footer.available247")}
+                  </Typography>
+                </Box>
+              </Stack>
+            </Stack>
+          </Box>
+
+          <Box>
+            <Typography sx={sectionTitleSx}>{t("footer.connect")}</Typography>
+            <Stack direction="row" gap={1} sx={{ mb: 2 }}>
+              {socialLinks.map((social) => (
+                <IconButton
+                  key={social.label}
+                  href={social.href}
+                  aria-label={social.label}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   sx={{
-                    color: "#707070",
-                    fontSize: "0.8rem",
-                    textTransform: "uppercase",
-                    fontWeight: 600,
-                    letterSpacing: "0.5px",
-                  }}
-                >
-                  {t("footer.email")}
-                </Typography>
-                <Link
-                  href="mailto:support@gadgify.com"
-                  sx={{
-                    color: "#a0a0a0",
-                    textDecoration: "none",
-                    fontSize: "0.95rem",
-                    display: "block",
-                    transition: "all 0.3s",
+                    width: 42,
+                    height: 42,
+                    color: tokens.white,
+                    bgcolor: "rgba(255,255,255,0.07)",
+                    border: "1px solid rgba(255,255,255,0.12)",
+                    transition:
+                      "background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease",
                     "&:hover": {
-                      color: "#ff9800",
+                      color: tokens.accentLight,
+                      bgcolor: "rgba(255,255,255,0.1)",
+                      borderColor: "rgba(255,255,255,0.24)",
+                    },
+                    "&:focus-visible": {
+                      color: tokens.accentLight,
+                      bgcolor: "rgba(255,255,255,0.1)",
+                      borderColor: tokens.accentLight,
                     },
                   }}
                 >
-                  support@gadgify.com
-                </Link>
-              </Box>
-              <Box>
-                <Typography
-                  variant="caption"
-                  sx={{
-                    color: "#707070",
-                    fontSize: "0.8rem",
-                    textTransform: "uppercase",
-                    fontWeight: 600,
-                    letterSpacing: "0.5px",
-                  }}
-                >
-                  {t("footer.phone")}
-                </Typography>
-                <Link
-                  href="tel:18008004255"
-                  sx={{
-                    color: "#a0a0a0",
-                    textDecoration: "none",
-                    fontSize: "0.95rem",
-                    display: "block",
-                    transition: "all 0.3s",
-                    "&:hover": {
-                      color: "#ff9800",
-                    },
-                  }}
-                >
-                  1-800-GADGIFY
-                </Link>
-              </Box>
-              <Box>
-                <Typography
-                  variant="caption"
-                  sx={{
-                    color: "#707070",
-                    fontSize: "0.8rem",
-                    textTransform: "uppercase",
-                    fontWeight: 600,
-                    letterSpacing: "0.5px",
-                  }}
-                >
-                  {t("footer.availability")}
-                </Typography>
-                <Typography
-                  variant="body2"
-                  sx={{ color: "#a0a0a0", fontSize: "0.95rem" }}
-                >
-                  {t("footer.available247")}
-                </Typography>
-              </Box>
-            </Box>
-          </Box>
-
-          {/* Social Media & Newsletter */}
-          <Box>
+                  {social.icon}
+                </IconButton>
+              ))}
+            </Stack>
             <Typography
-              variant="h6"
-              gutterBottom
-              fontWeight="800"
-              sx={{ color: "#fff", mb: 3, fontSize: "1.1rem" }}
+              variant="body2"
+              sx={{ color: "rgba(255,255,255,0.72)", lineHeight: 1.7 }}
             >
-              🌐 {t("footer.connect")}
+              {t("footer.servingMaharashtra")}
             </Typography>
-            <Box sx={{ display: "flex", gap: 2, mb: 3 }}>
-              {/* Facebook */}
-              <IconButton
-                href="#"
-                target="_blank"
-                rel="noopener noreferrer"
-                sx={{
-                  width: 44,
-                  height: 44,
-                  borderRadius: "50%",
-                  backgroundColor: "#1a1f26",
-                  border: "1.5px solid #333",
-                  color: "#fff",
-                  transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  "&:hover": {
-                    backgroundColor: "#1877f2",
-                    borderColor: "#1877f2",
-                    transform: "translateY(-3px) scale(1.1)",
-                    boxShadow: "0 8px 16px rgba(24, 119, 242, 0.25)",
-                  },
-                }}
-              >
-                <Facebook sx={{ fontSize: "1.3rem" }} />
-              </IconButton>
-              {/* Twitter */}
-              <IconButton
-                href="#"
-                target="_blank"
-                rel="noopener noreferrer"
-                sx={{
-                  width: 44,
-                  height: 44,
-                  borderRadius: "50%",
-                  backgroundColor: "#1a1f26",
-                  border: "1.5px solid #333",
-                  color: "#fff",
-                  transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  "&:hover": {
-                    backgroundColor: "#1da1f2",
-                    borderColor: "#1da1f2",
-                    transform: "translateY(-3px) scale(1.1)",
-                    boxShadow: "0 8px 16px rgba(29, 161, 242, 0.25)",
-                  },
-                }}
-              >
-                <Twitter sx={{ fontSize: "1.3rem" }} />
-              </IconButton>
-              {/* Instagram */}
-              <IconButton
-                href="#"
-                target="_blank"
-                rel="noopener noreferrer"
-                sx={{
-                  width: 44,
-                  height: 44,
-                  borderRadius: "50%",
-                  backgroundColor: "#1a1f26",
-                  border: "1.5px solid #333",
-                  color: "#fff",
-                  transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  "&:hover": {
-                    background:
-                      "linear-gradient(135deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%)",
-                    borderColor: "#e6683c",
-                    transform: "translateY(-3px) scale(1.1)",
-                    boxShadow: "0 8px 16px rgba(230, 104, 60, 0.25)",
-                  },
-                }}
-              >
-                <Instagram sx={{ fontSize: "1.3rem" }} />
-              </IconButton>
-              {/* LinkedIn */}
-              <IconButton
-                href="#"
-                target="_blank"
-                rel="noopener noreferrer"
-                sx={{
-                  width: 44,
-                  height: 44,
-                  borderRadius: "50%",
-                  backgroundColor: "#1a1f26",
-                  border: "1.5px solid #333",
-                  color: "#fff",
-                  transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  "&:hover": {
-                    backgroundColor: "#0a66c2",
-                    borderColor: "#0a66c2",
-                    transform: "translateY(-3px) scale(1.1)",
-                    boxShadow: "0 8px 16px rgba(10, 102, 194, 0.25)",
-                  },
-                }}
-              >
-                <LinkedIn sx={{ fontSize: "1.3rem" }} />
-              </IconButton>
-            </Box>
+            <Typography
+              variant="caption"
+              sx={{ color: "rgba(255,255,255,0.5)", display: "block", mt: 0.75 }}
+            >
+              {t("common.availableInMaharashtra")}
+            </Typography>
           </Box>
         </Box>
 
-        <Divider sx={{ backgroundColor: "#222", my: 4 }} />
+        <Divider sx={{ borderColor: "rgba(255,255,255,0.1)", my: { xs: 3, md: 4 } }} />
 
-        {/* Bottom Footer */}
         <Box
           sx={{
             display: "flex",
-            gap: 4,
-            pb: 4,
-            alignItems: { xs: "center", md: "flex-start" },
+            alignItems: "center",
             justifyContent: "space-between",
-            flexWrap: "wrap",
             flexDirection: { xs: "column", md: "row" },
+            gap: 2,
           }}
         >
           <Typography
             variant="body2"
-            sx={{ color: "#707070", fontSize: "0.9rem", fontWeight: 600 }}
+            sx={{ color: "rgba(255,255,255,0.58)", textAlign: { xs: "center", md: "left" } }}
           >
-            © {new Date().getFullYear()} {t("app.title")} •{" "}
-            {t("footer.allRightsReserved")}
+            © {year} {t("app.title")}. {t("footer.allRightsReserved")}.
           </Typography>
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              gap: 1,
-              flexWrap: "wrap",
-            }}
+          <Stack
+            direction="row"
+            gap={{ xs: 1.5, md: 2 }}
+            flexWrap="wrap"
+            justifyContent="center"
           >
-            <Link
-              href="/privacy-policy"
-              sx={{
-                color: "#707070",
-                textDecoration: "none",
-                fontSize: "0.9rem",
-                fontWeight: 500,
-                transition: "all 0.3s",
-                "&:hover": {
-                  color: "#ff9800",
-                },
-              }}
-            >
-              {t("footer.privacyPolicy")}
-            </Link>
-            <Typography sx={{ color: "#404040" }}>|</Typography>
-            <Link
-              href="/terms-conditions"
-              sx={{
-                color: "#707070",
-                textDecoration: "none",
-                fontSize: "0.9rem",
-                fontWeight: 500,
-                transition: "all 0.3s",
-                "&:hover": {
-                  color: "#ff9800",
-                },
-              }}
-            >
-              {t("footer.termsOfService")}
-            </Link>
-            <Typography sx={{ color: "#404040" }}>|</Typography>
-            <Link
-              href="/refund-policy"
-              sx={{
-                color: "#707070",
-                textDecoration: "none",
-                fontSize: "0.9rem",
-                fontWeight: 500,
-                transition: "all 0.3s",
-                "&:hover": {
-                  color: "#ff9800",
-                },
-              }}
-            >
-              {t("footer.returnPolicy")}
-            </Link>
-            <Typography sx={{ color: "#404040" }}>|</Typography>
-            <Link
-              href="/shipping-policy"
-              sx={{
-                color: "#707070",
-                textDecoration: "none",
-                fontSize: "0.9rem",
-                fontWeight: 500,
-                transition: "all 0.3s",
-                "&:hover": {
-                  color: "#ff9800",
-                },
-              }}
-            >
-              {t("footer.shippingPolicy")}
-            </Link>
-          </Box>
+            {policyLinks.map((link) => (
+              <Link key={link.href} href={link.href} sx={linkSx}>
+                {t(link.key)}
+              </Link>
+            ))}
+          </Stack>
           <Typography
             variant="caption"
-            sx={{
-              color: "#726f6fff",
-              fontSize: "0.8rem",
-              textAlign: { xs: "center", md: "right" },
-            }}
+            sx={{ color: "rgba(255,255,255,0.5)", textAlign: { xs: "center", md: "right" } }}
           >
             {t("footer.madeWith")}
           </Typography>

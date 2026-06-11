@@ -2,6 +2,7 @@ import { useTranslation } from "react-i18next";
 import { Container, Box, Typography } from "@/mui/material";
 import { Business } from "@/mui/icons";
 import { tokens } from "../../theme/theme";
+import { appIconSx } from "@/components/ui/navigationStyles";
 
 interface Brand {
   id: string;
@@ -48,7 +49,7 @@ const FeaturedBrands: React.FC<FeaturedBrandsProps> = ({
               mb: 1,
             }}
           >
-            <Business sx={{ color: tokens.primary, fontSize: 28 }} />
+            <Business sx={{ ...appIconSx.section, color: tokens.primary }} />
             <Typography
               variant="h4"
               fontWeight="700"

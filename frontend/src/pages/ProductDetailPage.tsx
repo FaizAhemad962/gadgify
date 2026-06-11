@@ -1,7 +1,7 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
-import { useState, useRef, useCallback, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
   Container,
   Box,
@@ -21,8 +21,6 @@ import {
   ShoppingCart,
   ArrowBack,
   Share,
-  Add,
-  Remove,
   NotificationsActive,
 } from "@/mui/icons";
 import { productsApi } from "../api/products";
@@ -31,9 +29,12 @@ import { useCart } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
 import { useWishlist } from "../context/WishlistContext";
 import { StarRating } from "../components/common/StarRating";
+import QuantityInput from "../components/common/QuantityInput";
+import ProductGallery from "../components/product/ProductGallery";
 import { RatingForm } from "../components/product/RatingForm";
 import { RatingsList } from "../components/product/RatingsList";
-import ProductCard from "../components/ProductCard";
+import ProductGrid from "../components/products/ProductGrid";
+import SectionHeader from "../components/sections/SectionHeader";
 import RecentlyViewed from "../components/products/RecentlyViewed";
 import { useRecentlyViewed } from "../hooks/useRecentlyViewed";
 import { tokens } from "@/theme/theme";
@@ -50,10 +51,6 @@ const ProductDetailPage = () => {
   const [quantity, setQuantity] = useState(1);
   const [shareSnackbar, setShareSnackbar] = useState(false);
   const [stockNotifySnackbar, setStockNotifySnackbar] = useState(false);
-  const [activeMediaIndex, setActiveMediaIndex] = useState(0);
-  const [zoomStyle, setZoomStyle] = useState<React.CSSProperties>({});
-  const [isZooming, setIsZooming] = useState(false);
-  const imgContainerRef = useRef<HTMLDivElement>(null);
 
   const isNotifySubscribed = (productId: string) => {
     try {
@@ -118,24 +115,6 @@ const ProductDetailPage = () => {
     .filter((p: { id: string; name?: string }) => p.id !== id)
     .slice(0, 4);
 
-  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
-    const container = imgContainerRef.current;
-    if (!container) return;
-    const rect = container.getBoundingClientRect();
-    const x = ((e.clientX - rect.left) / rect.width) * 100;
-    const y = ((e.clientY - rect.top) / rect.height) * 100;
-    setZoomStyle({
-      transformOrigin: `${x}% ${y}%`,
-      transform: "scale(2)",
-    });
-  }, []);
-
-  const handleMouseEnter = useCallback(() => setIsZooming(true), []);
-  const handleMouseLeave = useCallback(() => {
-    setIsZooming(false);
-    setZoomStyle({});
-  }, []);
-
   const handleAddToCart = async (productId?: string) => {
     if (!isAuthenticated) {
       navigate("/login");
@@ -185,39 +164,6 @@ const ProductDetailPage = () => {
       </Container>
     );
   }
-  const images = product.media.filter(
-    (m: { type: string }) => m.type === "image",
-  );
-  const videos = product.media.filter(
-    (m: { type: string }) => m.type === "video",
-  );
-  const primary = images.find((m: { isPrimary?: boolean }) => m.isPrimary);
-  const otherImages = images.filter(
-    (m: { isPrimary?: boolean }) => !m.isPrimary,
-  );
-  const items = [
-    ...(primary
-      ? [
-          {
-            type: "image" as const,
-            url: primary.url,
-            alt: product.name,
-          },
-        ]
-      : []),
-    ...otherImages.map((img: { url: string; alt?: string }) => ({
-      type: "image" as const,
-      url: img.url,
-      alt: product.name,
-    })),
-    ...videos.map((vid: { url: string }) => ({
-      type: "video" as const,
-      url: vid.url,
-      alt: "Product Video",
-    })),
-  ];
-  const activeItem = items[activeMediaIndex] || items[0];
-
   return (
     <Container maxWidth="xl" sx={{ py: 4 }}>
       <Button
@@ -234,135 +180,7 @@ const ProductDetailPage = () => {
           flexDirection: { xs: "column", md: "row" },
         }}
       >
-        {/* ── Image Gallery ── */}
-        <Box
-          sx={{
-            maxWidth: 520,
-            width: "100%",
-            display: "flex",
-            flexDirection: "column",
-            gap: 2,
-          }}
-        >
-          {/* Main image with zoom */}
-          <Box
-            ref={imgContainerRef}
-            onMouseMove={handleMouseMove}
-            onMouseEnter={handleMouseEnter}
-            onMouseLeave={handleMouseLeave}
-            sx={{
-              width: "100%",
-              height: { xs: 300, sm: 400 },
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              bgcolor: tokens.gray50,
-              borderRadius: 3,
-              border: `1px solid ${tokens.gray200}`,
-              overflow: "hidden",
-              cursor: isZooming ? "crosshair" : "default",
-              position: "relative",
-            }}
-          >
-            {activeItem?.type === "video" ? (
-              <video
-                src={activeItem.url}
-                controls
-                style={{
-                  maxWidth: "100%",
-                  maxHeight: "100%",
-                  objectFit: "contain",
-                  borderRadius: 8,
-                }}
-              />
-            ) : (
-              <img
-                src={activeItem?.url}
-                alt={activeItem?.alt || "Product image"}
-                style={{
-                  maxWidth: "100%",
-                  maxHeight: "100%",
-                  objectFit: "contain",
-                  transition: isZooming ? "none" : "transform 0.3s ease",
-                  ...zoomStyle,
-                }}
-                draggable={false}
-              />
-            )}
-          </Box>
-
-          {/* Thumbnail strip */}
-          {items.length > 1 && (
-            <Box
-              sx={{
-                display: "flex",
-                gap: 1,
-                overflowX: "auto",
-                py: 0.5,
-                px: 0.5,
-                "&::-webkit-scrollbar": { height: 4 },
-                "&::-webkit-scrollbar-thumb": {
-                  bgcolor: tokens.gray300,
-                  borderRadius: 2,
-                },
-              }}
-            >
-              {items.map((item, idx) => (
-                <Box
-                  key={item.url}
-                  onClick={() => setActiveMediaIndex(idx)}
-                  sx={{
-                    width: 64,
-                    height: 64,
-                    minWidth: 64,
-                    borderRadius: 2,
-                    border:
-                      idx === activeMediaIndex
-                        ? `2px solid ${tokens.accent}`
-                        : `1px solid ${tokens.gray200}`,
-                    overflow: "hidden",
-                    cursor: "pointer",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    bgcolor: tokens.gray50,
-                    transition: "border-color 0.2s",
-                    "&:hover": {
-                      borderColor: tokens.accent,
-                    },
-                  }}
-                >
-                  {item.type === "video" ? (
-                    <Box
-                      sx={{
-                        width: "100%",
-                        height: "100%",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        bgcolor: tokens.gray100,
-                        fontSize: 24,
-                      }}
-                    >
-                      ▶
-                    </Box>
-                  ) : (
-                    <img
-                      src={item.url}
-                      alt={`Thumbnail ${idx + 1}`}
-                      style={{
-                        width: "100%",
-                        height: "100%",
-                        objectFit: "cover",
-                      }}
-                      draggable={false}
-                    />
-                  )}
-                </Box>
-              ))}
-            </Box>
-          )}
-        </Box>
+        <ProductGallery product={product} />
 
         <Box sx={{ flex: 1, display: "flex", flexDirection: "column", gap: 3 }}>
           <Box>
@@ -446,29 +264,12 @@ const ProductDetailPage = () => {
               {t("common.quantity")}
             </Typography>
             <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-              <IconButton
-                size="small"
-                onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                disabled={quantity <= 1}
-                sx={{ border: `1px solid ${tokens.gray200}` }}
-              >
-                <Remove fontSize="small" />
-              </IconButton>
-              <Typography
-                sx={{ minWidth: 40, textAlign: "center", fontWeight: 700 }}
-              >
-                {quantity}
-              </Typography>
-              <IconButton
-                size="small"
-                onClick={() =>
-                  setQuantity((q) => Math.min(product.stock, q + 1))
-                }
-                disabled={quantity >= product.stock}
-                sx={{ border: `1px solid ${tokens.gray200}` }}
-              >
-                <Add fontSize="small" />
-              </IconButton>
+              <QuantityInput
+                value={quantity}
+                min={1}
+                max={product.stock}
+                onChange={setQuantity}
+              />
               {product.stock <= 5 && product.stock > 0 && (
                 <Typography
                   variant="caption"
@@ -644,36 +445,19 @@ const ProductDetailPage = () => {
       {relatedProducts.length > 0 && (
         <Box sx={{ mt: 8 }}>
           <Divider sx={{ mb: 6, borderColor: tokens.gray200 }} />
-          <Typography
-            variant="h5"
-            gutterBottom
-            fontWeight="700"
-            sx={{ color: "text.primary", mb: 4 }}
-          >
-            {t("common.relatedProducts")}
-          </Typography>
-          <Box
-            sx={{
-              display: "grid",
-              gridTemplateColumns: { xs: "1fr", md: "1fr 1fr 1fr 1fr" },
-              gridAutoRows: "1fr", // Force rows to have equal height
-              gap: 3,
-            }}
-          >
-            {relatedProducts.map((rp) => (
-              <ProductCard
-                key={rp.id}
-                product={rp}
-                isInWishlist={isInWishlist}
-                isToggling={isToggling}
-                toggleWishlist={toggleWishlist}
-                onAddToCart={handleAddToCart}
-                onBuyNow={handleBuyNow}
-                onNavigate={(pid) => navigate(`/products/${pid}`)}
-                t={t}
-              />
-            ))}
-          </Box>
+          <SectionHeader title={t("common.relatedProducts")} sx={{ mb: 4 }} />
+          <ProductGrid
+            products={relatedProducts}
+            columns={{ xs: "1fr", md: "repeat(4, 1fr)" }}
+            isInWishlist={isInWishlist}
+            isToggling={isToggling}
+            toggleWishlist={toggleWishlist}
+            onAddToCart={handleAddToCart}
+            onBuyNow={handleBuyNow}
+            onNavigate={(pid) => navigate(`/products/${pid}`)}
+            t={t}
+            sx={{ gap: 3 }}
+          />
         </Box>
       )}
 

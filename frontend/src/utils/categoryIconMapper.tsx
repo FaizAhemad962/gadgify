@@ -14,23 +14,24 @@ import {
   Construction,
   FavoriteBorder,
 } from "@/mui/icons";
+import { appIconSx } from "@/components/ui/navigationStyles";
 
 // Map category names to MUI icons
 const iconMap: Record<string, React.ReactNode> = {
-  "Mobiles & Computers": <Smartphone sx={{ fontSize: 36 }} />,
-  "Electronics & Appliances": <Tv sx={{ fontSize: 36 }} />,
-  "Men's Fashion": <Checkroom sx={{ fontSize: 36 }} />,
-  "Women's Fashion": <ShoppingBag sx={{ fontSize: 36 }} />,
-  "Home & Kitchen": <Kitchen sx={{ fontSize: 36 }} />,
-  "Beauty & Health": <Spa sx={{ fontSize: 36 }} />,
-  "Sports & Fitness": <FitnessCenter sx={{ fontSize: 36 }} />,
-  "Toys & Baby Products": <SmartToy sx={{ fontSize: 36 }} />,
-  "Automotive & Industrial": <DirectionsCar sx={{ fontSize: 36 }} />,
-  "Books & Stationery": <MenuBook sx={{ fontSize: 36 }} />,
-  "Movies, Music & Gaming": <SportsEsports sx={{ fontSize: 36 }} />,
-  "Doors & Hardware": <Construction sx={{ fontSize: 36 }} />,
+  "Mobiles & Computers": <Smartphone sx={appIconSx.category} />,
+  "Electronics & Appliances": <Tv sx={appIconSx.category} />,
+  "Men's Fashion": <Checkroom sx={appIconSx.category} />,
+  "Women's Fashion": <ShoppingBag sx={appIconSx.category} />,
+  "Home & Kitchen": <Kitchen sx={appIconSx.category} />,
+  "Beauty & Health": <Spa sx={appIconSx.category} />,
+  "Sports & Fitness": <FitnessCenter sx={appIconSx.category} />,
+  "Toys & Baby Products": <SmartToy sx={appIconSx.category} />,
+  "Automotive & Industrial": <DirectionsCar sx={appIconSx.category} />,
+  "Books & Stationery": <MenuBook sx={appIconSx.category} />,
+  "Movies, Music & Gaming": <SportsEsports sx={appIconSx.category} />,
+  "Doors & Hardware": <Construction sx={appIconSx.category} />,
   // Fallback for any unmapped categories
-  default: <FavoriteBorder sx={{ fontSize: 36 }} />,
+  default: <FavoriteBorder sx={appIconSx.category} />,
 };
 
 export const getCategoryIcon = (categoryName: string): React.ReactNode => {

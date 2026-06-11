@@ -13,7 +13,6 @@ type ProductMedia = {
 type MediaPreview = ProductMedia | string;
 import {
   Box,
-  Button,
   Typography,
   Dialog,
   DialogTitle,
@@ -22,6 +21,7 @@ import {
   TextField,
   InputAdornment,
   Alert,
+  Paper,
   FormControl,
   InputLabel,
   Select,
@@ -37,6 +37,22 @@ import { AdminProductsDataGrid } from "../../components/admin/AdminProductsDataG
 import type { Product } from "../../types";
 import { tokens } from "@/theme/theme";
 import { useCategories } from "@/hooks/useCategories";
+import { invalidateProductData } from "@/lib/queryInvalidation";
+import { queryKeys } from "@/lib/queryKeys";
+import {
+  AdminPageHeader,
+} from "@/components/admin/adminStyles";
+import {
+  adminDialogActionsSx,
+  adminDialogContentSx,
+  adminDialogPaperSx,
+  adminDialogTitleSx,
+  adminPageSx,
+  adminPanelSx,
+  adminSearchFieldSx,
+} from "@/components/admin/adminStyleTokens";
+import { appIconSx } from "@/components/ui/navigationStyles";
+import { CustomButton } from "@/components/ui/CustomButton";
 
 const productSchema = z.object({
   name: z.string().min(2, "Name is required"),
@@ -104,7 +120,7 @@ const AdminProducts = () => {
   const { data: categoriesData = [] } = useCategories();
 
   const { data: productsData, isLoading } = useQuery({
-    queryKey: ["admin-products", page, rowsPerPage, searchQuery],
+    queryKey: [...queryKeys.products.admin, page, rowsPerPage, searchQuery],
     queryFn: () =>
       productsApi.getAllProducts(page + 1, rowsPerPage, searchQuery),
   });
@@ -121,7 +137,7 @@ const AdminProducts = () => {
   const createMutation = useMutation({
     mutationFn: productsApi.create,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["admin-products"] });
+      invalidateProductData(queryClient);
       handleClose();
     },
     onError: (error: Error) => {
@@ -134,8 +150,8 @@ const AdminProducts = () => {
   const updateMutation = useMutation({
     mutationFn: ({ id, data }: { id: string; data: ProductFormData }) =>
       productsApi.update(id, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["admin-products"] });
+    onSuccess: (_, variables) => {
+      invalidateProductData(queryClient, variables.id);
       handleClose();
     },
     onError: (error: Error) => {
@@ -154,8 +170,8 @@ const AdminProducts = () => {
 
   const deleteMutation = useMutation({
     mutationFn: productsApi.delete,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["admin-products"] });
+    onSuccess: (_, productId) => {
+      invalidateProductData(queryClient, productId);
     },
   });
 
@@ -454,24 +470,16 @@ const AdminProducts = () => {
   };
 
   return (
-    <Box>
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          mb: 3,
-        }}
-      >
-        <Typography
-          variant="h4"
-          fontWeight="700"
-          sx={{
-            color: tokens.gray900,
-          }}
-        >
-          {t("admin.products")}
-        </Typography>
+    <Box sx={adminPageSx}>
+      <AdminPageHeader
+        title={t("admin.products")}
+        subtitle={t(
+          "admin.productsSubtitle",
+          "Create, edit, search, and manage product inventory.",
+        )}
+        eyebrow={t("nav.admin")}
+        icon={<AddSharp sx={appIconSx.card} />}
+        action={
         <IconButton
           size="small"
           onClick={() => handleOpen()}
@@ -491,15 +499,16 @@ const AdminProducts = () => {
             },
           }}
         >
-          <AddSharp />{" "}
+          <AddSharp sx={appIconSx.lg} />{" "}
           <Typography sx={{ display: { xs: "none", md: "block" } }}>
             {t("admin.addProduct")}
           </Typography>
         </IconButton>
-      </Box>
+        }
+      />
 
       {/* Search Bar */}
-      <Box sx={{ mb: 3 }}>
+      <Paper elevation={0} sx={{ ...adminPanelSx, p: 2, mb: 3 }}>
         <TextField
           placeholder={t("nav.searchProducts")}
           value={searchQuery}
@@ -512,29 +521,13 @@ const AdminProducts = () => {
           InputProps={{
             endAdornment: (
               <InputAdornment position="end">
-                <Search sx={{ color: tokens.gray400 }} />
+                <Search sx={{ ...appIconSx.lg, color: tokens.gray400 }} />
               </InputAdornment>
             ),
           }}
-          sx={{
-            width: 300,
-            bgcolor: tokens.white,
-            borderRadius: 2,
-            "& .MuiOutlinedInput-root": {
-              "& fieldset": {
-                borderColor: tokens.gray200,
-              },
-              "&:hover fieldset": {
-                borderColor: tokens.primary,
-              },
-              "&.Mui-focused fieldset": {
-                borderColor: tokens.primary,
-                borderWidth: 2,
-              },
-            },
-          }}
+          sx={adminSearchFieldSx}
         />
-      </Box>
+      </Paper>
 
       <AdminProductsDataGrid
         products={productsData?.products || []}
@@ -556,26 +549,34 @@ const AdminProducts = () => {
         fullWidth
         PaperProps={{
           sx: {
-            bgcolor: tokens.white,
-            backgroundImage: "none",
-            border: `1px solid ${tokens.gray200}`,
-            borderRadius: 3,
+            ...adminDialogPaperSx,
           },
         }}
       >
-        <form onSubmit={handleSubmit(onSubmit)}>
+        <Box
+          component="form"
+          onSubmit={handleSubmit(onSubmit)}
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            minHeight: 0,
+            maxHeight: "inherit",
+          }}
+        >
           <DialogTitle
             sx={{
-              color: tokens.primary,
-              fontWeight: "700",
-              borderBottom: `1px solid ${tokens.gray200}`,
+              ...adminDialogTitleSx,
               fontSize: "1.3rem",
             }}
           >
             {editingProduct ? t("admin.editProduct") : t("admin.addNewProduct")}
           </DialogTitle>
           <DialogContent
-            sx={{ bgcolor: tokens.white, backgroundImage: "none" }}
+            sx={{
+              ...adminDialogContentSx,
+              px: { xs: 2.5, sm: 3.5 },
+              pt: "42px !important",
+            }}
           >
             {error && (
               <Alert
@@ -591,9 +592,7 @@ const AdminProducts = () => {
                 {error}
               </Alert>
             )}
-            <Box
-              sx={{ display: "flex", flexDirection: "column", gap: 2.5, mt: 2 }}
-            >
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
               <Box>
                 <TextField
                   fullWidth
@@ -822,22 +821,12 @@ const AdminProducts = () => {
                   {t("admin.productImages")}
                 </Typography>
                 <Box sx={{ display: "flex", gap: 1 }}>
-                  <Button
+                  <CustomButton
                     variant="outlined"
+                    appVariant="upload"
                     component="label"
                     startIcon={<Upload />}
                     fullWidth
-                    sx={{
-                      color: tokens.primary,
-                      borderColor: tokens.primary,
-                      transition: "all 0.2s",
-                      borderRadius: 2,
-                      textTransform: "none",
-                      "&:hover": {
-                        bgcolor: `${tokens.primary}0A`,
-                        borderColor: tokens.primary,
-                      },
-                    }}
                   >
                     {t("admin.chooseImages")}
                     <input
@@ -847,7 +836,7 @@ const AdminProducts = () => {
                       multiple
                       onChange={handleImageFileChange}
                     />
-                  </Button>
+                  </CustomButton>
                 </Box>
                 <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2, mt: 2 }}>
                   {imagePreviews.map((preview, idx) => (
@@ -925,22 +914,12 @@ const AdminProducts = () => {
                   {t("admin.productVideos")}
                 </Typography>
                 <Box sx={{ display: "flex", gap: 1 }}>
-                  <Button
+                  <CustomButton
                     variant="outlined"
+                    appVariant="upload"
                     component="label"
                     startIcon={<Upload />}
                     fullWidth
-                    sx={{
-                      color: tokens.primary,
-                      borderColor: tokens.primary,
-                      transition: "all 0.2s",
-                      borderRadius: 2,
-                      textTransform: "none",
-                      "&:hover": {
-                        bgcolor: `${tokens.primary}0A`,
-                        borderColor: tokens.primary,
-                      },
-                    }}
                   >
                     {t("admin.uploadVideos")}
                     <input
@@ -950,7 +929,7 @@ const AdminProducts = () => {
                       multiple
                       onChange={handleVideoFileChange}
                     />
-                  </Button>
+                  </CustomButton>
                 </Box>
                 <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2, mt: 2 }}>
                   {videoPreviews.map((preview, idx) => (
@@ -971,10 +950,10 @@ const AdminProducts = () => {
                           border: `1px solid ${tokens.gray200}`,
                         }}
                       />
-                      <Button
+                      <CustomButton
                         size="small"
                         variant="outlined"
-                        color="error"
+                        appVariant="danger"
                         sx={{
                           position: "absolute",
                           top: 4,
@@ -987,7 +966,7 @@ const AdminProducts = () => {
                         onClick={() => handleRemoveVideo(idx)}
                       >
                         {t("admin.remove")}
-                      </Button>
+                      </CustomButton>
                     </Box>
                   ))}
                 </Box>
@@ -1008,48 +987,25 @@ const AdminProducts = () => {
           </DialogContent>
           <DialogActions
             sx={{
-              bgcolor: tokens.white,
-              borderTop: `1px solid ${tokens.gray200}`,
-              p: 2,
-              gap: 1,
+              ...adminDialogActionsSx,
             }}
           >
-            <Button
+            <CustomButton
               onClick={handleClose}
-              sx={{
-                color: tokens.gray500,
-                textTransform: "none",
-                fontWeight: "500",
-                "&:hover": { bgcolor: `${tokens.gray200}40` },
-              }}
+              appVariant="ghost"
             >
               {t("admin.cancel")}
-            </Button>
-            <Button
+            </CustomButton>
+            <CustomButton
               type="submit"
               variant="contained"
+              appVariant="primary"
               disabled={createMutation.isPending || updateMutation.isPending}
-              sx={{
-                bgcolor: tokens.primary,
-                color: tokens.white,
-                textTransform: "none",
-                fontWeight: "600",
-                borderRadius: 2,
-                transition: "all 0.2s",
-                "&:hover": {
-                  bgcolor: tokens.primaryDark,
-                  boxShadow: `0 4px 12px ${tokens.primary}30`,
-                },
-                "&:disabled": {
-                  bgcolor: tokens.gray300,
-                  color: tokens.gray500,
-                },
-              }}
             >
               {editingProduct ? t("admin.update") : t("admin.create")}
-            </Button>
+            </CustomButton>
           </DialogActions>
-        </form>
+        </Box>
       </Dialog>
     </Box>
   );

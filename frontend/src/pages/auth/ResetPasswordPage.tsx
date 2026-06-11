@@ -1,78 +1,39 @@
 import { useState } from "react";
-import {
-  useNavigate,
-  Link as RouterLink,
-  useSearchParams,
-} from "react-router-dom";
+import { Link as RouterLink, useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import {
-  Container,
-  Paper,
-  Typography,
-  TextField,
-  Button,
-  Link,
-  Box,
-  Alert,
-  IconButton,
-  InputAdornment,
-} from "@/mui/material";
-import {
-  ArrowBack,
-  LockReset,
-  CheckCircle,
-  Visibility,
-  VisibilityOff,
-} from "@/mui/icons";
-import { tokens } from "@/theme/theme";
+import { Alert, Box, Link } from "@/mui/material";
+import { ArrowBack, CheckCircle, LockReset } from "@/mui/icons";
+import AuthLayout from "@/components/auth/AuthLayout";
+import PasswordField from "@/components/auth/PasswordField";
+import { CustomButton } from "@/components/ui/CustomButton";
 import { authApi } from "@/api/auth";
-
-const inputSx = {
-  "& .MuiOutlinedInput-root": {
-    backgroundColor: tokens.gray50,
-    transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-    "&:hover": {
-      backgroundColor: tokens.gray100,
-    },
-    "&.Mui-focused": {
-      backgroundColor: tokens.white,
-      boxShadow: `0 0 0 3px ${tokens.primary}1A`,
-    },
-  },
-  "& .MuiOutlinedInput-notchedOutline": {
-    borderColor: tokens.gray200,
-  },
-};
+import { tokens } from "@/theme/theme";
+import { appIconSx } from "@/components/ui/navigationStyles";
 
 const ResetPasswordPage = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const token = searchParams.get("token");
-
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirm, setShowConfirm] = useState(false);
 
   const schema = z
     .object({
       newPassword: z
         .string()
-        .min(
-          6,
-          t("errors.passwordMin", "Password must be at least 6 characters"),
-        ),
+        .min(6, t("errors.passwordMin", "Password must be at least 6 characters")),
       confirmPassword: z.string(),
     })
     .refine((data) => data.newPassword === data.confirmPassword, {
       message: t("errors.passwordMismatch", "Passwords do not match"),
       path: ["confirmPassword"],
     });
+
   type FormData = z.infer<typeof schema>;
 
   const {
@@ -102,329 +63,183 @@ const ResetPasswordPage = () => {
         typeof err.response.data === "object" &&
         "message" in err.response.data
           ? String(err.response.data.message)
-          : t(
-              "errors.somethingWrong",
-              "Something went wrong. Please try again.",
-            );
+          : t("errors.somethingWrong", "Something went wrong. Please try again.");
       setError(message);
     } finally {
       setLoading(false);
     }
   };
 
-  // Invalid / missing token state
   if (!token) {
     return (
-      <Box
-        sx={{
-          minHeight: "100vh",
-          background: `linear-gradient(135deg, ${tokens.primary} 0%, ${tokens.primaryDark} 100%)`,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          py: 4,
-        }}
+      <AuthLayout
+        title={t("auth.invalidResetLinkTitle", "Invalid Reset Link")}
+        subtitle={t(
+          "auth.invalidResetLinkSubtitle",
+          "This password reset link is invalid or has expired. Request a new one to continue.",
+        )}
+        maxFormWidth={500}
       >
-        <Container maxWidth="sm">
-          <Paper
-            elevation={0}
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 2, textAlign: "center" }}>
+          <Box
             sx={{
-              p: { xs: 3, sm: 4 },
-              borderRadius: 3,
-              background: tokens.white,
-              border: `1px solid ${tokens.gray200}`,
-              textAlign: "center",
+              width: 84,
+              height: 84,
+              borderRadius: "28px",
+              mx: "auto",
+              background: `${tokens.error}12`,
+              display: "grid",
+              placeItems: "center",
+              border: `1px solid ${tokens.error}22`,
             }}
           >
-            <Typography
-              variant="h5"
-              fontWeight={700}
-              color={tokens.gray900}
-              mb={2}
-            >
-              Invalid Reset Link
-            </Typography>
-            <Typography variant="body2" sx={{ color: tokens.gray500, mb: 3 }}>
-              This password reset link is invalid or has expired. Please request
-              a new one.
-            </Typography>
-            <Button
-              variant="contained"
-              onClick={() => navigate("/forgot-password")}
-              sx={{
-                background: tokens.accent,
-                color: tokens.white,
-                fontWeight: 700,
-                "&:hover": { background: tokens.accentDark },
-              }}
-            >
-              Request New Link
-            </Button>
-          </Paper>
-        </Container>
-      </Box>
+            <LockReset sx={{ ...appIconSx.category, color: tokens.error }} />
+          </Box>
+          <CustomButton
+            variant="contained"
+            appVariant="admin"
+            onClick={() => navigate("/forgot-password")}
+          >
+            {t("auth.requestNewLink", "Request New Link")}
+          </CustomButton>
+        </Box>
+      </AuthLayout>
     );
   }
 
   return (
-    <Box
-      sx={{
-        minHeight: "100vh",
-        background: `linear-gradient(135deg, ${tokens.primary} 0%, ${tokens.primaryDark} 100%)`,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        py: 4,
-        position: "relative",
-        overflow: "hidden",
-        "&::before": {
-          content: '""',
-          position: "absolute",
-          width: "400px",
-          height: "400px",
-          background:
-            "radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%)",
-          borderRadius: "50%",
-          top: "-100px",
-          right: "-100px",
-        },
-        "&::after": {
-          content: '""',
-          position: "absolute",
-          width: "300px",
-          height: "300px",
-          background:
-            "radial-gradient(circle, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0) 70%)",
-          borderRadius: "50%",
-          bottom: "-50px",
-          left: "-50px",
-        },
-      }}
+    <AuthLayout
+      title={
+        success
+          ? t("auth.resetPasswordSuccessTitle", "Password Reset")
+          : t("auth.resetPasswordTitle", "Reset Password")
+      }
+      subtitle={
+        success
+          ? t("auth.resetPasswordSuccessSubtitle", "You can now sign in with your new password.")
+          : t("auth.resetPasswordSubtitle", "Choose a new secure password for your Gadgify account.")
+      }
+      maxFormWidth={500}
+      footer={
+        <Box sx={{ textAlign: "center" }}>
+          <Link
+            component={RouterLink}
+            to="/login"
+            sx={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 0.75,
+              color: tokens.primary,
+              textDecoration: "none",
+              fontWeight: 800,
+              "&:hover": { color: tokens.accent },
+            }}
+          >
+            <ArrowBack fontSize="small" />
+            {t("auth.backToLogin")}
+          </Link>
+        </Box>
+      }
     >
-      <Container maxWidth="sm" sx={{ position: "relative", zIndex: 1 }}>
-        <Paper
-          elevation={0}
+      {success ? (
+        <Box
           sx={{
-            p: { xs: 3, sm: 4 },
-            borderRadius: 3,
-            background: tokens.white,
-            border: `1px solid ${tokens.gray200}`,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: 2,
+            textAlign: "center",
           }}
         >
-          {success ? (
-            /* ── Success state ── */
+          <Box
+            sx={{
+              width: 84,
+              height: 84,
+              borderRadius: "28px",
+              background: tokens.successLight,
+              display: "grid",
+              placeItems: "center",
+            }}
+          >
+            <CheckCircle sx={{ ...appIconSx.category, color: tokens.success }} />
+          </Box>
+          <CustomButton variant="contained" appVariant="admin" onClick={() => navigate("/login")}>
+            {t("auth.backToLogin")}
+          </CustomButton>
+        </Box>
+      ) : (
+        <>
+          <Box sx={{ display: "flex", justifyContent: "center", mb: 2.5 }}>
             <Box
               sx={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                gap: 2,
-                textAlign: "center",
-                py: 3,
+                width: 84,
+                height: 84,
+                borderRadius: "28px",
+                background: `linear-gradient(135deg, ${tokens.primary}14, ${tokens.accent}18)`,
+                border: `1px solid ${tokens.gray200}`,
+                boxShadow: "0 18px 44px rgba(27, 42, 74, 0.10)",
+                display: "grid",
+                placeItems: "center",
               }}
             >
-              <Box
-                sx={{
-                  width: 72,
-                  height: 72,
-                  borderRadius: "50%",
-                  background: tokens.successLight,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                <CheckCircle sx={{ fontSize: 36, color: tokens.success }} />
-              </Box>
-              <Typography variant="h5" fontWeight={700} color={tokens.gray900}>
-                Password Reset!
-              </Typography>
-              <Typography
-                variant="body2"
-                sx={{ color: tokens.gray500, maxWidth: 360 }}
-              >
-                Your password has been reset successfully. You can now log in
-                with your new password.
-              </Typography>
-              <Button
-                variant="contained"
-                onClick={() => navigate("/login")}
-                sx={{
-                  mt: 2,
-                  background: tokens.accent,
-                  color: tokens.white,
-                  fontWeight: 700,
-                  "&:hover": { background: tokens.accentDark },
-                }}
-              >
-                Go to Login
-              </Button>
+              <LockReset sx={{ ...appIconSx.category, color: tokens.primary }} />
             </Box>
-          ) : (
-            /* ── Form state ── */
-            <>
-              <Box
-                sx={{
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  mb: 3,
-                }}
-              >
-                <Box
-                  sx={{
-                    width: 72,
-                    height: 72,
-                    borderRadius: "50%",
-                    background: `${tokens.accent}1A`,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    mb: 2,
-                  }}
-                >
-                  <LockReset sx={{ fontSize: 36, color: tokens.accent }} />
-                </Box>
-                <Typography
-                  variant="h5"
-                  fontWeight={700}
-                  color={tokens.gray900}
-                >
-                  Reset Password
-                </Typography>
-                <Typography
-                  variant="body2"
-                  sx={{ color: tokens.gray500, mt: 1, textAlign: "center" }}
-                >
-                  Enter your new password below.
-                </Typography>
-              </Box>
+          </Box>
 
-              {error && (
-                <Alert
-                  severity="error"
-                  sx={{
-                    mb: 2,
-                    background: tokens.errorLight,
-                    color: tokens.error,
-                    border: `1px solid ${tokens.error}`,
-                    borderRadius: 2,
-                    "& .MuiAlert-icon": { color: tokens.error },
-                  }}
-                  onClose={() => setError("")}
-                >
-                  {error}
-                </Alert>
-              )}
-
-              <form onSubmit={handleSubmit(onSubmit)}>
-                <Box
-                  sx={{ display: "flex", flexDirection: "column", gap: 2.5 }}
-                >
-                  <TextField
-                    fullWidth
-                    label="New Password"
-                    type={showPassword ? "text" : "password"}
-                    {...register("newPassword")}
-                    error={!!errors.newPassword}
-                    helperText={errors.newPassword?.message}
-                    sx={inputSx}
-                    slotProps={{
-                      input: {
-                        endAdornment: (
-                          <InputAdornment position="end">
-                            <IconButton
-                              onClick={() => setShowPassword((p) => !p)}
-                              edge="end"
-                              size="small"
-                            >
-                              {showPassword ? (
-                                <VisibilityOff />
-                              ) : (
-                                <Visibility />
-                              )}
-                            </IconButton>
-                          </InputAdornment>
-                        ),
-                      },
-                    }}
-                  />
-
-                  <TextField
-                    fullWidth
-                    label="Confirm Password"
-                    type={showConfirm ? "text" : "password"}
-                    {...register("confirmPassword")}
-                    error={!!errors.confirmPassword}
-                    helperText={errors.confirmPassword?.message}
-                    sx={inputSx}
-                    slotProps={{
-                      input: {
-                        endAdornment: (
-                          <InputAdornment position="end">
-                            <IconButton
-                              onClick={() => setShowConfirm((p) => !p)}
-                              edge="end"
-                              size="small"
-                            >
-                              {showConfirm ? <VisibilityOff /> : <Visibility />}
-                            </IconButton>
-                          </InputAdornment>
-                        ),
-                      },
-                    }}
-                  />
-
-                  <Button
-                    fullWidth
-                    variant="contained"
-                    size="large"
-                    type="submit"
-                    disabled={loading}
-                    sx={{
-                      background: tokens.accent,
-                      color: tokens.white,
-                      fontWeight: 700,
-                      py: 1.5,
-                      transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-                      "&:hover": {
-                        background: tokens.accentDark,
-                        transform: "translateY(-2px)",
-                        boxShadow: `0 8px 16px ${tokens.accent}4D`,
-                      },
-                      "&:active": { transform: "translateY(0)" },
-                    }}
-                  >
-                    {loading ? "Resetting..." : "Reset Password"}
-                  </Button>
-                </Box>
-              </form>
-
-              <Box sx={{ textAlign: "center", mt: 3 }}>
-                <Link
-                  component={RouterLink}
-                  to="/login"
-                  sx={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: 0.5,
-                    color: tokens.gray500,
-                    textDecoration: "none",
-                    fontWeight: 600,
-                    fontSize: "0.875rem",
-                    transition: "color 0.2s",
-                    "&:hover": { color: tokens.primary },
-                  }}
-                >
-                  <ArrowBack fontSize="small" />
-                  Back to Login
-                </Link>
-              </Box>
-            </>
+          {error && (
+            <Alert
+              severity="error"
+              sx={{
+                mb: 2,
+                background: tokens.errorLight,
+                color: tokens.error,
+                border: `1px solid ${tokens.error}33`,
+                borderRadius: `${tokens.radiusMd}px`,
+                "& .MuiAlert-icon": { color: tokens.error },
+              }}
+              onClose={() => setError("")}
+            >
+              {error}
+            </Alert>
           )}
-        </Paper>
-      </Container>
-    </Box>
+
+          <Box
+            component="form"
+            onSubmit={handleSubmit(onSubmit)}
+            sx={{ display: "flex", flexDirection: "column", gap: 2.5 }}
+          >
+            <PasswordField
+              fullWidth
+              label={t("common.newPassword")}
+              autoComplete="new-password"
+              {...register("newPassword")}
+              error={!!errors.newPassword}
+              helperText={errors.newPassword?.message}
+            />
+            <PasswordField
+              fullWidth
+              label={t("auth.confirmPassword")}
+              autoComplete="new-password"
+              {...register("confirmPassword")}
+              error={!!errors.confirmPassword}
+              helperText={errors.confirmPassword?.message}
+            />
+            <CustomButton
+              fullWidth
+              variant="contained"
+              appVariant="admin"
+              size="large"
+              type="submit"
+              isLoading={loading}
+              disabled={loading}
+              sx={{ py: 1.35 }}
+            >
+              {t("auth.resetPasswordTitle", "Reset Password")}
+            </CustomButton>
+          </Box>
+        </>
+      )}
+    </AuthLayout>
   );
 };
 

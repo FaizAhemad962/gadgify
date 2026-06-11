@@ -19,6 +19,7 @@ import {
 import { useTranslation } from "react-i18next";
 import { newsletterApi } from "@/api/newsletters";
 import { tokens } from "@/theme/theme";
+import { appIconSx } from "@/components/ui/navigationStyles";
 
 export const NewsletterUnsubscribePage = () => {
   const { t } = useTranslation();
@@ -33,12 +34,14 @@ export const NewsletterUnsubscribePage = () => {
     const unsubscribeEmail = searchParams.get("email");
 
     if (!unsubscribeEmail) {
-      setError("Email parameter is missing");
-      setLoading(false);
+      window.setTimeout(() => {
+        setError("Email parameter is missing");
+        setLoading(false);
+      }, 0);
       return;
     }
 
-    setEmail(unsubscribeEmail);
+    window.setTimeout(() => setEmail(unsubscribeEmail), 0);
 
     const handleUnsubscribe = async () => {
       try {
@@ -94,7 +97,7 @@ export const NewsletterUnsubscribePage = () => {
               <Box>
                 <CheckCircle
                   sx={{
-                    fontSize: 80,
+                    ...appIconSx.empty,
                     color: tokens.success,
                     mb: 2,
                   }}
@@ -129,7 +132,7 @@ export const NewsletterUnsubscribePage = () => {
                 <Button
                   variant="contained"
                   onClick={() => navigate("/")}
-                  startIcon={<Home />}
+                  startIcon={<Home sx={appIconSx.lg} />}
                   sx={{
                     bgcolor: tokens.primary,
                     textTransform: "none",
@@ -147,7 +150,7 @@ export const NewsletterUnsubscribePage = () => {
               <Box>
                 <ErrorIcon
                   sx={{
-                    fontSize: 80,
+                    ...appIconSx.empty,
                     color: tokens.error,
                     mb: 2,
                   }}
@@ -225,7 +228,7 @@ export const NewsletterUnsubscribePage = () => {
         >
           <Mail
             sx={{
-              fontSize: 16,
+              ...appIconSx.sm,
               verticalAlign: "middle",
               mr: 0.5,
             }}

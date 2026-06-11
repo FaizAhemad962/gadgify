@@ -1,4 +1,4 @@
-import { render } from "@testing-library/react";
+import { render, waitFor } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import ScrollToTop from "../ScrollToTop";
 
@@ -7,16 +7,20 @@ describe("ScrollToTop", () => {
     window.scrollTo = jest.fn();
   });
 
-  it("calls window.scrollTo on mount", () => {
+  it("scrolls to top on mount", async () => {
     render(
       <MemoryRouter initialEntries={["/products"]}>
         <ScrollToTop />
       </MemoryRouter>,
     );
-    expect(window.scrollTo).toHaveBeenCalledWith({
-      top: 0,
-      left: 0,
-      behavior: "smooth",
+
+    await waitFor(() => {
+      expect(window.scrollTo).toHaveBeenCalledWith({
+        top: 0,
+        left: 0,
+        behavior: "auto",
+      });
+      expect(window.scrollTo).toHaveBeenCalled();
     });
   });
 

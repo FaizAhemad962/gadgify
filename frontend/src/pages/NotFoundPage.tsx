@@ -2,6 +2,7 @@ import { Container, Typography, Button } from "@/mui/material";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { ErrorOutline } from "@/mui/icons";
+import { appIconSx } from "@/components/ui/navigationStyles";
 
 const NotFoundPage = () => {
   const { t } = useTranslation();
@@ -9,7 +10,7 @@ const NotFoundPage = () => {
 
   return (
     <Container sx={{ py: 8, textAlign: "center" }}>
-      <ErrorOutline sx={{ fontSize: 100, color: "text.secondary", mb: 2 }} />
+      <ErrorOutline sx={{ ...appIconSx.notFound, color: "text.secondary", mb: 2 }} />
       <Typography variant="h3" gutterBottom fontWeight="600">
         {t("notFound.title")}
       </Typography>

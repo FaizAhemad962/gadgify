@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import { AppDataGrid } from "../ui/AppDataGrid";
 import type { Product } from "../../types";
 import { tokens } from "../../theme/theme";
+import { appIconSx } from "@/components/ui/navigationStyles";
 
 interface AdminProductsDataGridProps {
   products: Product[];
@@ -144,7 +145,7 @@ export const AdminProductsDataGrid = ({
               },
             }}
           >
-            <Edit fontSize="small" />
+            <Edit sx={appIconSx.lg} />
           </IconButton>
           <IconButton
             size="small"
@@ -158,7 +159,7 @@ export const AdminProductsDataGrid = ({
               color: tokens.error,
             }}
           >
-            <Delete fontSize="small" />
+            <Delete sx={appIconSx.lg} />
           </IconButton>
         </Box>
       ),

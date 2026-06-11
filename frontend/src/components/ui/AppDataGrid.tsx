@@ -102,6 +102,9 @@ export const AppDataGrid = ({
         height,
         minHeight: 400,
         overflow: "hidden",
+        borderRadius: `${tokens.radiusXl}px`,
+        bgcolor: tokens.white,
+        boxShadow: "0 18px 48px rgba(15, 23, 42, 0.06)",
       }}
     >
       <DataGrid
@@ -125,23 +128,36 @@ export const AppDataGrid = ({
         sx={{
           width: "100%",
           border: `1px solid ${tokens.gray200}`,
-          borderRadius: 2,
+          borderRadius: `${tokens.radiusXl}px`,
+          bgcolor: tokens.white,
+          overflow: "hidden",
+          "--DataGrid-rowBorderColor": tokens.gray100,
           "& .MuiDataGrid-columnHeaders": {
-            bgcolor: tokens.gray50,
+            bgcolor: "rgba(248,250,252,0.95)",
             borderBottom: `1px solid ${tokens.gray200}`,
+            minHeight: "52px !important",
           },
           "& .MuiDataGrid-columnHeaderTitle": {
-            fontWeight: 600,
+            fontWeight: 800,
             color: tokens.gray700,
+            letterSpacing: "0.01em",
+          },
+          "& .MuiDataGrid-row": {
+            transition: "background-color 160ms ease",
           },
           "& .MuiDataGrid-row:hover": {
             bgcolor: `${tokens.primary}08`,
           },
           "& .MuiDataGrid-cell": {
             borderBottom: `1px solid ${tokens.gray100}`,
+            outline: "none !important",
+          },
+          "& .MuiDataGrid-cell:focus, & .MuiDataGrid-columnHeader:focus": {
+            outline: "none",
           },
           "& .MuiDataGrid-footerContainer": {
             borderTop: `1px solid ${tokens.gray200}`,
+            bgcolor: tokens.gray50,
           },
           "& .MuiDataGrid-virtualScroller": {
             overflowX: "auto",

@@ -4,6 +4,7 @@ import { Box, Button, Chip, Slide } from "@/mui/material";
 import { CompareArrows, Close } from "@/mui/icons";
 import { useCompare } from "../../context/CompareContext";
 import { tokens } from "@/theme/theme";
+import { appIconSx } from "@/components/ui/navigationStyles";
 
 const CompareBar = () => {
   const { compareIds, clearCompare } = useCompare();
@@ -32,7 +33,7 @@ const CompareBar = () => {
           boxShadow: "0 -4px 20px rgba(0,0,0,0.3)",
         }}
       >
-        <CompareArrows sx={{ fontSize: 20 }} />
+        <CompareArrows sx={appIconSx.lg} />
         <Chip
           label={`${compareIds.length} ${t("compare.itemsSelected")}`}
           sx={{ bgcolor: tokens.accent, color: "#fff", fontWeight: 600 }}
@@ -53,7 +54,7 @@ const CompareBar = () => {
         </Button>
         <Button
           size="small"
-          startIcon={<Close />}
+          startIcon={<Close sx={appIconSx.lg} />}
           onClick={clearCompare}
           sx={{ color: "rgba(255,255,255,0.7)", textTransform: "none" }}
         >

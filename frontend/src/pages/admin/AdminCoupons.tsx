@@ -4,7 +4,6 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   Box,
   Typography,
-  Button,
   Paper,
   IconButton,
   Chip,
@@ -23,10 +22,25 @@ import {
   Delete as DeleteIcon,
 } from "@/mui/icons";
 import {
+  AdminPageHeader,
+} from "@/components/admin/adminStyles";
+import {
+  adminDialogActionsSx,
+  adminDialogContentSx,
+  adminDialogPaperSx,
+  adminDialogTitleSx,
+  adminPageSx,
+  adminPanelSx,
+} from "@/components/admin/adminStyleTokens";
+import { appIconSx } from "@/components/ui/navigationStyles";
+import { CustomButton } from "@/components/ui/CustomButton";
+import {
   couponsApi,
   type Coupon,
   type CreateCouponRequest,
 } from "../../api/coupons";
+import { invalidateCouponData } from "@/lib/queryInvalidation";
+import { queryKeys } from "@/lib/queryKeys";
 
 const AdminCoupons = () => {
   const { t } = useTranslation();
@@ -51,14 +65,14 @@ const AdminCoupons = () => {
   });
 
   const { data: coupons = [], isLoading } = useQuery({
-    queryKey: ["admin-coupons"],
+    queryKey: queryKeys.coupons.admin,
     queryFn: couponsApi.getAll,
   });
 
   const createMutation = useMutation({
     mutationFn: couponsApi.create,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["admin-coupons"] });
+      invalidateCouponData(queryClient);
       handleCloseDialog();
       setSnackbar({
         open: true,
@@ -84,7 +98,7 @@ const AdminCoupons = () => {
       data: Partial<CreateCouponRequest> & { isActive?: boolean };
     }) => couponsApi.update(id, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["admin-coupons"] });
+      invalidateCouponData(queryClient);
       handleCloseDialog();
       setSnackbar({
         open: true,
@@ -104,7 +118,7 @@ const AdminCoupons = () => {
   const deleteMutation = useMutation({
     mutationFn: couponsApi.delete,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["admin-coupons"] });
+      invalidateCouponData(queryClient);
       setSnackbar({
         open: true,
         message: t("admin.couponDeleted"),
@@ -168,10 +182,29 @@ const AdminCoupons = () => {
   };
 
   return (
-    <Box>
+    <Box sx={adminPageSx}>
+      <AdminPageHeader
+        title={t("admin.coupons")}
+        subtitle={t(
+          "admin.couponsSubtitle",
+          "Create discounts, configure limits, and manage coupon availability.",
+        )}
+        eyebrow={t("nav.admin")}
+        icon={<AddIcon sx={appIconSx.card} />}
+        action={
+          <CustomButton
+            variant="contained"
+            appVariant="admin"
+            startIcon={<AddIcon sx={appIconSx.lg} />}
+            onClick={handleOpenCreate}
+          >
+            {t("admin.createCoupon")}
+          </CustomButton>
+        }
+      />
       <Box
         sx={{
-          display: "flex",
+          display: "none",
           justifyContent: "space-between",
           alignItems: "center",
           mb: 3,
@@ -180,19 +213,20 @@ const AdminCoupons = () => {
         <Typography variant="h5" fontWeight={700}>
           🎟️ {t("admin.coupons")}
         </Typography>
-        <Button
+        <CustomButton
           variant="contained"
+          appVariant="admin"
           startIcon={<AddIcon />}
           onClick={handleOpenCreate}
         >
           {t("admin.createCoupon")}
-        </Button>
+        </CustomButton>
       </Box>
 
       {isLoading ? (
         <Typography>{t("common.loading")}</Typography>
       ) : coupons.length === 0 ? (
-        <Paper sx={{ p: 4, textAlign: "center" }}>
+        <Paper sx={{ ...adminPanelSx, p: 4, textAlign: "center" }}>
           <Typography color="text.secondary">{t("admin.noCoupons")}</Typography>
         </Paper>
       ) : (
@@ -201,6 +235,7 @@ const AdminCoupons = () => {
             <Paper
               key={coupon.id}
               sx={{
+                ...adminPanelSx,
                 p: 2.5,
                 display: "flex",
                 justifyContent: "space-between",
@@ -276,16 +311,17 @@ const AdminCoupons = () => {
         onClose={handleCloseDialog}
         maxWidth="sm"
         fullWidth
+        PaperProps={{ sx: adminDialogPaperSx }}
       >
-        <DialogTitle>
+        <DialogTitle sx={adminDialogTitleSx}>
           {editingCoupon ? t("admin.editCoupon") : t("admin.createCoupon")}
         </DialogTitle>
         <DialogContent
           sx={{
+            ...adminDialogContentSx,
             display: "flex",
             flexDirection: "column",
-            gap: 2,
-            pt: "16px !important",
+            gap: 2.5,
           }}
         >
           <TextField
@@ -384,15 +420,18 @@ const AdminCoupons = () => {
             slotProps={{ inputLabel: { shrink: true } }}
           />
         </DialogContent>
-        <DialogActions sx={{ p: 2 }}>
-          <Button onClick={handleCloseDialog}>{t("common.cancel")}</Button>
-          <Button
+        <DialogActions sx={adminDialogActionsSx}>
+          <CustomButton onClick={handleCloseDialog} appVariant="ghost">
+            {t("common.cancel")}
+          </CustomButton>
+          <CustomButton
             variant="contained"
+            appVariant="admin"
             onClick={handleSubmit}
             disabled={createMutation.isPending || updateMutation.isPending}
           >
             {editingCoupon ? t("common.save") : t("common.create")}
-          </Button>
+          </CustomButton>
         </DialogActions>
       </Dialog>
 

@@ -13,6 +13,7 @@ import {
 import { ExpandMore, HelpOutline } from "@/mui/icons";
 import { faqApi } from "../../api/faqs";
 import { tokens } from "../../theme/theme";
+import { appIconSx } from "@/components/ui/navigationStyles";
 
 interface FAQProps {
   title?: string;
@@ -170,7 +171,7 @@ const FAQ: React.FC<FAQProps> = ({
               mb: 1,
             }}
           >
-            <HelpOutline sx={{ color: tokens.primary, fontSize: 28 }} />
+            <HelpOutline sx={{ ...appIconSx.section, color: tokens.primary }} />
             <Typography
               variant="h4"
               fontWeight="700"

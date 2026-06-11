@@ -1,12 +1,13 @@
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useQueries } from "@tanstack/react-query";
-import { Box, Typography } from "@/mui/material";
+import { Box } from "@/mui/material";
 import { productsApi } from "../../api/products";
 import { useCart } from "../../context/CartContext";
 import { useWishlist } from "../../context/WishlistContext";
 import { useRecentlyViewed } from "../../hooks/useRecentlyViewed";
-import ProductCard from "../ProductCard";
+import ProductGrid from "./ProductGrid";
+import SectionHeader from "../sections/SectionHeader";
 
 interface RecentlyViewedProps {
   excludeProductId?: string;
@@ -39,43 +40,26 @@ const RecentlyViewed = ({ excludeProductId }: RecentlyViewedProps) => {
 
   return (
     <Box sx={{ my: 4 }}>
-      {/* <Divider sx={{ mb: 6, borderColor: tokens.gray200 }} /> */}
-      <Typography
-        variant="h5"
-        gutterBottom
-        fontWeight="700"
-        sx={{ color: "text.primary", mb: 4 }}
-      >
-        {t("common.recentlyViewed")}
-      </Typography>
-      <Box
-        sx={{
-          display: "grid",
-          gridTemplateColumns: {
-            xs: "1fr",
-            sm: "repeat(2, 1fr)",
-            md: "repeat(4, 1fr)",
-          },
-          gap: 3,
+      <SectionHeader title={t("common.recentlyViewed")} sx={{ mb: 4 }} />
+      <ProductGrid
+        products={products}
+        columns={{
+          xs: "1fr",
+          sm: "repeat(2, 1fr)",
+          md: "repeat(4, 1fr)",
         }}
-      >
-        {products.map((product) => (
-          <ProductCard
-            key={product.id}
-            product={product}
-            isInWishlist={isInWishlist}
-            isToggling={isToggling}
-            toggleWishlist={toggleWishlist}
-            onAddToCart={(pid) => addToCart({ productId: pid, quantity: 1 })}
-            onBuyNow={(pid) => {
-              addToCart({ productId: pid, quantity: 1 });
-              navigate("/cart");
-            }}
-            onNavigate={(pid) => navigate(`/products/${pid}`)}
-            t={t}
-          />
-        ))}
-      </Box>
+        isInWishlist={isInWishlist}
+        isToggling={isToggling}
+        toggleWishlist={toggleWishlist}
+        onAddToCart={(pid) => addToCart({ productId: pid, quantity: 1 })}
+        onBuyNow={(pid) => {
+          void addToCart({ productId: pid, quantity: 1 });
+          navigate("/cart");
+        }}
+        onNavigate={(pid) => navigate(`/products/${pid}`)}
+        t={t}
+        sx={{ gap: 3 }}
+      />
     </Box>
   );
 };

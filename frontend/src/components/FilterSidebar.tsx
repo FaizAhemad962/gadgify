@@ -52,6 +52,7 @@ export const FilterSidebar: FC<FilterSidebarProps> = memo(
     sortBy,
     onSortChange,
     tempPriceRange,
+    priceRange,
     onTempPriceChange,
     onPriceCommit,
     selectedRatings,
@@ -65,8 +66,21 @@ export const FilterSidebar: FC<FilterSidebarProps> = memo(
     sx,
     hideHeader = false,
   }) => {
-    const label = (key: string, fallback: string) =>
-      t ? t(key) || fallback : fallback;
+    const label = (key: string, fallback: string) => {
+      if (!t) return fallback;
+      const translated = t(key);
+      return !translated || translated === key ? fallback : translated;
+    };
+    const ratingLabel = (rating: number) =>
+      label(
+        "common.ratingAndAbove",
+        `${rating} Star${rating > 1 ? "s" : ""} & above`,
+      ).replace("{{rating}}", String(rating));
+    const maxPrice = Math.max(
+      tokens.defaultMaxPrice,
+      priceRange[1],
+      tempPriceRange[1],
+    );
 
     /* ── Price slider handlers ── */
     const priceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -100,11 +114,11 @@ export const FilterSidebar: FC<FilterSidebarProps> = memo(
 
     const handleMaxPriceChange = useCallback(
       (value: string) => {
-        const num = parseInt(value, 10) || 10000;
-        const clipped = Math.min(10000, Math.max(num, tempPriceRange[0]));
+        const num = parseInt(value, 10) || maxPrice;
+        const clipped = Math.min(maxPrice, Math.max(num, tempPriceRange[0]));
         onTempPriceChange([tempPriceRange[0], clipped]);
       },
-      [tempPriceRange, onTempPriceChange],
+      [maxPrice, tempPriceRange, onTempPriceChange],
     );
 
     const handleMinIncrement = useCallback(() => {
@@ -120,10 +134,10 @@ export const FilterSidebar: FC<FilterSidebarProps> = memo(
     }, [tempPriceRange, onTempPriceChange, onPriceCommit]);
 
     const handleMaxIncrement = useCallback(() => {
-      const newMax = Math.min(10000, tempPriceRange[1] + 100);
+      const newMax = Math.min(maxPrice, tempPriceRange[1] + 100);
       onTempPriceChange([tempPriceRange[0], newMax]);
       onPriceCommit([tempPriceRange[0], newMax]);
-    }, [tempPriceRange, onTempPriceChange, onPriceCommit]);
+    }, [maxPrice, tempPriceRange, onTempPriceChange, onPriceCommit]);
 
     const handleMaxDecrement = useCallback(() => {
       const newMax = Math.max(tempPriceRange[0], tempPriceRange[1] - 100);
@@ -157,34 +171,36 @@ export const FilterSidebar: FC<FilterSidebarProps> = memo(
 
     return (
       <Box
-        sx={{
-          display: "flex",
-          flexDirection: "column",
-          width: "100%",
-          padding: "20px",
-          backgroundColor: tokens.white,
-          borderRadius: "8px",
-          border: `1px solid ${tokens.gray200}`,
-          position: "sticky",
-          top: 80,
-          maxHeight: "calc(100vh - 100px)",
-          overflowY: "auto",
-          overflowX: "hidden",
-          "&::-webkit-scrollbar": hideHeader
-            ? { display: "none" }
-            : { width: "6px" },
-          "&::-webkit-scrollbar-track": {
-            backgroundColor: "transparent",
-          },
-          "&::-webkit-scrollbar-thumb": {
-            backgroundColor: tokens.gray200,
-            borderRadius: "3px",
-            "&:hover": {
-              backgroundColor: tokens.gray300,
+        sx={[
+          {
+            display: "flex",
+            flexDirection: "column",
+            width: "100%",
+            p: { xs: 2, md: 2.25 },
+            backgroundColor: tokens.white,
+            borderRadius: `${tokens.radiusMd}px`,
+            border: `1px solid ${tokens.gray200}`,
+            position: "sticky",
+            top: tokens.filterStickyTop,
+            maxHeight: `calc(100vh - ${tokens.sidebarMaxHeightOffset}px)`,
+            overflowY: "auto",
+            overflowX: "hidden",
+            "&::-webkit-scrollbar": hideHeader
+              ? { display: "none" }
+              : { width: "6px" },
+            "&::-webkit-scrollbar-track": {
+              backgroundColor: "transparent",
+            },
+            "&::-webkit-scrollbar-thumb": {
+              backgroundColor: tokens.gray200,
+              borderRadius: "3px",
+              "&:hover": {
+                backgroundColor: tokens.gray300,
+              },
             },
           },
-          ...sx,
-        }}
+          ...(Array.isArray(sx) ? sx : sx ? [sx] : []),
+        ]}
       >
         {!hideHeader && (
           <Typography
@@ -261,12 +277,12 @@ export const FilterSidebar: FC<FilterSidebarProps> = memo(
             onChange={handlePriceChange}
             onChangeCommitted={handlePriceCommitted}
             valueLabelDisplay="off"
-            min={0}
-            max={5000}
+            min={tokens.defaultMinPrice}
+            max={maxPrice}
             step={100}
             sx={{
-              width: "90%",
-              marginLeft: 1,
+              width: "calc(100% - 24px)",
+              mx: "12px",
             }}
           />
           <Typography
@@ -288,7 +304,7 @@ export const FilterSidebar: FC<FilterSidebarProps> = memo(
           <Box
             sx={{
               display: "flex",
-              flexDirection: { xs: "row", sm: "column" },
+              flexDirection: { xs: "column", sm: "row", md: "column" },
               gap: 1.5,
               mt: 2,
               alignItems: { xs: "flex-end", sm: "stretch" },
@@ -299,15 +315,17 @@ export const FilterSidebar: FC<FilterSidebarProps> = memo(
               <Typography variant="caption" sx={{ fontSize: "11px" }}>
                 {label("common.minPrice", "Min")}
               </Typography>
-              <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+              <Box sx={{ display: "grid", gridTemplateColumns: "34px 1fr 34px", alignItems: "center", gap: 0.75 }}>
                 <IconButton
                   size="small"
                   onClick={handleMinDecrement}
                   sx={{
-                    padding: "4px",
+                    width: 34,
+                    height: 34,
+                    padding: 0,
                     color: tokens.accent,
                     border: `1px solid ${tokens.gray200}`,
-                    borderRadius: 1,
+                    borderRadius: "10px",
                     "&:hover": {
                       backgroundColor: "#FFF3E0",
                     },
@@ -323,15 +341,15 @@ export const FilterSidebar: FC<FilterSidebarProps> = memo(
                   size="small"
                   fullWidth
                   inputProps={{
-                    min: 0,
-                    max: 10000,
+                    min: tokens.defaultMinPrice,
+                    max: maxPrice,
                     step: 100,
                     style: { textAlign: "center" },
                   }}
                   sx={{
                     "& .MuiOutlinedInput-root": {
                       fontSize: "12px",
-                      padding: "2px 4px",
+                      height: 38,
                     },
                   }}
                 />
@@ -339,10 +357,12 @@ export const FilterSidebar: FC<FilterSidebarProps> = memo(
                   size="small"
                   onClick={handleMinIncrement}
                   sx={{
-                    padding: "4px",
+                    width: 34,
+                    height: 34,
+                    padding: 0,
                     color: tokens.accent,
                     border: `1px solid ${tokens.gray200}`,
-                    borderRadius: 1,
+                    borderRadius: "10px",
                     "&:hover": {
                       backgroundColor: "#FFF3E0",
                     },
@@ -358,15 +378,17 @@ export const FilterSidebar: FC<FilterSidebarProps> = memo(
               <Typography variant="caption" sx={{ fontSize: "11px" }}>
                 {label("common.maxPrice", "Max")}
               </Typography>
-              <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+              <Box sx={{ display: "grid", gridTemplateColumns: "34px 1fr 34px", alignItems: "center", gap: 0.75 }}>
                 <IconButton
                   size="small"
                   onClick={handleMaxDecrement}
                   sx={{
-                    padding: "4px",
+                    width: 34,
+                    height: 34,
+                    padding: 0,
                     color: tokens.accent,
                     border: `1px solid ${tokens.gray200}`,
-                    borderRadius: 1,
+                    borderRadius: "10px",
                     "&:hover": {
                       backgroundColor: "#FFF3E0",
                     },
@@ -382,15 +404,15 @@ export const FilterSidebar: FC<FilterSidebarProps> = memo(
                   size="small"
                   fullWidth
                   inputProps={{
-                    min: 0,
-                    max: 10000,
+                    min: tokens.defaultMinPrice,
+                    max: maxPrice,
                     step: 100,
                     style: { textAlign: "center" },
                   }}
                   sx={{
                     "& .MuiOutlinedInput-root": {
                       fontSize: "12px",
-                      padding: "2px 4px",
+                      height: 38,
                     },
                   }}
                 />
@@ -398,10 +420,12 @@ export const FilterSidebar: FC<FilterSidebarProps> = memo(
                   size="small"
                   onClick={handleMaxIncrement}
                   sx={{
-                    padding: "4px",
+                    width: 34,
+                    height: 34,
+                    padding: 0,
                     color: tokens.accent,
                     border: `1px solid ${tokens.gray200}`,
-                    borderRadius: 1,
+                    borderRadius: "10px",
                     "&:hover": {
                       backgroundColor: "#FFF3E0",
                     },
@@ -434,7 +458,7 @@ export const FilterSidebar: FC<FilterSidebarProps> = memo(
               label={
                 <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
                   <Typography variant="body2">
-                    {rating} Star{rating > 1 ? "s" : ""} & above
+                    {ratingLabel(rating)}
                   </Typography>
                 </Box>
               }

@@ -1,5 +1,6 @@
 import { Checkbox, type CheckboxProps, styled } from "@/mui/material";
 import { tokens } from "@/theme/theme";
+import { appIconSizes } from "./navigationStyles";
 
 const StyledCheckbox = styled(Checkbox)<CheckboxProps>(() => ({
   color: tokens.gray400,
@@ -10,7 +11,7 @@ const StyledCheckbox = styled(Checkbox)<CheckboxProps>(() => ({
     backgroundColor: `${tokens.accent}10`,
   },
   "& .MuiSvgIcon-root": {
-    fontSize: 24,
+    fontSize: appIconSizes.xl,
   },
 }));
 

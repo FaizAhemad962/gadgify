@@ -1,48 +1,116 @@
-import { useState, useRef } from "react";
+import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
-  Container,
-  Paper,
-  Box,
-  Typography,
-  TextField,
-  Button,
   Alert,
-  CircularProgress,
-  Divider,
-  Chip,
-  MenuItem,
-  IconButton,
   Avatar,
   Badge,
+  Box,
+  Button,
+  Chip,
+  CircularProgress,
+  Container,
+  Divider,
+  IconButton,
+  MenuItem,
+  Paper,
+  TextField,
+  Typography,
 } from "@/mui/material";
-import { ArrowBack, Edit, Save, Cancel, CameraAlt } from "@/mui/icons";
-import { useAuth } from "../context/AuthContext";
-import { tokens } from "@/theme/theme";
-import { ErrorHandler } from "../utils/errorHandler";
 import {
-  getMaharashtraCities,
-  getCurrentCityLabel,
+  AdminPanelSettings,
+  ArrowBack,
+  CameraAlt,
+  Cancel,
+  Edit,
+  LocalShipping,
+  Logout,
+  Person,
+  Save,
+  Security,
+  SupportAgent,
+} from "@/mui/icons";
+import { useAuth } from "@/context/AuthContext";
+import { tokens } from "@/theme/theme";
+import { ErrorHandler } from "@/utils/errorHandler";
+import { appIconSx } from "@/components/ui/navigationStyles";
+import {
   findCityKey,
-} from "../constants/location";
-import { authApi } from "../api/auth";
+  getCurrentCityLabel,
+  getMaharashtraCities,
+} from "@/constants/location";
+import { authApi } from "@/api/auth";
+
+const profileInputSx = {
+  "& .MuiOutlinedInput-root": {
+    borderRadius: `${tokens.radiusMd}px`,
+    backgroundColor: tokens.gray50,
+    "&.Mui-focused": {
+      backgroundColor: tokens.white,
+    },
+  },
+  "& .MuiFilledInput-root": {
+    backgroundColor: tokens.gray50,
+    borderRadius: `${tokens.radiusMd}px`,
+    "&:before, &:after": { display: "none" },
+    "&:hover": { backgroundColor: tokens.gray50 },
+    "&.Mui-disabled": {
+      backgroundColor: tokens.gray50,
+    },
+  },
+  "& .MuiInputBase-input.Mui-disabled": {
+    WebkitTextFillColor: tokens.gray600,
+  },
+  "& .MuiInputLabel-root.Mui-disabled": {
+    color: tokens.gray500,
+  },
+};
+
+const getRoleMeta = (role: string) => {
+  switch (role) {
+    case "SUPER_ADMIN":
+      return {
+        icon: <Security sx={appIconSx.lg} />,
+        color: tokens.error,
+        labelKey: "common.profileRoleSuperAdmin",
+      };
+    case "ADMIN":
+      return {
+        icon: <AdminPanelSettings sx={appIconSx.lg} />,
+        color: tokens.accent,
+        labelKey: "common.profileRoleAdmin",
+      };
+    case "DELIVERY_STAFF":
+      return {
+        icon: <LocalShipping sx={appIconSx.lg} />,
+        color: tokens.info,
+        labelKey: "common.profileRoleDeliveryStaff",
+      };
+    case "SUPPORT_STAFF":
+      return {
+        icon: <SupportAgent sx={appIconSx.lg} />,
+        color: tokens.secondary,
+        labelKey: "common.profileRoleSupportStaff",
+      };
+    default:
+      return {
+        icon: <Person sx={appIconSx.lg} />,
+        color: tokens.primary,
+        labelKey: "common.profileRoleUser",
+      };
+  }
+};
 
 const ProfilePage = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { user, updateUser, logout } = useAuth();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  // Get cities - will update when language changes
-  const MAHARASHTRA_CITIES = getMaharashtraCities();
-
-  // Form state
   const [formData, setFormData] = useState({
     name: user?.name || "",
     email: user?.email || "",
@@ -53,30 +121,49 @@ const ProfilePage = () => {
     pincode: user?.pincode || "",
   });
 
-  // Get current language label for the city
+  if (!user) {
+    return (
+      <Container
+        maxWidth={false}
+        sx={{
+          maxWidth: tokens.appMaxWidth,
+          py: 5,
+          px: tokens.pagePaddingX,
+          display: "flex",
+          justifyContent: "center",
+        }}
+      >
+        <CircularProgress />
+      </Container>
+    );
+  }
+
+  const roleMeta = getRoleMeta(user.role);
+  const cities = getMaharashtraCities();
   const currentCityLabel = getCurrentCityLabel(formData.city);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+  const resetForm = () => {
+    setFormData({
+      name: user.name || "",
+      email: user.email || "",
+      phone: user.phone || "",
+      state: user.state || "",
+      city: user.city || "",
+      address: user.address || "",
+      pincode: user.pincode || "",
+    });
   };
 
   const handleCancel = () => {
-    setFormData({
-      name: user?.name || "",
-      email: user?.email || "",
-      phone: user?.phone || "",
-      state: user?.state || "",
-      city: user?.city || "",
-      address: user?.address || "",
-      pincode: user?.pincode || "",
-    });
+    resetForm();
     setIsEditing(false);
     setError(null);
     setSuccess(null);
+  };
+
+  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = event.target;
+    setFormData((current) => ({ ...current, [name]: value }));
   };
 
   const handleSave = async () => {
@@ -85,42 +172,17 @@ const ProfilePage = () => {
       setError(null);
       setSuccess(null);
 
-      // Validation
-      if (!formData.name.trim()) {
-        setError(t("common.nameRequired"));
-        return;
-      }
-
-      if (!formData.phone.trim()) {
-        setError(t("common.phoneRequired"));
-        return;
-      }
-
+      if (!formData.name.trim()) return setError(t("common.nameRequired"));
       if (!/^\d{10}$/.test(formData.phone)) {
-        setError(t("common.invalidPhone"));
-        return;
+        return setError(t("common.invalidPhone"));
       }
-
-      if (!formData.city.trim()) {
-        setError(t("common.cityRequired"));
-        return;
-      }
-
-      if (!formData.address.trim()) {
-        setError(t("common.addressRequired"));
-        return;
-      }
-
+      if (!formData.city.trim()) return setError(t("common.cityRequired"));
+      if (!formData.address.trim()) return setError(t("common.addressRequired"));
       if (!/^\d{6}$/.test(formData.pincode)) {
-        setError(t("common.invalidPincode"));
-        return;
+        return setError(t("common.invalidPincode"));
       }
 
-      // Find the city key from the translated label
-      const cityKey = findCityKey(formData.city);
-      const cityValue = cityKey || formData.city;
-
-      // Make API call to update profile
+      const cityValue = findCityKey(formData.city) || formData.city;
       const response = await authApi.updateProfile({
         name: formData.name,
         phone: formData.phone,
@@ -128,9 +190,6 @@ const ProfilePage = () => {
         address: formData.address,
         pincode: formData.pincode,
       });
-
-      setSuccess(t("common.profileUpdateSuccess"));
-      setIsEditing(false);
 
       if (response.user) {
         updateUser(response.user);
@@ -144,7 +203,10 @@ const ProfilePage = () => {
           pincode: response.user.pincode,
         });
       }
-    } catch (err: Error | unknown) {
+
+      setSuccess(t("common.profileUpdateSuccess"));
+      setIsEditing(false);
+    } catch (err) {
       const message = ErrorHandler.getUserFriendlyMessage(
         err,
         t("errors.somethingWrong"),
@@ -156,23 +218,17 @@ const ProfilePage = () => {
     }
   };
 
-  const handlePhotoClick = () => {
-    fileInputRef.current?.click();
-  };
-
   const handlePhotoChange = async (
     event: React.ChangeEvent<HTMLInputElement>,
   ) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    // Validate file type
     if (!file.type.startsWith("image/")) {
       setError(t("errors.invalidFileType"));
       return;
     }
 
-    // Validate file size (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
       setError(t("errors.fileTooLarge"));
       return;
@@ -181,15 +237,10 @@ const ProfilePage = () => {
     try {
       setIsUploadingPhoto(true);
       setError(null);
-
       const response = await authApi.uploadProfilePhoto(file);
-
+      if (response.user) updateUser(response.user);
       setSuccess(t("common.profilePhotoUpdated"));
-
-      if (response.user) {
-        updateUser(response.user);
-      }
-    } catch (err: Error | unknown) {
+    } catch (err) {
       const message = ErrorHandler.getUserFriendlyMessage(
         err,
         t("errors.somethingWrong"),
@@ -201,43 +252,31 @@ const ProfilePage = () => {
     }
   };
 
-  if (!user) {
-    return (
-      <Container sx={{ py: 4, display: "flex", justifyContent: "center" }}>
-        <CircularProgress />
-      </Container>
-    );
-  }
-
   return (
-    <Container maxWidth="md" sx={{ py: 4 }}>
-      {/* Header */}
-      <Box
-        sx={{
-          display: "flex",
-          alignItems: "center",
-          gap: 2,
-          mb: 4,
-          flexWrap: "wrap",
-        }}
-      >
+    <Container
+      maxWidth={false}
+      sx={{
+        maxWidth: tokens.appMaxWidth,
+        py: { xs: 3, md: 5 },
+        px: tokens.pagePaddingX,
+      }}
+    >
+      <Box sx={{ mb: 3 }}>
         <Button
           startIcon={<ArrowBack />}
           onClick={() => navigate(-1)}
-          sx={{ color: tokens.primary }}
+          sx={{ color: tokens.primary, fontWeight: 800, mb: 1 }}
         >
           {t("common.back")}
         </Button>
-        <Typography
-          variant="h4"
-          fontWeight="700"
-          sx={{ fontSize: { xs: "1.5rem", sm: "2rem" } }}
-        >
+        <Typography variant="h3" sx={{ fontWeight: 900, color: tokens.gray900 }}>
           {t("common.profileTitle")}
+        </Typography>
+        <Typography sx={{ mt: 0.75, color: tokens.gray600 }}>
+          Manage your profile, delivery details, and account security.
         </Typography>
       </Box>
 
-      {/* Alerts */}
       {error && (
         <Alert severity="error" onClose={() => setError(null)} sx={{ mb: 3 }}>
           {error}
@@ -253,25 +292,24 @@ const ProfilePage = () => {
         </Alert>
       )}
 
-      {/* Main Profile Card */}
       <Paper
+        elevation={0}
         sx={{
-          p: { xs: 2, sm: 4 },
-          borderRadius: 2,
-          boxShadow: "0 4px 16px rgba(0, 0, 0, 0.08)",
-          backgroundColor: "#f9f9f9",
+          p: { xs: 2.5, md: 4 },
+          borderRadius: `${tokens.radiusXl}px`,
+          border: `1px solid ${tokens.gray200}`,
+          boxShadow: tokens.shadowMd,
         }}
       >
-        {/* User Header */}
         <Box
           sx={{
             display: "flex",
+            justifyContent: "space-between",
+            alignItems: { xs: "flex-start", sm: "center" },
             flexDirection: { xs: "column", sm: "row" },
-            alignItems: { xs: "center", sm: "center" },
-            justifyContent: { xs: "center", sm: "space-between" },
-            gap: { xs: 2, sm: 0 },
-            mb: 4,
+            gap: 3,
             pb: 3,
+            mb: 3,
             borderBottom: `1px solid ${tokens.gray200}`,
           }}
         >
@@ -282,21 +320,20 @@ const ProfilePage = () => {
               badgeContent={
                 <IconButton
                   size="small"
-                  onClick={handlePhotoClick}
+                  onClick={() => fileInputRef.current?.click()}
                   sx={{
                     backgroundColor: tokens.accent,
-                    color: "white",
-                    width: 32,
-                    height: 32,
-                    "&:hover": {
-                      backgroundColor: tokens.accentDark,
-                    },
+                    color: tokens.white,
+                    width: 34,
+                    height: 34,
+                    border: `2px solid ${tokens.white}`,
+                    "&:hover": { backgroundColor: tokens.accentDark },
                   }}
                 >
                   {isUploadingPhoto ? (
-                    <CircularProgress size={16} sx={{ color: "white" }} />
+                    <CircularProgress size={16} sx={{ color: tokens.white }} />
                   ) : (
-                    <CameraAlt sx={{ fontSize: 16 }} />
+                    <CameraAlt sx={appIconSx.sm} />
                   )}
                 </IconButton>
               }
@@ -305,13 +342,13 @@ const ProfilePage = () => {
                 src={user.profilePhoto}
                 alt={user.name}
                 sx={{
-                  width: 80,
-                  height: 80,
+                  width: 88,
+                  height: 88,
                   fontSize: "2rem",
-                  fontWeight: 700,
-                  backgroundColor: tokens.primary,
-                  border: "3px solid white",
-                  boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+                  fontWeight: 900,
+                  bgcolor: tokens.primary,
+                  border: `3px solid ${tokens.white}`,
+                  boxShadow: tokens.shadowMd,
                 }}
               >
                 {!user.profilePhoto && user.name?.charAt(0).toUpperCase()}
@@ -325,287 +362,208 @@ const ProfilePage = () => {
               style={{ display: "none" }}
             />
             <Box>
-              <Typography variant="h6" fontWeight="700">
+              <Typography variant="h5" sx={{ fontWeight: 900 }}>
                 {user.name}
               </Typography>
-              <Typography variant="body2" color="text.secondary">
-                {user.email}
-              </Typography>
+              <Typography sx={{ color: tokens.gray600 }}>{user.email}</Typography>
               <Chip
-                label={
-                  user.role === "ADMIN"
-                    ? "⚙️ " + t("common.profileRoleAdmin")
-                    : user.role === "SUPER_ADMIN"
-                      ? "👑 " + t("common.profileRoleSuperAdmin")
-                      : user.role === "DELIVERY_STAFF"
-                        ? "🚚 " + t("common.profileRoleDeliveryStaff")
-                        : user.role === "SUPPORT_STAFF"
-                          ? "👨‍💼 " + t("common.profileRoleSupportStaff")
-                          : "👤 " + t("common.profileRoleUser")
-                }
+                icon={roleMeta.icon}
+                label={t(roleMeta.labelKey)}
                 size="small"
                 sx={{
                   mt: 1,
-                  backgroundColor:
-                    user.role === "SUPER_ADMIN"
-                      ? "#d32f2f"
-                      : user.role === "ADMIN"
-                        ? tokens.accent
-                        : user.role === "DELIVERY_STAFF"
-                          ? "#1976d2"
-                          : user.role === "SUPPORT_STAFF"
-                            ? "#0097a7"
-                            : tokens.primary,
-                  color: "white",
-                  fontWeight: 600,
+                  bgcolor: roleMeta.color,
+                  color: tokens.white,
+                  fontWeight: 800,
+                  "& .MuiChip-icon": { color: tokens.white },
                 }}
               />
             </Box>
           </Box>
+
           <Button
             variant={isEditing ? "outlined" : "contained"}
             startIcon={isEditing ? <Cancel /> : <Edit />}
             onClick={() => (isEditing ? handleCancel() : setIsEditing(true))}
             sx={{
-              textTransform: "none",
-              fontWeight: 600,
+              borderRadius: "999px",
+              fontWeight: 800,
+              bgcolor: isEditing ? "transparent" : tokens.accent,
+              "&:hover": {
+                bgcolor: isEditing ? `${tokens.error}10` : tokens.accentDark,
+              },
             }}
           >
             {isEditing ? t("common.cancel") : t("common.edit")}
           </Button>
         </Box>
 
-        {/* Form Section */}
-        <Box>
-          <Typography variant="h6" fontWeight="700" sx={{ mb: 3 }}>
-            {t("common.profilePersonalInfo")}
-          </Typography>
+        <Typography variant="h5" sx={{ fontWeight: 900, mb: 3 }}>
+          {t("common.profilePersonalInfo")}
+        </Typography>
 
-          <Box sx={{ display: "flex", flexDirection: "column", gap: 3, mb: 4 }}>
-            {/* Name and Email Row */}
-            <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
-              <TextField
-                label={t("auth.name")}
-                name="name"
-                value={formData.name}
-                onChange={handleInputChange}
-                disabled={!isEditing}
-                variant={isEditing ? "outlined" : "filled"}
-                sx={{
-                  flex: "1 1 calc(50% - 8px)",
-                  minWidth: "250px",
-                  "& .MuiFilledInput-root": {
-                    backgroundColor: tokens.gray50,
-                  },
-                }}
-              />
-              <TextField
-                label={t("auth.email")}
-                name="email"
-                type="email"
-                value={formData.email}
-                disabled
-                variant="filled"
-                helperText={isEditing ? t("common.emailUpdateInfo") : ""}
-                sx={{
-                  flex: "1 1 calc(50% - 8px)",
-                  minWidth: "250px",
-                  "& .MuiFilledInput-root": {
-                    backgroundColor: tokens.gray50,
-                    cursor: "not-allowed",
-                    "&:hover": {
-                      backgroundColor: tokens.gray50,
-                    },
-                  },
-                  "& .Mui-disabled": {
-                    cursor: "not-allowed",
-                    WebkitTextFillColor: "rgba(0, 0, 0, 0.6)",
-                  },
-                }}
-              />
-            </Box>
-
-            {/* Phone and State Row */}
-            <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
-              <TextField
-                label={t("auth.phone")}
-                name="phone"
-                value={formData.phone}
-                onChange={handleInputChange}
-                disabled={!isEditing}
-                variant={isEditing ? "outlined" : "filled"}
-                placeholder={t("common.tenDigitNumber")}
-                sx={{
-                  flex: "1 1 calc(50% - 8px)",
-                  minWidth: "250px",
-                  "& .MuiFilledInput-root": {
-                    backgroundColor: tokens.gray50,
-                  },
-                }}
-              />
-              <TextField
-                label={t("auth.state")}
-                name="state"
-                value={t("states.maharashtra")}
-                disabled
-                variant="filled"
-                sx={{
-                  flex: "1 1 calc(50% - 8px)",
-                  minWidth: "250px",
-                  "& .MuiFilledInput-root": {
-                    backgroundColor: tokens.gray50,
-                    cursor: "not-allowed",
-                    "&:hover": {
-                      backgroundColor: tokens.gray50,
-                    },
-                  },
-                  "& .Mui-disabled": {
-                    cursor: "not-allowed",
-                    WebkitTextFillColor: "rgba(0, 0, 0, 0.6)",
-                  },
-                }}
-              />
-            </Box>
-
-            {/* City and Pincode Row */}
-            <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
-              <TextField
-                select
-                label={t("auth.city")}
-                name="city"
-                value={currentCityLabel}
-                onChange={handleInputChange}
-                disabled={!isEditing}
-                variant={isEditing ? "outlined" : "filled"}
-                SelectProps={{
-                  native: false,
-                  MenuProps: {
-                    PaperProps: {
-                      style: {
-                        maxHeight: 300,
-                      },
-                    },
-                  },
-                }}
-                sx={{
-                  flex: "1 1 calc(50% - 8px)",
-                  minWidth: "250px",
-                  "& .MuiFilledInput-root": {
-                    backgroundColor: tokens.gray50,
-                  },
-                }}
-              >
-                {MAHARASHTRA_CITIES.map((city) => (
-                  <MenuItem key={city.key} value={city.label}>
-                    {city.label}
-                  </MenuItem>
-                ))}
-              </TextField>
-              <TextField
-                label={t("auth.pincode")}
-                name="pincode"
-                value={formData.pincode}
-                onChange={handleInputChange}
-                disabled={!isEditing}
-                variant={isEditing ? "outlined" : "filled"}
-                placeholder={t("common.sixDigitCode")}
-                sx={{
-                  flex: "1 1 calc(50% - 8px)",
-                  minWidth: "250px",
-                  "& .MuiFilledInput-root": {
-                    backgroundColor: tokens.gray50,
-                  },
-                }}
-              />
-            </Box>
-
-            {/* Address Row */}
-            <TextField
-              label={t("auth.address")}
-              name="address"
-              value={formData.address}
-              onChange={handleInputChange}
-              disabled={!isEditing}
-              variant={isEditing ? "outlined" : "filled"}
-              multiline
-              rows={3}
-              sx={{
-                "& .MuiFilledInput-root": {
-                  backgroundColor: tokens.gray50,
-                },
-              }}
-            />
-          </Box>
-
-          {/* Action Buttons */}
-          {isEditing && (
-            <Box sx={{ display: "flex", gap: 2, justifyContent: "flex-end" }}>
-              <Button
-                variant="outlined"
-                onClick={handleCancel}
-                disabled={isLoading}
-                sx={{ textTransform: "none", fontWeight: 600 }}
-              >
-                {t("common.cancel")}
-              </Button>
-              <Button
-                variant="contained"
-                startIcon={<Save />}
-                onClick={handleSave}
-                disabled={isLoading}
-                sx={{ textTransform: "none", fontWeight: 600 }}
-              >
-                {isLoading ? <CircularProgress size={24} /> : t("common.save")}
-              </Button>
-            </Box>
-          )}
+        <Box
+          sx={{
+            display: "grid",
+            gridTemplateColumns: { xs: "1fr", md: "repeat(2, 1fr)" },
+            gap: 2,
+            mb: 3,
+          }}
+        >
+          <TextField
+            label={t("auth.name")}
+            name="name"
+            value={formData.name}
+            onChange={handleInputChange}
+            disabled={!isEditing}
+            variant={isEditing ? "outlined" : "filled"}
+            sx={profileInputSx}
+          />
+          <TextField
+            label={t("auth.email")}
+            name="email"
+            value={formData.email}
+            disabled
+            variant="filled"
+            helperText={isEditing ? t("common.emailUpdateInfo") : ""}
+            sx={profileInputSx}
+          />
+          <TextField
+            label={t("auth.phone")}
+            name="phone"
+            value={formData.phone}
+            onChange={handleInputChange}
+            disabled={!isEditing}
+            variant={isEditing ? "outlined" : "filled"}
+            placeholder={t("common.tenDigitNumber")}
+            sx={profileInputSx}
+          />
+          <TextField
+            label={t("auth.state")}
+            value={t("states.maharashtra")}
+            disabled
+            variant="filled"
+            sx={profileInputSx}
+          />
+          <TextField
+            select
+            label={t("auth.city")}
+            name="city"
+            value={currentCityLabel}
+            onChange={handleInputChange}
+            disabled={!isEditing}
+            variant={isEditing ? "outlined" : "filled"}
+            sx={profileInputSx}
+          >
+            {cities.map((city) => (
+              <MenuItem key={city.key} value={city.label}>
+                {city.label}
+              </MenuItem>
+            ))}
+          </TextField>
+          <TextField
+            label={t("auth.pincode")}
+            name="pincode"
+            value={formData.pincode}
+            onChange={handleInputChange}
+            disabled={!isEditing}
+            variant={isEditing ? "outlined" : "filled"}
+            placeholder={t("common.sixDigitCode")}
+            sx={profileInputSx}
+          />
         </Box>
 
-        {/* Account Section */}
-        <Divider sx={{ my: 4 }} />
+        <TextField
+          fullWidth
+          label={t("auth.address")}
+          name="address"
+          value={formData.address}
+          onChange={handleInputChange}
+          disabled={!isEditing}
+          variant={isEditing ? "outlined" : "filled"}
+          multiline
+          rows={3}
+          sx={profileInputSx}
+        />
 
-        <Box>
-          <Typography variant="h6" fontWeight="700" sx={{ mb: 3 }}>
-            {t("common.profileAccountSettings")}
-          </Typography>
-
-          <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
+        {isEditing && (
+          <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 2, mt: 3 }}>
             <Button
               variant="outlined"
-              color="warning"
+              onClick={handleCancel}
+              disabled={isLoading}
+              sx={{ borderRadius: "999px", fontWeight: 800 }}
+            >
+              {t("common.cancel")}
+            </Button>
+            <Button
+              variant="contained"
+              startIcon={<Save />}
+              onClick={handleSave}
+              disabled={isLoading}
+              sx={{
+                borderRadius: "999px",
+                fontWeight: 800,
+                bgcolor: tokens.accent,
+                "&:hover": { bgcolor: tokens.accentDark },
+              }}
+            >
+              {isLoading ? <CircularProgress size={22} /> : t("common.save")}
+            </Button>
+          </Box>
+        )}
+
+        <Divider sx={{ my: 4 }} />
+
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: { xs: "stretch", sm: "center" },
+            flexDirection: { xs: "column", sm: "row" },
+            gap: 2,
+          }}
+        >
+          <Box>
+            <Typography variant="h5" sx={{ fontWeight: 900 }}>
+              {t("common.profileAccountSettings")}
+            </Typography>
+            <Typography variant="body2" sx={{ mt: 0.5, color: tokens.gray600 }}>
+              {t("common.profileAccountCreated")}:{" "}
+              {new Date(user.createdAt).toLocaleDateString()}
+            </Typography>
+          </Box>
+          <Box sx={{ display: "flex", gap: 1.5, flexWrap: "wrap" }}>
+            <Button
+              variant="outlined"
               onClick={() => navigate("/change-password")}
-              sx={{ textTransform: "none", fontWeight: 600 }}
+              sx={{ borderRadius: "999px", fontWeight: 800 }}
             >
               {t("common.profileChangePassword")}
             </Button>
             <Button
               variant="outlined"
               color="error"
+              startIcon={<Logout />}
               onClick={() => {
                 if (window.confirm(t("common.profileConfirmLogout"))) {
-                  logout();
+                  void logout();
                   navigate("/login");
                 }
               }}
-              sx={{ textTransform: "none", fontWeight: 600 }}
+              sx={{ borderRadius: "999px", fontWeight: 800 }}
             >
               {t("nav.logout")}
             </Button>
           </Box>
         </Box>
 
-        {/* Account Info */}
-        <Divider sx={{ my: 4 }} />
-
-        <Box>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-            <strong>{t("common.profileAccountCreated")}:</strong>{" "}
-            {new Date(user.createdAt).toLocaleDateString()}
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            <strong>{t("common.profileUserID")}:</strong> {user.id}
-          </Typography>
-        </Box>
+        <Typography
+          variant="caption"
+          sx={{ display: "block", mt: 3, color: tokens.gray500 }}
+        >
+          {t("common.profileUserID")}: {user.id}
+        </Typography>
       </Paper>
     </Container>
   );

@@ -14,6 +14,7 @@ import {
 import { VerifiedUser, Favorite } from "@/mui/icons";
 import { productsApi } from "../../api/products";
 import { tokens } from "../../theme/theme";
+import { appIconSx } from "@/components/ui/navigationStyles";
 
 interface CustomerHighlight {
   id: string;
@@ -129,7 +130,7 @@ const CustomerHighlights: React.FC<CustomerHighlightsProps> = ({
               mb: 1,
             }}
           >
-            <Favorite sx={{ color: tokens.error, fontSize: 28 }} />
+            <Favorite sx={{ ...appIconSx.section, color: tokens.error }} />
             <Typography
               variant="h4"
               fontWeight="700"
@@ -189,7 +190,7 @@ const CustomerHighlights: React.FC<CustomerHighlightsProps> = ({
                         borderRadius: 1,
                       }}
                     >
-                      <VerifiedUser sx={{ fontSize: 14 }} />
+                      <VerifiedUser sx={appIconSx.xs} />
                       <Typography variant="caption" fontWeight="700">
                         {t("common.verified")}
                       </Typography>

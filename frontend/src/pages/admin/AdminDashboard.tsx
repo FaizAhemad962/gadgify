@@ -30,11 +30,16 @@ import type { GridColDef } from "@mui/x-data-grid";
 import { formatDate } from "@/utils/dateFormatter";
 import { tokens } from "@/theme/theme";
 import { useAuth } from "../../context/AuthContext";
+import { getRoleLabel, getRoleColor } from "../../utils/roleHelper";
+import { appIconSx } from "@/components/ui/navigationStyles";
 import {
-  getRoleIcon,
-  getRoleLabel,
-  getRoleColor,
-} from "../../utils/roleHelper";
+  AdminPageHeader,
+  AdminStatCard,
+} from "@/components/admin/adminStyles";
+import {
+  adminPageSx,
+  adminPanelSx,
+} from "@/components/admin/adminStyleTokens";
 
 const STATUS_COLORS: Record<string, string> = {
   PENDING: tokens.warning,
@@ -80,25 +85,25 @@ const AdminDashboard = () => {
     {
       title: t("admin.totalProducts"),
       value: summary?.totalProducts ?? 0,
-      icon: <Inventory sx={{ fontSize: 40 }} />,
+      icon: <Inventory sx={appIconSx.feature} />,
       color: tokens.primary,
     },
     {
       title: t("admin.totalOrders"),
       value: summary?.totalOrders ?? 0,
-      icon: <ShoppingCart sx={{ fontSize: 40 }} />,
+      icon: <ShoppingCart sx={appIconSx.feature} />,
       color: tokens.success,
     },
     {
       title: t("admin.totalUsers"),
       value: summary?.totalUsers ?? 0,
-      icon: <People sx={{ fontSize: 40 }} />,
+      icon: <People sx={appIconSx.feature} />,
       color: tokens.secondary,
     },
     {
       title: t("admin.totalRevenue"),
       value: `₹${(summary?.thisMonthRevenue ?? 0).toLocaleString()}`,
-      icon: <CurrencyRupee sx={{ fontSize: 40 }} />,
+      icon: <CurrencyRupee sx={appIconSx.feature} />,
       color: tokens.accent,
       trend: summary?.revenueGrowth,
     },
@@ -173,35 +178,34 @@ const AdminDashboard = () => {
   ];
 
   const chartPaper = {
+    ...adminPanelSx,
     p: 3,
-    bgcolor: tokens.white,
-    border: `1px solid ${tokens.gray200}`,
-    borderRadius: 3,
   };
 
   return (
-    <Box>
-      <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 4 }}>
-        <Typography
-          variant="h4"
-          fontWeight="700"
-          sx={{ color: tokens.gray900 }}
-        >
-          {t("admin.dashboard")}
-        </Typography>
-        {user?.role && (
+    <Box sx={adminPageSx}>
+      <AdminPageHeader
+        title={t("admin.dashboard")}
+        subtitle={t(
+          "admin.dashboardSubtitle",
+          "Monitor revenue, orders, inventory, and customer activity.",
+        )}
+        eyebrow={t("nav.admin")}
+        icon={<Inventory sx={appIconSx.card} />}
+        action={
+          user?.role ? (
           <Chip
-            label={`${getRoleIcon(user.role)} ${getRoleLabel(user.role)}`}
+            label={getRoleLabel(user.role)}
             sx={{
               backgroundColor: getRoleColor(user.role),
               color: "white",
-              fontWeight: 600,
-              fontSize: "0.75rem",
-              height: 24,
+              fontWeight: 800,
+              borderRadius: "999px",
             }}
           />
-        )}
-      </Box>
+          ) : undefined
+        }
+      />
 
       {/* Stat Cards */}
       <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap", mb: 4 }}>
@@ -213,65 +217,21 @@ const AdminDashboard = () => {
             }}
             key={index}
           >
-            <Paper
-              sx={{
-                p: 3,
-                display: "flex",
-                alignItems: "center",
-                gap: 2.5,
-                bgcolor: tokens.white,
-                border: `1px solid ${tokens.gray200}`,
-                borderRadius: 3,
-                transition: "all 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
-                cursor: "pointer",
-                position: "relative",
-                overflow: "hidden",
-                "&::before": {
-                  content: '""',
-                  position: "absolute",
-                  top: 0,
-                  left: 0,
-                  width: 4,
-                  height: "100%",
-                  bgcolor: stat.color,
-                  borderRadius: "4px 0 0 4px",
-                },
-                "&:hover": {
-                  transform: "translateY(-4px)",
-                  boxShadow: `0 8px 24px ${stat.color}20`,
-                  borderColor: stat.color,
-                },
-              }}
-            >
-              <Box
-                sx={{
-                  color: stat.color,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  bgcolor: `${stat.color}12`,
-                  borderRadius: 2,
-                  p: 1.5,
-                }}
-              >
-                {stat.icon}
-              </Box>
-              <Box sx={{ flex: 1 }}>
-                {isLoading ? (
-                  <Skeleton width={80} height={32} />
+            <AdminStatCard
+              label={stat.title}
+              value={
+                isLoading ? (
+                  <Skeleton width={80} height={28} />
                 ) : (
-                  <Typography
-                    variant="h5"
-                    fontWeight="700"
-                    sx={{ color: tokens.gray900 }}
-                  >
+                  <Typography variant="h5" fontWeight="900">
                     {stat.value}
                   </Typography>
-                )}
-                <Typography variant="body2" sx={{ color: tokens.gray500 }}>
-                  {stat.title}
-                </Typography>
-                {"trend" in stat && stat.trend !== undefined && !isLoading && (
+                )
+              }
+              icon={stat.icon}
+              color={stat.color}
+              helper={
+                "trend" in stat && stat.trend !== undefined && !isLoading ? (
                   <Box
                     sx={{
                       display: "flex",
@@ -282,11 +242,11 @@ const AdminDashboard = () => {
                   >
                     {stat.trend >= 0 ? (
                       <TrendingUp
-                        sx={{ fontSize: 16, color: tokens.success }}
+                        sx={{ ...appIconSx.sm, color: tokens.success }}
                       />
                     ) : (
                       <TrendingDown
-                        sx={{ fontSize: 16, color: tokens.error }}
+                        sx={{ ...appIconSx.sm, color: tokens.error }}
                       />
                     )}
                     <Typography
@@ -300,9 +260,9 @@ const AdminDashboard = () => {
                       {stat.trend}% {t("admin.vsLastMonth")}
                     </Typography>
                   </Box>
-                )}
-              </Box>
-            </Paper>
+                ) : undefined
+              }
+            />
           </Box>
         ))}
       </Box>

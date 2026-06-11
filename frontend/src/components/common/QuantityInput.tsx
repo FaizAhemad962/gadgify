@@ -1,6 +1,7 @@
 import React from 'react';
 import { Box, IconButton, Typography } from '@/mui/material';
 import { Add, Remove } from '@/mui/icons';
+import { appIconSx } from '@/components/ui/navigationStyles';
 
 interface QuantityInputProps {
   value: number;
@@ -33,7 +34,7 @@ const QuantityInput: React.FC<QuantityInputProps> = ({
         sx={{ '&:disabled': { opacity: 0.5 } }}
         aria-label="decrease quantity"
       >
-        <Remove sx={{ fontSize: '1.2rem' }} />
+        <Remove sx={appIconSx.lg} />
       </IconButton>
       <Typography sx={{ minWidth: 35, textAlign: 'center', fontWeight: 600, color: 'text.primary' }}>
         {value}
@@ -45,7 +46,7 @@ const QuantityInput: React.FC<QuantityInputProps> = ({
         sx={{ '&:disabled': { opacity: 0.5 } }}
         aria-label="increase quantity"
       >
-        <Add sx={{ fontSize: '1.2rem' }} />
+        <Add sx={appIconSx.lg} />
       </IconButton>
     </Box>
   );

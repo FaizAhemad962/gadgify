@@ -4,11 +4,9 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  Button,
   TextField,
   MenuItem,
   Alert,
-  CircularProgress,
   Box,
   Typography,
 } from "@/mui/material";
@@ -16,6 +14,14 @@ import { useForm, Controller, useWatch } from "react-hook-form";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { apiClient } from "@/api/client";
+import { invalidateUserData } from "@/lib/queryInvalidation";
+import {
+  adminDialogActionsSx,
+  adminDialogContentSx,
+  adminDialogPaperSx,
+  adminDialogTitleSx,
+} from "@/components/admin/adminStyleTokens";
+import { CustomButton } from "@/components/ui/CustomButton";
 
 const AVAILABLE_ROLES = [
   { value: "USER", label: "User" },
@@ -60,8 +66,7 @@ export const ChangeRoleDialog: React.FC<ChangeRoleDialogProps> = ({
     },
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     onSuccess: (_data) => {
-      queryClient.invalidateQueries({ queryKey: ["users"] });
-      queryClient.invalidateQueries({ queryKey: ["permissions"] });
+      invalidateUserData(queryClient);
       reset();
       onClose();
       onSuccess?.();
@@ -77,9 +82,15 @@ export const ChangeRoleDialog: React.FC<ChangeRoleDialogProps> = ({
   };
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-      <DialogTitle>{t("Change User Role")}</DialogTitle>
-      <DialogContent sx={{ pt: 2 }}>
+    <Dialog
+      open={open}
+      onClose={onClose}
+      maxWidth="sm"
+      fullWidth
+      PaperProps={{ sx: adminDialogPaperSx }}
+    >
+      <DialogTitle sx={adminDialogTitleSx}>{t("Change User Role")}</DialogTitle>
+      <DialogContent sx={adminDialogContentSx}>
         <Box sx={{ mb: 2 }}>
           <Typography variant="body2" color="textSecondary">
             {t("User")}: <strong>{userName}</strong>
@@ -124,23 +135,25 @@ export const ChangeRoleDialog: React.FC<ChangeRoleDialogProps> = ({
             )}
           />
 
-          <DialogActions sx={{ mt: 3 }}>
-            <Button onClick={onClose} disabled={changeRoleMutation.isPending}>
+          <DialogActions sx={{ ...adminDialogActionsSx, mx: -3, mb: -2.5, mt: 3 }}>
+            <CustomButton
+              onClick={onClose}
+              disabled={changeRoleMutation.isPending}
+              appVariant="ghost"
+            >
               {t("Cancel")}
-            </Button>
-            <Button
+            </CustomButton>
+            <CustomButton
               type="submit"
               variant="contained"
+              appVariant="primary"
+              isLoading={changeRoleMutation.isPending}
               disabled={
                 changeRoleMutation.isPending || selectedRole === currentRole
               }
             >
-              {changeRoleMutation.isPending ? (
-                <CircularProgress size={24} />
-              ) : (
-                t("Change Role")
-              )}
-            </Button>
+              {t("Change Role")}
+            </CustomButton>
           </DialogActions>
         </form>
       </DialogContent>

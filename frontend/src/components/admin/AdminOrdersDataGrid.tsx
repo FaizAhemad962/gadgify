@@ -5,6 +5,15 @@ import { AppDataGrid } from "../ui/AppDataGrid";
 import type { Order } from "../../types";
 import { formatDate } from "../../utils/dateFormatter";
 import { tokens } from "../../theme/theme";
+import {
+  ORDER_STATUS_OPTIONS,
+  getAllowedOrderStatusTransitions,
+  getOrderStatusAccent,
+  getOrderStatusLabel,
+  getPaymentStatusChipColor,
+  getPaymentStatusLabel,
+  type OrderStatus,
+} from "@/utils/orderStatus";
 
 interface AdminOrdersDataGridProps {
   orders: Order[];
@@ -29,42 +38,23 @@ export const AdminOrdersDataGrid = ({
 }: AdminOrdersDataGridProps) => {
   const { t } = useTranslation();
 
-  const getPaymentStatusColor = (
-    status: "PENDING" | "PROCESSING" | "SHIPPED" | "DELIVERED" | "CANCELLED",
-  ):
-    | "default"
-    | "primary"
-    | "secondary"
-    | "error"
-    | "info"
-    | "success"
-    | "warning" => {
-    const colors: Record<
-      string,
-      | "default"
-      | "primary"
-      | "secondary"
-      | "error"
-      | "info"
-      | "success"
-      | "warning"
-    > = {
-      PENDING: "warning",
-      PROCESSING: "info",
-      SHIPPED: "success",
-      DELIVERED: "success",
-      CANCELLED: "error",
-    };
-    return colors[status] || "default";
-  };
+  const handleStatusChange = (order: Order, nextStatus: OrderStatus) => {
+    if (nextStatus === order.status) return;
 
-  const getPaymentStatusLabel = (status: string) => {
-    const statusMap: Record<string, string> = {
-      PENDING: t("payment.pending"),
-      COMPLETED: t("payment.completed"),
-      FAILED: t("payment.failed"),
-    };
-    return statusMap[status] || status;
+    if (
+      ["DELIVERED", "CANCELLED"].includes(nextStatus) &&
+      !window.confirm(
+        t(
+          "admin.confirmOrderStatusChange",
+          "Are you sure you want to mark this order as {{status}}?",
+          { status: getOrderStatusLabel(nextStatus, t) },
+        ),
+      )
+    ) {
+      return;
+    }
+
+    onStatusChange(order.id, nextStatus);
   };
 
   const columns: GridColDef[] = [
@@ -161,8 +151,8 @@ export const AdminOrdersDataGrid = ({
       sortable: false,
       renderCell: (params: GridRenderCellParams) => (
         <Chip
-          label={getPaymentStatusLabel(params.value)}
-          color={getPaymentStatusColor(params.value)}
+          label={getPaymentStatusLabel(params.value, t)}
+          color={getPaymentStatusChipColor(params.value)}
           size="small"
           sx={{
             fontWeight: "600",
@@ -175,33 +165,58 @@ export const AdminOrdersDataGrid = ({
     {
       field: "status",
       headerName: t("admin.status"),
-      minWidth: 140,
-      maxWidth: 220,
+      minWidth: 180,
+      maxWidth: 260,
       flex: 1,
       sortable: false,
-      renderCell: (params: GridRenderCellParams) => (
-        <Select
-          value={params.row.status}
-          onChange={(e) =>
-            onStatusChange(
-              params.row.id,
-              e.target.value as
-                | "PENDING"
-                | "PROCESSING"
-                | "SHIPPED"
-                | "DELIVERED"
-                | "CANCELLED",
-            )
-          }
-          size="small"
-        >
-          <MenuItem value="PENDING">{t("orders.pending")}</MenuItem>
-          <MenuItem value="PROCESSING">{t("orders.processing")}</MenuItem>
-          <MenuItem value="SHIPPED">{t("orders.shipped")}</MenuItem>
-          <MenuItem value="DELIVERED">{t("orders.delivered")}</MenuItem>
-          <MenuItem value="CANCELLED">{t("orders.cancelled")}</MenuItem>
-        </Select>
-      ),
+      renderCell: (params: GridRenderCellParams<Order>) => {
+        const order = params.row;
+        const allowedStatuses = getAllowedOrderStatusTransitions(
+          order.status,
+          order.paymentStatus,
+        );
+        const accent = getOrderStatusAccent(order.status);
+
+        return (
+          <Select
+            value={order.status}
+            onChange={(e) =>
+              handleStatusChange(order, e.target.value as OrderStatus)
+            }
+            disabled={allowedStatuses.length <= 1}
+            size="small"
+            sx={{
+              minWidth: 160,
+              borderRadius: "999px",
+              bgcolor: `${accent}10`,
+              color: accent,
+              fontWeight: 800,
+              "& .MuiSelect-select": {
+                py: 0.85,
+              },
+              "& .MuiOutlinedInput-notchedOutline": {
+                borderColor: `${accent}44`,
+              },
+              "&:hover .MuiOutlinedInput-notchedOutline": {
+                borderColor: accent,
+              },
+              "&.Mui-disabled": {
+                opacity: 0.8,
+              },
+            }}
+          >
+            {ORDER_STATUS_OPTIONS.map((status) => (
+              <MenuItem
+                key={status}
+                value={status}
+                disabled={!allowedStatuses.includes(status)}
+              >
+                {getOrderStatusLabel(status, t)}
+              </MenuItem>
+            ))}
+          </Select>
+        );
+      },
     },
   ];
 

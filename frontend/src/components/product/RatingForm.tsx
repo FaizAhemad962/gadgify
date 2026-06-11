@@ -11,6 +11,8 @@ import { Star } from '@/mui/icons'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { ratingsApi, type CreateRatingData } from '../../api/ratings'
 import { useTranslation } from 'react-i18next'
+import { invalidateProductData } from '@/lib/queryInvalidation'
+import { queryKeys } from '@/lib/queryKeys'
 
 interface RatingFormProps {
   productId: string
@@ -29,7 +31,10 @@ export const RatingForm: React.FC<RatingFormProps> = ({ productId }) => {
       alert(t('success.ratingSubmitted'))
       setRating(5)
       setComment('')
-      queryClient.invalidateQueries({ queryKey: ['ratings', productId] })
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.products.ratings(productId),
+      })
+      invalidateProductData(queryClient, productId)
     },
     onError: () => {
       alert(t('errors.failedToSubmitRating'))

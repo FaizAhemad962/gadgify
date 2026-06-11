@@ -1,5 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "./client";
+import { invalidateUserData } from "@/lib/queryInvalidation";
+import { queryKeys } from "@/lib/queryKeys";
 
 export const useCheckRoleChangePermission = () => {
   return useQuery({
@@ -16,7 +18,7 @@ export const useCheckRoleChangePermission = () => {
 
 export const useRoleChangePermissions = () => {
   return useQuery({
-    queryKey: ["roleChangePermissions"],
+    queryKey: queryKeys.users.roleChangePermissions,
     queryFn: async () => {
       // ✅ SECURITY: apiClient handles httpOnly cookies automatically
       const response = await apiClient.get("/role-change/permissions", {
@@ -57,7 +59,7 @@ export const useGrantRoleChangePermission = () => {
       return response.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["roleChangePermissions"] });
+      invalidateUserData(queryClient);
     },
   });
 };
@@ -74,7 +76,7 @@ export const useRevokeRoleChangePermission = () => {
       return response.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["roleChangePermissions"] });
+      invalidateUserData(queryClient);
     },
   });
 };
@@ -95,8 +97,7 @@ export const useChangeUserRole = () => {
       return response.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["users"] });
-      queryClient.invalidateQueries({ queryKey: ["roleChangePermissions"] });
+      invalidateUserData(queryClient);
     },
   });
 };

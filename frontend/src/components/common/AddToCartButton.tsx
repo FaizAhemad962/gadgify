@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { useCart } from "../../context/CartContext";
 import { useAuth } from "../../context/AuthContext";
 import { useTranslation } from "react-i18next";
+import { appIconSx } from "@/components/ui/navigationStyles";
 
 interface AddToCartButtonProps {
   productId: string;
@@ -53,7 +54,7 @@ export const AddToCartButton = ({
     <Button
       variant={variant}
       size={size}
-      startIcon={<ShoppingCart sx={{ fontSize: "1.1rem" }} />}
+      startIcon={<ShoppingCart sx={appIconSx.md} />}
       onClick={handleClick}
       disabled={disabled || loading}
       fullWidth={fullWidth}

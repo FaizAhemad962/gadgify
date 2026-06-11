@@ -22,6 +22,13 @@ import {
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { apiClient } from "@/api/client";
+import { invalidateOrderData } from "@/lib/queryInvalidation";
+import {
+  getOrderStatusChipColor,
+  getOrderStatusLabel,
+  getPaymentStatusChipColor,
+  getPaymentStatusLabel,
+} from "@/utils/orderStatus";
 
 interface OrderCardProps {
   orderId: string;
@@ -57,7 +64,7 @@ export const PendingOrderCard: React.FC<OrderCardProps> = ({
       const RazorpayWindow = window as any;
       if (RazorpayWindow.Razorpay) {
         const razorpay = new RazorpayWindow.Razorpay({
-          key_id: data.keyId,
+          key: data.keyId,
           order_id: data.razorpayOrderId,
           amount: data.amount,
           currency: "INR",
@@ -66,7 +73,7 @@ export const PendingOrderCard: React.FC<OrderCardProps> = ({
           handler: async () => {
             // Handle payment success in parent component
             onRetryPayment?.();
-            queryClient.invalidateQueries({ queryKey: ["orders"] });
+            invalidateOrderData(queryClient, orderId);
           },
           theme: { color: "#1976d2" },
         });
@@ -81,23 +88,10 @@ export const PendingOrderCard: React.FC<OrderCardProps> = ({
       return response.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["orders"] });
+      invalidateOrderData(queryClient, orderId);
       setOpenConfirm(false);
     },
   });
-
-  const getPaymentStatusColor = (status: string) => {
-    switch (status) {
-      case "PENDING":
-        return "warning";
-      case "COMPLETED":
-        return "success";
-      case "CANCELLED":
-        return "error";
-      default:
-        return "default";
-    }
-  };
 
   const handleCancelClick = () => {
     setOpenConfirm(true);
@@ -143,7 +137,12 @@ export const PendingOrderCard: React.FC<OrderCardProps> = ({
               <Typography variant="subtitle2" color="textSecondary">
                 {t("Status")}
               </Typography>
-              <Chip label={status} size="small" variant="outlined" />
+              <Chip
+                label={getOrderStatusLabel(status, t)}
+                size="small"
+                color={getOrderStatusChipColor(status)}
+                variant="outlined"
+              />
             </Box>
             <Box>
               <Typography variant="subtitle2" color="textSecondary">
@@ -164,10 +163,9 @@ export const PendingOrderCard: React.FC<OrderCardProps> = ({
                 }
               >
                 <Chip
-                  label={paymentStatus}
+                  label={getPaymentStatusLabel(paymentStatus, t)}
                   size="small"
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                  color={getPaymentStatusColor(paymentStatus) as any}
+                  color={getPaymentStatusChipColor(paymentStatus)}
                   variant="outlined"
                 />
               </Badge>

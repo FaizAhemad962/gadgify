@@ -11,6 +11,12 @@ jest.mock("@/theme/theme", () => ({
     primary: "#1a1a2e",
     gray50: "#f9fafb",
     gray900: "#111827",
+    gray300: "#d1d5db",
+    radiusMd: 12,
+    filterStickyTop: 80,
+    sidebarMaxHeightOffset: 104,
+    defaultMinPrice: 0,
+    defaultMaxPrice: 10000,
   },
 }));
 

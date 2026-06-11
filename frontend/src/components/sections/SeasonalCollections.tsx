@@ -5,6 +5,7 @@ import { Container, Box, Typography, Button, Skeleton } from "@/mui/material";
 import { ArrowForward } from "@/mui/icons";
 import { productsApi } from "../../api/products";
 import { tokens } from "../../theme/theme";
+import { appIconSx } from "@/components/ui/navigationStyles";
 
 interface SeasonalCollection {
   id: string;
@@ -98,7 +99,7 @@ const SeasonalCollections: React.FC<SeasonalCollectionsProps> = ({
             gap: 3,
           }}
         >
-          {[...Array(4)].map((_: any, i: number) => (
+          {Array.from({ length: 4 }).map((_, i) => (
             <Box key={i}>
               <Skeleton variant="rounded" height={300} />
             </Box>
@@ -194,7 +195,7 @@ const SeasonalCollections: React.FC<SeasonalCollectionsProps> = ({
                   </Typography>
                   <Button
                     size="small"
-                    endIcon={<ArrowForward sx={{ fontSize: 14 }} />}
+                    endIcon={<ArrowForward sx={appIconSx.xs} />}
                     sx={{
                       color: "white",
                       textTransform: "none",

@@ -4,7 +4,6 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   Box,
   Typography,
-  Button,
   Paper,
   IconButton,
   Chip,
@@ -28,10 +27,25 @@ import {
   Delete as DeleteIcon,
 } from "@/mui/icons";
 import {
+  AdminPageHeader,
+} from "@/components/admin/adminStyles";
+import {
+  adminDialogActionsSx,
+  adminDialogContentSx,
+  adminDialogPaperSx,
+  adminDialogTitleSx,
+  adminPageSx,
+  adminPanelSx,
+} from "@/components/admin/adminStyleTokens";
+import { appIconSx } from "@/components/ui/navigationStyles";
+import { CustomButton } from "@/components/ui/CustomButton";
+import {
   categoriesApi,
   type Category,
   type CreateCategoryRequest,
 } from "../../api/categories";
+import { invalidateCategoryData } from "@/lib/queryInvalidation";
+import { queryKeys } from "@/lib/queryKeys";
 
 const AdminCategories = () => {
   const { t } = useTranslation();
@@ -57,15 +71,14 @@ const AdminCategories = () => {
   });
 
   const { data: categories = [], isLoading } = useQuery({
-    queryKey: ["admin-categories"],
+    queryKey: queryKeys.categories.admin,
     queryFn: categoriesApi.getAllAdmin,
   });
 
   const createMutation = useMutation({
     mutationFn: categoriesApi.create,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["admin-categories"] });
-      queryClient.invalidateQueries({ queryKey: ["categories"] });
+      invalidateCategoryData(queryClient);
       setDialogOpen(false);
       setSnackbar({
         open: true,
@@ -91,8 +104,7 @@ const AdminCategories = () => {
       data: Partial<CreateCategoryRequest> & { isActive?: boolean };
     }) => categoriesApi.update(id, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["admin-categories"] });
-      queryClient.invalidateQueries({ queryKey: ["categories"] });
+      invalidateCategoryData(queryClient);
       setDialogOpen(false);
       setEditingCategory(null);
       setSnackbar({
@@ -113,8 +125,7 @@ const AdminCategories = () => {
   const deleteMutation = useMutation({
     mutationFn: categoriesApi.delete,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["admin-categories"] });
-      queryClient.invalidateQueries({ queryKey: ["categories"] });
+      invalidateCategoryData(queryClient);
       setDeleteDialogOpen(false);
       setDeletingCategory(null);
       setSnackbar({
@@ -176,35 +187,35 @@ const AdminCategories = () => {
 
   if (isLoading) {
     return (
-      <Box sx={{ p: 3 }}>
+      <Box sx={adminPageSx}>
         <Typography>{t("common.loading")}</Typography>
       </Box>
     );
   }
 
   return (
-    <Box sx={{ p: 3 }}>
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          mb: 3,
-        }}
-      >
-        <Typography variant="h5" fontWeight={700}>
-          {t("admin.categories", "Categories")}
-        </Typography>
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={handleOpenCreate}
-        >
-          {t("admin.createCategory", "Create Category")}
-        </Button>
-      </Box>
+    <Box sx={adminPageSx}>
+      <AdminPageHeader
+        title={t("admin.categories", "Categories")}
+        subtitle={t(
+          "admin.categoriesSubtitle",
+          "Organize storefront categories and their display order.",
+        )}
+        eyebrow={t("nav.admin")}
+        icon={<AddIcon sx={appIconSx.card} />}
+        action={
+          <CustomButton
+            variant="contained"
+            appVariant="admin"
+            startIcon={<AddIcon sx={appIconSx.lg} />}
+            onClick={handleOpenCreate}
+          >
+            {t("admin.createCategory", "Create Category")}
+          </CustomButton>
+        }
+      />
 
-      <TableContainer component={Paper}>
+      <TableContainer component={Paper} sx={{ ...adminPanelSx }}>
         <Table>
           <TableHead>
             <TableRow>
@@ -299,18 +310,19 @@ const AdminCategories = () => {
         onClose={() => setDialogOpen(false)}
         maxWidth="sm"
         fullWidth
+        PaperProps={{ sx: adminDialogPaperSx }}
       >
-        <DialogTitle>
+        <DialogTitle sx={adminDialogTitleSx}>
           {editingCategory
             ? t("admin.editCategory", "Edit Category")
             : t("admin.createCategory", "Create Category")}
         </DialogTitle>
         <DialogContent
           sx={{
+            ...adminDialogContentSx,
             display: "flex",
             flexDirection: "column",
-            gap: 2,
-            pt: "16px !important",
+            gap: 2.5,
           }}
         >
           <TextField
@@ -353,12 +365,13 @@ const AdminCategories = () => {
             fullWidth
           />
         </DialogContent>
-        <DialogActions sx={{ p: 2 }}>
-          <Button onClick={() => setDialogOpen(false)}>
+        <DialogActions sx={adminDialogActionsSx}>
+          <CustomButton onClick={() => setDialogOpen(false)} appVariant="ghost">
             {t("common.cancel")}
-          </Button>
-          <Button
+          </CustomButton>
+          <CustomButton
             variant="contained"
+            appVariant="admin"
             onClick={handleSubmit}
             disabled={
               !formData.name ||
@@ -367,7 +380,7 @@ const AdminCategories = () => {
             }
           >
             {editingCategory ? t("common.save") : t("common.create")}
-          </Button>
+          </CustomButton>
         </DialogActions>
       </Dialog>
 
@@ -375,11 +388,12 @@ const AdminCategories = () => {
       <Dialog
         open={deleteDialogOpen}
         onClose={() => setDeleteDialogOpen(false)}
+        PaperProps={{ sx: adminDialogPaperSx }}
       >
-        <DialogTitle>
+        <DialogTitle sx={adminDialogTitleSx}>
           {t("admin.deleteCategory", "Delete Category")}
         </DialogTitle>
-        <DialogContent>
+        <DialogContent sx={adminDialogContentSx}>
           <Typography>
             {t(
               "admin.deleteCategoryConfirm",
@@ -388,18 +402,21 @@ const AdminCategories = () => {
             )}
           </Typography>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setDeleteDialogOpen(false)}>
+        <DialogActions sx={adminDialogActionsSx}>
+          <CustomButton
+            onClick={() => setDeleteDialogOpen(false)}
+            appVariant="ghost"
+          >
             {t("common.cancel")}
-          </Button>
-          <Button
-            color="error"
+          </CustomButton>
+          <CustomButton
             variant="contained"
+            appVariant="danger"
             onClick={handleConfirmDelete}
             disabled={deleteMutation.isPending}
           >
             {t("common.delete")}
-          </Button>
+          </CustomButton>
         </DialogActions>
       </Dialog>
 

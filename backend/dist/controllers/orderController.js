@@ -10,6 +10,31 @@ const config_1 = require("../config");
 const crypto_1 = __importDefault(require("crypto"));
 const email_1 = require("../utils/email");
 const logger_1 = __importDefault(require("../utils/logger"));
+const errorHandler_1 = require("../middlewares/errorHandler");
+const ORDER_STATUSES = [
+    "PENDING",
+    "PROCESSING",
+    "SHIPPED",
+    "DELIVERED",
+    "CANCELLED",
+];
+const isOrderStatus = (status) => typeof status === "string" && ORDER_STATUSES.includes(status);
+const getAllowedOrderStatusTransitions = (currentStatus, paymentStatus) => {
+    if (currentStatus === "CANCELLED" || currentStatus === "DELIVERED") {
+        return [currentStatus];
+    }
+    if (paymentStatus !== "COMPLETED") {
+        return currentStatus === "PENDING" ? ["PENDING", "CANCELLED"] : [currentStatus];
+    }
+    const transitions = {
+        PENDING: ["PENDING", "PROCESSING", "CANCELLED"],
+        PROCESSING: ["PROCESSING", "SHIPPED", "CANCELLED"],
+        SHIPPED: ["SHIPPED", "DELIVERED"],
+        DELIVERED: ["DELIVERED"],
+        CANCELLED: ["CANCELLED"],
+    };
+    return transitions[currentStatus] || [currentStatus];
+};
 // Helper function to parse shippingAddress JSON
 const transformOrder = (order) => {
     if (!order)
@@ -627,6 +652,27 @@ const updateOrderStatus = async (req, res, next) => {
     try {
         const { orderId } = req.params;
         const { status } = req.body;
+        if (!isOrderStatus(status)) {
+            throw new errorHandler_1.AppError("Invalid order status", 400);
+        }
+        const existingOrder = await database_1.default.order.findUnique({
+            where: { id: orderId },
+            select: {
+                id: true,
+                status: true,
+                paymentStatus: true,
+            },
+        });
+        if (!existingOrder) {
+            throw new errorHandler_1.AppError("Order not found", 404);
+        }
+        if (!isOrderStatus(existingOrder.status)) {
+            throw new errorHandler_1.AppError("Current order status is invalid", 400);
+        }
+        const allowedStatuses = getAllowedOrderStatusTransitions(existingOrder.status, existingOrder.paymentStatus);
+        if (!allowedStatuses.includes(status)) {
+            throw new errorHandler_1.AppError(`Cannot change order status from ${existingOrder.status} to ${status}`, 400);
+        }
         const order = await database_1.default.order.update({
             where: { id: orderId },
             data: { status },

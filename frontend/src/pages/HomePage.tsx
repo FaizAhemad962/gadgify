@@ -20,7 +20,6 @@ import {
   Security,
   Support,
   Rocket,
-  ArrowForward,
   Email,
   Timer,
 } from "@/mui/icons";
@@ -30,13 +29,17 @@ import { useNewsletterSubscribe } from "@/hooks/useNewsletter";
 import { useCategories } from "@/hooks/useCategories";
 import { getCategoryIcon } from "@/utils/categoryIconMapper";
 import { getCategoryColor } from "@/utils/categoryColorMapper";
-import ProductCard from "@/components/ProductCard";
+import ProductSection from "@/components/products/ProductSection";
 import RecentlyViewed from "@/components/products/RecentlyViewed";
 import InView from "@/components/InView";
 import HeroCarousel from "@/components/sections/HeroCarousel";
 import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
 import { tokens } from "@/theme/theme";
+import {
+  appIconSx,
+  responsiveFeatureIconSx,
+} from "@/components/ui/navigationStyles";
 import {
   FlashSale,
   BestSellers,
@@ -218,7 +221,14 @@ const HomePage = () => {
       <HeroCarousel />
 
       {/* ───── Stats Section ───── */}
-      <Container maxWidth="lg" sx={{ py: 6 }}>
+      <Container
+        maxWidth={false}
+        sx={{
+          py: { xs: 3, md: 4 },
+          px: tokens.pagePaddingX,
+          maxWidth: tokens.appMaxWidth,
+        }}
+      >
         <Box
           sx={{
             display: "grid",
@@ -260,8 +270,11 @@ const HomePage = () => {
       </Container>
 
       {/* ───── 1. SHOP BY CATEGORY ───── */}
-      <Box sx={{ bgcolor: tokens.white, py: { xs: 2, md: 3 } }}>
-        <Container maxWidth="lg">
+      <Box sx={{ bgcolor: tokens.white, py: { xs: 3, md: 4 } }}>
+        <Container
+          maxWidth={false}
+          sx={{ px: tokens.pagePaddingX, maxWidth: tokens.appMaxWidth }}
+        >
           <Box sx={{ textAlign: "center", mb: 2 }}>
             <Typography
               variant="h3"
@@ -316,11 +329,10 @@ const HomePage = () => {
                   minHeight: { xs: 120, md: 160 },
                   justifyContent: "center",
                   bgcolor: tokens.white,
-                  borderRadius: 4,
+                  borderRadius: "18px",
                   "&:hover": {
                     borderColor: getCategoryColor(category.name, i),
                     boxShadow: `0 8px 24px ${getCategoryColor(category.name, i)}30`,
-                    transform: "translateY(-4px)",
                   },
                 }}
               >
@@ -356,98 +368,40 @@ const HomePage = () => {
         </Container>
       </Box>
 
-      {/* ───── 2. TRENDING NOW ───── */}
-      <Container maxWidth="lg" sx={{ py: { xs: 2, md: 3 } }}>
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: { xs: "flex-start", sm: "center" },
-            flexDirection: { xs: "column", sm: "row" },
-            gap: 1,
-            mb: 1,
-          }}
-        >
-          <Box>
-            <Typography
-              variant="h3"
-              fontWeight="700"
-              sx={{
-                color: "text.primary",
-                fontSize: { xs: "1.5rem", sm: "1.75rem", md: "2rem" },
-              }}
-            >
-              🔥 {t("common.trendingNow")}
-            </Typography>
-            <Typography
-              variant="body2"
-              sx={{
-                color: "text.secondary",
-                mt: 0.5,
-                fontSize: { xs: "0.85rem", md: "0.95rem" },
-              }}
-            >
-              {t("common.trendingDesc")}
-            </Typography>
-          </Box>
-          <Button
-            endIcon={<ArrowForward />}
-            onClick={() => navigate("/products?sortBy=popularity")}
-            sx={{
-              textTransform: "none",
-              fontWeight: 600,
-              color: tokens.primary,
-              minHeight: 44,
-              px: 2,
-            }}
-          >
-            {t("common.viewAll")}
-          </Button>
-        </Box>
-        {!trendingLoading && (
-          <Box
-            sx={{
-              display: "grid",
-              gridTemplateColumns: {
-                xs: "repeat(2, 1fr)", // 2 columns on mobile for consistency
-                sm: "repeat(2, 1fr)",
-                md: "repeat(4, 1fr)",
-              },
-              gridAutoRows: "1fr", // Force rows to have equal height
-              gap: 2,
-            }}
-          >
-            {trendingProducts.map((product) => (
-              <ProductCard
-                key={product.id}
-                product={product}
-                isInWishlist={isInWishlist}
-                isToggling={isToggling}
-                toggleWishlist={toggleWishlist}
-                onAddToCart={handleAddToCart}
-                onBuyNow={handleBuyNow}
-                onNavigate={(id) => navigate(`/products/${id}`)}
-                t={t}
-              />
-            ))}
-          </Box>
-        )}
-      </Container>
+      <ProductSection
+        title={`🔥 ${t("common.trendingNow")}`}
+        subtitle={t("common.trendingDesc")}
+        actionLabel={t("common.viewAll")}
+        onActionClick={() => navigate("/products?sortBy=popularity")}
+        products={trendingProducts}
+        isLoading={trendingLoading}
+        skeletonCount={4}
+        isInWishlist={isInWishlist}
+        isToggling={isToggling}
+        toggleWishlist={toggleWishlist}
+        onAddToCart={handleAddToCart}
+        onBuyNow={handleBuyNow}
+        onNavigate={(id) => navigate(`/products/${id}`)}
+        t={t}
+      />
 
       {/* ───── FLASH SALE ───── */}
       <FlashSale />
 
       {/* ───── 3. DEAL OF THE DAY ───── */}
       {dealProduct && (
-        <Box sx={{ bgcolor: tokens.white, py: { xs: 2, md: 3 } }}>
-          <Container maxWidth="lg">
+        <Box sx={{ bgcolor: tokens.white, py: { xs: 3, md: 4 } }}>
+          <Container
+            maxWidth={false}
+            sx={{ px: tokens.pagePaddingX, maxWidth: tokens.appMaxWidth }}
+          >
             <Box
               sx={{
                 display: "flex",
                 flexDirection: { xs: "column", md: "row" },
                 gap: { xs: 2, md: 3 },
                 p: { xs: 2, md: 3 },
-                borderRadius: 4,
+                borderRadius: "24px",
                 background: `linear-gradient(135deg, ${tokens.primaryDark} 0%, ${tokens.primary} 100%)`,
                 color: "white",
                 position: "relative",
@@ -472,7 +426,7 @@ const HomePage = () => {
                     gap: 0.5,
                   }}
                 >
-                  <Timer sx={{ fontSize: 16 }} />
+                  <Timer sx={appIconSx.sm} />
                   <Typography
                     variant="caption"
                     sx={{ fontWeight: 700, fontSize: "0.8rem" }}
@@ -593,90 +547,32 @@ const HomePage = () => {
         </Box>
       )}
 
-      {/* ───── 4. NEW ARRIVALS ───── */}
-      <Container maxWidth="lg" sx={{ py: { xs: 2, md: 3 } }}>
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: { xs: "flex-start", sm: "center" },
-            flexDirection: { xs: "column", sm: "row" },
-            gap: 1,
-            mb: 1,
-          }}
-        >
-          <Box>
-            <Typography
-              variant="h3"
-              fontWeight="700"
-              sx={{
-                color: "text.primary",
-                fontSize: { xs: "1.5rem", sm: "1.75rem", md: "2rem" },
-              }}
-            >
-              ✨ {t("common.newArrivals")}
-            </Typography>
-            <Typography
-              variant="body2"
-              sx={{
-                color: "text.secondary",
-                mt: 0.5,
-                fontSize: { xs: "0.85rem", md: "0.95rem" },
-              }}
-            >
-              {t("common.newArrivalsDesc")}
-            </Typography>
-          </Box>
-          <Button
-            endIcon={<ArrowForward />}
-            onClick={() => navigate("/products?sortBy=newest")}
-            sx={{
-              textTransform: "none",
-              fontWeight: 600,
-              color: tokens.primary,
-              minHeight: 44,
-              px: 2,
-            }}
-          >
-            {t("common.viewAll")}
-          </Button>
-        </Box>
-        {!newArrivalsLoading && (
-          <Box
-            sx={{
-              display: "grid",
-              gridTemplateColumns: {
-                xs: "repeat(2, 1fr)", // 2 columns on mobile
-                sm: "repeat(2, 1fr)",
-                md: "repeat(4, 1fr)",
-              },
-              gridAutoRows: "1fr",
-              gap: 2,
-            }}
-          >
-            {newArrivals.map((product) => (
-              <ProductCard
-                key={product.id}
-                product={product}
-                isInWishlist={isInWishlist}
-                isToggling={isToggling}
-                toggleWishlist={toggleWishlist}
-                onAddToCart={handleAddToCart}
-                onBuyNow={handleBuyNow}
-                onNavigate={(id) => navigate(`/products/${id}`)}
-                t={t}
-              />
-            ))}
-          </Box>
-        )}
-      </Container>
+      <ProductSection
+        title={`✨ ${t("common.newArrivals")}`}
+        subtitle={t("common.newArrivalsDesc")}
+        actionLabel={t("common.viewAll")}
+        onActionClick={() => navigate("/products?sortBy=newest")}
+        products={newArrivals}
+        isLoading={newArrivalsLoading}
+        skeletonCount={4}
+        isInWishlist={isInWishlist}
+        isToggling={isToggling}
+        toggleWishlist={toggleWishlist}
+        onAddToCart={handleAddToCart}
+        onBuyNow={handleBuyNow}
+        onNavigate={(id) => navigate(`/products/${id}`)}
+        t={t}
+      />
 
         {/* ───── BEST SELLERS ───── */}
         <BestSellers />
 
         {/* ───── Features Section ───── */}
-        <Box sx={{ bgcolor: tokens.white, py: { xs: 2, md: 3 } }}>
-          <Container maxWidth="lg">
+        <Box sx={{ bgcolor: tokens.white, py: { xs: 3, md: 4 } }}>
+          <Container
+            maxWidth={false}
+            sx={{ px: tokens.pagePaddingX, maxWidth: tokens.appMaxWidth }}
+          >
             <Typography
               variant="h3"
               align="center"
@@ -716,25 +612,25 @@ const HomePage = () => {
             >
               {[
                 {
-                  icon: <ShoppingCart sx={{ fontSize: { xs: 32, md: 40 } }} />,
+                  icon: <ShoppingCart sx={responsiveFeatureIconSx} />,
                   title: t("common.wideSelection"),
                   desc: t("common.browseProducts"),
                   color: tokens.primary,
                 },
                 {
-                  icon: <LocalShipping sx={{ fontSize: { xs: 32, md: 40 } }} />,
+                  icon: <LocalShipping sx={responsiveFeatureIconSx} />,
                   title: t("common.fastDelivery"),
                   desc: t("common.quickDelivery"),
                   color: tokens.success,
                 },
                 {
-                  icon: <Security sx={{ fontSize: { xs: 32, md: 40 } }} />,
+                  icon: <Security sx={responsiveFeatureIconSx} />,
                   title: t("common.securePayment"),
                   desc: t("common.safeTransactions"),
                   color: tokens.accent,
                 },
                 {
-                  icon: <Support sx={{ fontSize: { xs: 32, md: 40 } }} />,
+                  icon: <Support sx={responsiveFeatureIconSx} />,
                   title: t("common.support247"),
                   desc: t("common.alwaysHelp"),
                   color: tokens.secondary,
@@ -753,7 +649,6 @@ const HomePage = () => {
                     transition: "all 0.25s cubic-bezier(.4,0,.2,1)",
                     "&:hover": {
                       boxShadow: "0 8px 24px rgba(0, 0, 0, 0.1)",
-                      transform: "translateY(-4px)",
                     },
                   }}
                 >
@@ -791,13 +686,27 @@ const HomePage = () => {
       {/* <FeaturedBrands /> */}
 
       {/* ───── Recently Viewed Products ───── */}
-      <Container maxWidth="lg" sx={{ py: { xs: 2, md: 3 } }}>
+      <Container
+        maxWidth={false}
+        sx={{
+          py: { xs: 2.5, md: 4 },
+          px: tokens.pagePaddingX,
+          maxWidth: tokens.appMaxWidth,
+        }}
+      >
         <RecentlyViewed />
       </Container>
 
       {/* ───── 5. CUSTOMER TESTIMONIALS ───── */}
       <InView animationType="slideUp">
-        <Container maxWidth="lg" sx={{ py: { xs: 2, md: 3 } }}>
+        <Container
+          maxWidth={false}
+          sx={{
+            py: { xs: 2.5, md: 4 },
+            px: tokens.pagePaddingX,
+            maxWidth: tokens.appMaxWidth,
+          }}
+        >
           <Box sx={{ textAlign: "center", mb: 2 }}>
             <Typography
               variant="h3"
@@ -837,7 +746,6 @@ const HomePage = () => {
                   transition: "all 0.25s cubic-bezier(.4,0,.2,1)",
                   "&:hover": {
                     boxShadow: "0 8px 24px rgba(0,0,0,0.08)",
-                    transform: "translateY(-3px)",
                   },
                 }}
               >
@@ -1151,7 +1059,14 @@ const HomePage = () => {
       </InView>
 
       {/* ───── Trust Section ───── */}
-      <Container maxWidth="lg" sx={{ py: { xs: 2, md: 3 } }}>
+      <Container
+        maxWidth={false}
+        sx={{
+          py: { xs: 2.5, md: 4 },
+          px: tokens.pagePaddingX,
+          maxWidth: tokens.appMaxWidth,
+        }}
+      >
         <Typography
           variant="h4"
           align="center"
@@ -1202,7 +1117,6 @@ const HomePage = () => {
                 justifyContent: "center",
                 "&:hover": {
                   boxShadow: "0 8px 24px rgba(0,0,0,0.08)",
-                  transform: "translateY(-3px)",
                 },
               }}
             >

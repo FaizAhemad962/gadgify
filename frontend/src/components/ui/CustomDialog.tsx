@@ -7,7 +7,12 @@ import {
   DialogActions,
   Box,
 } from "@/mui/material";
-import { tokens } from "@/theme/theme";
+import {
+  adminDialogActionsSx,
+  adminDialogContentSx,
+  adminDialogPaperSx,
+  adminDialogTitleSx,
+} from "@/components/admin/adminStyleTokens";
 
 interface CustomDialogProps extends DialogProps {
   title: string;
@@ -28,18 +33,13 @@ export const CustomDialog = ({
       onClose={onClose}
       PaperProps={{
         sx: {
-          bgcolor: tokens.white,
-          backgroundImage: "none",
-          border: `1px solid ${tokens.gray200}`,
-          borderRadius: 3,
+          ...adminDialogPaperSx,
         },
       }}
     >
       <DialogTitle
         sx={{
-          color: tokens.primary,
-          fontWeight: 600,
-          borderBottom: `1px solid ${tokens.gray200}`,
+          ...adminDialogTitleSx,
           fontSize: "1.25rem",
         }}
       >
@@ -47,18 +47,15 @@ export const CustomDialog = ({
       </DialogTitle>
       <DialogContent
         sx={{
-          bgcolor: tokens.white,
-          backgroundImage: "none",
+          ...adminDialogContentSx,
         }}
       >
-        <Box sx={{ mt: 2 }}>{children}</Box>
+        <Box>{children}</Box>
       </DialogContent>
       {actions && (
         <DialogActions
           sx={{
-            borderTop: `1px solid ${tokens.gray200}`,
-            p: 2,
-            gap: 1,
+            ...adminDialogActionsSx,
           }}
         >
           {actions}

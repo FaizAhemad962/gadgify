@@ -6,12 +6,7 @@ import {
   Paper,
   Box,
   Typography,
-  TextField,
-  Button,
   Alert,
-  CircularProgress,
-  InputAdornment,
-  IconButton,
   LinearProgress,
   List,
   ListItem,
@@ -20,8 +15,6 @@ import {
 } from "@/mui/material";
 import {
   ArrowBack,
-  Visibility,
-  VisibilityOff,
   LockReset,
   CheckCircle,
   Cancel,
@@ -29,23 +22,9 @@ import {
 import { authApi } from "../api/auth";
 import { ErrorHandler } from "../utils/errorHandler";
 import { tokens } from "@/theme/theme";
-
-const inputSx = {
-  "& .MuiOutlinedInput-root": {
-    backgroundColor: tokens.gray50,
-    transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-    "&:hover": {
-      backgroundColor: tokens.gray100,
-    },
-    "&.Mui-focused": {
-      backgroundColor: tokens.white,
-      boxShadow: `0 0 0 3px ${tokens.primary}1A`,
-    },
-  },
-  "& .MuiOutlinedInput-notchedOutline": {
-    borderColor: tokens.gray200,
-  },
-};
+import { appIconSx } from "@/components/ui/navigationStyles";
+import PasswordField from "@/components/auth/PasswordField";
+import { CustomButton } from "@/components/ui/CustomButton";
 
 const ChangePasswordPage = () => {
   const { t } = useTranslation();
@@ -53,9 +32,6 @@ const ChangePasswordPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
-  const [showNewPassword, setShowNewPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const [formData, setFormData] = useState({
     currentPassword: "",
@@ -155,16 +131,25 @@ const ChangePasswordPage = () => {
   };
 
   return (
-    <Container maxWidth="sm" sx={{ py: 4 }}>
+    <Box
+      sx={{
+        minHeight: "100vh",
+        background: `linear-gradient(135deg, ${tokens.gray50} 0%, ${tokens.white} 45%, ${tokens.primary}14 100%)`,
+        py: { xs: 3, md: 6 },
+        px: tokens.pagePaddingX,
+      }}
+    >
+      <Container maxWidth="sm">
       {/* Header */}
-      <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 4 }}>
-        <Button
+      <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 3 }}>
+        <CustomButton
           startIcon={<ArrowBack />}
           onClick={() => navigate(-1)}
-          sx={{ color: tokens.primary, textTransform: "none", fontWeight: 600 }}
+          appVariant="secondary"
+          variant="outlined"
         >
           {t("common.back")}
-        </Button>
+        </CustomButton>
       </Box>
 
       {/* Alerts */}
@@ -205,10 +190,13 @@ const ChangePasswordPage = () => {
       <Paper
         elevation={0}
         sx={{
-          p: 4,
-          borderRadius: 3,
+          p: { xs: 2.5, sm: 4 },
+          borderRadius: `${tokens.radiusXl}px`,
           border: `1px solid ${tokens.gray200}`,
-          background: tokens.white,
+          background:
+            "linear-gradient(180deg, rgba(255,255,255,0.98), rgba(250,250,250,0.98))",
+          boxShadow: "0 24px 70px rgba(15, 23, 42, 0.10)",
+          overflow: "hidden",
         }}
       >
         {/* Card Header */}
@@ -219,22 +207,27 @@ const ChangePasswordPage = () => {
             alignItems: "center",
             mb: 4,
             pb: 3,
-            borderBottom: `2px solid ${tokens.gray100}`,
+            mx: { xs: -2.5, sm: -4 },
+            mt: { xs: -2.5, sm: -4 },
+            px: { xs: 2.5, sm: 4 },
+            pt: { xs: 3, sm: 4 },
+            borderBottom: `1px solid ${tokens.gray200}`,
+            background: `linear-gradient(135deg, ${tokens.primary}0F, ${tokens.accent}12)`,
           }}
         >
           <Box
             sx={{
               width: 80,
               height: 80,
-              borderRadius: "50%",
-              background: `${tokens.accent}1A`,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
+              borderRadius: "26px",
+              background: tokens.primary,
+              display: "grid",
+              placeItems: "center",
               mb: 2,
+              boxShadow: "0 18px 38px rgba(27, 42, 74, 0.24)",
             }}
           >
-            <LockReset sx={{ fontSize: 40, color: tokens.accent }} />
+            <LockReset sx={{ ...appIconSx.feature, color: tokens.white }} />
           </Box>
           <Typography
             variant="h5"
@@ -256,66 +249,28 @@ const ChangePasswordPage = () => {
         <form onSubmit={handleSubmit}>
           <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
             {/* Current Password */}
-            <TextField
+            <PasswordField
               fullWidth
               label={t("common.currentPassword")}
               name="currentPassword"
-              type={showCurrentPassword ? "text" : "password"}
               value={formData.currentPassword}
               onChange={handleInputChange}
               required
               variant="outlined"
-              slotProps={{
-                input: {
-                  endAdornment: (
-                    <InputAdornment position="end">
-                      <IconButton
-                        onClick={() =>
-                          setShowCurrentPassword(!showCurrentPassword)
-                        }
-                        edge="end"
-                        size="small"
-                      >
-                        {showCurrentPassword ? (
-                          <VisibilityOff />
-                        ) : (
-                          <Visibility />
-                        )}
-                      </IconButton>
-                    </InputAdornment>
-                  ),
-                },
-              }}
-              sx={inputSx}
+              autoComplete="current-password"
             />
 
             {/* New Password */}
             <Box>
-              <TextField
+              <PasswordField
                 fullWidth
                 label={t("common.newPassword")}
                 name="newPassword"
-                type={showNewPassword ? "text" : "password"}
                 value={formData.newPassword}
                 onChange={handleInputChange}
                 required
                 variant="outlined"
-                slotProps={{
-                  input: {
-                    endAdornment: (
-                      <InputAdornment position="end">
-                        <IconButton
-                          onClick={() => setShowNewPassword(!showNewPassword)}
-                          edge="end"
-                          size="small"
-                        >
-                          {showNewPassword ? <VisibilityOff /> : <Visibility />}
-                        </IconButton>
-                      </InputAdornment>
-                    ),
-                  },
-                }}
-                sx={inputSx}
+                autoComplete="new-password"
               />
 
               {/* Password Strength Indicator */}
@@ -384,10 +339,10 @@ const ChangePasswordPage = () => {
                     <ListItemIcon sx={{ minWidth: 28 }}>
                       {formData.newPassword.length >= 6 ? (
                         <CheckCircle
-                          sx={{ fontSize: 18, color: tokens.success }}
+                          sx={{ ...appIconSx.md, color: tokens.success }}
                         />
                       ) : (
-                        <Cancel sx={{ fontSize: 18, color: tokens.gray300 }} />
+                        <Cancel sx={{ ...appIconSx.md, color: tokens.gray300 }} />
                       )}
                     </ListItemIcon>
                     <ListItemText
@@ -402,10 +357,10 @@ const ChangePasswordPage = () => {
                     <ListItemIcon sx={{ minWidth: 28 }}>
                       {/[A-Z]/.test(formData.newPassword) ? (
                         <CheckCircle
-                          sx={{ fontSize: 18, color: tokens.success }}
+                          sx={{ ...appIconSx.md, color: tokens.success }}
                         />
                       ) : (
-                        <Cancel sx={{ fontSize: 18, color: tokens.gray300 }} />
+                        <Cancel sx={{ ...appIconSx.md, color: tokens.gray300 }} />
                       )}
                     </ListItemIcon>
                     <ListItemText
@@ -420,10 +375,10 @@ const ChangePasswordPage = () => {
                     <ListItemIcon sx={{ minWidth: 28 }}>
                       {/[0-9]/.test(formData.newPassword) ? (
                         <CheckCircle
-                          sx={{ fontSize: 18, color: tokens.success }}
+                          sx={{ ...appIconSx.md, color: tokens.success }}
                         />
                       ) : (
-                        <Cancel sx={{ fontSize: 18, color: tokens.gray300 }} />
+                        <Cancel sx={{ ...appIconSx.md, color: tokens.gray300 }} />
                       )}
                     </ListItemIcon>
                     <ListItemText
@@ -439,11 +394,10 @@ const ChangePasswordPage = () => {
             </Box>
 
             {/* Confirm Password */}
-            <TextField
+            <PasswordField
               fullWidth
               label={t("auth.confirmPassword")}
               name="confirmPassword"
-              type={showConfirmPassword ? "text" : "password"}
               value={formData.confirmPassword}
               onChange={handleInputChange}
               required
@@ -458,67 +412,26 @@ const ChangePasswordPage = () => {
                   ? t("errors.passwordMismatch")
                   : ""
               }
-              slotProps={{
-                input: {
-                  endAdornment: (
-                    <InputAdornment position="end">
-                      <IconButton
-                        onClick={() =>
-                          setShowConfirmPassword(!showConfirmPassword)
-                        }
-                        edge="end"
-                        size="small"
-                      >
-                        {showConfirmPassword ? (
-                          <VisibilityOff />
-                        ) : (
-                          <Visibility />
-                        )}
-                      </IconButton>
-                    </InputAdornment>
-                  ),
-                },
-              }}
-              sx={inputSx}
+              autoComplete="new-password"
             />
 
             {/* Submit Button */}
-            <Button
+            <CustomButton
               type="submit"
               variant="contained"
+              appVariant="admin"
               size="large"
+              isLoading={isLoading}
               disabled={isLoading}
-              sx={{
-                mt: 2,
-                background: tokens.accent,
-                color: tokens.white,
-                fontWeight: 700,
-                py: 1.5,
-                transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-                "&:hover": {
-                  background: tokens.accentDark,
-                  transform: "translateY(-2px)",
-                  boxShadow: `0 8px 16px ${tokens.accent}4D`,
-                },
-                "&:active": {
-                  transform: "translateY(0)",
-                },
-                "&.Mui-disabled": {
-                  background: tokens.gray300,
-                  color: tokens.gray500,
-                },
-              }}
+              sx={{ mt: 2, py: 1.35 }}
             >
-              {isLoading ? (
-                <CircularProgress size={24} color="inherit" />
-              ) : (
-                t("common.profileChangePassword")
-              )}
-            </Button>
+              {t("common.profileChangePassword")}
+            </CustomButton>
           </Box>
         </form>
       </Paper>
-    </Container>
+      </Container>
+    </Box>
   );
 };
 

@@ -25,15 +25,30 @@ import {
   DialogContent,
   DialogContentText,
   DialogActions,
-  Button,
 } from "@/mui/material";
 import {
   Delete as DeleteIcon,
   Search as SearchIcon,
 } from "@/mui/icons";
+import {
+  AdminPageHeader,
+} from "@/components/admin/adminStyles";
+import {
+  adminDialogActionsSx,
+  adminDialogContentSx,
+  adminDialogPaperSx,
+  adminDialogTitleSx,
+  adminPageSx,
+  adminPanelSx,
+  adminSearchFieldSx,
+} from "@/components/admin/adminStyleTokens";
+import { appIconSx } from "@/components/ui/navigationStyles";
+import { CustomButton } from "@/components/ui/CustomButton";
 import { usersApi, type AdminUser } from "../../api/users";
 import { useAuth } from "../../context/AuthContext";
 import { getAssignableRoles } from "../../utils/roleHelper";
+import { invalidateUserData } from "@/lib/queryInvalidation";
+import { queryKeys } from "@/lib/queryKeys";
 
 const AdminUsers = () => {
   const { t } = useTranslation();
@@ -50,7 +65,7 @@ const AdminUsers = () => {
   const assignableRoles = getAssignableRoles(user?.role);
 
   const { data: users = [], isLoading } = useQuery({
-    queryKey: ["admin-users"],
+    queryKey: queryKeys.users.admin,
     queryFn: usersApi.getAll,
   });
 
@@ -58,7 +73,7 @@ const AdminUsers = () => {
     mutationFn: ({ id, role }: { id: string; role: string }) =>
       usersApi.updateRole(id, role),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["admin-users"] });
+      invalidateUserData(queryClient);
       setSnackbar({
         open: true,
         message: t("admin.userRoleUpdated"),
@@ -77,7 +92,7 @@ const AdminUsers = () => {
   const deleteMutation = useMutation({
     mutationFn: usersApi.delete,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["admin-users"] });
+      invalidateUserData(queryClient);
       setDeleteTarget(null);
       setSnackbar({
         open: true,
@@ -103,7 +118,16 @@ const AdminUsers = () => {
   );
 
   return (
-    <Box>
+    <Box sx={adminPageSx}>
+      <AdminPageHeader
+        title={t("admin.users")}
+        subtitle={t(
+          "admin.usersSubtitle",
+          "Search users, manage roles, and remove test accounts.",
+        )}
+        eyebrow={t("nav.admin")}
+        icon={<SearchIcon sx={appIconSx.card} />}
+      />
       <Box
         sx={{
           display: "flex",
@@ -114,7 +138,7 @@ const AdminUsers = () => {
           gap: 2,
         }}
       >
-        <Typography variant="h5" fontWeight={700}>
+        <Typography variant="h5" fontWeight={700} sx={{ display: "none" }}>
           👥 {t("admin.users")}
         </Typography>
         <TextField
@@ -126,12 +150,12 @@ const AdminUsers = () => {
             input: {
               startAdornment: (
                 <InputAdornment position="start">
-                  <SearchIcon />
+                  <SearchIcon sx={{ ...appIconSx.lg, color: "text.secondary" }} />
                 </InputAdornment>
               ),
             },
           }}
-          sx={{ minWidth: 250 }}
+          sx={adminSearchFieldSx}
         />
       </Box>
 
@@ -140,11 +164,11 @@ const AdminUsers = () => {
           <CircularProgress />
         </Box>
       ) : filtered.length === 0 ? (
-        <Paper sx={{ p: 4, textAlign: "center" }}>
+        <Paper sx={{ ...adminPanelSx, p: 4, textAlign: "center" }}>
           <Typography color="text.secondary">{t("admin.noUsers")}</Typography>
         </Paper>
       ) : (
-        <TableContainer component={Paper} sx={{ borderRadius: 2 }}>
+        <TableContainer component={Paper} sx={{ ...adminPanelSx }}>
           <Table>
             <TableHead>
               <TableRow sx={{ bgcolor: "action.hover" }}>
@@ -231,7 +255,7 @@ const AdminUsers = () => {
                       size="small"
                       onClick={() => setDeleteTarget(user)}
                     >
-                      <DeleteIcon />
+                      <DeleteIcon sx={appIconSx.lg} />
                     </IconButton>
                   </TableCell>
                 </TableRow>
@@ -242,27 +266,33 @@ const AdminUsers = () => {
       )}
 
       {/* Delete Confirmation Dialog */}
-      <Dialog open={!!deleteTarget} onClose={() => setDeleteTarget(null)}>
-        <DialogTitle>{t("admin.confirmDeleteUser")}</DialogTitle>
-        <DialogContent>
+      <Dialog
+        open={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        PaperProps={{ sx: adminDialogPaperSx }}
+      >
+        <DialogTitle sx={adminDialogTitleSx}>
+          {t("admin.confirmDeleteUser")}
+        </DialogTitle>
+        <DialogContent sx={adminDialogContentSx}>
           <DialogContentText>
             {t("admin.deleteUserWarning", { name: deleteTarget?.name })}
           </DialogContentText>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setDeleteTarget(null)}>
+        <DialogActions sx={adminDialogActionsSx}>
+          <CustomButton onClick={() => setDeleteTarget(null)} appVariant="ghost">
             {t("common.cancel")}
-          </Button>
-          <Button
-            color="error"
+          </CustomButton>
+          <CustomButton
             variant="contained"
+            appVariant="danger"
             onClick={() =>
               deleteTarget && deleteMutation.mutate(deleteTarget.id)
             }
             disabled={deleteMutation.isPending}
           >
             {t("common.delete")}
-          </Button>
+          </CustomButton>
         </DialogActions>
       </Dialog>
 

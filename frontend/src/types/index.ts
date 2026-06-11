@@ -82,7 +82,7 @@ export interface Order {
   couponCode?: string;
   total: number;
   status: "PENDING" | "PROCESSING" | "SHIPPED" | "DELIVERED" | "CANCELLED";
-  paymentStatus: "PENDING" | "COMPLETED" | "FAILED";
+  paymentStatus: "PENDING" | "COMPLETED" | "FAILED" | "CANCELLED";
   paymentId?: string;
   shippingAddress: {
     name: string;

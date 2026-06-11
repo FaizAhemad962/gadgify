@@ -68,6 +68,32 @@ const tokens = {
   darkBg: "#0F172A",
   darkPaper: "#1E293B",
   darkSubtle: "#334155",
+
+  // Layout
+  appMaxWidth: 1400,
+  navbarHeightMobile: 56,
+  navbarHeightDesktop: 64,
+  drawerWidth: 320,
+  pagePaddingX: { xs: 2, sm: 3, md: 4 },
+  sectionPaddingY: { xs: 4, md: 7 },
+  filterStickyTop: 80,
+  sidebarMaxHeightOffset: 104,
+
+  // Shape and elevation
+  radiusSm: 8,
+  radiusMd: 12,
+  radiusLg: 16,
+  radiusXl: 24,
+  surfaceBorder: "#E7E5E4",
+  shadowSm: "0 1px 2px rgba(0, 0, 0, 0.04)",
+  shadowMd: "0 4px 12px rgba(0, 0, 0, 0.06)",
+  shadowLg: "0 10px 30px rgba(0, 0, 0, 0.08)",
+
+  // Commerce UI
+  productImageRatio: "1 / 1",
+  productImageRatioTall: "4 / 5",
+  defaultMinPrice: 0,
+  defaultMaxPrice: 10000,
 };
 
 const fontFamily = [
@@ -138,10 +164,6 @@ function componentOverrides(
   return {
     MuiCssBaseline: {
       styleOverrides: {
-        // Inject Inter from Google Fonts
-        html: {
-          scrollBehavior: "smooth",
-        },
         body: {
           WebkitFontSmoothing: "antialiased",
           MozOsxFontSmoothing: "grayscale",
@@ -201,12 +223,13 @@ function componentOverrides(
             : "0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)",
           borderRadius: 16,
           border: `1px solid ${isDark ? tokens.darkSubtle : tokens.gray200}`,
-          transition: "all 0.25s cubic-bezier(.4,0,.2,1)",
+          transition:
+            "box-shadow 0.2s cubic-bezier(.4,0,.2,1), border-color 0.2s cubic-bezier(.4,0,.2,1)",
           "&:hover": {
             boxShadow: isDark
               ? "0 10px 30px rgba(0,0,0,0.5)"
               : "0 10px 30px rgba(0,0,0,0.08)",
-            transform: "translateY(-4px)",
+            borderColor: isDark ? tokens.darkSubtle : tokens.gray300,
           },
         },
       },

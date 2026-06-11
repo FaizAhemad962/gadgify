@@ -26,7 +26,11 @@ import {
   Drawer,
   IconButton,
 } from "@/mui/material";
-import { ViewModule, ViewList, Close as CloseIcon } from "@/mui/icons";
+import {
+  ViewModule,
+  ViewList,
+  Close as CloseIcon,
+} from "@/mui/icons";
 import { productsApi } from "../api/products";
 import { useCart } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
@@ -36,6 +40,12 @@ import { useCategories } from "@/hooks/useCategories";
 import { ErrorHandler } from "../utils/errorHandler";
 import ProductCard from "../components/ProductCard";
 import { FilterSidebar, type SortOption } from "../components/FilterSidebar";
+import ProductGridSkeleton from "../components/products/ProductGridSkeleton";
+import {
+  productCardLayout,
+  productGridColumns,
+  productGridGap,
+} from "@/components/products/productLayout";
 import { tokens } from "@/theme/theme";
 
 const PRODUCTS_PER_PAGE = 24;
@@ -60,7 +70,10 @@ const ProductsGrid = memo(
     const parentRef = useRef<HTMLDivElement | null>(null);
     const [scrollMargin, setScrollMargin] = useState(0);
     const rowCount = Math.ceil(products.length / columns);
-    const rowHeight = viewMode === "list" ? 260 : 560;
+    const rowHeight =
+      viewMode === "list"
+        ? productCardLayout.virtualListRowHeight
+        : productCardLayout.virtualGridRowHeight;
 
     useLayoutEffect(() => {
       const el = parentRef.current;
@@ -77,7 +90,7 @@ const ProductsGrid = memo(
     const rowVirtualizer = useWindowVirtualizer({
       count: rowCount,
       estimateSize: () => rowHeight,
-      overscan: 4,
+      overscan: 2,
       scrollMargin,
     });
 
@@ -121,7 +134,7 @@ const ProductsGrid = memo(
                       viewMode === "list"
                         ? "1fr"
                         : `repeat(${columns}, minmax(0, 1fr))`,
-                    gap: 2,
+                    gap: productGridGap,
                     alignItems: "stretch",
                   }}
                 >
@@ -190,6 +203,7 @@ const ProductsPage = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const isMdUp = useMediaQuery(theme.breakpoints.up("md"));
+  const isLgUp = useMediaQuery(theme.breakpoints.up("lg"));
 
   // State for search only
   const { searchQuery = "" } = useSearch();
@@ -204,9 +218,13 @@ const ProductsPage = () => {
   // Filter state
   const [sortBy, setSortBy] = useState<SortOption>("popularity");
   const [tempPriceRange, setTempPriceRange] = useState<[number, number]>([
-    0, 10000,
+    tokens.defaultMinPrice,
+    tokens.defaultMaxPrice,
   ]);
-  const [priceRange, setPriceRange] = useState<[number, number]>([0, 10000]);
+  const [priceRange, setPriceRange] = useState<[number, number]>([
+    tokens.defaultMinPrice,
+    tokens.defaultMaxPrice,
+  ]);
   const [selectedRatings, setSelectedRatings] = useState<number[]>([]);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [filterDrawerOpen, setFilterDrawerOpen] = useState(false);
@@ -324,7 +342,7 @@ const ProductsPage = () => {
   const isFiltersActive = useMemo(
     () =>
       priceRange[0] > 0 ||
-      priceRange[1] < 10000 ||
+      priceRange[1] < tokens.defaultMaxPrice ||
       selectedRatings.length > 0 ||
       selectedCategories.length > 0 ||
       sortBy !== "popularity",
@@ -332,8 +350,8 @@ const ProductsPage = () => {
   );
 
   const handleClearFilters = useCallback(() => {
-    setPriceRange([0, 10000]);
-    setTempPriceRange([0, 10000]);
+    setPriceRange([tokens.defaultMinPrice, tokens.defaultMaxPrice]);
+    setTempPriceRange([tokens.defaultMinPrice, tokens.defaultMaxPrice]);
     setSelectedRatings([]);
     setSelectedCategories([]);
     setSortBy("popularity");
@@ -384,7 +402,14 @@ const ProductsPage = () => {
   }
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4, px: { xs: 1, sm: 2, md: 3 } }}>
+    <Container
+      maxWidth={false}
+      sx={{
+        py: { xs: 3, md: 5 },
+        px: tokens.pagePaddingX,
+        maxWidth: tokens.appMaxWidth,
+      }}
+    >
       {/* Header Section */}
       <Box sx={{ mb: 4 }}>
         <Box
@@ -487,7 +512,7 @@ const ProductsPage = () => {
         {!isMobile && (
           <Box
             sx={{
-              width: { md: "280px", lg: "300px" },
+              width: { md: 260, lg: 280 },
               flexShrink: 0,
             }}
           >
@@ -610,27 +635,21 @@ const ProductsPage = () => {
             minWidth: 0,
           }}
         >
-          {/* Show loading spinner only when first loading with no products yet */}
+          {/* Show stable skeleton cards during the first product load */}
           {isLoading && page === 1 && allProducts.length === 0 ? (
-            <Box
-              sx={{
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-                minHeight: "60vh",
-                flexDirection: "column",
-                gap: 2,
+            <ProductGridSkeleton
+              count={viewMode === "list" ? 3 : isMdUp ? 6 : 4}
+              columns={{
+                xs: viewMode === "list" ? "1fr" : productGridColumns.xs,
+                sm: viewMode === "list" ? "1fr" : productGridColumns.sm,
+                md:
+                  viewMode === "list"
+                    ? "1fr"
+                    : isLgUp
+                      ? "repeat(4, 1fr)"
+                      : "repeat(3, 1fr)",
               }}
-            >
-              <CircularProgress
-                size={60}
-                thickness={4}
-                sx={{ color: tokens.accent }}
-              />
-              <Typography variant="body1" color="text.secondary">
-                {t("common.loading") || "Loading products..."}
-              </Typography>
-            </Box>
+            />
           ) : allProducts.length === 0 ? (
             <Box sx={{ textAlign: "center", py: 12 }}>
               <Typography variant="h6" color="text.secondary" sx={{ mb: 2 }}>
@@ -641,7 +660,7 @@ const ProductsPage = () => {
             <ProductsGrid
               products={allProducts}
               viewMode={viewMode}
-              columns={viewMode === "list" ? 1 : isMdUp ? 3 : 2}
+              columns={viewMode === "list" ? 1 : isLgUp ? 4 : isMdUp ? 3 : 2}
               onAddToCart={handleAddToCart}
               onBuyNow={handleBuyNow}
               onNavigate={handleNavigate}

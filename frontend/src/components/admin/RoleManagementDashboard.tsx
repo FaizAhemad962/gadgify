@@ -10,7 +10,6 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  Button,
   Chip,
   Dialog,
   DialogTitle,
@@ -35,6 +34,21 @@ import { useForm, Controller } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { apiClient } from "../../api/client";
 import ChangeRoleDialog from "./ChangeRoleDialog";
+import { invalidateUserData } from "@/lib/queryInvalidation";
+import { queryKeys } from "@/lib/queryKeys";
+import {
+  AdminPageHeader,
+} from "@/components/admin/adminStyles";
+import {
+  adminDialogActionsSx,
+  adminDialogContentSx,
+  adminDialogPaperSx,
+  adminDialogTitleSx,
+  adminPageSx,
+  adminPanelSx,
+} from "@/components/admin/adminStyleTokens";
+import { appIconSx } from "@/components/ui/navigationStyles";
+import { CustomButton } from "@/components/ui/CustomButton";
 
 interface User {
   id: string;
@@ -64,7 +78,7 @@ export const RoleManagementDashboard: React.FC = () => {
 
   // ✅ SECURITY: Fetch users with httpOnly cookies
   const { data: users = [], isLoading: usersLoading } = useQuery({
-    queryKey: ["users"],
+    queryKey: queryKeys.users.all,
     queryFn: async () => {
       const response = await apiClient.get("/admin/users");
       return response.data;
@@ -73,7 +87,7 @@ export const RoleManagementDashboard: React.FC = () => {
 
   // ✅ SECURITY: Fetch permissions with httpOnly cookies
   const { data: permissions = [] } = useQuery({
-    queryKey: ["permissions"],
+    queryKey: queryKeys.users.permissions,
     queryFn: async () => {
       const response = await apiClient.get("/role-change/permissions");
       return response.data;
@@ -90,7 +104,7 @@ export const RoleManagementDashboard: React.FC = () => {
       return response.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["permissions"] });
+      invalidateUserData(queryClient);
       reset();
       setGrantPermissionOpen(false);
     },
@@ -103,7 +117,7 @@ export const RoleManagementDashboard: React.FC = () => {
       return response.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["permissions"] });
+      invalidateUserData(queryClient);
     },
   });
 
@@ -129,23 +143,30 @@ export const RoleManagementDashboard: React.FC = () => {
   };
 
   return (
-    <Box sx={{ p: 3 }}>
-      <Typography variant="h4" sx={{ mb: 3, fontWeight: "bold" }}>
-        {t("Role & Permission Management")}
-      </Typography>
+    <Box sx={adminPageSx}>
+      <AdminPageHeader
+        title={t("Role & Permission Management")}
+        subtitle={t(
+          "admin.rolePermissionSubtitle",
+          "Grant role-change permissions and audit user roles.",
+        )}
+        eyebrow={t("nav.admin")}
+        icon={<AddIcon sx={appIconSx.card} />}
+      />
 
       {/* Grant Permission Section */}
-      <Card sx={{ mb: 3 }}>
+      <Card sx={{ ...adminPanelSx, mb: 3 }}>
         <CardHeader
           title={t("Grant Role Change Permission")}
           action={
-            <Button
-              startIcon={<AddIcon />}
+            <CustomButton
+              startIcon={<AddIcon sx={appIconSx.lg} />}
               variant="contained"
+              appVariant="primary"
               onClick={() => setGrantPermissionOpen(true)}
             >
               {t("Grant Permission")}
-            </Button>
+            </CustomButton>
           }
         />
         <CardContent>
@@ -154,7 +175,7 @@ export const RoleManagementDashboard: React.FC = () => {
               {t("No permissions granted yet")}
             </Typography>
           ) : (
-            <TableContainer component={Paper}>
+            <TableContainer component={Paper} sx={{ ...adminPanelSx }}>
               <Table size="small">
                 <TableHead>
                   <TableRow sx={{ bgcolor: "background.default" }}>
@@ -193,7 +214,7 @@ export const RoleManagementDashboard: React.FC = () => {
                             }
                             disabled={revokePermissionMutation.isPending}
                           >
-                            <DeleteIcon fontSize="small" />
+                            <DeleteIcon sx={appIconSx.lg} />
                           </IconButton>
                         </Tooltip>
                       </TableCell>
@@ -207,7 +228,7 @@ export const RoleManagementDashboard: React.FC = () => {
       </Card>
 
       {/* User Management Section */}
-      <Card>
+      <Card sx={adminPanelSx}>
         <CardHeader title={t("User Roles")} />
         <CardContent>
           {usersLoading ? (
@@ -215,7 +236,7 @@ export const RoleManagementDashboard: React.FC = () => {
           ) : users.length === 0 ? (
             <Typography color="textSecondary">{t("No users found")}</Typography>
           ) : (
-            <TableContainer component={Paper}>
+            <TableContainer component={Paper} sx={{ ...adminPanelSx }}>
               <Table>
                 <TableHead>
                   <TableRow sx={{ bgcolor: "background.default" }}>
@@ -251,7 +272,7 @@ export const RoleManagementDashboard: React.FC = () => {
                               setChangeRoleOpen(true);
                             }}
                           >
-                            <EditIcon fontSize="small" />
+                            <EditIcon sx={appIconSx.lg} />
                           </IconButton>
                         </Tooltip>
                       </TableCell>
@@ -276,7 +297,7 @@ export const RoleManagementDashboard: React.FC = () => {
             setSelectedUser(null);
           }}
           onSuccess={() => {
-            queryClient.invalidateQueries({ queryKey: ["users"] });
+            invalidateUserData(queryClient);
           }}
         />
       )}
@@ -287,9 +308,12 @@ export const RoleManagementDashboard: React.FC = () => {
         onClose={() => setGrantPermissionOpen(false)}
         maxWidth="sm"
         fullWidth
+        PaperProps={{ sx: adminDialogPaperSx }}
       >
-        <DialogTitle>{t("Grant Role Change Permission")}</DialogTitle>
-        <DialogContent sx={{ pt: 2 }}>
+        <DialogTitle sx={adminDialogTitleSx}>
+          {t("Grant Role Change Permission")}
+        </DialogTitle>
+        <DialogContent sx={adminDialogContentSx}>
           <Typography variant="body2" color="textSecondary" sx={{ mb: 2 }}>
             {t("Select a user to grant role change permission")}
           </Typography>
@@ -346,24 +370,23 @@ export const RoleManagementDashboard: React.FC = () => {
             />
           </form>
         </DialogContent>
-        <DialogActions>
-          <Button
+        <DialogActions sx={adminDialogActionsSx}>
+          <CustomButton
             onClick={() => setGrantPermissionOpen(false)}
             disabled={grantPermissionMutation.isPending}
+            appVariant="ghost"
           >
             {t("Cancel")}
-          </Button>
-          <Button
+          </CustomButton>
+          <CustomButton
             onClick={handleSubmit(onGrantPermission)}
             variant="contained"
+            appVariant="primary"
+            isLoading={grantPermissionMutation.isPending}
             disabled={grantPermissionMutation.isPending}
           >
-            {grantPermissionMutation.isPending ? (
-              <CircularProgress size={24} />
-            ) : (
-              t("Grant Permission")
-            )}
-          </Button>
+            {t("Grant Permission")}
+          </CustomButton>
         </DialogActions>
       </Dialog>
     </Box>

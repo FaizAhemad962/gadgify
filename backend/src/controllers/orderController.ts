@@ -11,6 +11,43 @@ import {
   sendLowStockAlertEmail,
 } from "../utils/email";
 import logger from "../utils/logger";
+import { AppError } from "../middlewares/errorHandler";
+
+const ORDER_STATUSES = [
+  "PENDING",
+  "PROCESSING",
+  "SHIPPED",
+  "DELIVERED",
+  "CANCELLED",
+] as const;
+
+type OrderStatus = (typeof ORDER_STATUSES)[number];
+
+const isOrderStatus = (status: unknown): status is OrderStatus =>
+  typeof status === "string" && ORDER_STATUSES.includes(status as OrderStatus);
+
+const getAllowedOrderStatusTransitions = (
+  currentStatus: OrderStatus,
+  paymentStatus: string,
+): OrderStatus[] => {
+  if (currentStatus === "CANCELLED" || currentStatus === "DELIVERED") {
+    return [currentStatus];
+  }
+
+  if (paymentStatus !== "COMPLETED") {
+    return currentStatus === "PENDING" ? ["PENDING", "CANCELLED"] : [currentStatus];
+  }
+
+  const transitions: Record<OrderStatus, OrderStatus[]> = {
+    PENDING: ["PENDING", "PROCESSING", "CANCELLED"],
+    PROCESSING: ["PROCESSING", "SHIPPED", "CANCELLED"],
+    SHIPPED: ["SHIPPED", "DELIVERED"],
+    DELIVERED: ["DELIVERED"],
+    CANCELLED: ["CANCELLED"],
+  };
+
+  return transitions[currentStatus] || [currentStatus];
+};
 
 // Helper function to parse shippingAddress JSON
 const transformOrder = (order: any) => {
@@ -742,6 +779,39 @@ export const updateOrderStatus = async (
   try {
     const { orderId } = req.params;
     const { status } = req.body;
+
+    if (!isOrderStatus(status)) {
+      throw new AppError("Invalid order status", 400);
+    }
+
+    const existingOrder = await prisma.order.findUnique({
+      where: { id: orderId },
+      select: {
+        id: true,
+        status: true,
+        paymentStatus: true,
+      },
+    });
+
+    if (!existingOrder) {
+      throw new AppError("Order not found", 404);
+    }
+
+    if (!isOrderStatus(existingOrder.status)) {
+      throw new AppError("Current order status is invalid", 400);
+    }
+
+    const allowedStatuses = getAllowedOrderStatusTransitions(
+      existingOrder.status,
+      existingOrder.paymentStatus,
+    );
+
+    if (!allowedStatuses.includes(status)) {
+      throw new AppError(
+        `Cannot change order status from ${existingOrder.status} to ${status}`,
+        400,
+      );
+    }
 
     const order = await prisma.order.update({
       where: { id: orderId },

@@ -1,7 +1,9 @@
 import React, { createContext, useContext, useState, useCallback } from "react";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "../api/client";
 import { useAuth } from "./AuthContext";
+import { invalidateWishlistData } from "@/lib/queryInvalidation";
+import { queryKeys } from "@/lib/queryKeys";
 
 interface WishlistItem {
   id: string;
@@ -42,6 +44,7 @@ export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({
 }) => {
   const [wishlistItems, setWishlistItems] = useState<WishlistItem[]>([]);
   const { isAuthenticated, authChecked } = useAuth();
+  const queryClient = useQueryClient();
 
   // Track which products are currently being toggled
   const [togglingProducts, setTogglingProducts] = useState<Set<string>>(
@@ -57,7 +60,7 @@ export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({
 
   // Fetch wishlist on mount
   const { isLoading, isError, data } = useQuery({
-    queryKey: ["wishlist"],
+    queryKey: queryKeys.wishlist.all,
     queryFn: async () => {
       const response = await apiClient.get("/wishlist");
       // Don't set state here - let the mutations handle state updates
@@ -88,6 +91,10 @@ export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({
     onSuccess: (newItem) => {
       // Add the new item to the wishlist
       setWishlistItems((prev) => [...prev, newItem]);
+      queryClient.setQueryData<WishlistItem[]>(queryKeys.wishlist.all, (prev) =>
+        prev ? [...prev, newItem] : [newItem],
+      );
+      invalidateWishlistData(queryClient);
     },
   });
 
@@ -101,6 +108,10 @@ export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({
       setWishlistItems((prev) =>
         prev.filter((item) => item.productId !== productId),
       );
+      queryClient.setQueryData<WishlistItem[]>(queryKeys.wishlist.all, (prev) =>
+        prev?.filter((item) => item.productId !== productId) ?? [],
+      );
+      invalidateWishlistData(queryClient);
     },
   });
 

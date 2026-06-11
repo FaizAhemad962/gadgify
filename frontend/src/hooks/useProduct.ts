@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useState } from "react";
 import type { Product } from "../types";
 import { productsApi } from "../api/products";
+import { invalidateProductData } from "@/lib/queryInvalidation";
 
 export const useCreateProduct = () => {
   const queryClient = useQueryClient();
@@ -11,7 +12,7 @@ export const useCreateProduct = () => {
     mutationFn: (data: Omit<Product, "id" | "createdAt" | "updatedAt">) =>
       productsApi.create(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["products"] });
+      invalidateProductData(queryClient);
       setError(null);
     },
     onError: (err: Error | unknown) => {
@@ -45,8 +46,8 @@ export const useUpdateProduct = () => {
   const mutation = useMutation({
     mutationFn: ({ id, data }: { id: string; data: Partial<Product> }) =>
       productsApi.update(id, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["products"] });
+    onSuccess: (_, variables) => {
+      invalidateProductData(queryClient, variables.id);
       setError(null);
     },
     onError: (err: Error | unknown) => {
@@ -79,8 +80,8 @@ export const useDeleteProduct = () => {
 
   const mutation = useMutation({
     mutationFn: productsApi.delete,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["products"] });
+    onSuccess: (_, productId) => {
+      invalidateProductData(queryClient, productId);
       setError(null);
     },
     onError: (err: unknown) => {

@@ -15,6 +15,7 @@ import {
   CheckCircle,
 } from "@/mui/icons";
 import { tokens } from "../../theme/theme";
+import { appIconSx } from "@/components/ui/navigationStyles";
 
 interface StepItem {
   icon: React.ReactNode;
@@ -31,31 +32,31 @@ interface HowItWorksProps {
 
 const DEFAULT_STEPS: StepItem[] = [
   {
-    icon: <Search sx={{ fontSize: 40 }} />,
+    icon: <Search sx={appIconSx.feature} />,
     title: "common.howItWorks.step1.title",
     description: "common.howItWorks.step1.desc",
     color: tokens.primary,
   },
   {
-    icon: <ShoppingCart sx={{ fontSize: 40 }} />,
+    icon: <ShoppingCart sx={appIconSx.feature} />,
     title: "common.howItWorks.step2.title",
     description: "common.howItWorks.step2.desc",
     color: tokens.accent,
   },
   {
-    icon: <Payment sx={{ fontSize: 40 }} />,
+    icon: <Payment sx={appIconSx.feature} />,
     title: "common.howItWorks.step3.title",
     description: "common.howItWorks.step3.desc",
     color: tokens.secondary,
   },
   {
-    icon: <LocalShipping sx={{ fontSize: 40 }} />,
+    icon: <LocalShipping sx={appIconSx.feature} />,
     title: "common.howItWorks.step4.title",
     description: "common.howItWorks.step4.desc",
     color: tokens.success,
   },
   {
-    icon: <CheckCircle sx={{ fontSize: 40 }} />,
+    icon: <CheckCircle sx={appIconSx.feature} />,
     title: "common.howItWorks.step5.title",
     description: "common.howItWorks.step5.desc",
     color: tokens.info,
@@ -171,7 +172,10 @@ const HowItWorks: React.FC<HowItWorksProps> = ({
                     color: step.color,
                     mb: 2,
                     "& svg": {
-                      fontSize: { xs: 40, lg: 40 },
+                      fontSize: {
+                        xs: appIconSx.feature.fontSize,
+                        lg: appIconSx.feature.fontSize,
+                      },
                     },
                   }}
                 >

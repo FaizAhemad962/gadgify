@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useState } from "react";
 import { cartApi } from "../api/cart";
+import { invalidateCartData } from "@/lib/queryInvalidation";
 
 export const useUpdateCartItem = () => {
   const queryClient = useQueryClient();
@@ -10,7 +11,7 @@ export const useUpdateCartItem = () => {
     mutationFn: ({ itemId, quantity }: { itemId: string; quantity: number }) =>
       cartApi.updateItem(itemId, { quantity }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["cart"] });
+      invalidateCartData(queryClient);
       setError(null);
     },
     onError: (err: Error | unknown) => {
@@ -43,7 +44,7 @@ export const useRemoveFromCart = () => {
   const mutation = useMutation({
     mutationFn: cartApi.removeItem,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["cart"] });
+      invalidateCartData(queryClient);
       setError(null);
     },
     onError: (err: unknown) => {
@@ -76,7 +77,7 @@ export const useClearCart = () => {
   const mutation = useMutation({
     mutationFn: cartApi.clear,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["cart"] });
+      invalidateCartData(queryClient);
       setError(null);
     },
     onError: (err: unknown) => {

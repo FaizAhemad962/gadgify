@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -19,6 +19,13 @@ import {
   RadioGroup,
   FormControlLabel,
 } from "@/mui/material";
+import {
+  ArrowForward,
+  CreditCard,
+  LocalOffer,
+  LocationOn,
+  ShoppingBag,
+} from "@/mui/icons";
 import { useCart } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
 import { tokens } from "@/theme/theme";
@@ -26,6 +33,13 @@ import { ErrorHandler } from "../utils/errorHandler";
 import { ordersApi } from "../api/orders";
 import { addressesApi, type Address } from "../api/addresses";
 import { useCoupon } from "../hooks/useCoupon";
+import {
+  invalidateAddressData,
+  invalidateCartData,
+  invalidateOrderData,
+} from "@/lib/queryInvalidation";
+import { queryKeys } from "@/lib/queryKeys";
+import { appIconSx } from "@/components/ui/navigationStyles";
 
 const shippingSchema = z.object({
   name: z.string().min(2, "Name is required"),
@@ -38,9 +52,23 @@ const shippingSchema = z.object({
 
 type ShippingFormData = z.infer<typeof shippingSchema>;
 
+const checkoutInputSx = {
+  "& .MuiOutlinedInput-root": {
+    borderRadius: `${tokens.radiusMd}px`,
+    backgroundColor: tokens.gray50,
+    "&:hover fieldset": {
+      borderColor: tokens.primary,
+    },
+    "&.Mui-focused": {
+      backgroundColor: tokens.white,
+    },
+  },
+};
+
 const CheckoutPage = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { cart, clearCart } = useCart();
   const { user } = useAuth();
   const [error, setError] = useState("");
@@ -55,18 +83,24 @@ const CheckoutPage = () => {
     applyPromo,
     removePromo,
   } = useCoupon();
-  const [selectedAddressId, setSelectedAddressId] = useState<string>("new");
+  const [selectedAddressId, setSelectedAddressId] = useState<string>("");
 
   const { data: savedAddresses = [] } = useQuery({
-    queryKey: ["addresses"],
+    queryKey: queryKeys.addresses.all,
     queryFn: addressesApi.getAll,
   });
 
-  // Set initial selection to default address when data loads
-  const defaultAddr = savedAddresses.find((a: Address) => a.isDefault);
-  if (savedAddresses.length > 0 && selectedAddressId === "new" && defaultAddr) {
-    setSelectedAddressId(defaultAddr.id);
-  }
+  useEffect(() => {
+    if (selectedAddressId) return;
+
+    const defaultAddr = savedAddresses.find((a: Address) => a.isDefault);
+    const nextAddressId = defaultAddr?.id || "new";
+    const timer = window.setTimeout(() => {
+      setSelectedAddressId(nextAddressId);
+    }, 0);
+
+    return () => window.clearTimeout(timer);
+  }, [savedAddresses, selectedAddressId]);
 
   const selectedSavedAddress = savedAddresses.find(
     (a: Address) => a.id === selectedAddressId,
@@ -91,6 +125,8 @@ const CheckoutPage = () => {
   const createOrderMutation = useMutation({
     mutationFn: ordersApi.create,
     onSuccess: async (order) => {
+      invalidateOrderData(queryClient, order.id);
+      invalidateAddressData(queryClient);
       // Create Razorpay payment
       try {
         const paymentData = await ordersApi.createPaymentIntent(order.id);
@@ -100,7 +136,7 @@ const CheckoutPage = () => {
           amount: paymentData.amount,
           currency: paymentData.currency,
           name: "Gadgify",
-          description: "Pay via UPI (Scan QR or enter UPI ID in next step)",
+          description: "Complete your secure payment",
           order_id: paymentData.razorpayOrderId,
           handler: async function (response: {
             razorpay_order_id: string;
@@ -113,6 +149,8 @@ const CheckoutPage = () => {
                 razorpay_payment_id: response.razorpay_payment_id,
                 razorpay_signature: response.razorpay_signature,
               });
+              invalidateOrderData(queryClient, order.id);
+              invalidateCartData(queryClient);
               clearCart();
               navigate(`/orders/${order.id}`);
             } catch (err) {
@@ -131,25 +169,6 @@ const CheckoutPage = () => {
           },
           theme: {
             color: tokens.primary,
-          },
-          // ✅ PAYMENT METHODS: Show only UPI, NetBanking, and Card
-          config: {
-            display: {
-              blocks: {
-                preferred: {
-                  name: "Pay using",
-                  instruments: [
-                    { method: "upi" },
-                    // { method: "card" },
-                    // { method: "netbanking" },
-                  ],
-                },
-              },
-              sequence: ["block.preferred"],
-              preferences: {
-                show_default_blocks: false, // 🔥 hides others
-              },
-            },
           },
         };
 
@@ -255,15 +274,48 @@ const CheckoutPage = () => {
   const total = subtotal + shipping - discount;
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
-      <Typography
-        variant="h4"
-        gutterBottom
-        fontWeight="700"
-        sx={{ mb: 4, color: "text.primary" }}
+    <Container
+      maxWidth={false}
+      sx={{
+        maxWidth: tokens.appMaxWidth,
+        py: { xs: 3, md: 5 },
+        px: tokens.pagePaddingX,
+      }}
+    >
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: { xs: "flex-start", sm: "center" },
+          flexDirection: { xs: "column", sm: "row" },
+          gap: 2,
+          mb: 3,
+        }}
       >
-        {t("checkout.title")}
-      </Typography>
+        <Box>
+          <Typography
+            variant="h3"
+            sx={{ fontWeight: 900, color: tokens.gray900 }}
+          >
+            {t("checkout.title")}
+          </Typography>
+          <Typography sx={{ mt: 0.75, color: tokens.gray600 }}>
+            Review delivery details and complete secure payment.
+          </Typography>
+        </Box>
+        <Button
+          variant="outlined"
+          onClick={() => navigate("/cart")}
+          sx={{
+            borderRadius: "999px",
+            borderColor: tokens.gray300,
+            color: tokens.primary,
+            fontWeight: 800,
+          }}
+        >
+          {t("cart.title")}
+        </Button>
+      </Box>
 
       {error && (
         <Alert severity="error" sx={{ mb: 3 }} onClose={() => setError("")}>
@@ -281,13 +333,24 @@ const CheckoutPage = () => {
         >
           {/* Shipping Form */}
           <Box sx={{ flex: { md: 2 } }}>
-            <Paper sx={{ p: 4, border: "1px solid #eee" }}>
+            <Paper
+              elevation={0}
+              sx={{
+                p: { xs: 2.5, md: 4 },
+                border: `1px solid ${tokens.gray200}`,
+                borderRadius: `${tokens.radiusXl}px`,
+                boxShadow: tokens.shadowSm,
+              }}
+            >
               <Typography
                 variant="h6"
                 gutterBottom
                 sx={{ fontWeight: 700, mb: 3, color: "text.primary" }}
               >
-                📍 {t("checkout.shippingAddress")}
+                <LocationOn
+                  sx={{ mr: 1, color: tokens.accent, verticalAlign: "middle" }}
+                />
+                {t("checkout.shippingAddress")}
               </Typography>
               <Divider sx={{ mb: 3 }} />
 
@@ -307,20 +370,23 @@ const CheckoutPage = () => {
                     {savedAddresses.map((addr: Address) => (
                       <Paper
                         key={addr.id}
-                        variant="outlined"
+                        elevation={0}
                         sx={{
-                          p: 1.5,
+                          p: 1.75,
                           mb: 1,
                           cursor: "pointer",
                           borderColor:
                             selectedAddressId === addr.id
-                              ? "primary.main"
-                              : "divider",
+                              ? tokens.accent
+                              : tokens.gray200,
+                          borderStyle: "solid",
                           borderWidth: selectedAddressId === addr.id ? 2 : 1,
+                          borderRadius: `${tokens.radiusLg}px`,
                           bgcolor:
                             selectedAddressId === addr.id
-                              ? "action.selected"
-                              : "transparent",
+                              ? `${tokens.accent}0F`
+                              : tokens.white,
+                          transition: "border-color 160ms ease, background-color 160ms ease",
                         }}
                         onClick={() => setSelectedAddressId(addr.id)}
                       >
@@ -365,19 +431,21 @@ const CheckoutPage = () => {
                       </Paper>
                     ))}
                     <Paper
-                      variant="outlined"
+                      elevation={0}
                       sx={{
-                        p: 1.5,
+                        p: 1.75,
                         cursor: "pointer",
                         borderColor:
                           selectedAddressId === "new"
-                            ? "primary.main"
-                            : "divider",
+                            ? tokens.accent
+                            : tokens.gray200,
+                        borderStyle: "solid",
                         borderWidth: selectedAddressId === "new" ? 2 : 1,
+                        borderRadius: `${tokens.radiusLg}px`,
                         bgcolor:
                           selectedAddressId === "new"
-                            ? "action.selected"
-                            : "transparent",
+                            ? `${tokens.accent}0F`
+                            : tokens.white,
                       }}
                       onClick={() => setSelectedAddressId("new")}
                     >
@@ -410,13 +478,7 @@ const CheckoutPage = () => {
                       helperText={errors.name?.message}
                       variant="outlined"
                       size="small"
-                      sx={{
-                        "& .MuiOutlinedInput-root": {
-                          "&:hover fieldset": {
-                            borderColor: tokens.primary,
-                          },
-                        },
-                      }}
+                      sx={checkoutInputSx}
                     />
                   </Box>
                   <Box
@@ -430,13 +492,7 @@ const CheckoutPage = () => {
                       helperText={errors.phone?.message}
                       variant="outlined"
                       size="small"
-                      sx={{
-                        "& .MuiOutlinedInput-root": {
-                          "&:hover fieldset": {
-                            borderColor: tokens.primary,
-                          },
-                        },
-                      }}
+                      sx={checkoutInputSx}
                     />
                   </Box>
                   <Box sx={{ flex: "1 1 100%" }}>
@@ -450,13 +506,7 @@ const CheckoutPage = () => {
                       helperText={errors.address?.message}
                       variant="outlined"
                       size="small"
-                      sx={{
-                        "& .MuiOutlinedInput-root": {
-                          "&:hover fieldset": {
-                            borderColor: tokens.primary,
-                          },
-                        },
-                      }}
+                      sx={checkoutInputSx}
                     />
                   </Box>
                   <Box
@@ -470,13 +520,7 @@ const CheckoutPage = () => {
                       helperText={errors.city?.message}
                       variant="outlined"
                       size="small"
-                      sx={{
-                        "& .MuiOutlinedInput-root": {
-                          "&:hover fieldset": {
-                            borderColor: tokens.primary,
-                          },
-                        },
-                      }}
+                      sx={checkoutInputSx}
                     />
                   </Box>
                   <Box
@@ -495,11 +539,7 @@ const CheckoutPage = () => {
                       InputProps={{
                         readOnly: true,
                       }}
-                      sx={{
-                        "& .MuiOutlinedInput-root": {
-                          backgroundColor: tokens.gray50,
-                        },
-                      }}
+                      sx={checkoutInputSx}
                     />
                   </Box>
                   <Box
@@ -513,13 +553,7 @@ const CheckoutPage = () => {
                       helperText={errors.pincode?.message}
                       variant="outlined"
                       size="small"
-                      sx={{
-                        "& .MuiOutlinedInput-root": {
-                          "&:hover fieldset": {
-                            borderColor: tokens.primary,
-                          },
-                        },
-                      }}
+                      sx={checkoutInputSx}
                     />
                   </Box>
                 </Box>
@@ -530,11 +564,14 @@ const CheckoutPage = () => {
           {/* Order Summary & Payment */}
           <Box sx={{ flex: { md: 1 } }}>
             <Paper
+              elevation={0}
               sx={{
                 p: 3.5,
                 position: "sticky",
-                top: 20,
-                border: "1px solid #eee",
+                top: tokens.filterStickyTop,
+                border: `1px solid ${tokens.gray200}`,
+                borderRadius: `${tokens.radiusXl}px`,
+                boxShadow: tokens.shadowMd,
               }}
             >
               <Typography
@@ -542,7 +579,10 @@ const CheckoutPage = () => {
                 gutterBottom
                 sx={{ fontWeight: 700, mb: 2.5, color: "text.primary" }}
               >
-                📦 {t("checkout.orderSummary")}
+                <ShoppingBag
+                  sx={{ mr: 1, color: tokens.accent, verticalAlign: "middle" }}
+                />
+                {t("checkout.orderSummary")}
               </Typography>
               <Divider sx={{ mb: 2.5 }} />
 
@@ -551,7 +591,13 @@ const CheckoutPage = () => {
                 {cart.items.map((item) => (
                   <Box
                     key={item.id}
-                    sx={{ mb: 2, pb: 2, borderBottom: "1px solid #f0f0f0" }}
+                    sx={{
+                      mb: 1.5,
+                      p: 1.5,
+                      border: `1px solid ${tokens.gray200}`,
+                      borderRadius: `${tokens.radiusLg}px`,
+                      bgcolor: tokens.gray50,
+                    }}
                   >
                     <Box
                       sx={{
@@ -637,7 +683,10 @@ const CheckoutPage = () => {
                   variant="body2"
                   sx={{ fontWeight: 600, mb: 1, color: "text.primary" }}
                 >
-                  🎟️ {t("checkout.applyCoupon")}
+                  <LocalOffer
+                    sx={{ ...appIconSx.md, mr: 0.75, color: tokens.accent }}
+                  />
+                  {t("checkout.applyCoupon")}
                 </Typography>
                 {appliedCoupon ? (
                   <Box
@@ -646,9 +695,9 @@ const CheckoutPage = () => {
                       alignItems: "flex-start",
                       justifyContent: "space-between",
                       p: 1.25,
-                      bgcolor: "#e8f5e9",
-                      borderRadius: 1,
-                      border: "1px solid #4caf50",
+                      bgcolor: tokens.successLight,
+                      borderRadius: `${tokens.radiusMd}px`,
+                      border: `1px solid ${tokens.success}`,
                       gap: 1,
                     }}
                   >
@@ -688,7 +737,7 @@ const CheckoutPage = () => {
                           whiteSpace: "nowrap",
                         }}
                       >
-                        ✓ Coupon applied successfully
+                        {t("common.couponApplied")}
                       </Typography>
                     </Box>
                     <Button
@@ -702,7 +751,7 @@ const CheckoutPage = () => {
                         whiteSpace: "nowrap",
                       }}
                     >
-                      Remove
+                      {t("common.remove")}
                     </Button>
                   </Box>
                 ) : (
@@ -718,6 +767,13 @@ const CheckoutPage = () => {
                       error={!!couponError}
                       helperText={couponError}
                       sx={{ flex: 1 }}
+                      InputProps={{
+                        startAdornment: (
+                          <LocalOffer
+                            sx={{ ...appIconSx.md, mr: 1, color: tokens.gray400 }}
+                          />
+                        ),
+                      }}
                       slotProps={{
                         input: {
                           sx: { textTransform: "uppercase" },
@@ -731,8 +787,11 @@ const CheckoutPage = () => {
                       disabled={isValidatingCoupon || !couponCode.trim()}
                       sx={{
                         textTransform: "none",
-                        fontWeight: 600,
+                        fontWeight: 800,
                         minWidth: 80,
+                        borderRadius: "999px",
+                        borderColor: tokens.accent,
+                        color: tokens.accent,
                       }}
                     >
                       {isValidatingCoupon ? "..." : t("common.apply")}
@@ -789,9 +848,9 @@ const CheckoutPage = () => {
               <Box
                 sx={{
                   p: 2,
-                  bgcolor: "#f0f7ff",
+                  bgcolor: tokens.infoLight,
                   borderLeft: `4px solid ${tokens.primary}`,
-                  borderRadius: 1,
+                  borderRadius: `${tokens.radiusMd}px`,
                   mb: 3,
                 }}
               >
@@ -804,7 +863,10 @@ const CheckoutPage = () => {
                     mb: 0.5,
                   }}
                 >
-                  💳 {t("checkout.paymentMethod")}
+                  <CreditCard
+                    sx={{ ...appIconSx.md, mr: 0.75, verticalAlign: "middle" }}
+                  />
+                  {t("checkout.paymentMethod")}
                 </Typography>
                 <Typography
                   variant="body2"
@@ -821,11 +883,13 @@ const CheckoutPage = () => {
                 size="large"
                 type="submit"
                 disabled={createOrderMutation.isPending}
+                endIcon={!createOrderMutation.isPending ? <ArrowForward /> : null}
                 sx={{
                   mb: 2,
-                  fontWeight: 700,
+                  fontWeight: 800,
                   py: 1.5,
                   bgcolor: tokens.accent,
+                  borderRadius: "999px",
                   "&:hover": {
                     bgcolor: tokens.accentDark,
                   },
@@ -836,18 +900,22 @@ const CheckoutPage = () => {
               >
                 {createOrderMutation.isPending
                   ? t("common.processingPayment")
-                  : `🔒 ${t("common.completeOrderAndPay")}`}
+                  : t("common.completeOrderAndPay")}
               </Button>
 
               {/* Security Info */}
               <Box
-                sx={{ textAlign: "center", pt: 2, borderTop: "1px solid #eee" }}
+                sx={{
+                  textAlign: "center",
+                  pt: 2,
+                  borderTop: `1px solid ${tokens.gray200}`,
+                }}
               >
                 <Typography
                   variant="caption"
                   sx={{ color: "text.secondary", fontSize: "0.8rem" }}
                 >
-                  ✓ {t("common.sslSecured")} • ✓ {t("common.encryptedPayment")}
+                  {t("common.sslSecured")} • {t("common.encryptedPayment")}
                 </Typography>
               </Box>
             </Paper>

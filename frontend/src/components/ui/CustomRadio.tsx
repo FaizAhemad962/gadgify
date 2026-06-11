@@ -1,5 +1,6 @@
 import { Radio, type RadioProps, styled } from "@/mui/material";
 import { tokens } from "@/theme/theme";
+import { appIconSizes } from "./navigationStyles";
 
 const StyledRadio = styled(Radio)<RadioProps>(() => ({
   color: tokens.gray400,
@@ -10,7 +11,7 @@ const StyledRadio = styled(Radio)<RadioProps>(() => ({
     backgroundColor: `${tokens.accent}10`,
   },
   "& .MuiSvgIcon-root": {
-    fontSize: 24,
+    fontSize: appIconSizes.xl,
   },
 }));
 

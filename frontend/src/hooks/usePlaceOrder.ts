@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useState } from "react";
 import { ordersApi } from "../api/orders";
+import { invalidateCartData, invalidateOrderData } from "@/lib/queryInvalidation";
 
 export const usePlaceOrder = () => {
   const queryClient = useQueryClient();
@@ -8,9 +9,9 @@ export const usePlaceOrder = () => {
 
   const mutation = useMutation({
     mutationFn: ordersApi.create,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["cart"] });
-      queryClient.invalidateQueries({ queryKey: ["orders"] });
+    onSuccess: (order) => {
+      invalidateCartData(queryClient);
+      invalidateOrderData(queryClient, order?.id);
       setError(null);
     },
     onError: (err: Error | unknown) => {

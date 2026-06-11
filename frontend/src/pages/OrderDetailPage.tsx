@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import {
   Container,
@@ -21,6 +21,14 @@ import { generateInvoicePDF } from "../utils/generateInvoice";
 import { ErrorHandler } from "../utils/errorHandler";
 import { tokens } from "@/theme/theme";
 import OrderTimeline from "../components/OrderTimeline";
+import { invalidateOrderData } from "@/lib/queryInvalidation";
+import { queryKeys } from "@/lib/queryKeys";
+import {
+  getOrderStatusChipColor,
+  getOrderStatusLabel,
+  getPaymentStatusChipColor,
+  getPaymentStatusLabel,
+} from "@/utils/orderStatus";
 
 declare global {
   interface Window {
@@ -35,6 +43,7 @@ const OrderDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [error, setError] = useState("");
 
   const {
@@ -43,7 +52,7 @@ const OrderDetailPage = () => {
     error: fetchError,
     refetch,
   } = useQuery({
-    queryKey: ["order", id],
+    queryKey: queryKeys.orders.detail(id),
     queryFn: () => ordersApi.getById(id!),
     enabled: !!id,
     staleTime: 0, // Always refetch on mount
@@ -74,6 +83,7 @@ const OrderDetailPage = () => {
               razorpay_payment_id: response.razorpay_payment_id,
               razorpay_signature: response.razorpay_signature,
             });
+            invalidateOrderData(queryClient, id);
             setError("");
             refetch(); // Refresh order data
           } catch (err) {
@@ -110,64 +120,6 @@ const OrderDetailPage = () => {
       ErrorHandler.logError("Payment retry failed", err);
     },
   });
-
-  const getStatusColor = (status: string) => {
-    const colors: Record<
-      string,
-      | "default"
-      | "primary"
-      | "secondary"
-      | "error"
-      | "info"
-      | "success"
-      | "warning"
-    > = {
-      PENDING: "warning",
-      PROCESSING: "info",
-      SHIPPED: "primary",
-      DELIVERED: "success",
-      CANCELLED: "error",
-    };
-    return colors[status] || "default";
-  };
-
-  const getStatusLabel = (status: string) => {
-    const statusMap: Record<string, string> = {
-      PENDING: t("orders.pending"),
-      PROCESSING: t("orders.processing"),
-      SHIPPED: t("orders.shipped"),
-      DELIVERED: t("orders.delivered"),
-      CANCELLED: t("orders.cancelled"),
-    };
-    return statusMap[status] || status;
-  };
-
-  const getPaymentStatusColor = (status: string) => {
-    const colors: Record<
-      string,
-      | "default"
-      | "primary"
-      | "secondary"
-      | "error"
-      | "info"
-      | "success"
-      | "warning"
-    > = {
-      PENDING: "warning",
-      COMPLETED: "success",
-      FAILED: "error",
-    };
-    return colors[status] || "default";
-  };
-
-  const getPaymentStatusLabel = (status: string) => {
-    const statusMap: Record<string, string> = {
-      PENDING: t("payment.pending"),
-      COMPLETED: t("payment.completed"),
-      FAILED: t("payment.failed"),
-    };
-    return statusMap[status] || status;
-  };
 
   if (isLoading) {
     return (
@@ -290,13 +242,13 @@ const OrderDetailPage = () => {
                 }}
               >
                 <Chip
-                  label={`${t("orders.status")}: ${getStatusLabel(order.status)}`}
-                  color={getStatusColor(order.status)}
+                  label={`${t("orders.status")}: ${getOrderStatusLabel(order.status, t)}`}
+                  color={getOrderStatusChipColor(order.status)}
                   sx={{ fontWeight: 600 }}
                 />
                 <Chip
-                  label={`${t("payment.label")}: ${getPaymentStatusLabel(order.paymentStatus)}`}
-                  color={getPaymentStatusColor(order.paymentStatus)}
+                  label={`${t("payment.label")}: ${getPaymentStatusLabel(order.paymentStatus, t)}`}
+                  color={getPaymentStatusChipColor(order.paymentStatus)}
                   sx={{ fontWeight: 600 }}
                 />
               </Box>

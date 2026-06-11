@@ -1,14 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Container, Box, Typography, Button } from "@/mui/material";
-import { ArrowForward, TrendingUp } from "@/mui/icons";
+import ProductSection from "../products/ProductSection";
 import { productsApi } from "../../api/products";
-import ProductCard from "../ProductCard";
 import { useCart } from "../../context/CartContext";
 import { useWishlist } from "../../context/WishlistContext";
 import { useAuth } from "../../context/AuthContext";
-import { tokens } from "../../theme/theme";
 
 interface BestSellersProps {
   title?: string;
@@ -17,12 +14,12 @@ interface BestSellersProps {
   sortBy?: string;
 }
 
-const BestSellers: React.FC<BestSellersProps> = ({
+const BestSellers = ({
   title = "common.bestSellers",
   description = "common.bestSellersDesc",
   limit = 8,
   sortBy = "sales",
-}) => {
+}: BestSellersProps) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
@@ -55,81 +52,23 @@ const BestSellers: React.FC<BestSellersProps> = ({
   };
 
   return (
-    <Container maxWidth="lg" sx={{ py: 6 }}>
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          mb: 5,
-          flexWrap: "wrap",
-          gap: 2,
-        }}
-      >
-        <Box>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
-            <TrendingUp sx={{ color: tokens.success, fontSize: 28 }} />
-            <Typography
-              variant="h4"
-              fontWeight="700"
-              sx={{ color: "text.primary" }}
-            >
-              {t(title)}
-            </Typography>
-          </Box>
-          <Typography variant="body2" sx={{ color: "text.secondary", mt: 0.5 }}>
-            {t(description)}
-          </Typography>
-        </Box>
-        <Button
-          endIcon={<ArrowForward />}
-          onClick={() => navigate("/products?sortBy=sales")}
-          sx={{
-            textTransform: "none",
-            fontWeight: 600,
-            color: tokens.primary,
-          }}
-        >
-          {t("common.viewAll")}
-        </Button>
-      </Box>
-
-      {!isLoading && products.length > 0 && (
-        <Box
-          sx={{
-            display: "grid",
-            gridTemplateColumns: {
-              xs: "repeat(2, 1fr)", // 2 columns on mobile
-              sm: "repeat(2, 1fr)",
-              md: "repeat(4, 1fr)",
-            },
-            gridAutoRows: "1fr",
-            gap: 2,
-          }}
-        >
-          {products.map((product) => (
-            <ProductCard
-              key={product.id}
-              product={product}
-              isInWishlist={isInWishlist}
-              isToggling={isToggling}
-              toggleWishlist={toggleWishlist}
-              onAddToCart={handleAddToCart}
-              onBuyNow={handleBuyNow}
-              onNavigate={(id) => navigate(`/products/${id}`)}
-              t={t}
-            />
-          ))}
-        </Box>
-      )}
-      {!isLoading && products.length === 0 && (
-        <Box sx={{ textAlign: "center", py: 4 }}>
-          <Typography color="text.secondary">
-            {t("common.noProductsFound")}
-          </Typography>
-        </Box>
-      )}
-    </Container>
+    <ProductSection
+      title={`📈 ${t(title)}`}
+      subtitle={t(description)}
+      actionLabel={t("common.viewAll")}
+      onActionClick={() => navigate("/products?sortBy=sales")}
+      products={products}
+      isLoading={isLoading}
+      skeletonCount={limit}
+      emptyMessage={t("common.noProductsFound")}
+      isInWishlist={isInWishlist}
+      isToggling={isToggling}
+      toggleWishlist={toggleWishlist}
+      onAddToCart={handleAddToCart}
+      onBuyNow={handleBuyNow}
+      onNavigate={(id) => navigate(`/products/${id}`)}
+      t={t}
+    />
   );
 };
 

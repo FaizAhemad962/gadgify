@@ -4,6 +4,32 @@ import { useTranslation } from "react-i18next";
 import { CustomCarousel } from "@/components/ui";
 import { tokens } from "@/theme/theme";
 
+const heroSlideSx = {
+  color: "white",
+  minHeight: { xs: 360, sm: 390, md: 430 },
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  position: "relative",
+  overflow: "hidden",
+  textAlign: "center",
+};
+
+const heroContainerSx = {
+  position: "relative",
+  zIndex: 1,
+  py: { xs: 5, md: 6 },
+};
+
+const primaryCtaSx = {
+  fontWeight: 700,
+  py: { xs: 1.1, md: 1.25 },
+  px: { xs: 3, md: 3.5 },
+  borderRadius: "14px",
+  textTransform: "none",
+  fontSize: { xs: "0.9rem", md: "0.95rem" },
+};
+
 /**
  * Hero Carousel Component
  * Displays a rotating hero section with multiple slides including:
@@ -23,14 +49,7 @@ const HeroCarousel = () => {
     <Box
       sx={{
         background: `linear-gradient(135deg, ${tokens.primary} 0%, ${tokens.primaryDark} 100%)`,
-        color: "white",
-        minHeight: { xs: "50vh", md: "70vh" },
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        position: "relative",
-        overflow: "hidden",
-        textAlign: "center",
+        ...heroSlideSx,
         "&::before": {
           content: '""',
           position: "absolute",
@@ -43,32 +62,32 @@ const HeroCarousel = () => {
         },
       }}
     >
-      <Container maxWidth="md" sx={{ position: "relative", zIndex: 1 }}>
+      <Container maxWidth="md" sx={heroContainerSx}>
         <Typography
           variant="h2"
           component="h1"
           gutterBottom
           fontWeight="900"
-          sx={{ fontSize: { xs: "2.5rem", md: "3.5rem" }, mb: 2 }}
+          sx={{ fontSize: { xs: "2rem", sm: "2.4rem", md: "3rem" }, mb: 1.5 }}
         >
           {t("app.title")}
         </Typography>
         <Divider
           sx={{
             width: 80,
-            height: 4,
+            height: 3,
             bgcolor: tokens.accent,
             mx: "auto",
-            mb: 3,
+            mb: 2,
             borderRadius: 2,
           }}
         />
-        <Typography variant="h5" gutterBottom sx={{ fontWeight: 300, mb: 3 }}>
+        <Typography variant="h5" gutterBottom sx={{ fontWeight: 500, mb: 2, fontSize: { xs: "1rem", md: "1.25rem" } }}>
           {t("app.subtitle")}
         </Typography>
         <Typography
           variant="body1"
-          sx={{ mt: 3, mb: 5, fontSize: "1.1rem", opacity: 0.95 }}
+          sx={{ mt: 2, mb: 3, fontSize: { xs: "0.95rem", md: "1.05rem" }, opacity: 0.92 }}
         >
           {t("common.discoverLatest")}
         </Typography>
@@ -86,12 +105,7 @@ const HeroCarousel = () => {
             onClick={() => navigate("/products")}
             sx={{
               bgcolor: tokens.accent,
-              fontWeight: 700,
-              py: 1.5,
-              px: 4,
-              borderRadius: 2,
-              textTransform: "none",
-              fontSize: { xs: "0.9rem", md: "1rem" },
+              ...primaryCtaSx,
               "&:hover": {
                 bgcolor: tokens.accentDark,
                 boxShadow: `0 6px 20px ${tokens.accent}44`,
@@ -110,14 +124,7 @@ const HeroCarousel = () => {
     <Box
       sx={{
         background: `linear-gradient(135deg, #FF6B6B 0%, #FF8E72 100%)`,
-        color: "white",
-        minHeight: { xs: "50vh", md: "70vh" },
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        position: "relative",
-        overflow: "hidden",
-        textAlign: "center",
+        ...heroSlideSx,
         "&::before": {
           content: '""',
           position: "absolute",
@@ -131,19 +138,19 @@ const HeroCarousel = () => {
         },
       }}
     >
-      <Container maxWidth="md" sx={{ position: "relative", zIndex: 1 }}>
+      <Container maxWidth="md" sx={heroContainerSx}>
         <Typography
           variant="h3"
           fontWeight="900"
-          sx={{ fontSize: { xs: "2rem", md: "3rem" }, mb: 2 }}
+          sx={{ fontSize: { xs: "1.8rem", md: "2.6rem" }, mb: 1.5 }}
         >
           🎉 Summer Sale
         </Typography>
         <Typography
           variant="h4"
           sx={{
-            fontSize: { xs: "1.5rem", md: "2.5rem" },
-            mb: 3,
+            fontSize: { xs: "1.35rem", md: "2.1rem" },
+            mb: 2,
             fontWeight: 700,
             background: "linear-gradient(90deg, #FFE66D, #FFFFFF)",
             backgroundClip: "text",
@@ -155,7 +162,7 @@ const HeroCarousel = () => {
         </Typography>
         <Typography
           variant="h6"
-          sx={{ mb: 5, fontSize: "1.1rem", opacity: 0.95 }}
+          sx={{ mb: 3, fontSize: { xs: "0.95rem", md: "1.05rem" }, opacity: 0.95 }}
         >
           Don't miss our biggest sale of the year!
         </Typography>
@@ -166,12 +173,7 @@ const HeroCarousel = () => {
           sx={{
             bgcolor: "white",
             color: "#FF6B6B",
-            fontWeight: 700,
-            py: 1.5,
-            px: 4,
-            borderRadius: 2,
-            textTransform: "none",
-            fontSize: "1rem",
+            ...primaryCtaSx,
             "&:hover": {
               bgcolor: "#FFE66D",
               boxShadow: "0 8px 24px rgba(0,0,0,0.2)",
@@ -189,14 +191,7 @@ const HeroCarousel = () => {
     <Box
       sx={{
         background: `linear-gradient(135deg, #4ECDC4 0%, #44A08D 100%)`,
-        color: "white",
-        minHeight: { xs: "50vh", md: "70vh" },
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        position: "relative",
-        overflow: "hidden",
-        textAlign: "center",
+        ...heroSlideSx,
         "&::before": {
           content: '""',
           position: "absolute",
@@ -210,23 +205,23 @@ const HeroCarousel = () => {
         },
       }}
     >
-      <Container maxWidth="md" sx={{ position: "relative", zIndex: 1 }}>
+      <Container maxWidth="md" sx={heroContainerSx}>
         <Typography
           variant="h2"
-          sx={{ fontSize: { xs: "3rem", md: "4rem" }, mb: 2 }}
+          sx={{ fontSize: { xs: "2.25rem", md: "3rem" }, mb: 1.5 }}
         >
           📦
         </Typography>
         <Typography
           variant="h3"
           fontWeight="900"
-          sx={{ fontSize: { xs: "2rem", md: "3rem" }, mb: 2 }}
+          sx={{ fontSize: { xs: "1.8rem", md: "2.5rem" }, mb: 1.5 }}
         >
           Free Shipping
         </Typography>
         <Typography
           variant="h6"
-          sx={{ mb: 5, fontSize: "1.2rem", opacity: 0.95, fontWeight: 300 }}
+          sx={{ mb: 3, fontSize: { xs: "0.95rem", md: "1.05rem" }, opacity: 0.95, fontWeight: 400 }}
         >
           On orders above ₹500 | Across Maharashtra
         </Typography>
@@ -237,12 +232,7 @@ const HeroCarousel = () => {
           sx={{
             bgcolor: "white",
             color: "#4ECDC4",
-            fontWeight: 700,
-            py: 1.5,
-            px: 4,
-            borderRadius: 2,
-            textTransform: "none",
-            fontSize: "1rem",
+            ...primaryCtaSx,
             "&:hover": {
               bgcolor: "#E0F7F6",
               boxShadow: "0 8px 24px rgba(0,0,0,0.2)",
@@ -260,14 +250,7 @@ const HeroCarousel = () => {
     <Box
       sx={{
         background: `linear-gradient(135deg, #667eea 0%, #764ba2 100%)`,
-        color: "white",
-        minHeight: { xs: "50vh", md: "70vh" },
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        position: "relative",
-        overflow: "hidden",
-        textAlign: "center",
+        ...heroSlideSx,
         "&::before": {
           content: '""',
           position: "absolute",
@@ -281,23 +264,23 @@ const HeroCarousel = () => {
         },
       }}
     >
-      <Container maxWidth="md" sx={{ position: "relative", zIndex: 1 }}>
+      <Container maxWidth="md" sx={heroContainerSx}>
         <Typography
           variant="h2"
-          sx={{ fontSize: { xs: "3rem", md: "4rem" }, mb: 2 }}
+          sx={{ fontSize: { xs: "2.25rem", md: "3rem" }, mb: 1.5 }}
         >
           ✨
         </Typography>
         <Typography
           variant="h3"
           fontWeight="900"
-          sx={{ fontSize: { xs: "2rem", md: "3rem" }, mb: 2 }}
+          sx={{ fontSize: { xs: "1.8rem", md: "2.5rem" }, mb: 1.5 }}
         >
           New Arrivals
         </Typography>
         <Typography
           variant="h6"
-          sx={{ mb: 5, fontSize: "1.2rem", opacity: 0.95, fontWeight: 300 }}
+          sx={{ mb: 3, fontSize: { xs: "0.95rem", md: "1.05rem" }, opacity: 0.95, fontWeight: 400 }}
         >
           Discover the latest gadgets and products from top brands
         </Typography>
@@ -308,12 +291,7 @@ const HeroCarousel = () => {
           sx={{
             bgcolor: "white",
             color: "#667eea",
-            fontWeight: 700,
-            py: 1.5,
-            px: 4,
-            borderRadius: 2,
-            textTransform: "none",
-            fontSize: "1rem",
+            ...primaryCtaSx,
             "&:hover": {
               bgcolor: "#F0E6FF",
               boxShadow: "0 8px 24px rgba(0,0,0,0.2)",
@@ -331,14 +309,7 @@ const HeroCarousel = () => {
     <Box
       sx={{
         background: `linear-gradient(135deg, #f093fb 0%, #f5576c 100%)`,
-        color: "white",
-        minHeight: { xs: "50vh", md: "70vh" },
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        position: "relative",
-        overflow: "hidden",
-        textAlign: "center",
+        ...heroSlideSx,
         "&::before": {
           content: '""',
           position: "absolute",
@@ -352,23 +323,28 @@ const HeroCarousel = () => {
         },
       }}
     >
-      <Container maxWidth="md" sx={{ position: "relative", zIndex: 1 }}>
+      <Container maxWidth="md" sx={heroContainerSx}>
         <Typography
           variant="h2"
-          sx={{ fontSize: { xs: "3rem", md: "4rem" }, mb: 2 }}
+          sx={{ fontSize: { xs: "2.25rem", md: "3rem" }, mb: 1.5 }}
         >
           ⭐
         </Typography>
         <Typography
           variant="h3"
           fontWeight="900"
-          sx={{ fontSize: { xs: "2rem", md: "3rem" }, mb: 2 }}
+          sx={{ fontSize: { xs: "1.8rem", md: "2.5rem" }, mb: 1.5 }}
         >
           Quality Assured
         </Typography>
         <Typography
           variant="h6"
-          sx={{ mb: 5, fontSize: "1.2rem", opacity: 0.95, fontWeight: 300 }}
+          sx={{
+            mb: 3,
+            fontSize: { xs: "0.95rem", md: "1.05rem" },
+            opacity: 0.95,
+            fontWeight: 400,
+          }}
         >
           100% Original Products | 30-Day Money Back Guarantee | 24/7 Customer
           Support
@@ -380,12 +356,7 @@ const HeroCarousel = () => {
           sx={{
             bgcolor: "white",
             color: "#f5576c",
-            fontWeight: 700,
-            py: 1.5,
-            px: 4,
-            borderRadius: 2,
-            textTransform: "none",
-            fontSize: "1rem",
+            ...primaryCtaSx,
             "&:hover": {
               bgcolor: "#FFE5E9",
               boxShadow: "0 8px 24px rgba(0,0,0,0.2)",
@@ -403,14 +374,7 @@ const HeroCarousel = () => {
     <Box
       sx={{
         background: `linear-gradient(135deg, #fa709a 0%, #fee140 100%)`,
-        color: "white",
-        minHeight: { xs: "50vh", md: "70vh" },
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        position: "relative",
-        overflow: "hidden",
-        textAlign: "center",
+        ...heroSlideSx,
         "&::before": {
           content: '""',
           position: "absolute",
@@ -424,15 +388,15 @@ const HeroCarousel = () => {
         },
       }}
     >
-      <Container maxWidth="md" sx={{ position: "relative", zIndex: 1 }}>
+      <Container maxWidth="md" sx={heroContainerSx}>
         <Typography
           variant="h4"
           sx={{
             fontSize: { xs: "1rem", md: "1.2rem" },
-            mb: 2,
+            mb: 1.5,
             fontWeight: 600,
             background: "rgba(255,255,255,0.3)",
-            padding: "8px 16px",
+            padding: "7px 14px",
             borderRadius: "20px",
             display: "inline-block",
           }}
@@ -442,15 +406,15 @@ const HeroCarousel = () => {
         <Typography
           variant="h3"
           fontWeight="900"
-          sx={{ fontSize: { xs: "2rem", md: "3rem" }, mb: 2, mt: 3 }}
+          sx={{ fontSize: { xs: "1.8rem", md: "2.5rem" }, mb: 1.5, mt: 2 }}
         >
           Flash Deal
         </Typography>
         <Typography
           variant="h5"
           sx={{
-            mb: 4,
-            fontSize: "1.3rem",
+            mb: 3,
+            fontSize: { xs: "1rem", md: "1.15rem" },
             opacity: 0.95,
             fontWeight: 600,
           }}
@@ -464,12 +428,7 @@ const HeroCarousel = () => {
           sx={{
             bgcolor: "white",
             color: "#fa709a",
-            fontWeight: 700,
-            py: 1.5,
-            px: 4,
-            borderRadius: 2,
-            textTransform: "none",
-            fontSize: "1rem",
+            ...primaryCtaSx,
             "&:hover": {
               bgcolor: "#FFF8E1",
               boxShadow: "0 8px 24px rgba(0,0,0,0.2)",
@@ -506,7 +465,7 @@ const HeroCarousel = () => {
         pauseOnHover={true}
         sx={{
           "& .swiper-pagination": {
-            bottom: { xs: 12, md: 20 },
+            bottom: { xs: 10, md: 14 },
           },
         }}
       />

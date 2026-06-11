@@ -19,6 +19,8 @@ import LazyImage from "../components/common/LazyImage";
 import { StarRating } from "../components/common/StarRating";
 import { useCompare } from "../context/CompareContext";
 import { tokens } from "@/theme/theme";
+import { productCardLayout } from "@/components/products/productLayout";
+import { appIconSx } from "@/components/ui/navigationStyles";
 import type { Product, ProductMedia } from "../types";
 
 interface ProductCardProps {
@@ -50,6 +52,10 @@ const ProductCard: React.FC<ProductCardProps> = memo(
     const isList = viewMode === "list";
     const { isInCompare, addToCompare, removeFromCompare, isFull } =
       useCompare();
+    const label = (key: string, fallback: string) => {
+      const translated = t(key);
+      return !translated || translated === key ? fallback : translated;
+    };
 
     return (
       <Card
@@ -57,15 +63,18 @@ const ProductCard: React.FC<ProductCardProps> = memo(
           display: "flex",
           flexDirection: isList ? "row" : "column",
           overflow: "hidden",
-          height: "100%", // Always take full height of grid cell
+          height: "100%",
           border: `1px solid ${tokens.gray200}`,
-          borderRadius: isList ? 3 : 4,
-          transition: "all 0.25s cubic-bezier(.4,0,.2,1)",
+          borderRadius: isList
+            ? productCardLayout.listRadius
+            : productCardLayout.radius,
+          transition:
+            "box-shadow 0.2s cubic-bezier(.4,0,.2,1), border-color 0.2s cubic-bezier(.4,0,.2,1)",
           position: "relative",
           bgcolor: tokens.white,
+          boxShadow: tokens.shadowSm,
           "&:hover": {
-            boxShadow: "0 12px 32px rgba(0,0,0,0.1)",
-            transform: isList ? "none" : "translateY(-6px)",
+            boxShadow: tokens.shadowLg,
             borderColor: tokens.gray300,
           },
         }}
@@ -79,12 +88,14 @@ const ProductCard: React.FC<ProductCardProps> = memo(
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            bgcolor: tokens.gray50,
+            background: "linear-gradient(180deg, #ffffff 0%, #f8fafc 100%)",
             width: "100%",
-            height: isList ? 200 : 280, // Fixed height for consistency
+            height: isList
+              ? productCardLayout.listImageHeight
+              : productCardLayout.imageHeight,
             ...(isList && {
-              width: 220,
-              minWidth: 220,
+              width: productCardLayout.listImageWidth,
+              minWidth: productCardLayout.listImageWidth,
             }),
           }}
           onClick={() => onNavigate(product.id)}
@@ -122,19 +133,18 @@ const ProductCard: React.FC<ProductCardProps> = memo(
               top: 10,
               right: 10,
               bgcolor: "rgba(255,255,255,0.9)",
-              backdropFilter: "blur(4px)",
-              boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+              boxShadow: tokens.shadowSm,
               p: 1,
-              transition: "all 0.2s",
-              "&:hover": { bgcolor: "#fff", transform: "scale(1.1)" },
+              transition: "background-color 0.2s ease, color 0.2s ease",
+              "&:hover": { bgcolor: "#fff" },
             }}
           >
             {isToggling(product.id) ? (
               <CircularProgress size={18} color="inherit" />
             ) : isInWishlist(product.id) ? (
-              <Favorite sx={{ fontSize: 20, color: tokens.error }} />
+              <Favorite sx={{ ...appIconSx.lg, color: tokens.error }} />
             ) : (
-              <FavoriteBorder sx={{ fontSize: 20, color: tokens.gray500 }} />
+              <FavoriteBorder sx={{ ...appIconSx.lg, color: tokens.gray500 }} />
             )}
           </IconButton>
 
@@ -157,19 +167,17 @@ const ProductCard: React.FC<ProductCardProps> = memo(
               bgcolor: isInCompare(product.id)
                 ? tokens.accent
                 : "rgba(255,255,255,0.9)",
-              backdropFilter: "blur(4px)",
-              boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+              boxShadow: tokens.shadowSm,
               p: 1,
-              transition: "all 0.2s",
+              transition: "background-color 0.2s ease, color 0.2s ease",
               "&:hover": {
                 bgcolor: isInCompare(product.id) ? tokens.accentDark : "#fff",
-                transform: "scale(1.1)",
               },
             }}
           >
             <CompareArrows
               sx={{
-                fontSize: 20,
+                ...appIconSx.lg,
                 color: isInCompare(product.id) ? "#fff" : tokens.gray500,
               }}
             />
@@ -182,8 +190,8 @@ const ProductCard: React.FC<ProductCardProps> = memo(
             flexGrow: 1,
             display: "flex",
             flexDirection: "column",
-            gap: 1,
-            p: 2,
+            gap: 0.9,
+            p: isList ? 2.5 : 2,
             ...(isList && { justifyContent: "center" }),
           }}
         >
@@ -192,7 +200,7 @@ const ProductCard: React.FC<ProductCardProps> = memo(
             onClick={() => onNavigate(product.id)}
             sx={{
               fontWeight: 600,
-              fontSize: isList ? "1.1rem" : "0.95rem",
+              fontSize: isList ? "1rem" : "0.95rem",
               color: tokens.primary,
               cursor: "pointer",
               mb: 0.5,
@@ -201,7 +209,7 @@ const ProductCard: React.FC<ProductCardProps> = memo(
               WebkitBoxOrient: "vertical",
               overflow: "hidden",
               lineHeight: 1.3,
-              height: "2.6rem", // Strict height for title consistency
+              minHeight: isList ? "auto" : productCardLayout.titleMinHeight,
               "&:hover": { color: tokens.accent },
             }}
           >
@@ -235,15 +243,17 @@ const ProductCard: React.FC<ProductCardProps> = memo(
                 }}
               >
                 {product.stock > 10
-                  ? t("products.inStock")
-                  : `${t("products.only")} ${product.stock} ${t("products.left")}`}
+                  ? label("products.inStock", "In stock")
+                  : label("products.onlyXLeft", `Only ${product.stock} left`)
+                      .replace("{{count}}", String(product.stock))
+                      .replace("{{stock}}", String(product.stock))}
               </Typography>
             ) : (
               <Typography
                 variant="caption"
                 sx={{ color: tokens.error, fontWeight: 700 }}
               >
-                {t("products.outOfStock")}
+                {label("products.outOfStock", "Out of stock")}
               </Typography>
             )}
           </Box>
@@ -280,7 +290,7 @@ const ProductCard: React.FC<ProductCardProps> = memo(
                   isAddingToCart ? (
                     <CircularProgress size={20} color="inherit" />
                   ) : (
-                    <ShoppingCart />
+                    <ShoppingCart sx={appIconSx.lg} />
                   )
                 }
                 onClick={() => onAddToCart(product.id)}
@@ -289,10 +299,10 @@ const ProductCard: React.FC<ProductCardProps> = memo(
                   bgcolor: tokens.primary,
                   "&:hover": { bgcolor: tokens.primaryDark },
                   px: 3,
-                  borderRadius: 2,
+                  borderRadius: productCardLayout.actionRadius,
                 }}
               >
-                {t("common.addToCart")}
+                {label("common.addToCart", "Add to Cart")}
               </Button>
               <Button
                 variant="outlined"
@@ -305,10 +315,10 @@ const ProductCard: React.FC<ProductCardProps> = memo(
                     bgcolor: "rgba(27,42,74,0.04)",
                   },
                   px: 3,
-                  borderRadius: 2,
+                  borderRadius: productCardLayout.actionRadius,
                 }}
               >
-                {t("common.buyNow")}
+                {label("common.buyNow", "Buy Now")}
               </Button>
             </CardActions>
           )}
@@ -332,7 +342,7 @@ const ProductCard: React.FC<ProductCardProps> = memo(
                 isAddingToCart ? (
                   <CircularProgress size={16} color="inherit" />
                 ) : (
-                  <ShoppingCart sx={{ fontSize: 16 }} />
+                  <ShoppingCart sx={appIconSx.sm} />
                 )
               }
               onClick={() => onAddToCart(product.id)}
@@ -340,13 +350,13 @@ const ProductCard: React.FC<ProductCardProps> = memo(
               sx={{
                 bgcolor: tokens.primary,
                 "&:hover": { bgcolor: tokens.primaryDark },
-                borderRadius: 2,
+                borderRadius: productCardLayout.actionRadius,
                 py: 1,
                 fontSize: "0.75rem",
                 fontWeight: 600,
               }}
             >
-              {t("common.add")}
+              {label("common.add", "Add")}
             </Button>
             <Button
               fullWidth
@@ -360,13 +370,13 @@ const ProductCard: React.FC<ProductCardProps> = memo(
                   borderColor: tokens.primaryDark,
                   bgcolor: "rgba(27,42,74,0.04)",
                 },
-                borderRadius: 2,
+                borderRadius: productCardLayout.actionRadius,
                 py: 1,
                 fontSize: "0.75rem",
                 fontWeight: 600,
               }}
             >
-              {t("common.buy")}
+              {label("common.buy", "Buy")}
             </Button>
           </CardActions>
         )}

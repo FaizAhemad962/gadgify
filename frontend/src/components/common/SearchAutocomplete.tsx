@@ -14,6 +14,7 @@ import { useQuery } from "@tanstack/react-query";
 import { productsApi } from "../../api/products";
 import { useSearch } from "../../context/SearchContext";
 import { tokens } from "@/theme/theme";
+import { appIconSx } from "@/components/ui/navigationStyles";
 
 interface Suggestion {
   id: string;
@@ -165,7 +166,7 @@ const SearchAutocomplete = () => {
               startAdornment: (
                 <InputAdornment position="start">
                   <SearchIcon
-                    sx={{ color: "rgba(255,255,255,0.6)", fontSize: 20 }}
+                    sx={{ ...appIconSx.lg, color: "rgba(255,255,255,0.6)" }}
                   />
                 </InputAdornment>
               ),

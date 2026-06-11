@@ -1,49 +1,29 @@
 import { useState } from "react";
-import { useNavigate, Link as RouterLink } from "react-router-dom";
+import { Link as RouterLink, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import {
-  Container,
-  Paper,
-  Typography,
-  TextField,
-  Button,
-  Link,
-  Box,
-  Alert,
-} from "@/mui/material";
+import { Alert, Box, Link, TextField, Typography } from "@/mui/material";
 import { ArrowBack, Email } from "@/mui/icons";
-import { tokens } from "@/theme/theme";
+import AuthLayout from "@/components/auth/AuthLayout";
+import { authInputSx } from "@/components/auth/authStyles";
+import { CustomButton } from "@/components/ui/CustomButton";
 import { authApi } from "@/api/auth";
-
-const inputSx = {
-  "& .MuiOutlinedInput-root": {
-    backgroundColor: tokens.gray50,
-    transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-    "&:hover": {
-      backgroundColor: tokens.gray100,
-    },
-    "&.Mui-focused": {
-      backgroundColor: tokens.white,
-      boxShadow: `0 0 0 3px ${tokens.primary}1A`,
-    },
-  },
-  "& .MuiOutlinedInput-notchedOutline": {
-    borderColor: tokens.gray200,
-  },
-};
+import { tokens } from "@/theme/theme";
+import { appIconSx } from "@/components/ui/navigationStyles";
 
 const ForgotPasswordPage = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const schema = z.object({
     email: z.string().email(t("errors.invalidEmail")),
   });
+
   type FormData = z.infer<typeof schema>;
 
   const {
@@ -57,232 +37,178 @@ const ForgotPasswordPage = () => {
 
   const onSubmit = async (data: FormData) => {
     setError("");
+    setIsLoading(true);
     try {
       await authApi.forgotPassword({ email: data.email });
       setSubmitted(true);
     } catch {
       setError(t("errors.somethingWrong"));
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
-    <Box
-      sx={{
-        minHeight: "100vh",
-        background: `linear-gradient(135deg, ${tokens.primary} 0%, ${tokens.primaryDark} 100%)`,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        py: 4,
-        position: "relative",
-        overflow: "hidden",
-        "&::before": {
-          content: '""',
-          position: "absolute",
-          width: "400px",
-          height: "400px",
-          background:
-            "radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%)",
-          borderRadius: "50%",
-          top: "-100px",
-          right: "-100px",
-        },
-        "&::after": {
-          content: '""',
-          position: "absolute",
-          width: "300px",
-          height: "300px",
-          background:
-            "radial-gradient(circle, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0) 70%)",
-          borderRadius: "50%",
-          bottom: "-50px",
-          left: "-50px",
-        },
-      }}
+    <AuthLayout
+      title={
+        submitted
+          ? t("auth.forgotPasswordSuccessTitle")
+          : t("auth.forgotPasswordTitle")
+      }
+      subtitle={
+        submitted
+          ? t("auth.forgotPasswordSuccessSubtitle")
+          : t("auth.forgotPasswordSubtitle")
+      }
+      maxFormWidth={500}
+      footer={
+        <Box sx={{ textAlign: "center" }}>
+          <Link
+            component={RouterLink}
+            to="/login"
+            sx={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 0.75,
+              color: tokens.primary,
+              textDecoration: "none",
+              fontWeight: 800,
+              "&:hover": { color: tokens.accent },
+            }}
+          >
+            <ArrowBack fontSize="small" />
+            {t("auth.backToLogin")}
+          </Link>
+        </Box>
+      }
     >
-      <Container maxWidth="sm" sx={{ position: "relative", zIndex: 1 }}>
-        <Paper
-          elevation={0}
+      {submitted ? (
+        <Box
           sx={{
-            p: { xs: 3, sm: 4 },
-            borderRadius: 3,
-            background: tokens.white,
-            border: `1px solid ${tokens.gray200}`,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: 2,
+            textAlign: "center",
+            py: 1,
           }}
         >
-          {submitted ? (
-            /* ── Success state ── */
+          <Box
+            sx={{
+              width: 76,
+              height: 76,
+              borderRadius: "24px",
+              background: tokens.successLight,
+              display: "grid",
+              placeItems: "center",
+            }}
+          >
+            <Email sx={{ ...appIconSx.category, color: tokens.success }} />
+          </Box>
+          <Typography variant="body2" sx={{ color: tokens.gray600, maxWidth: 380 }}>
+            {t("auth.forgotPasswordSuccessMessage", {
+              email: getValues("email"),
+            })}
+          </Typography>
+          <CustomButton
+            variant="contained"
+            appVariant="admin"
+            onClick={() => navigate("/login")}
+            sx={{ mt: 1 }}
+          >
+            {t("auth.backToLogin")}
+          </CustomButton>
+        </Box>
+      ) : (
+        <>
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              mb: 2.5,
+            }}
+          >
             <Box
               sx={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                gap: 2,
-                textAlign: "center",
-                py: 3,
+                width: 84,
+                height: 84,
+                borderRadius: "28px",
+                background: `linear-gradient(135deg, ${tokens.primary}14, ${tokens.accent}18)`,
+                border: `1px solid ${tokens.gray200}`,
+                boxShadow: "0 18px 44px rgba(27, 42, 74, 0.10)",
+                display: "grid",
+                placeItems: "center",
               }}
             >
-              <Box
-                sx={{
-                  width: 72,
-                  height: 72,
-                  borderRadius: "50%",
-                  background: tokens.successLight,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                <Email sx={{ fontSize: 36, color: tokens.success }} />
-              </Box>
-              <Typography variant="h5" fontWeight={700} color={tokens.gray900}>
-                Check your email
-              </Typography>
-              <Typography
-                variant="body2"
-                sx={{ color: tokens.gray500, maxWidth: 360 }}
-              >
-                If an account exists for <strong>{getValues("email")}</strong>,
-                you will receive a password reset link shortly.
-              </Typography>
-              <Button
-                variant="contained"
-                onClick={() => navigate("/login")}
-                sx={{
-                  mt: 2,
-                  background: tokens.accent,
-                  color: tokens.white,
-                  fontWeight: 700,
-                  "&:hover": {
-                    background: tokens.accentDark,
-                  },
-                }}
-              >
-                Back to Login
-              </Button>
+              <Email sx={{ ...appIconSx.category, color: tokens.primary }} />
             </Box>
-          ) : (
-            /* ── Form state ── */
-            <>
-              <Box
-                sx={{
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  mb: 3,
-                }}
-              >
-                <Box
-                  sx={{
-                    width: 72,
-                    height: 72,
-                    borderRadius: "50%",
-                    background: `${tokens.accent}1A`,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    mb: 2,
-                  }}
-                >
-                  <Email sx={{ fontSize: 36, color: tokens.accent }} />
-                </Box>
-                <Typography
-                  variant="h5"
-                  fontWeight={700}
-                  color={tokens.gray900}
-                >
-                  Forgot Password?
-                </Typography>
-                <Typography
-                  variant="body2"
-                  sx={{ color: tokens.gray500, mt: 1, textAlign: "center" }}
-                >
-                  Enter your email address and we'll send you a link to reset
-                  your password.
-                </Typography>
-              </Box>
+          </Box>
 
-              {error && (
-                <Alert
-                  severity="error"
-                  sx={{
-                    mb: 2,
-                    background: tokens.errorLight,
-                    color: tokens.error,
-                    border: `1px solid ${tokens.error}`,
-                    borderRadius: 2,
-                    "& .MuiAlert-icon": { color: tokens.error },
-                  }}
-                  onClose={() => setError("")}
-                >
-                  {error}
-                </Alert>
-              )}
+          <Box
+            sx={{
+              mb: 2.5,
+              p: 2,
+              borderRadius: `${tokens.radiusLg}px`,
+              bgcolor: `${tokens.primary}08`,
+              border: `1px solid ${tokens.gray200}`,
+              color: tokens.gray700,
+            }}
+          >
+            <Typography variant="body2" sx={{ fontWeight: 600 }}>
+              {t("auth.forgotPasswordSubtitle")}
+            </Typography>
+          </Box>
 
-              <form onSubmit={handleSubmit(onSubmit)}>
-                <Box
-                  sx={{ display: "flex", flexDirection: "column", gap: 2.5 }}
-                >
-                  <TextField
-                    fullWidth
-                    label={t("auth.email")}
-                    type="email"
-                    placeholder="you@example.com"
-                    {...register("email")}
-                    error={!!errors.email}
-                    helperText={errors.email?.message}
-                    sx={inputSx}
-                  />
-
-                  <Button
-                    fullWidth
-                    variant="contained"
-                    size="large"
-                    type="submit"
-                    sx={{
-                      background: tokens.accent,
-                      color: tokens.white,
-                      fontWeight: 700,
-                      py: 1.5,
-                      transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-                      "&:hover": {
-                        background: tokens.accentDark,
-                        transform: "translateY(-2px)",
-                        boxShadow: `0 8px 16px ${tokens.accent}4D`,
-                      },
-                      "&:active": { transform: "translateY(0)" },
-                    }}
-                  >
-                    Send Reset Link
-                  </Button>
-                </Box>
-              </form>
-
-              <Box sx={{ textAlign: "center", mt: 3 }}>
-                <Link
-                  component={RouterLink}
-                  to="/login"
-                  sx={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: 0.5,
-                    color: tokens.gray500,
-                    textDecoration: "none",
-                    fontWeight: 600,
-                    fontSize: "0.875rem",
-                    transition: "color 0.2s",
-                    "&:hover": { color: tokens.primary },
-                  }}
-                >
-                  <ArrowBack fontSize="small" />
-                  Back to Login
-                </Link>
-              </Box>
-            </>
+          {error && (
+            <Alert
+              severity="error"
+              sx={{
+                mb: 2,
+                background: tokens.errorLight,
+                color: tokens.error,
+                border: `1px solid ${tokens.error}33`,
+                borderRadius: `${tokens.radiusMd}px`,
+                "& .MuiAlert-icon": { color: tokens.error },
+              }}
+              onClose={() => setError("")}
+            >
+              {error}
+            </Alert>
           )}
-        </Paper>
-      </Container>
-    </Box>
+
+          <Box
+            component="form"
+            onSubmit={handleSubmit(onSubmit)}
+            sx={{ display: "flex", flexDirection: "column", gap: 2.5 }}
+          >
+            <TextField
+              fullWidth
+              label={t("auth.email")}
+              type="email"
+              placeholder="you@example.com"
+              autoComplete="email"
+              {...register("email")}
+              error={!!errors.email}
+              helperText={errors.email?.message}
+              sx={authInputSx}
+            />
+
+            <CustomButton
+              fullWidth
+              variant="contained"
+              appVariant="admin"
+              size="large"
+              type="submit"
+              isLoading={isLoading}
+              disabled={isLoading}
+              sx={{ py: 1.35 }}
+            >
+              {t("auth.sendResetLink")}
+            </CustomButton>
+          </Box>
+        </>
+      )}
+    </AuthLayout>
   );
 };
 

@@ -9,6 +9,7 @@ import {
   Support,
 } from "@/mui/icons";
 import { tokens } from "../../theme/theme";
+import { appIconSx } from "@/components/ui/navigationStyles";
 
 interface SecurityFeature {
   icon: React.ReactNode;
@@ -25,37 +26,37 @@ interface PaymentSecurityProps {
 
 const DEFAULT_FEATURES: SecurityFeature[] = [
   {
-    icon: <Lock sx={{ fontSize: 40 }} />,
+    icon: <Lock sx={appIconSx.feature} />,
     title: "common.security.ssltitle",
     description: "common.security.ssldesc",
     color: tokens.success,
   },
   {
-    icon: <CreditCard sx={{ fontSize: 40 }} />,
+    icon: <CreditCard sx={appIconSx.feature} />,
     title: "common.security.paymenttitle",
     description: "common.security.paymentdesc",
     color: tokens.primary,
   },
   {
-    icon: <VerifiedUser sx={{ fontSize: 40 }} />,
+    icon: <VerifiedUser sx={appIconSx.feature} />,
     title: "common.security.authentictitle",
     description: "common.security.authenticdesc",
     color: tokens.accent,
   },
   {
-    icon: <PrivacyTip sx={{ fontSize: 40 }} />,
+    icon: <PrivacyTip sx={appIconSx.feature} />,
     title: "common.security.privacytitle",
     description: "common.security.privacydesc",
     color: tokens.secondary,
   },
   {
-    icon: <Gavel sx={{ fontSize: 40 }} />,
+    icon: <Gavel sx={appIconSx.feature} />,
     title: "common.security.complytitle",
     description: "common.security.complydesc",
     color: tokens.info,
   },
   {
-    icon: <Support sx={{ fontSize: 40 }} />,
+    icon: <Support sx={appIconSx.feature} />,
     title: "common.security.supporttitle",
     description: "common.security.supportdesc",
     color: tokens.primary,

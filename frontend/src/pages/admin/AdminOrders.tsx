@@ -1,12 +1,22 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
-import { Box, Typography, TextField, InputAdornment } from "@/mui/material";
+import { Alert, Box, Paper, TextField, InputAdornment } from "@/mui/material";
 import { Search } from "@/mui/icons";
 import { ordersApi } from "../../api/orders";
 import { AdminOrdersDataGrid } from "../../components/admin/AdminOrdersDataGrid";
 import type { Order } from "../../types";
 import { useState } from "react";
 import { tokens } from "../../theme/theme";
+import { invalidateOrderData } from "@/lib/queryInvalidation";
+import { queryKeys } from "@/lib/queryKeys";
+import { AdminPageHeader } from "@/components/admin/adminStyles";
+import {
+  adminPageSx,
+  adminPanelSx,
+  adminSearchFieldSx,
+} from "@/components/admin/adminStyleTokens";
+import { appIconSx } from "@/components/ui/navigationStyles";
+import { ErrorHandler } from "@/utils/errorHandler";
 
 const AdminOrders = () => {
   const { t } = useTranslation();
@@ -14,9 +24,10 @@ const AdminOrders = () => {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(20);
   const [searchQuery, setSearchQuery] = useState("");
+  const [statusError, setStatusError] = useState("");
 
   const { data: ordersData, isLoading } = useQuery({
-    queryKey: ["admin-orders", page, rowsPerPage, searchQuery],
+    queryKey: [...queryKeys.orders.admin, page, rowsPerPage, searchQuery],
     queryFn: () => ordersApi.getAllOrders(page + 1, rowsPerPage, searchQuery),
   });
 
@@ -28,21 +39,19 @@ const AdminOrders = () => {
       orderId: string;
       status: Order["status"];
     }) => ordersApi.updateOrderStatus(orderId, status),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["admin-orders"] });
+    onSuccess: (_, variables) => {
+      setStatusError("");
+      invalidateOrderData(queryClient, variables.orderId);
+    },
+    onError: (error) => {
+      setStatusError(
+        ErrorHandler.getUserFriendlyMessage(
+          error,
+          t("errors.somethingWrong"),
+        ),
+      );
     },
   });
-
-  // const getStatusColor = (status: string) => {
-  //   const colors: Record<string, 'default' | 'primary' | 'secondary' | 'error' | 'info' | 'success' | 'warning'> = {
-  //     PENDING: 'warning',
-  //     PROCESSING: 'info',
-  //     SHIPPED: 'primary',
-  //     DELIVERED: 'success',
-  //     CANCELLED: 'error',
-  //   }
-  //   return colors[status] || 'default'
-  // }
 
   const handleStatusChange = (orderId: string, newStatus: Order["status"]) => {
     updateStatusMutation.mutate({ orderId, status: newStatus });
@@ -58,18 +67,32 @@ const AdminOrders = () => {
   };
 
   return (
-    <Box>
-      <Typography
-        variant="h4"
-        gutterBottom
-        fontWeight="600"
-        sx={{ color: tokens.gray900, mb: 3 }}
-      >
-        {t("admin.orders")}
-      </Typography>
+    <Box sx={adminPageSx}>
+      <AdminPageHeader
+        title={t("admin.orders")}
+        subtitle={t(
+          "admin.ordersSubtitle",
+          "Search customer orders and update fulfillment status.",
+        )}
+        eyebrow={t("nav.admin")}
+        icon={<Search sx={appIconSx.card} />}
+      />
+
+      {statusError && (
+        <Alert severity="error" onClose={() => setStatusError("")} sx={{ mb: 2 }}>
+          {statusError}
+        </Alert>
+      )}
 
       {/* Search Bar */}
-      <Box sx={{ mb: 3 }}>
+      <Paper
+        elevation={0}
+        sx={{
+          ...adminPanelSx,
+          p: 2,
+          mb: 3,
+        }}
+      >
         <TextField
           placeholder={t("admin.searchOrders")}
           value={searchQuery}
@@ -82,29 +105,13 @@ const AdminOrders = () => {
           InputProps={{
             endAdornment: (
               <InputAdornment position="end">
-                <Search sx={{ color: tokens.gray400 }} />
+                <Search sx={{ ...appIconSx.lg, color: tokens.gray400 }} />
               </InputAdornment>
             ),
           }}
-          sx={{
-            width: 300,
-            backgroundColor: tokens.white,
-            borderRadius: 1.5,
-            "& .MuiOutlinedInput-root": {
-              "& fieldset": {
-                borderColor: tokens.gray200,
-              },
-              "&:hover fieldset": {
-                borderColor: tokens.primary,
-              },
-              "&.Mui-focused fieldset": {
-                borderColor: tokens.primary,
-                borderWidth: 2,
-              },
-            },
-          }}
+          sx={adminSearchFieldSx}
         />
-      </Box>
+      </Paper>
 
       <AdminOrdersDataGrid
         orders={ordersData?.orders || []}

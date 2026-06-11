@@ -38,28 +38,28 @@ const ScrollToTopButton = () => {
   }, []);
 
   return (
-    <>
-      {showButton && (
-        <Fab
-          onClick={scrollToTop}
-          color="primary"
-          aria-label="Scroll to top"
-          sx={{
-            position: "fixed",
-            bottom: 24,
-            right: 24,
-            bgcolor: tokens.primary,
-            color: "white",
-            "&:hover": {
-              bgcolor: tokens.primaryDark,
-            },
-            zIndex: 1000,
-          }}
-        >
-          <KeyboardArrowUp />
-        </Fab>
-      )}
-    </>
+    <Fab
+      onClick={scrollToTop}
+      color="primary"
+      aria-label="Scroll to top"
+      sx={{
+        position: "fixed",
+        bottom: 24,
+        right: 24,
+        bgcolor: tokens.primary,
+        color: "white",
+        opacity: showButton ? 1 : 0,
+        pointerEvents: showButton ? "auto" : "none",
+        transform: showButton ? "translateY(0)" : "translateY(8px)",
+        transition: "opacity 160ms ease, transform 160ms ease",
+        "&:hover": {
+          bgcolor: tokens.primaryDark,
+        },
+        zIndex: 1000,
+      }}
+    >
+      <KeyboardArrowUp />
+    </Fab>
   );
 };
 

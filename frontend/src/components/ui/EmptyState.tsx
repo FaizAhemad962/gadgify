@@ -3,6 +3,7 @@ import { Box, Typography, type BoxProps } from "@/mui/material";
 import { ErrorOutline as ErrorIcon } from "@/mui/icons";
 import { tokens } from "@/theme/theme";
 import { CustomButton } from "./CustomButton";
+import { appIconSx } from "./navigationStyles";
 
 interface EmptyStateProps extends BoxProps {
   title: string;
@@ -15,7 +16,7 @@ interface EmptyStateProps extends BoxProps {
 export const EmptyState = ({
   title,
   description,
-  icon = <ErrorIcon sx={{ fontSize: 64, color: tokens.gray300 }} />,
+  icon = <ErrorIcon sx={{ ...appIconSx.empty, color: tokens.gray300 }} />,
   actionText,
   onAction,
   sx,

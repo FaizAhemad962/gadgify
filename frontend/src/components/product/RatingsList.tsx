@@ -27,6 +27,7 @@ import { useAuth } from '../../context/AuthContext'
 import { formatDate } from '../../utils/dateFormatter'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
+import { invalidateProductData } from '@/lib/queryInvalidation'
 
 interface RatingsListProps {
   productId: string
@@ -92,6 +93,7 @@ export const RatingsList: React.FC<RatingsListProps> = ({
       queryClient.invalidateQueries({
         queryKey: ratingsKeys.byProduct(productId),
       })
+      invalidateProductData(queryClient, productId)
     },
   })
 

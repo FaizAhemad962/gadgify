@@ -9,6 +9,8 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { cartApi } from "../api/cart";
 import type { Cart, AddToCartRequest } from "../types";
 import { useAuth } from "./AuthContext";
+import { invalidateCartData } from "@/lib/queryInvalidation";
+import { queryKeys } from "@/lib/queryKeys";
 
 interface CartContextType {
   cart: Cart | null;
@@ -32,7 +34,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 
   // Fetch cart data
   const { data: cart, isLoading } = useQuery({
-    queryKey: ["cart"],
+    queryKey: queryKeys.cart.all,
     queryFn: cartApi.get,
     enabled: isAuthenticated && authChecked, // Avoid immediate refetch resets while rapidly mutating
     staleTime: 5 * 1000,
@@ -56,11 +58,11 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     mutationFn: cartApi.addItem,
     onError: () => {
       // Refetch to get correct state on error
-      queryClient.invalidateQueries({ queryKey: ["cart"] });
+      invalidateCartData(queryClient);
     },
     onSuccess: (serverCart) => {
       // Sync cache directly with server response to avoid refetch flashes/reset
-      queryClient.setQueryData(["cart"], serverCart);
+      queryClient.setQueryData(queryKeys.cart.all, serverCart);
     },
   });
 
@@ -89,7 +91,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
           });
         } catch (error) {
           // If server rejects, refetch to get correct state
-          queryClient.invalidateQueries({ queryKey: ["cart"] });
+          invalidateCartData(queryClient);
           throw error;
         } finally {
           setPendingProducts((prev) => {
@@ -109,12 +111,12 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     addBufferRef.current[productId] = { quantity, timer: null };
 
     // Only do optimistic update for the first click
-    const current = queryClient.getQueryData<Cart>(["cart"]);
+    const current = queryClient.getQueryData<Cart>(queryKeys.cart.all);
     if (current) {
       const items = current.items ?? [];
       const existingItem = items.find((i) => i.productId === productId);
       if (existingItem) {
-        queryClient.setQueryData(["cart"], {
+        queryClient.setQueryData(queryKeys.cart.all, {
           ...current,
           items: items.map((i) =>
             i.productId === productId
@@ -123,7 +125,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
           ),
         });
       } else {
-        queryClient.setQueryData(["cart"], {
+        queryClient.setQueryData(queryKeys.cart.all, {
           ...current,
           items: [
             ...items,
@@ -137,7 +139,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         });
       }
     } else {
-      queryClient.setQueryData(["cart"], {
+      queryClient.setQueryData(queryKeys.cart.all, {
         items: [
           {
             id: `temp-${Date.now()}-${productId}`,
@@ -168,7 +170,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
           resolve();
         } catch (error) {
           // If server rejects, refetch to get correct state
-          queryClient.invalidateQueries({ queryKey: ["cart"] });
+          invalidateCartData(queryClient);
           reject(error);
         } finally {
           setPendingProducts((prev) => {
@@ -191,11 +193,11 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     mutationFn: ({ itemId, quantity }: { itemId: string; quantity: number }) =>
       cartApi.updateItem(itemId, { quantity }),
     onMutate: async ({ itemId, quantity }) => {
-      await queryClient.cancelQueries({ queryKey: ["cart"] });
-      const previousCart = queryClient.getQueryData<Cart>(["cart"]);
+      await queryClient.cancelQueries({ queryKey: queryKeys.cart.all });
+      const previousCart = queryClient.getQueryData<Cart>(queryKeys.cart.all);
 
       if (previousCart) {
-        queryClient.setQueryData(["cart"], {
+        queryClient.setQueryData(queryKeys.cart.all, {
           ...previousCart,
           items: previousCart.items.map((item) =>
             item.id === itemId ? { ...item, quantity } : item,
@@ -212,11 +214,11 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     ) => {
       const context = _onMutateResult as { previousCart?: Cart } | undefined;
       if (context?.previousCart) {
-        queryClient.setQueryData(["cart"], context.previousCart);
+        queryClient.setQueryData(queryKeys.cart.all, context.previousCart);
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["cart"] });
+      invalidateCartData(queryClient);
     },
   });
 
@@ -224,11 +226,11 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   const removeMutation = useMutation({
     mutationFn: cartApi.removeItem,
     onMutate: async (itemId) => {
-      await queryClient.cancelQueries({ queryKey: ["cart"] });
-      const previousCart = queryClient.getQueryData<Cart>(["cart"]);
+      await queryClient.cancelQueries({ queryKey: queryKeys.cart.all });
+      const previousCart = queryClient.getQueryData<Cart>(queryKeys.cart.all);
 
       if (previousCart) {
-        queryClient.setQueryData(["cart"], {
+        queryClient.setQueryData(queryKeys.cart.all, {
           ...previousCart,
           items: previousCart.items.filter((item) => item.id !== itemId),
         });
@@ -242,11 +244,11 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       context: { previousCart?: Cart } | undefined,
     ) => {
       if (context?.previousCart) {
-        queryClient.setQueryData(["cart"], context.previousCart);
+        queryClient.setQueryData(queryKeys.cart.all, context.previousCart);
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["cart"] });
+      invalidateCartData(queryClient);
     },
   });
 
@@ -254,7 +256,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   const clearMutation = useMutation({
     mutationFn: cartApi.clear,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["cart"] });
+      invalidateCartData(queryClient);
     },
   });
 
