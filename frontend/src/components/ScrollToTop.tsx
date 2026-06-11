@@ -1,8 +1,6 @@
 import { useEffect, useLayoutEffect } from "react";
 import { useLocation } from "react-router-dom";
 
-const ROUTE_SCROLL_SETTLE_DELAY_MS = 80;
-
 const runWithInstantScroll = (callback: () => void) => {
   const root = document.documentElement;
   const body = document.body;
@@ -48,16 +46,8 @@ const ScrollToTop = () => {
   }, []);
 
   useLayoutEffect(() => {
-    const timers: number[] = [];
-    const frames: number[] = [];
-    let userInteracted = false;
-
     const scrollToRoutePosition = () => {
-      if (userInteracted) return;
       if (location.hash && scrollToHashTarget(location.hash)) return;
-      if (window.scrollY <= 1 && document.documentElement.scrollTop <= 1) {
-        return;
-      }
 
       runWithInstantScroll(() => {
         window.scrollTo({ top: 0, left: 0, behavior: "auto" });
@@ -66,28 +56,11 @@ const ScrollToTop = () => {
       });
     };
 
-    const cancelFollowUpScroll = () => {
-      userInteracted = true;
-    };
-
-    window.addEventListener("wheel", cancelFollowUpScroll, { passive: true });
-    window.addEventListener("touchstart", cancelFollowUpScroll, {
-      passive: true,
-    });
-    window.addEventListener("keydown", cancelFollowUpScroll);
-
     scrollToRoutePosition();
-    frames.push(window.requestAnimationFrame(scrollToRoutePosition));
-    timers.push(
-      window.setTimeout(scrollToRoutePosition, ROUTE_SCROLL_SETTLE_DELAY_MS),
-    );
+    const frame = window.requestAnimationFrame(scrollToRoutePosition);
 
     return () => {
-      window.removeEventListener("wheel", cancelFollowUpScroll);
-      window.removeEventListener("touchstart", cancelFollowUpScroll);
-      window.removeEventListener("keydown", cancelFollowUpScroll);
-      frames.forEach((frame) => window.cancelAnimationFrame(frame));
-      timers.forEach((timer) => window.clearTimeout(timer));
+      window.cancelAnimationFrame(frame);
     };
   }, [location.pathname, location.search, location.hash]);
 

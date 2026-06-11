@@ -13,7 +13,7 @@ export const apiClient = axios.create({
   withCredentials: true,
 });
 
-// Request interceptor to handle auth and CSRF
+// Request interceptor to handle auth cookies and request formatting.
 apiClient.interceptors.request.use(
   async (config: any) => {
     // ✅ SECURITY: Token is now in httpOnly cookie, sent automatically by browser
@@ -37,8 +37,6 @@ apiClient.interceptors.request.use(
       config.retryCount = 0;
     }
 
-    // CSRF tokens removed: do not attach x-csrf-token header
-
     return config;
   },
   (error) => {
@@ -61,12 +59,8 @@ apiClient.interceptors.response.use(
       config?.url?.includes("/auth/login") ||
       config?.url?.includes("/auth/signup");
     const status = error.response?.status;
-    console.log(status);
-    console.log("401 error on:", config.url);
-    console.log("Response:", error.response);
     // ✅ SECURITY: 401 Unauthorized - redirect to login
     if (status === 401 && !isAuthEndpoint) {
-      console.warn("401 error from:", config.url);
       return Promise.reject(error);
     }
 

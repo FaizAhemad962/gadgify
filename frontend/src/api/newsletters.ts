@@ -38,7 +38,7 @@ export interface NewsletterStatsResponse {
 export const newsletterApi = {
   // Subscribe email to newsletter
   subscribe: async (email: string) => {
-    // ✅ SECURITY: CSRF token is automatically added by apiClient interceptor
+    // Auth cookies are sent by apiClient.
     const response = await apiClient.post<NewsletterResponse>(
       "/newsletters/subscribe",
       { email },
@@ -51,7 +51,7 @@ export const newsletterApi = {
 
   // Unsubscribe email from newsletter
   unsubscribe: async (email: string) => {
-    // ✅ SECURITY: CSRF token is automatically added by apiClient interceptor
+    // Auth cookies are sent by apiClient.
     const response = await apiClient.post<NewsletterResponse>(
       "/newsletters/unsubscribe",
       { email },

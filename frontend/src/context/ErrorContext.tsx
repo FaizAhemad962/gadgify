@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import React, { createContext, useCallback, useState } from "react";
 
 export interface ErrorNotification {
@@ -30,6 +31,10 @@ export const ErrorProvider: React.FC<{ children: React.ReactNode }> = ({
 }) => {
   const [errors, setErrors] = useState<ErrorNotification[]>([]);
 
+  const clearError = useCallback((id: string) => {
+    setErrors((prev) => prev.filter((e) => e.id !== id));
+  }, []);
+
   const showError = useCallback(
     (
       message: string,
@@ -51,7 +56,7 @@ export const ErrorProvider: React.FC<{ children: React.ReactNode }> = ({
         setTimeout(() => clearError(id), duration);
       }
     },
-    [],
+    [clearError],
   );
 
   const showSuccess = useCallback(
@@ -74,10 +79,6 @@ export const ErrorProvider: React.FC<{ children: React.ReactNode }> = ({
     },
     [showError],
   );
-
-  const clearError = useCallback((id: string) => {
-    setErrors((prev) => prev.filter((e) => e.id !== id));
-  }, []);
 
   const clearAll = useCallback(() => {
     setErrors([]);

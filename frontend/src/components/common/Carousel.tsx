@@ -168,7 +168,7 @@ const Carousel = ({
       { breakpoint: 1280, slidesPerView: slidesPerView || 4, spaceBetween: 18 }, // Large
     ];
     return breakpoints || defaultBreakpoints;
-  }, [breakpoints]);
+  }, [breakpoints, slidesPerView]);
 
   /**
    * Convert breakpoints to Swiper format

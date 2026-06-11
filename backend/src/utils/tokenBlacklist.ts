@@ -1,12 +1,6 @@
 import { getRedis } from "../config/redis";
+import logger from "./logger";
 
-// ✅ SECURITY: Store blacklisted tokens in Redis with expiration matching JWT lifetime
-// This prevents token reuse after logout
-
-/**
- * Add token to blacklist
- * Token will automatically expire from Redis after JWT_EXPIRES_IN time
- */
 export const blacklistToken = async (
   token: string,
   expirationTime: number,
@@ -14,18 +8,16 @@ export const blacklistToken = async (
   try {
     const redis = getRedis();
     const key = `blacklist:${token}`;
-    // Set with EX (expire in seconds)
     await redis.setex(key, Math.ceil(expirationTime / 1000), "true");
-    console.log(`[SECURITY] Token blacklisted: ${token.substring(0, 20)}...`);
+    logger.info("Token blacklisted successfully");
   } catch (error) {
-    console.error("[ERROR] Failed to blacklist token:", error);
-    // Don't throw - logout should succeed even if blacklist fails
+    logger.error(
+      `Failed to blacklist token: ${error instanceof Error ? error.message : String(error)}`,
+    );
+    // Logout should still succeed if blacklist storage is unavailable.
   }
 };
 
-/**
- * Check if token is blacklisted
- */
 export const isTokenBlacklisted = async (token: string): Promise<boolean> => {
   try {
     const redis = getRedis();
@@ -33,15 +25,14 @@ export const isTokenBlacklisted = async (token: string): Promise<boolean> => {
     const result = await redis.exists(key);
     return result === 1;
   } catch (error) {
-    console.error("[ERROR] Failed to check token blacklist:", error);
-    // On Redis error, don't block authentication
+    logger.error(
+      `Failed to check token blacklist: ${error instanceof Error ? error.message : String(error)}`,
+    );
+    // Keep auth available if Redis is temporarily unavailable.
     return false;
   }
 };
 
-/**
- * Remove token from blacklist (optional - for testing)
- */
 export const removeTokenFromBlacklist = async (
   token: string,
 ): Promise<void> => {
@@ -50,13 +41,12 @@ export const removeTokenFromBlacklist = async (
     const key = `blacklist:${token}`;
     await redis.del(key);
   } catch (error) {
-    console.error("[ERROR] Failed to remove token from blacklist:", error);
+    logger.error(
+      `Failed to remove token from blacklist: ${error instanceof Error ? error.message : String(error)}`,
+    );
   }
 };
 
-/**
- * Get blacklist stats (for monitoring)
- */
 export const getBlacklistStats = async (): Promise<{
   totalBlacklisted: number;
 }> => {
@@ -65,7 +55,9 @@ export const getBlacklistStats = async (): Promise<{
     const keys = await redis.keys("blacklist:*");
     return { totalBlacklisted: keys.length };
   } catch (error) {
-    console.error("[ERROR] Failed to get blacklist stats:", error);
+    logger.error(
+      `Failed to get blacklist stats: ${error instanceof Error ? error.message : String(error)}`,
+    );
     return { totalBlacklisted: 0 };
   }
 };

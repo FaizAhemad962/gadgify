@@ -69,10 +69,8 @@ router.post(
   updateProfilePhoto,
 );
 
-// ✅ SECURITY: Email verification endpoints
+// Email verification endpoints
 router.post("/verify-email", verifyEmail);
 router.post("/resend-verification-email", resendVerificationEmail);
-
-// CSRF token endpoint removed
 
 export default router;

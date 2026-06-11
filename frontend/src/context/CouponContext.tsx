@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import {
   createContext,
   useContext,
@@ -5,6 +6,7 @@ import {
   useCallback,
   type ReactNode,
 } from "react";
+import { isAxiosError } from "axios";
 import { couponsApi, type CouponValidation } from "../api/coupons";
 
 interface CouponContextType {
@@ -49,10 +51,9 @@ export const CouponProvider = ({ children }: { children: ReactNode }) => {
         setError("");
         setCode(""); // Clear input after successful apply
       } catch (err: unknown) {
-        const message =
-          err instanceof Error && "response" in err
-            ? (err as any).response?.data?.message || "Invalid coupon code"
-            : "Invalid coupon code";
+        const message = isAxiosError<{ message?: string }>(err)
+          ? err.response?.data?.message || "Invalid coupon code"
+          : "Invalid coupon code";
         setError(message);
         setPromo(null);
       } finally {

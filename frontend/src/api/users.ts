@@ -21,7 +21,7 @@ export const usersApi = {
   },
 
   updateRole: async (id: string, role: string): Promise<void> => {
-    // ✅ SECURITY: CSRF token is automatically added by apiClient interceptor
+    // Auth cookies are sent by apiClient.
     await apiClient.patch(
       `/admin/users/${encodeURIComponent(id)}/role`,
       {
@@ -34,7 +34,7 @@ export const usersApi = {
   },
 
   delete: async (id: string): Promise<void> => {
-    // ✅ SECURITY: CSRF token is automatically added by apiClient interceptor
+    // Auth cookies are sent by apiClient.
     await apiClient.delete(`/admin/users/${encodeURIComponent(id)}`, {
       withCredentials: true,
     });

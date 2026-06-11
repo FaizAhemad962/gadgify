@@ -183,7 +183,7 @@ app.use(sanitizeStrings);
 // Security logging
 app.use(logSecurityEvents);
 
-// CSRF protection removed: backend no longer requires x-csrf-token headers
+// Cookie-authenticated mutations rely on cookie SameSite/Secure policy.
 
 // Rate limiting
 app.use("/api/", apiLimiter);
@@ -230,7 +230,7 @@ app.get("/health", async (req: Request, res: Response) => {
 });
 
 // Routes
-app.use("/api/auth", authRoutes); // includes login + csrf route
+app.use("/api/auth", authRoutes);
 
 app.use("/api/cart", cartRoutes);
 app.use("/api/products/media", mediaRoutes);
@@ -272,9 +272,6 @@ const startServer = async () => {
       logger.info(`📝 Environment: ${config.nodeEnv}`);
       logger.info(`🌐 Frontend URL: ${config.frontendUrl}`);
       logger.info(`🔒 Security: Enabled`);
-      console.log(`🚀 Server running on port ${PORT}`);
-      console.log(`📝 Environment: ${config.nodeEnv}`);
-      console.log(`🌐 Frontend URL: ${config.frontendUrl}`);
     });
   } catch (error) {
     logger.error("Failed to start server:", error);

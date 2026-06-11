@@ -4,7 +4,7 @@ import { deleteMediaByUrlAndProductId } from "../controllers/mediaController";
 import { authenticate, authorize } from "../middlewares/auth";
 
 const router = Router();
-console.log("HERE IN MEDIA ROUTES");
+
 router.delete(
   "/",
   authenticate,

@@ -5,6 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.clearCart = exports.removeFromCart = exports.updateCartItem = exports.addToCart = exports.getCart = void 0;
 const database_1 = __importDefault(require("../config/database"));
+const logger_1 = __importDefault(require("../utils/logger"));
 const getCart = async (req, res, next) => {
     try {
         let cart = await database_1.default.cart.findUnique({
@@ -43,7 +44,6 @@ const getCart = async (req, res, next) => {
 exports.getCart = getCart;
 const addToCart = async (req, res, next) => {
     try {
-        console.log(req, res);
         const { productId, quantity } = req.body;
         const userId = req.user.id;
         // Check if product exists and has stock
@@ -105,7 +105,7 @@ const addToCart = async (req, res, next) => {
         res.json(updatedCart);
     }
     catch (error) {
-        console.log(error, "________________ERROR_________________");
+        logger_1.default.error(`Add to cart failed: ${error instanceof Error ? error.message : String(error)}`);
         next(error);
     }
 };

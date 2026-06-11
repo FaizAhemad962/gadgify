@@ -9,7 +9,6 @@ import {
   Rating as MuiRating,
   Divider,
   CircularProgress,
-  Button,
 } from '@/mui/material'
 import { Delete, Star } from '@/mui/icons'
 import {
@@ -28,6 +27,8 @@ import { formatDate } from '../../utils/dateFormatter'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { invalidateProductData } from '@/lib/queryInvalidation'
+import { CustomButton } from '@/components/ui/CustomButton'
+import { tokens } from '@/theme/theme'
 
 interface RatingsListProps {
   productId: string
@@ -111,7 +112,18 @@ export const RatingsList: React.FC<RatingsListProps> = ({
   // ----------- EMPTY STATE -----------
   if (ratings.length === 0) {
     return (
-      <Paper elevation={1} sx={{ p: 4, textAlign: 'center' }}>
+      <Paper
+        elevation={0}
+        sx={{
+          p: 4,
+          textAlign: 'center',
+          borderRadius: `${tokens.radiusXl}px`,
+          border: `1px solid ${tokens.gray200}`,
+          background:
+            'linear-gradient(145deg, rgba(255,255,255,0.94), rgba(250,250,249,0.78))',
+          boxShadow: '0 18px 48px rgba(15, 23, 42, 0.06)',
+        }}
+      >
         <Typography color="text.secondary" sx={{ mb: 3 }}>
           {t('common.noReviews')}
         </Typography>
@@ -126,12 +138,12 @@ export const RatingsList: React.FC<RatingsListProps> = ({
               {t('auth.loginToReview')}
             </Typography>
 
-            <Button
-              variant="contained"
+            <CustomButton
+              appVariant="primary"
               onClick={() => navigate('/login')}
             >
               {t('auth.login')}
-            </Button>
+            </CustomButton>
           </>
         )}
       </Paper>
@@ -141,14 +153,24 @@ export const RatingsList: React.FC<RatingsListProps> = ({
   // ----------- LIST -----------
   return (
     <Box>
-      <Typography variant="h6" gutterBottom>
+      <Typography variant="h6" fontWeight={800} gutterBottom>
         {t('common.customerReviews')} (
         {data?.totalRatings ?? 0})
       </Typography>
 
       {ratings.map((rating:RatingType, index) => (
         <Box key={rating.id}>
-          <Paper elevation={1} sx={{ p: 2, mb: 2 }}>
+          <Paper
+            elevation={0}
+            sx={{
+              p: 2,
+              mb: 2,
+              borderRadius: `${tokens.radiusLg}px`,
+              border: `1px solid ${tokens.gray200}`,
+              background: 'rgba(255, 255, 255, 0.82)',
+              boxShadow: '0 12px 30px rgba(15, 23, 42, 0.04)',
+            }}
+          >
             <Box
               display="flex"
               alignItems="flex-start"

@@ -21,14 +21,6 @@ export const subscribeToNewsletter = async (
       where: { email },
     });
 
-    // SECURITY: Do not log subscriber data in production
-    if (process.env.NODE_ENV === "development") {
-      console.log(
-        "____________________*** Newsletter Subscriber ***__________",
-        existingSubscriber,
-      );
-    }
-
     if (existingSubscriber) {
       // Reactivate if previously unsubscribed
       if (!existingSubscriber.isActive) {

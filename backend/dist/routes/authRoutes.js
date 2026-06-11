@@ -17,8 +17,7 @@ router.get("/profile", auth_1.authenticate, authController_1.getProfile);
 router.put("/profile", auth_1.authenticate, (0, validate_1.validate)(validators_1.updateProfileSchema), authController_1.updateProfile);
 router.post("/change-password", auth_1.authenticate, (0, validate_1.validate)(validators_1.changePasswordSchema), authController_1.changePassword);
 router.post("/profile-photo", auth_1.authenticate, upload_1.upload.single("image"), (0, upload_1.validateMagicBytesMiddleware)(["jpg", "jpeg", "png", "gif", "webp"]), authController_1.updateProfilePhoto);
-// ✅ SECURITY: Email verification endpoints
+// Email verification endpoints
 router.post("/verify-email", authController_1.verifyEmail);
 router.post("/resend-verification-email", authController_1.resendVerificationEmail);
-// CSRF token endpoint removed
 exports.default = router;

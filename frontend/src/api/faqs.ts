@@ -61,7 +61,7 @@ export const faqApi = {
 
   // Increment FAQ view count
   incrementViews: async (faqId: string) => {
-    // ✅ SECURITY: CSRF token is automatically added by apiClient interceptor
+    // Auth cookies are sent by apiClient.
     const response = await apiClient.patch<{
       success: boolean;
       data: { faq: FAQ };

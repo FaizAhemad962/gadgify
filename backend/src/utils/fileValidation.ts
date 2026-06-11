@@ -1,3 +1,5 @@
+import logger from "./logger";
+
 /**
  * ✅ SECURITY: Magic bytes validation for file uploads
  * Prevents malware/malicious files from being uploaded by checking actual file content
@@ -101,9 +103,8 @@ export const validateMagicBytes = (
     }
   }
 
-  // If file type is not in our supported list, allow it (don't reject unknown types)
-  // But log a warning
-  console.warn(
+  // If file type is not in our supported list, allow it and log for review.
+  logger.warn(
     `[FILE VALIDATION] Unsupported file type for magic bytes validation: ${fileExtension}`,
   );
   return { valid: true };

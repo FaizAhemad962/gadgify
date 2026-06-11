@@ -38,7 +38,7 @@ export const addressesApi = {
   },
 
   create: async (data: CreateAddressRequest): Promise<Address> => {
-    // ✅ SECURITY: CSRF token is automatically added by apiClient interceptor
+    // Auth cookies are sent by apiClient.
     const response = await apiClient.post<{
       success: boolean;
       data: Address;
@@ -52,7 +52,7 @@ export const addressesApi = {
     id: string,
     data: Partial<CreateAddressRequest>,
   ): Promise<Address> => {
-    // ✅ SECURITY: CSRF token is automatically added by apiClient interceptor
+    // Auth cookies are sent by apiClient.
     const response = await apiClient.put<{
       success: boolean;
       data: Address;
@@ -63,7 +63,7 @@ export const addressesApi = {
   },
 
   delete: async (id: string): Promise<void> => {
-    // ✅ SECURITY: CSRF token is automatically added by apiClient interceptor
+    // Auth cookies are sent by apiClient.
     await apiClient.delete(`/addresses/${id}`, {
       withCredentials: true,
     });

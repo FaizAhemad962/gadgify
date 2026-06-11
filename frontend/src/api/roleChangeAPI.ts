@@ -52,7 +52,7 @@ export const useGrantRoleChangePermission = () => {
       email: string;
       canRemovePermission?: boolean;
     }) => {
-      // ✅ SECURITY: CSRF token is automatically added by apiClient interceptor
+      // Auth cookies are sent by apiClient.
       const response = await apiClient.post("/role-change/grant", data, {
         withCredentials: true,
       });
@@ -69,7 +69,7 @@ export const useRevokeRoleChangePermission = () => {
 
   return useMutation({
     mutationFn: async (userId: string) => {
-      // ✅ SECURITY: CSRF token is automatically added by apiClient interceptor
+      // Auth cookies are sent by apiClient.
       const response = await apiClient.delete(`/role-change/revoke/${userId}`, {
         withCredentials: true,
       });
@@ -86,7 +86,7 @@ export const useChangeUserRole = () => {
 
   return useMutation({
     mutationFn: async (data: { userId: string; role: string }) => {
-      // ✅ SECURITY: CSRF token is automatically added by apiClient interceptor
+      // Auth cookies are sent by apiClient.
       const response = await apiClient.patch(
         `/role-change/change-role/${data.userId}`,
         { role: data.role },

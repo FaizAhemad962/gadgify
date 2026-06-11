@@ -10,6 +10,7 @@ exports.userExists = userExists;
 exports.isEmailRegisteredWithAnyRole = isEmailRegisteredWithAnyRole;
 // backend/src/utils/userQueryHelper.ts
 const database_1 = __importDefault(require("../config/database"));
+const logger_1 = __importDefault(require("./logger"));
 /**
  * Find user by email, defaulting to USER role
  * Used for queries that expect a single user per email
@@ -30,7 +31,7 @@ async function findUserByEmail(email, defaultRole = "USER") {
     }
     catch (error) {
         if (process.env.NODE_ENV === "development") {
-            console.error("Error in findUserByEmail:", error);
+            logger_1.default.debug(`Error in findUserByEmail: ${error instanceof Error ? error.message : String(error)}`);
         }
         return null;
     }
@@ -51,7 +52,7 @@ async function findUserByEmailWithMultipleCheck(email, defaultRole = "USER") {
     }
     catch (error) {
         if (process.env.NODE_ENV === "development") {
-            console.error("Error in findUserByEmailWithMultipleCheck:", error);
+            logger_1.default.debug(`Error in findUserByEmailWithMultipleCheck: ${error instanceof Error ? error.message : String(error)}`);
         }
         return {
             user: null,
@@ -79,7 +80,7 @@ async function findAllAccountsByEmail(email) {
     }
     catch (error) {
         if (process.env.NODE_ENV === "development") {
-            console.error("Error in findAllAccountsByEmail:", error);
+            logger_1.default.debug(`Error in findAllAccountsByEmail: ${error instanceof Error ? error.message : String(error)}`);
         }
         return [];
     }
@@ -94,7 +95,7 @@ async function userExists(email, role = "USER") {
     }
     catch (error) {
         if (process.env.NODE_ENV === "development") {
-            console.error("Error in userExists:", error);
+            logger_1.default.debug(`Error in userExists: ${error instanceof Error ? error.message : String(error)}`);
         }
         return false;
     }
@@ -116,7 +117,7 @@ async function isEmailRegisteredWithAnyRole(email) {
     }
     catch (error) {
         if (process.env.NODE_ENV === "development") {
-            console.error("Error in isEmailRegisteredWithAnyRole:", error);
+            logger_1.default.debug(`Error in isEmailRegisteredWithAnyRole: ${error instanceof Error ? error.message : String(error)}`);
         }
         return false;
     }

@@ -19,10 +19,6 @@ const subscribeToNewsletter = async (req, res, next) => {
         const existingSubscriber = await prisma.newsletter.findUnique({
             where: { email },
         });
-        // SECURITY: Do not log subscriber data in production
-        if (process.env.NODE_ENV === "development") {
-            console.log("____________________*** Newsletter Subscriber ***__________", existingSubscriber);
-        }
         if (existingSubscriber) {
             // Reactivate if previously unsubscribed
             if (!existingSubscriber.isActive) {

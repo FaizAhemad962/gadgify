@@ -67,10 +67,6 @@ export const createOrder = async (
   next: NextFunction,
 ): Promise<void> => {
   try {
-    // SECURITY: Do not log request body in production (may contain sensitive data)
-    if (process.env.NODE_ENV === "development") {
-      console.log("--------- req body", req.body);
-    }
     const { items, subtotal, shipping, total, shippingAddress, couponCode } =
       req.body;
     const userId = req.user!.id;
@@ -151,12 +147,6 @@ export const createOrder = async (
 
       discount = Math.round(discount * 100) / 100;
       appliedCouponCode = coupon.code;
-
-      // Increment usage count
-      await prisma.coupon.update({
-        where: { id: coupon.id },
-        data: { usedCount: { increment: 1 } },
-      });
     }
 
     const finalTotal = subtotal + shipping - discount;
@@ -231,23 +221,6 @@ export const createOrder = async (
     res.status(201).json(transformOrder(order));
   } catch (error) {
     next(error);
-  }
-};
-
-/**
- * Update product stock - moves to payment confirmation
- * Stock is only decremented when payment is confirmed
- */
-const decrementProductStock = async (items: any[]) => {
-  for (const item of items) {
-    await prisma.product.update({
-      where: { id: item.productId },
-      data: {
-        stock: {
-          decrement: item.quantity,
-        },
-      },
-    });
   }
 };
 
@@ -434,6 +407,11 @@ export const confirmPayment = async (
       return;
     }
 
+    if (order.paymentStatus === "COMPLETED") {
+      res.json(transformOrder(order));
+      return;
+    }
+
     // Verify Razorpay signature
     const body = razorpay_order_id + "|" + razorpay_payment_id;
     const expectedSignature = crypto
@@ -446,36 +424,64 @@ export const confirmPayment = async (
       return;
     }
 
-    const updatedOrder = await prisma.order.update({
-      where: { id: orderId },
-      data: {
-        paymentStatus: "COMPLETED",
-        paymentId: razorpay_payment_id,
-        status: "PROCESSING",
-      },
-      include: {
-        items: {
-          include: { product: true },
+    const updatedOrder = await prisma.$transaction(async (tx) => {
+      for (const item of order.items) {
+        const stockUpdate = await tx.product.updateMany({
+          where: {
+            id: item.productId,
+            deletedAt: null,
+            stock: { gte: item.quantity },
+          } as any,
+          data: {
+            stock: {
+              decrement: item.quantity,
+            },
+          },
+        });
+
+        if (stockUpdate.count === 0) {
+          throw new AppError(
+            `Insufficient stock for ${item.product?.name || "product"}`,
+            400,
+          );
+        }
+      }
+
+      if (order.couponCode) {
+        await tx.coupon.update({
+          where: { code: order.couponCode },
+          data: { usedCount: { increment: 1 } },
+        });
+      }
+
+      return tx.order.update({
+        where: { id: orderId },
+        data: {
+          paymentStatus: "COMPLETED",
+          paymentId: razorpay_payment_id,
+          status: "PROCESSING",
         },
-        user: {
-          select: {
-            id: true,
-            email: true,
-            name: true,
-            phone: true,
-            role: true,
-            state: true,
-            city: true,
-            address: true,
-            pincode: true,
-            createdAt: true,
+        include: {
+          items: {
+            include: { product: true },
+          },
+          user: {
+            select: {
+              id: true,
+              email: true,
+              name: true,
+              phone: true,
+              role: true,
+              state: true,
+              city: true,
+              address: true,
+              pincode: true,
+              createdAt: true,
+            },
           },
         },
-      },
+      });
     });
-
-    // Decrement product stock only after payment is confirmed
-    await decrementProductStock(updatedOrder.items);
 
     // Check for low stock and alert admin
     await checkLowStockAndAlert(updatedOrder.items);

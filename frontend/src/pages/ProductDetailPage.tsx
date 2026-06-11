@@ -6,7 +6,6 @@ import {
   Container,
   Box,
   Typography,
-  Button,
   CircularProgress,
   Alert,
   Chip,
@@ -22,6 +21,8 @@ import {
   ArrowBack,
   Share,
   NotificationsActive,
+  LocalShipping,
+  Security,
 } from "@/mui/icons";
 import { productsApi } from "../api/products";
 import { ratingsApi } from "../api/ratings";
@@ -38,6 +39,24 @@ import SectionHeader from "../components/sections/SectionHeader";
 import RecentlyViewed from "../components/products/RecentlyViewed";
 import { useRecentlyViewed } from "../hooks/useRecentlyViewed";
 import { tokens } from "@/theme/theme";
+import { CustomButton } from "@/components/ui/CustomButton";
+import { appIconSx } from "@/components/ui/navigationStyles";
+
+const glassPanelSx = {
+  borderRadius: `${tokens.radiusXl}px`,
+  border: `1px solid rgba(231, 229, 228, 0.82)`,
+  background:
+    "linear-gradient(145deg, rgba(255,255,255,0.98), rgba(250,250,249,0.92))",
+  boxShadow: "0 16px 42px rgba(15, 23, 42, 0.07)",
+} as const;
+
+const softCardSx = {
+  borderRadius: `${tokens.radiusLg}px`,
+  border: `1px solid rgba(231, 229, 228, 0.9)`,
+  background:
+    "linear-gradient(145deg, rgba(255,255,255,0.96), rgba(245,245,244,0.86))",
+  boxShadow: "0 8px 22px rgba(15, 23, 42, 0.045)",
+} as const;
 
 const ProductDetailPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -165,35 +184,92 @@ const ProductDetailPage = () => {
     );
   }
   return (
-    <Container maxWidth="xl" sx={{ py: 4 }}>
-      <Button
-        startIcon={<ArrowBack />}
+    <Box
+      sx={{
+        minHeight: "100vh",
+        py: { xs: 3, md: 5 },
+        background:
+          "radial-gradient(circle at top left, rgba(255,107,44,0.11), transparent 34%), radial-gradient(circle at top right, rgba(27,42,74,0.1), transparent 32%), linear-gradient(180deg, #fff 0%, #fafafa 52%, #f5f5f4 100%)",
+      }}
+    >
+    <Container maxWidth="xl">
+      <CustomButton
+        appVariant="ghost"
+        startIcon={<ArrowBack sx={appIconSx.lg} />}
         onClick={() => navigate("/products")}
         sx={{ mb: 3 }}
       >
         {t("common.backToProducts")}
-      </Button>
+      </CustomButton>
       <Box
         sx={{
-          display: "flex",
+          ...glassPanelSx,
+          display: "grid",
+          gridTemplateColumns: { xs: "1fr", md: "minmax(360px, 0.92fr) 1fr" },
           gap: 4,
-          flexDirection: { xs: "column", md: "row" },
+          p: { xs: 2, sm: 3, md: 4 },
+          position: "relative",
+          overflow: "hidden",
+          "&::before": {
+            content: '""',
+            position: "absolute",
+            inset: 0,
+            pointerEvents: "none",
+            background:
+              "linear-gradient(135deg, rgba(255,107,44,0.08), transparent 34%, rgba(14,165,233,0.06))",
+          },
         }}
       >
-        <ProductGallery product={product} />
+        <Box sx={{ position: "relative", zIndex: 1 }}>
+          <ProductGallery product={product} />
+        </Box>
 
-        <Box sx={{ flex: 1, display: "flex", flexDirection: "column", gap: 3 }}>
+        <Box
+          sx={{
+            position: "relative",
+            zIndex: 1,
+            display: "flex",
+            flexDirection: "column",
+            gap: 3,
+          }}
+        >
           <Box>
+            <Chip
+              label={product.category}
+              size="small"
+              sx={{
+                mb: 1.5,
+                bgcolor: "rgba(27, 42, 74, 0.08)",
+                color: tokens.primary,
+                fontWeight: 800,
+              }}
+            />
             <Typography
-              variant="h4"
+              variant="h3"
               gutterBottom
-              fontWeight="700"
-              sx={{ color: "text.primary", mb: 2 }}
+              fontWeight="900"
+              sx={{
+                color: tokens.gray900,
+                mb: 2,
+                letterSpacing: "-0.035em",
+                fontSize: { xs: "1.8rem", md: "2.35rem" },
+              }}
             >
               {product.name}
             </Typography>
             {ratingsData && ratingsData.totalRatings > 0 && (
-              <Box sx={{ mb: 2 }}>
+              <Box
+                sx={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 1,
+                  px: 1.5,
+                  py: 0.75,
+                  borderRadius: "999px",
+                  bgcolor: "rgba(255, 255, 255, 0.72)",
+                  border: `1px solid ${tokens.gray200}`,
+                }}
+              >
                 <StarRating
                   rating={ratingsData.averageRating}
                   totalRatings={ratingsData.totalRatings}
@@ -202,17 +278,24 @@ const ProductDetailPage = () => {
               </Box>
             )}
           </Box>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-            <Typography variant="h5" color="primary" fontWeight="700">
+          <Box
+            sx={{ display: "flex", alignItems: "center", gap: 2, flexWrap: "wrap" }}
+          >
+            <Typography
+              variant="h4"
+              fontWeight="900"
+              sx={{ color: tokens.accent, letterSpacing: "-0.03em" }}
+            >
               ₹{product.price.toLocaleString()}
             </Typography>
             {product.stock > 0 ? (
               <Chip
                 label={`${t("products.stock")}: ${product.stock}`}
                 sx={{
-                  bgcolor: tokens.success,
-                  color: tokens.white,
-                  fontWeight: 600,
+                  bgcolor: `${tokens.success}18`,
+                  color: tokens.success,
+                  border: `1px solid ${tokens.success}35`,
+                  fontWeight: 800,
                 }}
               />
             ) : (
@@ -226,15 +309,14 @@ const ProductDetailPage = () => {
                   }}
                 />
                 {!isNotifySubscribed(product.id) && (
-                  <Button
-                    variant="outlined"
+                  <CustomButton
+                    appVariant="secondary"
                     size="small"
-                    startIcon={<NotificationsActive />}
+                    startIcon={<NotificationsActive sx={appIconSx.md} />}
                     onClick={() => handleNotifyMe(product.id)}
-                    sx={{ textTransform: "none" }}
                   >
                     {t("products.notifyMe")}
-                  </Button>
+                  </CustomButton>
                 )}
                 {isNotifySubscribed(product.id) && (
                   <Chip
@@ -250,7 +332,12 @@ const ProductDetailPage = () => {
 
           <Typography
             variant="body1"
-            sx={{ color: "text.secondary", lineHeight: 2, fontSize: "1rem" }}
+            sx={{
+              color: tokens.gray600,
+              lineHeight: 1.85,
+              fontSize: "1rem",
+              maxWidth: 760,
+            }}
           >
             {product.description}
           </Typography>
@@ -289,10 +376,10 @@ const ProductDetailPage = () => {
               alignItems: "stretch",
             }}
           >
-            <Button
-              variant="outlined"
+            <CustomButton
+              appVariant="secondary"
               size="large"
-              startIcon={<ShoppingCart />}
+              startIcon={<ShoppingCart sx={appIconSx.lg} />}
               onClick={() => handleAddToCart()}
               disabled={product.stock === 0 || isAddingToCart(product.id)}
               sx={{ flex: 1, fontWeight: 600, minHeight: 48 }}
@@ -300,9 +387,9 @@ const ProductDetailPage = () => {
               {isAddingToCart(product.id)
                 ? "Adding..."
                 : t("products.addToCart")}
-            </Button>
-            <Button
-              variant="contained"
+            </CustomButton>
+            <CustomButton
+              appVariant="primary"
               size="large"
               onClick={() => handleBuyNow()}
               disabled={product.stock === 0}
@@ -310,18 +397,28 @@ const ProductDetailPage = () => {
                 flex: 1,
                 fontWeight: 600,
                 minHeight: 48,
-                bgcolor: tokens.accent,
-                "&:hover": { bgcolor: tokens.accentDark },
               }}
             >
               {t("products.buyNow")}
-            </Button>
+            </CustomButton>
             <Tooltip title={t("common.shareProduct")}>
               <IconButton
                 onClick={handleShare}
-                sx={{ border: `1px solid ${tokens.gray200}`, borderRadius: 2 }}
+                sx={{
+                  width: 50,
+                  height: 50,
+                  border: `1px solid ${tokens.gray200}`,
+                  borderRadius: "16px",
+                  bgcolor: "rgba(255,255,255,0.72)",
+                  boxShadow: tokens.shadowSm,
+                  "&:hover": {
+                    bgcolor: tokens.white,
+                    color: tokens.accent,
+                    transform: "translateY(-1px)",
+                  },
+                }}
               >
-                <Share />
+                <Share sx={appIconSx.lg} />
               </IconButton>
             </Tooltip>
           </Box>
@@ -335,10 +432,10 @@ const ProductDetailPage = () => {
             }}
           >
             <Paper
+              elevation={0}
               sx={{
+                ...softCardSx,
                 p: 2.5,
-                borderRadius: 2,
-                border: `1px solid ${tokens.gray200}`,
               }}
             >
               <Typography
@@ -352,7 +449,8 @@ const ProductDetailPage = () => {
                   gap: 1,
                 }}
               >
-                ✓ {t("common.fastDelivery")}
+                <LocalShipping sx={{ ...appIconSx.lg, color: tokens.accent }} />
+                {t("common.fastDelivery")}
               </Typography>
               <Typography
                 variant="body2"
@@ -362,10 +460,10 @@ const ProductDetailPage = () => {
               </Typography>
             </Paper>
             <Paper
+              elevation={0}
               sx={{
+                ...softCardSx,
                 p: 2.5,
-                borderRadius: 2,
-                border: `1px solid ${tokens.gray200}`,
               }}
             >
               <Typography
@@ -379,7 +477,8 @@ const ProductDetailPage = () => {
                   gap: 1,
                 }}
               >
-                ✓ {t("products.securePayment")}
+                <Security sx={{ ...appIconSx.lg, color: tokens.primary }} />
+                {t("products.securePayment")}
               </Typography>
               <Typography
                 variant="body2"
@@ -484,6 +583,7 @@ const ProductDetailPage = () => {
         </Alert>
       </Snackbar>
     </Container>
+    </Box>
   );
 };
 

@@ -1,7 +1,6 @@
 import React, { useState } from 'react'
 import {
   Box,
-  Button,
   TextField,
   Typography,
   Rating,
@@ -13,6 +12,8 @@ import { ratingsApi, type CreateRatingData } from '../../api/ratings'
 import { useTranslation } from 'react-i18next'
 import { invalidateProductData } from '@/lib/queryInvalidation'
 import { queryKeys } from '@/lib/queryKeys'
+import { CustomButton } from '@/components/ui/CustomButton'
+import { tokens } from '@/theme/theme'
 
 interface RatingFormProps {
   productId: string
@@ -47,8 +48,19 @@ export const RatingForm: React.FC<RatingFormProps> = ({ productId }) => {
   }
 
   return (
-    <Paper elevation={2} sx={{ p: 3, mb: 3 }}>
-      <Typography variant="h6" gutterBottom>
+    <Paper
+      elevation={0}
+      sx={{
+        p: 3,
+        mb: 3,
+        borderRadius: `${tokens.radiusXl}px`,
+        border: `1px solid ${tokens.gray200}`,
+        background:
+          'linear-gradient(145deg, rgba(255,255,255,0.94), rgba(250,250,249,0.78))',
+        boxShadow: '0 18px 48px rgba(15, 23, 42, 0.06)',
+      }}
+    >
+      <Typography variant="h6" fontWeight={800} gutterBottom>
         {t('common.writeReview')}
       </Typography>
       <form onSubmit={handleSubmit}>
@@ -78,14 +90,13 @@ export const RatingForm: React.FC<RatingFormProps> = ({ productId }) => {
           sx={{ mb: 2 }}
         />
 
-        <Button
+        <CustomButton
           type="submit"
-          variant="contained"
-          color="primary"
+          appVariant="primary"
           disabled={createRatingMutation.isPending}
         >
           {createRatingMutation.isPending ? 'Submitting...' : 'Submit Review'}
-        </Button>
+        </CustomButton>
       </form>
     </Paper>
   )

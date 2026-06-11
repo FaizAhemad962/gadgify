@@ -17,7 +17,7 @@ export const ordersApi = {
   },
 
   create: async (data: CreateOrderRequest): Promise<Order> => {
-    // ✅ SECURITY: CSRF token is automatically added by apiClient interceptor
+    // Auth cookies are sent by apiClient.
     const response = await apiClient.post<Order>("/orders", data, {
       withCredentials: true,
     });
@@ -25,7 +25,7 @@ export const ordersApi = {
   },
 
   createPaymentIntent: async (orderId: string): Promise<PaymentIntent> => {
-    // ✅ SECURITY: CSRF token is automatically added by apiClient interceptor
+    // Auth cookies are sent by apiClient.
     const response = await apiClient.post<PaymentIntent>(
       `/orders/${orderId}/payment-intent`,
       {},
@@ -44,7 +44,7 @@ export const ordersApi = {
       razorpay_signature: string;
     },
   ): Promise<Order> => {
-    // ✅ SECURITY: CSRF token is automatically added by apiClient interceptor
+    // Auth cookies are sent by apiClient.
     const response = await apiClient.post<Order>(
       `/orders/${orderId}/confirm-payment`,
       paymentData,
@@ -56,7 +56,7 @@ export const ordersApi = {
   },
 
   retryPayment: async (orderId: string): Promise<PaymentIntent> => {
-    // ✅ SECURITY: CSRF token is automatically added by apiClient interceptor
+    // Auth cookies are sent by apiClient.
     const response = await apiClient.post<PaymentIntent>(
       `/orders/${orderId}/retry-payment`,
       {},
@@ -91,7 +91,7 @@ export const ordersApi = {
     orderId: string,
     status: Order["status"],
   ): Promise<Order> => {
-    // ✅ SECURITY: CSRF token is automatically added by apiClient interceptor
+    // Auth cookies are sent by apiClient.
     const response = await apiClient.patch<Order>(
       `/admin/orders/${orderId}`,
       { status },

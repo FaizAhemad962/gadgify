@@ -46,7 +46,7 @@ export const ratingsApi = {
     productId: string,
     payload: CreateRatingData,
   ): Promise<Rating> => {
-    // ✅ SECURITY: CSRF token is automatically added by apiClient interceptor
+    // Auth cookies are sent by apiClient.
     const { data } = await apiClient.post(
       `/products/${productId}/ratings`,
       payload,
@@ -58,7 +58,7 @@ export const ratingsApi = {
   },
 
   deleteRating: async (productId: string, ratingId: string): Promise<void> => {
-    // ✅ SECURITY: CSRF token is automatically added by apiClient interceptor
+    // Auth cookies are sent by apiClient.
     await apiClient.delete(`/products/${productId}/ratings/${ratingId}`, {
       withCredentials: true,
     });

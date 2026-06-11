@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const auth_1 = require("../middlewares/auth");
 const database_1 = __importDefault(require("../config/database"));
+const logger_1 = __importDefault(require("../utils/logger"));
 const router = (0, express_1.Router)();
 // Get wishlist for current user
 router.get('/', auth_1.authenticate, async (req, res) => {
@@ -30,7 +31,7 @@ router.get('/', auth_1.authenticate, async (req, res) => {
         res.json(wishlist);
     }
     catch (error) {
-        console.error('Error fetching wishlist:', error);
+        logger_1.default.error(`Error fetching wishlist: ${error instanceof Error ? error.message : String(error)}`);
         res.status(500).json({ message: 'Failed to fetch wishlist' });
     }
 });
@@ -68,7 +69,7 @@ router.post('/', auth_1.authenticate, async (req, res) => {
         res.status(201).json(wishlistItem);
     }
     catch (error) {
-        console.error('Error adding to wishlist:', error);
+        logger_1.default.error(`Error adding to wishlist: ${error instanceof Error ? error.message : String(error)}`);
         res.status(500).json({ message: 'Failed to add to wishlist' });
     }
 });
@@ -93,7 +94,7 @@ router.delete('/:productId', auth_1.authenticate, async (req, res) => {
         res.json({ message: 'Removed from wishlist' });
     }
     catch (error) {
-        console.error('Error removing from wishlist:', error);
+        logger_1.default.error(`Error removing from wishlist: ${error instanceof Error ? error.message : String(error)}`);
         res.status(500).json({ message: 'Failed to remove from wishlist' });
     }
 });

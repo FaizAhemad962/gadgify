@@ -5,6 +5,7 @@ import {
   validateMagicBytes,
   getFileTypeFromMagicBytes,
 } from "../utils/fileValidation";
+import logger from "../utils/logger";
 
 // Ensure uploads directory exists
 // Use Render's persistent disk in production, local path in development
@@ -88,7 +89,7 @@ export const validateMagicBytesMiddleware = (allowedExtensions: string[]) => {
         const detectedType = getFileTypeFromMagicBytes(fileBuffer);
         const errorMsg =
           validation.error || "File content does not match declared format";
-        console.warn(`[SECURITY] Malicious file detected: ${errorMsg}`);
+        logger.warn(`Malicious file detected: ${errorMsg}`);
 
         return res.status(400).json({
           success: false,
@@ -103,9 +104,12 @@ export const validateMagicBytesMiddleware = (allowedExtensions: string[]) => {
         try {
           fs.unlinkSync(req.file.path);
         } catch (unlinkError) {
-          console.error(
-            "Failed to delete file after validation error:",
-            unlinkError,
+          logger.error(
+            `Failed to delete file after validation error: ${
+              unlinkError instanceof Error
+                ? unlinkError.message
+                : String(unlinkError)
+            }`,
           );
         }
       }

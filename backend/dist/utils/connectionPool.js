@@ -5,72 +5,58 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.reconnectDatabase = exports.checkConnectionHealth = exports.closeConnectionPool = exports.initializeConnectionPool = void 0;
 const database_1 = __importDefault(require("../config/database"));
-/**
- * Manages database connection pooling
- * Ensures proper connection lifecycle and prevents pool exhaustion
- */
+const logger_1 = __importDefault(require("./logger"));
 const initializeConnectionPool = async () => {
     try {
-        // Test connection
         await database_1.default.$queryRaw `SELECT 1`;
-        console.log('✓ Database connection pool initialized successfully');
+        logger_1.default.info("Database connection pool initialized successfully");
     }
     catch (error) {
-        console.error('✗ Failed to initialize connection pool:', error);
+        logger_1.default.error(`Failed to initialize connection pool: ${error instanceof Error ? error.message : String(error)}`);
         throw error;
     }
 };
 exports.initializeConnectionPool = initializeConnectionPool;
-/**
- * Gracefully close database connections
- */
 const closeConnectionPool = async () => {
     try {
         await database_1.default.$disconnect();
-        console.log('✓ Database connections closed gracefully');
+        logger_1.default.info("Database connections closed gracefully");
     }
     catch (error) {
-        console.error('✗ Error closing database connections:', error);
+        logger_1.default.error(`Error closing database connections: ${error instanceof Error ? error.message : String(error)}`);
     }
 };
 exports.closeConnectionPool = closeConnectionPool;
-/**
- * Health check for database connection
- */
 const checkConnectionHealth = async () => {
     try {
         await database_1.default.$queryRaw `SELECT 1`;
         return true;
     }
     catch (error) {
-        console.error('Connection health check failed:', error);
+        logger_1.default.error(`Connection health check failed: ${error instanceof Error ? error.message : String(error)}`);
         return false;
     }
 };
 exports.checkConnectionHealth = checkConnectionHealth;
-/**
- * Reconnect if connection is lost
- */
 const reconnectDatabase = async (maxRetries = 3) => {
     let retries = 0;
     while (retries < maxRetries) {
         try {
             const isHealthy = await (0, exports.checkConnectionHealth)();
             if (isHealthy) {
-                console.log('✓ Database reconnected successfully');
+                logger_1.default.info("Database reconnected successfully");
                 return true;
             }
         }
         catch (error) {
             retries++;
-            console.warn(`Reconnection attempt ${retries}/${maxRetries} failed:`, error);
+            logger_1.default.warn(`Reconnection attempt ${retries}/${maxRetries} failed: ${error instanceof Error ? error.message : String(error)}`);
             if (retries < maxRetries) {
-                // Wait before retrying (exponential backoff)
                 await new Promise((resolve) => setTimeout(resolve, 1000 * retries));
             }
         }
     }
-    console.error('✗ Failed to reconnect after maximum retries');
+    logger_1.default.error("Failed to reconnect after maximum retries");
     return false;
 };
 exports.reconnectDatabase = reconnectDatabase;

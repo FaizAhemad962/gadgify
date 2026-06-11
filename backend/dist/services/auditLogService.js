@@ -4,6 +4,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const database_1 = __importDefault(require("../config/database"));
+const logger_1 = __importDefault(require("../utils/logger"));
 class AuditLogService {
     /**
      * Log an action for audit trail
@@ -25,7 +26,7 @@ class AuditLogService {
             });
         }
         catch (error) {
-            console.error("Failed to log audit action:", error);
+            logger_1.default.error(`Failed to log audit action: ${error instanceof Error ? error.message : String(error)}`);
             // Don't throw - audit logging should not block main operations
         }
     }

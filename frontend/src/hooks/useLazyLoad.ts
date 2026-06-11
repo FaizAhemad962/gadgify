@@ -14,15 +14,14 @@ export const useLazyLoad = (options?: IntersectionObserverInit) => {
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
-    if (!ref.current) return;
+    const element = ref.current;
+    if (!element) return;
 
     // If component is already visible in viewport initially, mark it as visible
     const checkInitialVisibility = () => {
-      if (ref.current) {
-        const rect = ref.current.getBoundingClientRect();
-        if (rect.top < window.innerHeight && rect.bottom > 0) {
-          setIsVisible(true);
-        }
+      const rect = element.getBoundingClientRect();
+      if (rect.top < window.innerHeight && rect.bottom > 0) {
+        setIsVisible(true);
       }
     };
 
@@ -44,12 +43,10 @@ export const useLazyLoad = (options?: IntersectionObserverInit) => {
       },
     );
 
-    observer.observe(ref.current);
+    observer.observe(element);
 
     return () => {
-      if (ref.current) {
-        observer.unobserve(ref.current);
-      }
+      observer.unobserve(element);
     };
   }, [options]);
 

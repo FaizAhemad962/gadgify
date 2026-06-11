@@ -151,7 +151,7 @@ app.use(sanitize_1.sanitizeInput);
 app.use(sanitize_1.sanitizeStrings);
 // Security logging
 app.use(securityLogger_1.logSecurityEvents);
-// CSRF protection removed: backend no longer requires x-csrf-token headers
+// Cookie-authenticated mutations rely on cookie SameSite/Secure policy.
 // Rate limiting
 app.use("/api/", rateLimiter_1.apiLimiter);
 // Serve uploaded files with proper path resolution
@@ -191,7 +191,7 @@ app.get("/health", async (req, res) => {
     }
 });
 // Routes
-app.use("/api/auth", authRoutes_1.default); // includes login + csrf route
+app.use("/api/auth", authRoutes_1.default);
 app.use("/api/cart", cartRoutes_1.default);
 app.use("/api/products/media", mediaRoutes_1.default);
 app.use("/api/products", productRoutes_1.default);
@@ -226,9 +226,6 @@ const startServer = async () => {
             logger_1.default.info(`📝 Environment: ${config_1.config.nodeEnv}`);
             logger_1.default.info(`🌐 Frontend URL: ${config_1.config.frontendUrl}`);
             logger_1.default.info(`🔒 Security: Enabled`);
-            console.log(`🚀 Server running on port ${PORT}`);
-            console.log(`📝 Environment: ${config_1.config.nodeEnv}`);
-            console.log(`🌐 Frontend URL: ${config_1.config.frontendUrl}`);
         });
     }
     catch (error) {

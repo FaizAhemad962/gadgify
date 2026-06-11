@@ -1,7 +1,8 @@
-import { Router, Request, Response } from 'express'
+import { Router, Response } from 'express'
 import { authenticate } from '../middlewares/auth'
 import { AuthRequest } from '../middlewares/auth'
 import prisma from '../config/database'
+import logger from '../utils/logger'
 
 const router = Router()
 
@@ -29,7 +30,9 @@ router.get('/', authenticate, async (req: AuthRequest, res: Response) => {
 
     res.json(wishlist)
   } catch (error) {
-    console.error('Error fetching wishlist:', error)
+    logger.error(
+      `Error fetching wishlist: ${error instanceof Error ? error.message : String(error)}`,
+    )
     res.status(500).json({ message: 'Failed to fetch wishlist' })
   }
 })
@@ -74,7 +77,9 @@ router.post('/', authenticate, async (req: AuthRequest, res: Response) => {
 
     res.status(201).json(wishlistItem)
   } catch (error) {
-    console.error('Error adding to wishlist:', error)
+    logger.error(
+      `Error adding to wishlist: ${error instanceof Error ? error.message : String(error)}`,
+    )
     res.status(500).json({ message: 'Failed to add to wishlist' })
   }
 })
@@ -103,7 +108,9 @@ router.delete('/:productId', authenticate, async (req: AuthRequest, res: Respons
 
     res.json({ message: 'Removed from wishlist' })
   } catch (error) {
-    console.error('Error removing from wishlist:', error)
+    logger.error(
+      `Error removing from wishlist: ${error instanceof Error ? error.message : String(error)}`,
+    )
     res.status(500).json({ message: 'Failed to remove from wishlist' })
   }
 })

@@ -45,7 +45,7 @@ export const useOrder = (orderId: string) => {
   });
 };
 
-// ✅ SECURITY: CSRF token is automatically added by apiClient interceptor
+// Auth cookies are sent by apiClient.
 export const useCreatePaymentIntent = () => {
   const queryClient = useQueryClient();
 
@@ -66,7 +66,7 @@ export const useCreatePaymentIntent = () => {
   });
 };
 
-// ✅ SECURITY: CSRF token is automatically added by apiClient interceptor
+// Auth cookies are sent by apiClient.
 export const useRetryPayment = () => {
   const queryClient = useQueryClient();
 
@@ -87,7 +87,7 @@ export const useRetryPayment = () => {
   });
 };
 
-// ✅ SECURITY: CSRF token is automatically added by apiClient interceptor
+// Auth cookies are sent by apiClient.
 export const useCancelOrder = () => {
   const queryClient = useQueryClient();
 
@@ -104,7 +104,7 @@ export const useCancelOrder = () => {
   });
 };
 
-// ✅ SECURITY: CSRF token is automatically added by apiClient interceptor
+// Auth cookies are sent by apiClient.
 export const useConfirmPayment = () => {
   const queryClient = useQueryClient();
 

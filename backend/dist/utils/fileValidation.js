@@ -1,11 +1,10 @@
 "use strict";
-/**
- * ✅ SECURITY: Magic bytes validation for file uploads
- * Prevents malware/malicious files from being uploaded by checking actual file content
- * Not just file extension which can be spoofed
- */
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.validateFileUpload = exports.getFileTypeFromMagicBytes = exports.validateMagicBytes = exports.MAGIC_BYTES = void 0;
+const logger_1 = __importDefault(require("./logger"));
 // Magic byte signatures for supported file types
 exports.MAGIC_BYTES = {
     // Images
@@ -82,9 +81,8 @@ const validateMagicBytes = (buffer, declaredMimeType, fileName) => {
             return { valid: true };
         }
     }
-    // If file type is not in our supported list, allow it (don't reject unknown types)
-    // But log a warning
-    console.warn(`[FILE VALIDATION] Unsupported file type for magic bytes validation: ${fileExtension}`);
+    // If file type is not in our supported list, allow it and log for review.
+    logger_1.default.warn(`[FILE VALIDATION] Unsupported file type for magic bytes validation: ${fileExtension}`);
     return { valid: true };
 };
 exports.validateMagicBytes = validateMagicBytes;

@@ -5,6 +5,17 @@ import type {
   UpdateProductRequest,
 } from "../types";
 
+type ProductListResponse = {
+  products?: Product[];
+  total?: number;
+  page?: number;
+  limit?: number;
+};
+
+type WrappedProductListResponse = {
+  data?: ProductListResponse;
+} & ProductListResponse;
+
 export const productsApi = {
   // ---------------- PUBLIC ----------------
   getAll: async (filters?: {
@@ -23,7 +34,7 @@ export const productsApi = {
     limit: number;
   }> => {
     // Only add parameters that are explicitly provided
-    const params: Record<string, any> = {};
+    const params: Record<string, string | number> = {};
 
     if (filters?.search) params.search = filters.search;
     if (filters?.minPrice !== undefined) params.minPrice = filters.minPrice;
@@ -34,7 +45,7 @@ export const productsApi = {
     if (filters?.page) params.page = filters.page;
     if (filters?.limit) params.limit = filters.limit ?? 24;
 
-    const { data } = await apiClient.get("/products", {
+    const { data } = await apiClient.get<WrappedProductListResponse>("/products", {
       params,
       withCredentials: true,
     });
@@ -42,7 +53,7 @@ export const productsApi = {
     // Support both API shapes:
     // 1) { products, total, page, limit }
     // 2) { success, message, data: { products, total, page, limit } }
-    const payload = (data as any)?.data ?? data;
+    const payload = data.data ?? data;
     const products: Product[] = Array.isArray(payload?.products)
       ? payload.products
       : [];
@@ -88,7 +99,7 @@ export const productsApi = {
   },
 
   create: async (payload: CreateProductRequest): Promise<Product> => {
-    // ✅ SECURITY: CSRF token is automatically added by apiClient interceptor
+    // Auth cookies are sent by apiClient.
     const { data } = await apiClient.post("/products", payload, {
       withCredentials: true,
     });
@@ -99,7 +110,7 @@ export const productsApi = {
     id: string,
     payload: UpdateProductRequest,
   ): Promise<Product> => {
-    // ✅ SECURITY: CSRF token is automatically added by apiClient interceptor
+    // Auth cookies are sent by apiClient.
     const { data } = await apiClient.put(`/products/${id}`, payload, {
       withCredentials: true,
     });
@@ -107,7 +118,7 @@ export const productsApi = {
   },
 
   delete: async (id: string): Promise<void> => {
-    // ✅ SECURITY: CSRF token is automatically added by apiClient interceptor
+    // Auth cookies are sent by apiClient.
     await apiClient.delete(`/products/${id}`, {
       withCredentials: true,
     });
@@ -117,7 +128,7 @@ export const productsApi = {
     productId: string,
     url: string,
   ): Promise<void> => {
-    // ✅ SECURITY: CSRF token is automatically added by apiClient interceptor
+    // Auth cookies are sent by apiClient.
     await apiClient.delete("/products/media", {
       data: { productId, url },
       withCredentials: true,
@@ -141,7 +152,7 @@ export const productsApi = {
   uploadImage: async (file: File): Promise<{ imageUrl: string }> => {
     const formData = new FormData();
     formData.append("image", file);
-    // ✅ SECURITY: CSRF token is automatically added by apiClient interceptor
+    // Auth cookies are sent by apiClient.
 
     const { data } = await apiClient.post("/products/upload-image", formData, {
       withCredentials: true,
@@ -152,7 +163,7 @@ export const productsApi = {
   uploadVideo: async (file: File): Promise<{ videoUrl: string }> => {
     const formData = new FormData();
     formData.append("video", file);
-    // ✅ SECURITY: CSRF token is automatically added by apiClient interceptor
+    // Auth cookies are sent by apiClient.
 
     const { data } = await apiClient.post("/products/upload-video", formData, {
       withCredentials: true,

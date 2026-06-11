@@ -39,7 +39,7 @@ export const categoriesApi = {
 
   // Admin: create category
   create: async (data: CreateCategoryRequest): Promise<Category> => {
-    // ✅ SECURITY: CSRF token is automatically added by apiClient interceptor
+    // Auth cookies are sent by apiClient.
     const response = await apiClient.post<{
       success: boolean;
       data: Category;
@@ -54,7 +54,7 @@ export const categoriesApi = {
     id: string,
     data: Partial<CreateCategoryRequest> & { isActive?: boolean },
   ): Promise<Category> => {
-    // ✅ SECURITY: CSRF token is automatically added by apiClient interceptor
+    // Auth cookies are sent by apiClient.
     const response = await apiClient.put<{
       success: boolean;
       data: Category;
@@ -66,7 +66,7 @@ export const categoriesApi = {
 
   // Admin: delete category
   delete: async (id: string): Promise<void> => {
-    // ✅ SECURITY: CSRF token is automatically added by apiClient interceptor
+    // Auth cookies are sent by apiClient.
     await apiClient.delete(`/categories/${id}`, {
       withCredentials: true,
     });

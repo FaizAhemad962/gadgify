@@ -1,4 +1,5 @@
 import prisma from "../config/database";
+import logger from "../utils/logger";
 
 export interface AuditLogData {
   userId: string;
@@ -32,7 +33,9 @@ class AuditLogService {
         },
       });
     } catch (error) {
-      console.error("Failed to log audit action:", error);
+      logger.error(
+        `Failed to log audit action: ${error instanceof Error ? error.message : String(error)}`,
+      );
       // Don't throw - audit logging should not block main operations
     }
   }

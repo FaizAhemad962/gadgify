@@ -78,7 +78,7 @@ const errorHandler = (err, req, res, next) => {
             });
         }
         else {
-            console.error('ERROR 💥:', err);
+            logger_1.default.error(`Unhandled error: ${err.message}`);
             res.status(500).json({
                 message: 'Something went wrong',
             });

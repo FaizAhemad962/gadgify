@@ -8,6 +8,7 @@ const multer_1 = __importDefault(require("multer"));
 const path_1 = __importDefault(require("path"));
 const fs_1 = __importDefault(require("fs"));
 const fileValidation_1 = require("../utils/fileValidation");
+const logger_1 = __importDefault(require("../utils/logger"));
 // Ensure uploads directory exists
 // Use Render's persistent disk in production, local path in development
 const uploadsDir = process.env.NODE_ENV === "production"
@@ -67,7 +68,7 @@ const validateMagicBytesMiddleware = (allowedExtensions) => {
                 fs_1.default.unlinkSync(req.file.path);
                 const detectedType = (0, fileValidation_1.getFileTypeFromMagicBytes)(fileBuffer);
                 const errorMsg = validation.error || "File content does not match declared format";
-                console.warn(`[SECURITY] Malicious file detected: ${errorMsg}`);
+                logger_1.default.warn(`Malicious file detected: ${errorMsg}`);
                 return res.status(400).json({
                     success: false,
                     message: `Security check failed: ${errorMsg}${detectedType ? ` (Detected as ${detectedType})` : ""}`,
@@ -82,7 +83,9 @@ const validateMagicBytesMiddleware = (allowedExtensions) => {
                     fs_1.default.unlinkSync(req.file.path);
                 }
                 catch (unlinkError) {
-                    console.error("Failed to delete file after validation error:", unlinkError);
+                    logger_1.default.error(`Failed to delete file after validation error: ${unlinkError instanceof Error
+                        ? unlinkError.message
+                        : String(unlinkError)}`);
                 }
             }
             const errorMsg = error instanceof Error ? error.message : "File validation failed";

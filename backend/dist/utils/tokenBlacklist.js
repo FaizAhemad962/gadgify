@@ -1,30 +1,24 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getBlacklistStats = exports.removeTokenFromBlacklist = exports.isTokenBlacklisted = exports.blacklistToken = void 0;
 const redis_1 = require("../config/redis");
-// ✅ SECURITY: Store blacklisted tokens in Redis with expiration matching JWT lifetime
-// This prevents token reuse after logout
-/**
- * Add token to blacklist
- * Token will automatically expire from Redis after JWT_EXPIRES_IN time
- */
+const logger_1 = __importDefault(require("./logger"));
 const blacklistToken = async (token, expirationTime) => {
     try {
         const redis = (0, redis_1.getRedis)();
         const key = `blacklist:${token}`;
-        // Set with EX (expire in seconds)
         await redis.setex(key, Math.ceil(expirationTime / 1000), "true");
-        console.log(`[SECURITY] Token blacklisted: ${token.substring(0, 20)}...`);
+        logger_1.default.info("Token blacklisted successfully");
     }
     catch (error) {
-        console.error("[ERROR] Failed to blacklist token:", error);
-        // Don't throw - logout should succeed even if blacklist fails
+        logger_1.default.error(`Failed to blacklist token: ${error instanceof Error ? error.message : String(error)}`);
+        // Logout should still succeed if blacklist storage is unavailable.
     }
 };
 exports.blacklistToken = blacklistToken;
-/**
- * Check if token is blacklisted
- */
 const isTokenBlacklisted = async (token) => {
     try {
         const redis = (0, redis_1.getRedis)();
@@ -33,15 +27,12 @@ const isTokenBlacklisted = async (token) => {
         return result === 1;
     }
     catch (error) {
-        console.error("[ERROR] Failed to check token blacklist:", error);
-        // On Redis error, don't block authentication
+        logger_1.default.error(`Failed to check token blacklist: ${error instanceof Error ? error.message : String(error)}`);
+        // Keep auth available if Redis is temporarily unavailable.
         return false;
     }
 };
 exports.isTokenBlacklisted = isTokenBlacklisted;
-/**
- * Remove token from blacklist (optional - for testing)
- */
 const removeTokenFromBlacklist = async (token) => {
     try {
         const redis = (0, redis_1.getRedis)();
@@ -49,13 +40,10 @@ const removeTokenFromBlacklist = async (token) => {
         await redis.del(key);
     }
     catch (error) {
-        console.error("[ERROR] Failed to remove token from blacklist:", error);
+        logger_1.default.error(`Failed to remove token from blacklist: ${error instanceof Error ? error.message : String(error)}`);
     }
 };
 exports.removeTokenFromBlacklist = removeTokenFromBlacklist;
-/**
- * Get blacklist stats (for monitoring)
- */
 const getBlacklistStats = async () => {
     try {
         const redis = (0, redis_1.getRedis)();
@@ -63,7 +51,7 @@ const getBlacklistStats = async () => {
         return { totalBlacklisted: keys.length };
     }
     catch (error) {
-        console.error("[ERROR] Failed to get blacklist stats:", error);
+        logger_1.default.error(`Failed to get blacklist stats: ${error instanceof Error ? error.message : String(error)}`);
         return { totalBlacklisted: 0 };
     }
 };

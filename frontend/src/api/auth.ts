@@ -24,25 +24,21 @@ export interface ResetPasswordRequest {
 }
 
 export const authApi = {
-  login: async (data: LoginRequest): Promise<AuthResponse> => {
-    // apiClient interceptor will automatically add CSRF token
-    const response = await apiClient.post<AuthResponse>("/auth/login", data, {
-      withCredentials: true, // ✅ SECURITY: Send cookies
+  login: async (data: LoginRequest): Promise<AuthResponse> => {    const response = await apiClient.post<AuthResponse>("/auth/login", data, {
+      withCredentials: true
     });
     return response.data;
   },
 
-  signup: async (data: SignupRequest): Promise<AuthResponse> => {
-    // apiClient interceptor will automatically add CSRF token
-    const response = await apiClient.post<AuthResponse>("/auth/signup", data, {
-      withCredentials: true, // ✅ SECURITY: Send cookies
+  signup: async (data: SignupRequest): Promise<AuthResponse> => {    const response = await apiClient.post<AuthResponse>("/auth/signup", data, {
+      withCredentials: true
     });
     return response.data;
   },
 
   getProfile: async (): Promise<User> => {
     const response = await apiClient.get<User>("/auth/profile", {
-      withCredentials: true, // ✅ SECURITY: Send cookies
+      withCredentials: true
     });
     return response.data;
   },
@@ -53,7 +49,7 @@ export const authApi = {
     const response = await apiClient.put<{ message: string; user: User }>(
       "/auth/profile",
       data,
-      { withCredentials: true }, // ✅ SECURITY: Send cookies
+      { withCredentials: true }
     );
     return response.data;
   },
@@ -64,7 +60,7 @@ export const authApi = {
     const response = await apiClient.post<{ message: string }>(
       "/auth/change-password",
       data,
-      { withCredentials: true }, // ✅ SECURITY: Send cookies
+      { withCredentials: true }
     );
     return response.data;
   },
@@ -75,7 +71,7 @@ export const authApi = {
     const response = await apiClient.post<{ message: string }>(
       "/auth/forgot-password",
       data,
-      { withCredentials: true }, // ✅ SECURITY: Send cookies
+      { withCredentials: true }
     );
     return response.data;
   },
@@ -86,7 +82,7 @@ export const authApi = {
     const response = await apiClient.post<{ message: string }>(
       "/auth/reset-password",
       data,
-      { withCredentials: true }, // ✅ SECURITY: Send cookies
+      { withCredentials: true }
     );
     return response.data;
   },
@@ -103,19 +99,19 @@ export const authApi = {
         headers: {
           "Content-Type": "multipart/form-data",
         },
-        withCredentials: true, // ✅ SECURITY: Send cookies
+        withCredentials: true
       },
     );
     return response.data;
   },
 
-  // ✅ SECURITY: Call backend logout endpoint to clear httpOnly cookie
+  // Call backend logout endpoint to clear the httpOnly cookie.
   logout: async () => {
     try {
       await apiClient.post(
         "/auth/logout",
         {},
-        { withCredentials: true }, // ✅ SECURITY: Send cookies
+        { withCredentials: true }
       );
     } catch (error) {
       console.error("Logout error:", error);

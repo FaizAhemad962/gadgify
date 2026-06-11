@@ -18,6 +18,9 @@ export const useInViewAnimation = (options: UseInViewAnimationOptions = {}) => {
   const [hasBeenVisible, setHasBeenVisible] = useState(false);
 
   useEffect(() => {
+    const element = elementRef.current;
+    if (!element) return;
+
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
@@ -25,8 +28,8 @@ export const useInViewAnimation = (options: UseInViewAnimationOptions = {}) => {
           setHasBeenVisible(true);
 
           // Stop observing if triggerOnce is true
-          if (triggerOnce && elementRef.current) {
-            observer.unobserve(elementRef.current);
+          if (triggerOnce) {
+            observer.unobserve(element);
           }
         } else {
           // Only reset visibility if triggerOnce is false
@@ -41,14 +44,10 @@ export const useInViewAnimation = (options: UseInViewAnimationOptions = {}) => {
       },
     );
 
-    if (elementRef.current) {
-      observer.observe(elementRef.current);
-    }
+    observer.observe(element);
 
     return () => {
-      if (elementRef.current) {
-        observer.unobserve(elementRef.current);
-      }
+      observer.unobserve(element);
     };
   }, [threshold, rootMargin, triggerOnce]);
 

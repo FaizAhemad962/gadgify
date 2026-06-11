@@ -1,5 +1,6 @@
 // backend/src/utils/userQueryHelper.ts
 import prisma from "../config/database";
+import logger from "./logger";
 
 /**
  * Find user by email, defaulting to USER role
@@ -21,7 +22,9 @@ export async function findUserByEmail(
     return user;
   } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error in findUserByEmail:", error);
+      logger.debug(
+        `Error in findUserByEmail: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
     return null;
   }
@@ -46,7 +49,9 @@ export async function findUserByEmailWithMultipleCheck(
     };
   } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error in findUserByEmailWithMultipleCheck:", error);
+      logger.debug(
+        `Error in findUserByEmailWithMultipleCheck: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
     return {
       user: null,
@@ -74,7 +79,9 @@ export async function findAllAccountsByEmail(email: string) {
     });
   } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error in findAllAccountsByEmail:", error);
+      logger.debug(
+        `Error in findAllAccountsByEmail: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
     return [];
   }
@@ -92,7 +99,9 @@ export async function userExists(
     return user !== null && !user.deletedAt && user.role === role;
   } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error in userExists:", error);
+      logger.debug(
+        `Error in userExists: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
     return false;
   }
@@ -116,7 +125,9 @@ export async function isEmailRegisteredWithAnyRole(
     return user !== null;
   } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error in isEmailRegisteredWithAnyRole:", error);
+      logger.debug(
+        `Error in isEmailRegisteredWithAnyRole: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
     return false;
   }

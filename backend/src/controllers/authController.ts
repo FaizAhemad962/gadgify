@@ -834,10 +834,3 @@ export const logout = async (
     next(error);
   }
 };
-
-/**
- * ✅ SECURITY: Get CSRF token for client
- * Frontend calls this endpoint before login/signup to get a fresh CSRF token
- * Token is cached on frontend for 50 seconds before fetching a new one
- */
-// CSRF token endpoint removed; server uses httpOnly auth cookies and no longer issues CSRF tokens

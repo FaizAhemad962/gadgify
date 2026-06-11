@@ -68,14 +68,13 @@ const ProductCard: React.FC<ProductCardProps> = memo(
           borderRadius: isList
             ? productCardLayout.listRadius
             : productCardLayout.radius,
-          transition:
-            "box-shadow 0.2s cubic-bezier(.4,0,.2,1), border-color 0.2s cubic-bezier(.4,0,.2,1)",
+          transition: "border-color 0.16s ease, background-color 0.16s ease",
           position: "relative",
           bgcolor: tokens.white,
-          boxShadow: tokens.shadowSm,
+          boxShadow: "0 1px 4px rgba(15, 23, 42, 0.05)",
           "&:hover": {
-            boxShadow: tokens.shadowLg,
             borderColor: tokens.gray300,
+            bgcolor: "#fff",
           },
         }}
       >
@@ -133,7 +132,7 @@ const ProductCard: React.FC<ProductCardProps> = memo(
               top: 10,
               right: 10,
               bgcolor: "rgba(255,255,255,0.9)",
-              boxShadow: tokens.shadowSm,
+              boxShadow: "0 1px 6px rgba(15, 23, 42, 0.08)",
               p: 1,
               transition: "background-color 0.2s ease, color 0.2s ease",
               "&:hover": { bgcolor: "#fff" },
@@ -167,7 +166,7 @@ const ProductCard: React.FC<ProductCardProps> = memo(
               bgcolor: isInCompare(product.id)
                 ? tokens.accent
                 : "rgba(255,255,255,0.9)",
-              boxShadow: tokens.shadowSm,
+              boxShadow: "0 1px 6px rgba(15, 23, 42, 0.08)",
               p: 1,
               transition: "background-color 0.2s ease, color 0.2s ease",
               "&:hover": {

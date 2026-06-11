@@ -643,7 +643,7 @@ const CartPage = () => {
                     variant="caption"
                     sx={{ color: "text.secondary", fontSize: "0.85rem" }}
                   >
-                    {t("common.securepayment")} SSL{" "}
+                    {t("common.securePayment")} SSL{" "}
                     {t("common.sslEncrypted").split("and")[0]}
                   </Typography>
                 </Box>

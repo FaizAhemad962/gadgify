@@ -1,6 +1,7 @@
 import { Response, NextFunction } from "express";
 import prisma from "../config/database";
 import { AuthRequest } from "../middlewares/auth";
+import logger from "../utils/logger";
 
 export const getCart = async (
   req: AuthRequest,
@@ -49,7 +50,6 @@ export const addToCart = async (
   next: NextFunction,
 ): Promise<void> => {
   try {
-    console.log(req, res);
     const { productId, quantity } = req.body;
     const userId = req.user!.id;
 
@@ -117,7 +117,9 @@ export const addToCart = async (
 
     res.json(updatedCart);
   } catch (error) {
-    console.log(error, "________________ERROR_________________");
+    logger.error(
+      `Add to cart failed: ${error instanceof Error ? error.message : String(error)}`,
+    );
     next(error);
   }
 };

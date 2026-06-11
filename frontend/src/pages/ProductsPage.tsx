@@ -7,10 +7,8 @@ import {
   useCallback,
   useMemo,
   memo,
-  useLayoutEffect,
 } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useWindowVirtualizer } from "@tanstack/react-virtual";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
@@ -41,14 +39,11 @@ import { ErrorHandler } from "../utils/errorHandler";
 import ProductCard from "../components/ProductCard";
 import { FilterSidebar, type SortOption } from "../components/FilterSidebar";
 import ProductGridSkeleton from "../components/products/ProductGridSkeleton";
-import {
-  productCardLayout,
-  productGridColumns,
-  productGridGap,
-} from "@/components/products/productLayout";
+import { productGridColumns, productGridGap } from "@/components/products/productLayout";
 import { tokens } from "@/theme/theme";
 
 const PRODUCTS_PER_PAGE = 24;
+const PRODUCTS_SCROLL_OFFSET = tokens.navbarHeightDesktop + 16;
 
 const ProductsGrid = memo(
   ({
@@ -67,97 +62,62 @@ const ProductsGrid = memo(
     onEndReached,
     t,
   }: any) => {
-    const parentRef = useRef<HTMLDivElement | null>(null);
-    const [scrollMargin, setScrollMargin] = useState(0);
-    const rowCount = Math.ceil(products.length / columns);
-    const rowHeight =
-      viewMode === "list"
-        ? productCardLayout.virtualListRowHeight
-        : productCardLayout.virtualGridRowHeight;
-
-    useLayoutEffect(() => {
-      const el = parentRef.current;
-      if (!el) return;
-      const update = () => {
-        const next = el.getBoundingClientRect().top + window.scrollY;
-        setScrollMargin(next);
-      };
-      update();
-      window.addEventListener("resize", update);
-      return () => window.removeEventListener("resize", update);
-    }, [columns, viewMode]);
-
-    const rowVirtualizer = useWindowVirtualizer({
-      count: rowCount,
-      estimateSize: () => rowHeight,
-      overscan: 2,
-      scrollMargin,
-    });
-
-    const virtualRows = rowVirtualizer.getVirtualItems();
+    const sentinelRef = useRef<HTMLDivElement | null>(null);
 
     useEffect(() => {
       if (!hasMore || isFetching) return;
-      if (window.scrollY < 10) return;
 
-      const last = virtualRows[virtualRows.length - 1];
-      if (!last) return;
-      if (last.index >= rowCount - 2) onEndReached();
-    }, [virtualRows, rowCount, hasMore, isFetching, onEndReached]);
+      const sentinel = sentinelRef.current;
+      if (!sentinel) return;
+
+      const observer = new IntersectionObserver(
+        ([entry]) => {
+          if (entry.isIntersecting) onEndReached();
+        },
+        { rootMargin: "600px 0px" },
+      );
+
+      observer.observe(sentinel);
+      return () => observer.disconnect();
+    }, [hasMore, isFetching, onEndReached]);
 
     return (
       <>
-        <Box ref={parentRef}>
-          <Box
-            sx={{
-              height: rowVirtualizer.getTotalSize(),
-              width: "100%",
-              position: "relative",
-            }}
-          >
-            {virtualRows.map((virtualRow) => {
-              const startIndex = virtualRow.index * columns;
-              const rowItems = products.slice(startIndex, startIndex + columns);
-
-              return (
-                <Box
-                  key={virtualRow.key}
-                  sx={{
-                    position: "absolute",
-                    top: 0,
-                    left: 0,
-                    width: "100%",
-                    height: rowHeight,
-                    transform: `translateY(${virtualRow.start - rowVirtualizer.options.scrollMargin}px)`,
-                    display: "grid",
-                    gridTemplateColumns:
-                      viewMode === "list"
-                        ? "1fr"
-                        : `repeat(${columns}, minmax(0, 1fr))`,
-                    gap: productGridGap,
-                    alignItems: "stretch",
-                  }}
-                >
-                  {rowItems.map((product: any) => (
-                    <ProductCard
-                      key={product.id}
-                      product={product}
-                      isInWishlist={isInWishlist}
-                      toggleWishlist={toggleWishlist}
-                      isToggling={isToggling}
-                      onAddToCart={onAddToCart}
-                      onBuyNow={onBuyNow}
-                      onNavigate={onNavigate}
-                      t={t}
-                      isAddingToCart={isAddingToCart(product.id)}
-                      viewMode={viewMode}
-                    />
-                  ))}
-                </Box>
-              );
-            })}
-          </Box>
+        <Box
+          sx={{
+            display: "grid",
+            gridTemplateColumns:
+              viewMode === "list"
+                ? "1fr"
+                : `repeat(${columns}, minmax(0, 1fr))`,
+            gap: productGridGap,
+            alignItems: "stretch",
+          }}
+        >
+          {products.map((product: any) => (
+            <Box
+              key={product.id}
+              sx={{
+                minWidth: 0,
+              }}
+            >
+              <ProductCard
+                product={product}
+                isInWishlist={isInWishlist}
+                toggleWishlist={toggleWishlist}
+                isToggling={isToggling}
+                onAddToCart={onAddToCart}
+                onBuyNow={onBuyNow}
+                onNavigate={onNavigate}
+                t={t}
+                isAddingToCart={isAddingToCart(product.id)}
+                viewMode={viewMode}
+              />
+            </Box>
+          ))}
         </Box>
+
+        <Box ref={sentinelRef} sx={{ height: 1 }} />
 
         {/* Loading indicator when fetching more products */}
         {isFetching && products.length > 0 && (
@@ -228,6 +188,9 @@ const ProductsPage = () => {
   const [selectedRatings, setSelectedRatings] = useState<number[]>([]);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [filterDrawerOpen, setFilterDrawerOpen] = useState(false);
+  const productsSectionRef = useRef<HTMLDivElement | null>(null);
+  const filterSignatureRef = useRef("");
+  const pendingFilterScrollRef = useRef(false);
 
   // Fetch categories from API (same as HomePage)
   const { data: categoriesData = [] } = useCategories();
@@ -257,9 +220,50 @@ const ProductsPage = () => {
 
   // Reset page when filters change
   useEffect(() => {
+    setAllProducts([]);
+    setTotalProducts(0);
+    setHasMore(false);
     setPage(1);
-    // setAllProducts([]);
   }, [priceRange, selectedRatings, selectedCategories, sortBy]);
+
+  const scrollProductsSectionIntoView = useCallback(() => {
+    const target = productsSectionRef.current;
+    if (!target) return;
+
+    const top = Math.max(
+      0,
+      target.getBoundingClientRect().top + window.scrollY - PRODUCTS_SCROLL_OFFSET,
+    );
+
+    window.scrollTo({ top, left: 0, behavior: "auto" });
+  }, []);
+
+  useEffect(() => {
+    const signature = JSON.stringify({
+      search: debouncedSearchQuery,
+      priceRange,
+      selectedRatings,
+      selectedCategories,
+      sortBy,
+      viewMode,
+    });
+
+    if (!filterSignatureRef.current) {
+      filterSignatureRef.current = signature;
+      return;
+    }
+
+    if (filterSignatureRef.current === signature) return;
+    filterSignatureRef.current = signature;
+    pendingFilterScrollRef.current = true;
+  }, [
+    debouncedSearchQuery,
+    priceRange,
+    selectedRatings,
+    selectedCategories,
+    sortBy,
+    viewMode,
+  ]);
 
   // Get cart context
   const { cart, addToCart, isAddingToCart } = useCart();
@@ -312,6 +316,10 @@ const ProductsPage = () => {
       // First page: replace all products
       setAllProducts(products);
       setHasMore(hasMoreProducts);
+      if (pendingFilterScrollRef.current) {
+        pendingFilterScrollRef.current = false;
+        requestAnimationFrame(scrollProductsSectionIntoView);
+      }
     } else if (products.length > 0) {
       // Subsequent pages: append new products, avoiding duplicates
       setAllProducts((prev) => {
@@ -324,7 +332,7 @@ const ProductsPage = () => {
       // No products on this page = we've reached the end
       setHasMore(false);
     }
-  }, [response, page]);
+  }, [response, page, scrollProductsSectionIntoView]);
 
   const loadMoreLockRef = useRef(false);
 
@@ -465,10 +473,10 @@ const ProductsPage = () => {
                   fontWeight: 600,
                   fontSize: "14px",
                   backgroundColor: tokens.white,
-                  transition: "all 0.3s ease",
+                  transition:
+                    "background-color 0.16s ease, border-color 0.16s ease, color 0.16s ease",
                   "&:hover": {
                     backgroundColor: "#FFF3E0",
-                    boxShadow: "0 2px 8px rgba(255, 152, 0, 0.2)",
                   },
                 }}
               >
@@ -630,9 +638,12 @@ const ProductsPage = () => {
 
         {/* Products Section - Right Section */}
         <Box
+          ref={productsSectionRef}
           sx={{
             flex: 1,
             minWidth: 0,
+            overflowAnchor: "none",
+            scrollMarginTop: `${PRODUCTS_SCROLL_OFFSET}px`,
           }}
         >
           {/* Show stable skeleton cards during the first product load */}

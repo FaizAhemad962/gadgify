@@ -40,7 +40,7 @@ export const couponsApi = {
     code: string,
     subtotal: number,
   ): Promise<CouponValidation> => {
-    // ✅ SECURITY: CSRF token is automatically added by apiClient interceptor
+    // Auth cookies are sent by apiClient.
     const response = await apiClient.post<{
       success: boolean;
       data: CouponValidation;
@@ -65,7 +65,7 @@ export const couponsApi = {
 
   // Admin: create coupon
   create: async (data: CreateCouponRequest): Promise<Coupon> => {
-    // ✅ SECURITY: CSRF token is automatically added by apiClient interceptor
+    // Auth cookies are sent by apiClient.
     const response = await apiClient.post<{ success: boolean; data: Coupon }>(
       "/coupons",
       data,
@@ -81,7 +81,7 @@ export const couponsApi = {
     id: string,
     data: Partial<CreateCouponRequest> & { isActive?: boolean },
   ): Promise<Coupon> => {
-    // ✅ SECURITY: CSRF token is automatically added by apiClient interceptor
+    // Auth cookies are sent by apiClient.
     const response = await apiClient.put<{ success: boolean; data: Coupon }>(
       `/coupons/${id}`,
       data,
@@ -94,7 +94,7 @@ export const couponsApi = {
 
   // Admin: delete coupon
   delete: async (id: string): Promise<void> => {
-    // ✅ SECURITY: CSRF token is automatically added by apiClient interceptor
+    // Auth cookies are sent by apiClient.
     await apiClient.delete(`/coupons/${id}`, {
       withCredentials: true,
     });

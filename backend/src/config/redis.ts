@@ -1,7 +1,7 @@
 import { config } from "./index";
 import logger from "../utils/logger";
 
-// ✅ SECURITY: Redis for token blacklist, CSRF tokens, and session management
+// Redis backs token blacklist and other session-adjacent state when configured.
 // Type definition for Redis-like client
 interface RedisClient {
   setex: (key: string, seconds: number, value: string) => Promise<void>;
