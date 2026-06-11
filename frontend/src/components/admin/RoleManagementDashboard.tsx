@@ -162,7 +162,7 @@ export const RoleManagementDashboard: React.FC = () => {
             <CustomButton
               startIcon={<AddIcon sx={appIconSx.lg} />}
               variant="contained"
-              appVariant="primary"
+              appVariant="admin"
               onClick={() => setGrantPermissionOpen(true)}
             >
               {t("Grant Permission")}
@@ -381,7 +381,7 @@ export const RoleManagementDashboard: React.FC = () => {
           <CustomButton
             onClick={handleSubmit(onGrantPermission)}
             variant="contained"
-            appVariant="primary"
+            appVariant="admin"
             isLoading={grantPermissionMutation.isPending}
             disabled={grantPermissionMutation.isPending}
           >

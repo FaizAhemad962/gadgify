@@ -11,7 +11,6 @@ import {
   Box,
   Paper,
   TextField,
-  Button,
   Divider,
   Alert,
   Chip,
@@ -40,6 +39,7 @@ import {
 } from "@/lib/queryInvalidation";
 import { queryKeys } from "@/lib/queryKeys";
 import { appIconSx } from "@/components/ui/navigationStyles";
+import { CustomButton } from "@/components/ui/CustomButton";
 
 const shippingSchema = z.object({
   name: z.string().min(2, "Name is required"),
@@ -303,18 +303,13 @@ const CheckoutPage = () => {
             Review delivery details and complete secure payment.
           </Typography>
         </Box>
-        <Button
+        <CustomButton
           variant="outlined"
+          appVariant="secondary"
           onClick={() => navigate("/cart")}
-          sx={{
-            borderRadius: "999px",
-            borderColor: tokens.gray300,
-            color: tokens.primary,
-            fontWeight: 800,
-          }}
         >
           {t("cart.title")}
-        </Button>
+        </CustomButton>
       </Box>
 
       {error && (
@@ -740,19 +735,18 @@ const CheckoutPage = () => {
                         {t("common.couponApplied")}
                       </Typography>
                     </Box>
-                    <Button
+                    <CustomButton
                       size="small"
-                      color="error"
+                      appVariant="danger"
                       onClick={removePromo}
                       sx={{
                         minWidth: "auto",
-                        textTransform: "none",
                         flexShrink: 0,
                         whiteSpace: "nowrap",
                       }}
                     >
                       {t("common.remove")}
-                    </Button>
+                    </CustomButton>
                   </Box>
                 ) : (
                   <Box sx={{ display: "flex", gap: 1 }}>
@@ -780,22 +774,18 @@ const CheckoutPage = () => {
                         },
                       }}
                     />
-                    <Button
+                    <CustomButton
                       variant="outlined"
+                      appVariant="primary"
                       size="small"
                       onClick={handleApplyCoupon}
                       disabled={isValidatingCoupon || !couponCode.trim()}
                       sx={{
-                        textTransform: "none",
-                        fontWeight: 800,
                         minWidth: 80,
-                        borderRadius: "999px",
-                        borderColor: tokens.accent,
-                        color: tokens.accent,
                       }}
                     >
                       {isValidatingCoupon ? "..." : t("common.apply")}
-                    </Button>
+                    </CustomButton>
                   </Box>
                 )}
               </Box>
@@ -877,31 +867,23 @@ const CheckoutPage = () => {
               </Box>
 
               {/* Place Order Button */}
-              <Button
+              <CustomButton
                 fullWidth
                 variant="contained"
+                appVariant="commerce"
                 size="large"
                 type="submit"
                 disabled={createOrderMutation.isPending}
                 endIcon={!createOrderMutation.isPending ? <ArrowForward /> : null}
                 sx={{
                   mb: 2,
-                  fontWeight: 800,
                   py: 1.5,
-                  bgcolor: tokens.accent,
-                  borderRadius: "999px",
-                  "&:hover": {
-                    bgcolor: tokens.accentDark,
-                  },
-                  "&:disabled": {
-                    bgcolor: "#ccc",
-                  },
                 }}
               >
                 {createOrderMutation.isPending
                   ? t("common.processingPayment")
                   : t("common.completeOrderAndPay")}
-              </Button>
+              </CustomButton>
 
               {/* Security Info */}
               <Box

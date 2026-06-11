@@ -68,7 +68,7 @@ const LoginPage = () => {
     try {
       await loginMutation.mutateAsync(data);
     } catch (error) {
-      console.error("Login error:", error);
+      ErrorHandler.logError("Login submit failed", error);
     }
   };
 
@@ -87,11 +87,11 @@ const LoginPage = () => {
             sx={{
               display: "inline-flex",
               mt: 1,
-              color: tokens.accent,
+              color: tokens.primary,
               textDecoration: "none",
               fontWeight: 800,
               "&:hover": {
-                color: tokens.accentDark,
+                color: tokens.primaryDark,
                 textDecoration: "underline",
               },
             }}
@@ -157,7 +157,7 @@ const LoginPage = () => {
               color: tokens.primary,
               fontWeight: 700,
               cursor: "pointer",
-              "&:hover": { color: tokens.accent },
+              "&:hover": { color: tokens.primaryDark },
             }}
             onClick={() => navigate("/forgot-password")}
           >
@@ -168,7 +168,7 @@ const LoginPage = () => {
         <CustomButton
           fullWidth
           variant="contained"
-          appVariant="admin"
+          appVariant="primary"
           size="large"
           type="submit"
           isLoading={loginMutation.isPending}

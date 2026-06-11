@@ -136,7 +136,18 @@ const AdminProducts = () => {
 
   const createMutation = useMutation({
     mutationFn: productsApi.create,
-    onSuccess: () => {
+    onSuccess: (createdProduct) => {
+      queryClient.setQueriesData<{ products: Product[]; total: number }>(
+        { queryKey: queryKeys.products.admin },
+        (current) =>
+          current
+            ? {
+                ...current,
+                products: [createdProduct, ...current.products],
+                total: current.total + 1,
+              }
+            : current,
+      );
       invalidateProductData(queryClient);
       handleClose();
     },
@@ -150,7 +161,19 @@ const AdminProducts = () => {
   const updateMutation = useMutation({
     mutationFn: ({ id, data }: { id: string; data: ProductFormData }) =>
       productsApi.update(id, data),
-    onSuccess: (_, variables) => {
+    onSuccess: (updatedProduct, variables) => {
+      queryClient.setQueriesData<{ products: Product[]; total: number }>(
+        { queryKey: queryKeys.products.admin },
+        (current) =>
+          current
+            ? {
+                ...current,
+                products: current.products.map((product) =>
+                  product.id === variables.id ? updatedProduct : product,
+                ),
+              }
+            : current,
+      );
       invalidateProductData(queryClient, variables.id);
       handleClose();
     },
@@ -171,6 +194,19 @@ const AdminProducts = () => {
   const deleteMutation = useMutation({
     mutationFn: productsApi.delete,
     onSuccess: (_, productId) => {
+      queryClient.setQueriesData<{ products: Product[]; total: number }>(
+        { queryKey: queryKeys.products.admin },
+        (current) =>
+          current
+            ? {
+                ...current,
+                products: current.products.filter(
+                  (product) => product.id !== productId,
+                ),
+                total: Math.max(0, current.total - 1),
+              }
+            : current,
+      );
       invalidateProductData(queryClient, productId);
     },
   });

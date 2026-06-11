@@ -8,7 +8,6 @@ import {
   IconButton,
   Typography,
   Container,
-  Button,
   Badge,
   Stack,
   Avatar,
@@ -46,6 +45,7 @@ import {
 } from "../ui/navigationStyles";
 import { tokens } from "@/theme/theme";
 import { getRoleLabel, getRoleColor } from "../../utils/roleHelper";
+import { CustomButton } from "@/components/ui/CustomButton";
 
 const Navbar = memo(() => {
   const { t } = useTranslation();
@@ -389,7 +389,8 @@ const Navbar = memo(() => {
             }}
           >
             {primaryItems.map((item) => (
-                <Button
+                <CustomButton
+                  appVariant="ghost"
                   key={item.id}
                   onClick={() => handleNavClick(item.to)}
                   aria-label={item.label}
@@ -404,7 +405,7 @@ const Navbar = memo(() => {
                   }}
                 >
                   {item.label}
-                </Button>
+                </CustomButton>
               ))}
 
             {/* Admin links with visual distinction */}
@@ -418,7 +419,8 @@ const Navbar = memo(() => {
                   flexShrink: 0,
                 }}
               >
-                <Button
+                <CustomButton
+                  appVariant="ghost"
                   onClick={handleOpenAdminMenu}
                   aria-label={t("nav.admin")}
                   startIcon={<AdminPanelSettings sx={navLinkIconSx} />}
@@ -445,7 +447,7 @@ const Navbar = memo(() => {
                   >
                     {currentAdminItem?.label || t("nav.admin")}
                   </Box>
-                </Button>
+                </CustomButton>
                 <CustomMenu
                   anchorEl={anchorElAdmin}
                   open={Boolean(anchorElAdmin)}
@@ -576,7 +578,7 @@ const Navbar = memo(() => {
                     sx={{
                       width: 32,
                       height: 32,
-                      bgcolor: tokens.accent,
+                      bgcolor: tokens.primary,
                       fontSize: "0.85rem",
                       fontWeight: 700,
                     }}
@@ -629,7 +631,7 @@ const Navbar = memo(() => {
                         sx={{
                           width: 46,
                           height: 46,
-                          bgcolor: tokens.accent,
+                          bgcolor: tokens.primary,
                           color: "white",
                           fontWeight: 800,
                           boxShadow: "0 10px 22px rgba(255,108,45,0.28)",
@@ -755,7 +757,8 @@ const Navbar = memo(() => {
             ) : (
               /* ── Logged-out CTA buttons ── */
               <Stack direction="row" gap={1} sx={{ ml: 1 }}>
-                <Button
+                <CustomButton
+                  appVariant="ghost"
                   onClick={() => navigate("/login")}
                   size="small"
                   sx={{
@@ -769,26 +772,20 @@ const Navbar = memo(() => {
                   }}
                 >
                   {t("nav.login")}
-                </Button>
-                <Button
+                </CustomButton>
+                <CustomButton
+                  appVariant="success"
                   onClick={() => navigate("/signup")}
                   size="small"
                   variant="contained"
                   sx={{
-                    bgcolor: tokens.accent,
-                    color: "#fff",
-                    fontWeight: 700,
                     fontSize: "0.8125rem",
                     borderRadius: 2,
                     px: 2.5,
-                    "&:hover": {
-                      bgcolor: tokens.accentDark,
-                      boxShadow: "0 4px 14px rgba(255,107,44,0.35)",
-                    },
                   }}
                 >
                   {t("nav.signup")}
-                </Button>
+                </CustomButton>
               </Stack>
             )}
           </Stack>

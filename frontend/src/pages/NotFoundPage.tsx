@@ -1,8 +1,9 @@
-import { Container, Typography, Button } from "@/mui/material";
+import { Container, Typography } from "@/mui/material";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { ErrorOutline } from "@/mui/icons";
 import { appIconSx } from "@/components/ui/navigationStyles";
+import { CustomButton } from "@/components/ui/CustomButton";
 
 const NotFoundPage = () => {
   const { t } = useTranslation();
@@ -20,9 +21,9 @@ const NotFoundPage = () => {
       <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
         {t("notFound.description")}
       </Typography>
-      <Button variant="contained" onClick={() => navigate("/")}>
+      <CustomButton variant="contained" appVariant="primary" onClick={() => navigate("/")}>
         {t("notFound.button")}
-      </Button>
+      </CustomButton>
     </Container>
   );
 };

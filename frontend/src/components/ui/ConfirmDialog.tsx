@@ -35,12 +35,17 @@ export const ConfirmDialog = ({
       title={title}
       actions={
         <>
-          <CustomButton onClick={onClose} disabled={loading}>
+          <CustomButton
+            onClick={onClose}
+            disabled={loading}
+            appVariant="secondary"
+            variant="outlined"
+          >
             {cancelText}
           </CustomButton>
           <CustomButton
             variant="contained"
-            color={type === "danger" ? "error" : "primary"}
+            appVariant={type === "danger" ? "danger" : "primary"}
             onClick={onConfirm}
             isLoading={loading}
           >

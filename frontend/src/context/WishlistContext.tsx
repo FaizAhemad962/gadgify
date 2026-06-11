@@ -4,6 +4,7 @@ import { apiClient } from "../api/client";
 import { useAuth } from "./AuthContext";
 import { invalidateWishlistData } from "@/lib/queryInvalidation";
 import { queryKeys } from "@/lib/queryKeys";
+import { ErrorHandler } from "@/utils/errorHandler";
 
 interface WishlistItem {
   id: string;
@@ -120,7 +121,7 @@ export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({
       try {
         await addMutation.mutateAsync(productId);
       } catch (error) {
-        console.error("Failed to add to wishlist:", error);
+        ErrorHandler.logError("Failed to add to wishlist", error);
         throw error;
       }
     },
@@ -132,7 +133,7 @@ export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({
       try {
         await removeMutation.mutateAsync(productId);
       } catch (error) {
-        console.error("Failed to remove from wishlist:", error);
+        ErrorHandler.logError("Failed to remove from wishlist", error);
         throw error;
       }
     },
@@ -158,7 +159,7 @@ export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({
           await addMutation.mutateAsync(productId);
         }
       } catch (error) {
-        console.error("Wishlist toggle failed:", error);
+        ErrorHandler.logError("Wishlist toggle failed", error);
         throw error;
       } finally {
         setTogglingProducts((prev) => {

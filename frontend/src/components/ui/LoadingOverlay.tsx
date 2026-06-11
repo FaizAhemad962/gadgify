@@ -15,7 +15,7 @@ export const LoadingOverlay = ({
   return (
     <Backdrop
       sx={{
-        color: tokens.accent,
+        color: tokens.primary,
         zIndex: (theme) => theme.zIndex.drawer + 1000,
         backgroundColor: transparent ? "rgba(255, 255, 255, 0.4)" : "rgba(255, 255, 255, 0.8)",
         display: "flex",

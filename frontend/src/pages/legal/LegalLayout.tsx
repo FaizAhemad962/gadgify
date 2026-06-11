@@ -1,8 +1,8 @@
-import { Container, Box, Typography, Button } from "@/mui/material";
+import { Container, Box, Typography } from "@/mui/material";
 import { ArrowBack } from "@/mui/icons";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { tokens } from "@/theme/theme";
+import { CustomButton } from "@/components/ui/CustomButton";
 
 interface LegalLayoutProps {
   title: string;
@@ -15,22 +15,15 @@ const LegalLayout = ({ title, children }: LegalLayoutProps) => {
 
   return (
     <Container maxWidth="md" sx={{ py: { xs: 4, md: 6 } }}>
-      <Button
+      <CustomButton
+        appVariant="secondary"
+        variant="outlined"
         startIcon={<ArrowBack />}
         onClick={() => navigate("/")}
-        sx={{
-          mb: 3,
-          color: tokens.primary,
-          textTransform: "none",
-          fontWeight: 600,
-          fontSize: "0.95rem",
-          "&:hover": {
-            bgcolor: `${tokens.primary}10`,
-          },
-        }}
+        sx={{ mb: 3 }}
       >
         {t("common.back")}
-      </Button>
+      </CustomButton>
 
       <Typography
         variant="h4"

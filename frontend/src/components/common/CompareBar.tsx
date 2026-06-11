@@ -1,10 +1,11 @@
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Box, Button, Chip, Slide } from "@/mui/material";
+import { Box, Chip, Slide } from "@/mui/material";
 import { CompareArrows, Close } from "@/mui/icons";
 import { useCompare } from "../../context/CompareContext";
 import { tokens } from "@/theme/theme";
 import { appIconSx } from "@/components/ui/navigationStyles";
+import { CustomButton } from "@/components/ui/CustomButton";
 
 const CompareBar = () => {
   const { compareIds, clearCompare } = useCompare();
@@ -38,28 +39,24 @@ const CompareBar = () => {
           label={`${compareIds.length} ${t("compare.itemsSelected")}`}
           sx={{ bgcolor: tokens.accent, color: "#fff", fontWeight: 600 }}
         />
-        <Button
+        <CustomButton
           variant="contained"
+          appVariant="primary"
           size="small"
           onClick={() => navigate("/compare")}
           disabled={compareIds.length < 2}
-          sx={{
-            bgcolor: tokens.accent,
-            textTransform: "none",
-            fontWeight: 600,
-            "&:hover": { bgcolor: tokens.accentDark },
-          }}
         >
           {t("compare.compareNow")}
-        </Button>
-        <Button
+        </CustomButton>
+        <CustomButton
           size="small"
+          appVariant="ghost"
           startIcon={<Close sx={appIconSx.lg} />}
           onClick={clearCompare}
-          sx={{ color: "rgba(255,255,255,0.7)", textTransform: "none" }}
+          sx={{ color: "rgba(255,255,255,0.78)" }}
         >
           {t("compare.clear")}
-        </Button>
+        </CustomButton>
       </Box>
     </Slide>
   );

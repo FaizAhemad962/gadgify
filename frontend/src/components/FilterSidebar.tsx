@@ -8,13 +8,13 @@ import {
   FormControlLabel,
   Checkbox,
   Divider,
-  Button,
   TextField,
   IconButton,
   type SxProps,
   type Theme,
 } from "@/mui/material";
 import { CustomSlider } from "@/components/ui";
+import { CustomButton } from "@/components/ui/CustomButton";
 import { Add as AddIcon, Remove as RemoveIcon } from "@/mui/icons";
 import { tokens } from "@/theme/theme";
 
@@ -266,7 +266,7 @@ export const FilterSidebar: FC<FilterSidebarProps> = memo(
             <Typography
               variant="body2"
               fontWeight={700}
-              sx={{ color: tokens.accent }}
+              sx={{ color: tokens.primary }}
             >
               ₹{tempPriceRange[0].toLocaleString()} - ₹
               {tempPriceRange[1].toLocaleString()}
@@ -323,7 +323,7 @@ export const FilterSidebar: FC<FilterSidebarProps> = memo(
                     width: 34,
                     height: 34,
                     padding: 0,
-                    color: tokens.accent,
+                    color: tokens.primary,
                     border: `1px solid ${tokens.gray200}`,
                     borderRadius: "10px",
                     "&:hover": {
@@ -360,7 +360,7 @@ export const FilterSidebar: FC<FilterSidebarProps> = memo(
                     width: 34,
                     height: 34,
                     padding: 0,
-                    color: tokens.accent,
+                    color: tokens.primary,
                     border: `1px solid ${tokens.gray200}`,
                     borderRadius: "10px",
                     "&:hover": {
@@ -386,7 +386,7 @@ export const FilterSidebar: FC<FilterSidebarProps> = memo(
                     width: 34,
                     height: 34,
                     padding: 0,
-                    color: tokens.accent,
+                    color: tokens.primary,
                     border: `1px solid ${tokens.gray200}`,
                     borderRadius: "10px",
                     "&:hover": {
@@ -423,7 +423,7 @@ export const FilterSidebar: FC<FilterSidebarProps> = memo(
                     width: 34,
                     height: 34,
                     padding: 0,
-                    color: tokens.accent,
+                    color: tokens.primary,
                     border: `1px solid ${tokens.gray200}`,
                     borderRadius: "10px",
                     "&:hover": {
@@ -496,24 +496,14 @@ export const FilterSidebar: FC<FilterSidebarProps> = memo(
 
         {/* Clear Filters Button */}
         {isFiltersActive && (
-          <Button
+          <CustomButton
             variant="outlined"
+            appVariant="secondary"
             fullWidth
             onClick={onClearFilters}
-            sx={{
-              borderColor: tokens.accent,
-              color: tokens.accent,
-              fontWeight: 600,
-              borderRadius: 2,
-              transition: "all 0.3s ease",
-              "&:hover": {
-                backgroundColor: "#FFF3E0",
-                borderColor: tokens.accent,
-              },
-            }}
           >
             {label("common.clearAllFilters", "Clear All Filters")}
-          </Button>
+          </CustomButton>
         )}
       </Box>
     );

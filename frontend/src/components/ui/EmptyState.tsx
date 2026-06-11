@@ -48,7 +48,7 @@ export const EmptyState = ({
         </Typography>
       )}
       {actionText && onAction && (
-        <CustomButton variant="contained" onClick={onAction}>
+        <CustomButton variant="contained" appVariant="primary" onClick={onAction}>
           {actionText}
         </CustomButton>
       )}

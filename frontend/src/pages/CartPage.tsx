@@ -5,7 +5,6 @@ import {
   Container,
   Typography,
   Box,
-  Button,
   Paper,
   IconButton,
   Divider,
@@ -24,6 +23,7 @@ import QuantityInput from "../components/common/QuantityInput";
 import { useCart } from "../context/CartContext";
 import { useCoupon } from "../hooks/useCoupon";
 import { appIconSx } from "@/components/ui/navigationStyles";
+import { CustomButton } from "@/components/ui/CustomButton";
 
 const CartPage = () => {
   const { t } = useTranslation();
@@ -85,21 +85,18 @@ const CartPage = () => {
         <Typography variant="h5" gutterBottom>
           {t("cart.empty")}
         </Typography>
-        <Button
+        <CustomButton
           variant="contained"
+          appVariant="commerce"
           onClick={() => navigate("/products")}
           endIcon={<ArrowForward sx={appIconSx.lg} />}
           sx={{
             mt: 2,
-            bgcolor: tokens.accent,
-            borderRadius: "999px",
             px: 3,
-            fontWeight: 800,
-            "&:hover": { bgcolor: tokens.accentDark },
           }}
         >
           {t("cart.continueShopping")}
-        </Button>
+        </CustomButton>
       </Container>
     );
   }
@@ -140,18 +137,13 @@ const CartPage = () => {
             for checkout
           </Typography>
         </Box>
-        <Button
+        <CustomButton
           variant="outlined"
+          appVariant="secondary"
           onClick={() => navigate("/products")}
-          sx={{
-            borderRadius: "999px",
-            borderColor: tokens.gray300,
-            color: tokens.primary,
-            fontWeight: 800,
-          }}
         >
           {t("cart.continueShopping")}
-        </Button>
+        </CustomButton>
       </Box>
 
       <Box
@@ -472,25 +464,18 @@ const CartPage = () => {
                         "& .MuiOutlinedInput-root": { borderRadius: 2 },
                       }}
                     />
-                    <Button
+                    <CustomButton
                       variant="outlined"
+                      appVariant="primary"
                       onClick={() => applyPromo(subtotal)}
                       disabled={!couponCode.trim() || isValidating}
                       sx={{
                         minWidth: 80,
-                        fontWeight: 600,
-                        borderColor: tokens.accent,
-                        color: tokens.accent,
                         borderRadius: 2,
-                        textTransform: "none",
-                        "&:hover": {
-                          borderColor: tokens.accentDark,
-                          bgcolor: "#FFF3E0",
-                        },
                       }}
                     >
                       {isValidating ? "..." : t("common.apply")}
-                    </Button>
+                    </CustomButton>
                   </Box>
                   {couponError && (
                     <Alert severity="error" sx={{ py: 0.5, px: 1, mb: 1 }}>
@@ -556,59 +541,51 @@ const CartPage = () => {
                       {t("common.couponApplied")}
                     </Typography>
                   </Box>
-                  <Button
+                  <CustomButton
                     size="small"
-                    color="error"
+                    appVariant="danger"
                     onClick={removePromo}
                     sx={{
                       minWidth: "auto",
-                      textTransform: "none",
                       flexShrink: 0,
                       whiteSpace: "nowrap",
                     }}
                   >
                     {t("common.remove")}
-                  </Button>
+                  </CustomButton>
                 </Box>
               )}
             </Box>
             <Divider sx={{ mb: 2.5 }} />
 
             {/* Checkout Button */}
-            <Button
+            <CustomButton
               fullWidth
               variant="contained"
+              appVariant="commerce"
               size="large"
               onClick={() => navigate("/checkout")}
               endIcon={<ArrowForward />}
               sx={{
                 mb: 2,
-                fontWeight: 700,
                 py: 1.5,
-                bgcolor: tokens.accent,
-                borderRadius: "999px",
-                "&:hover": {
-                  bgcolor: tokens.accentDark,
-                },
               }}
             >
               {t("cart.proceedToCheckout")}
-            </Button>
+            </CustomButton>
 
             {/* Continue Shopping Button */}
-            <Button
+            <CustomButton
               fullWidth
               variant="outlined"
+              appVariant="secondary"
               onClick={() => navigate("/products")}
               sx={{
-                fontWeight: 600,
                 py: 1.3,
-                color: tokens.primary,
-                borderColor: tokens.primary,
               }}
             >
               {t("cart.continueShopping")}
-            </Button>
+            </CustomButton>
 
             {/* Trust Signals */}
             <Box sx={{ mt: 3.5, pt: 2.5, borderTop: "1px solid #eee" }}>

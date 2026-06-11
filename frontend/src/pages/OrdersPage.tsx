@@ -6,7 +6,6 @@ import {
   Alert,
   Avatar,
   Box,
-  Button,
   Card,
   CardContent,
   Chip,
@@ -42,6 +41,7 @@ import {
   getPaymentStatusChipColor,
   getPaymentStatusLabel,
 } from "@/utils/orderStatus";
+import { CustomButton } from "@/components/ui/CustomButton";
 
 const ORDER_STATUSES = ["ALL", ...ORDER_STATUS_OPTIONS] as const;
 
@@ -159,21 +159,18 @@ const OrdersPage = () => {
           : t("orders.emptyMessage", "Your orders will appear here after checkout.")}
       </Typography>
       {!isFiltered && (
-        <Button
+        <CustomButton
           variant="contained"
+          appVariant="commerce"
           endIcon={<ArrowForward sx={appIconSx.lg} />}
           onClick={() => navigate("/products")}
           sx={{
             mt: 3,
             px: 3,
-            borderRadius: "999px",
-            bgcolor: tokens.accent,
-            fontWeight: 800,
-            "&:hover": { bgcolor: tokens.accentDark },
           }}
         >
           {t("common.shopNow")}
-        </Button>
+        </CustomButton>
       )}
     </Paper>
   );
@@ -232,21 +229,17 @@ const OrdersPage = () => {
               )}
             </Typography>
           </Box>
-          <Button
+          <CustomButton
             variant="outlined"
+            appVariant="commerce"
             onClick={() => navigate("/products")}
             endIcon={<ArrowForward sx={appIconSx.lg} />}
             sx={{
-              borderRadius: "999px",
               px: 2.5,
-              fontWeight: 800,
-              color: tokens.primary,
-              borderColor: tokens.primary,
-              bgcolor: tokens.white,
             }}
           >
             {t("common.shopNow")}
-          </Button>
+          </CustomButton>
         </Stack>
 
         <Box
@@ -561,39 +554,29 @@ const OrdersPage = () => {
                       justifyContent="space-between"
                       gap={1.25}
                     >
-                      <Button
+                      <CustomButton
                         variant="contained"
+                        appVariant="primary"
                         onClick={() => navigate(`/orders/${order.id}`)}
                         endIcon={<ArrowForward sx={appIconSx.lg} />}
                         sx={{
-                          borderRadius: "999px",
-                          bgcolor: tokens.primary,
-                          fontWeight: 800,
                           px: 2.5,
-                          "&:hover": { bgcolor: tokens.primaryDark },
                         }}
                       >
                         {t("orders.viewDetails")}
-                      </Button>
+                      </CustomButton>
                       {order.status === "DELIVERED" && (
-                        <Button
+                        <CustomButton
                           variant="outlined"
+                          appVariant="commerce"
                           startIcon={<Replay sx={appIconSx.lg} />}
                           onClick={() => void handleReorder(order)}
                           sx={{
-                            borderRadius: "999px",
-                            fontWeight: 800,
-                            color: tokens.accent,
-                            borderColor: tokens.accent,
                             px: 2.5,
-                            "&:hover": {
-                              borderColor: tokens.accentDark,
-                              bgcolor: `${tokens.accent}12`,
-                            },
                           }}
                         >
                           {t("common.reorder")}
-                        </Button>
+                        </CustomButton>
                       )}
                     </Stack>
                   </Stack>

@@ -10,7 +10,6 @@ import {
   Chip,
   CircularProgress,
   Alert,
-  Button,
   Divider,
   Card,
 } from "@/mui/material";
@@ -29,6 +28,7 @@ import {
   getPaymentStatusChipColor,
   getPaymentStatusLabel,
 } from "@/utils/orderStatus";
+import { CustomButton } from "@/components/ui/CustomButton";
 
 declare global {
   interface Window {
@@ -154,18 +154,19 @@ const OrderDetailPage = () => {
       {order?.paymentStatus === "PENDING" && order?.status !== "CANCELLED" && (
         <Alert severity="warning" sx={{ mb: 3 }}>
           {t("orders.paymentPending")}
-          <Button
+          <CustomButton
             size="small"
+            appVariant="commerce"
             onClick={() => retryPaymentMutation.mutate()}
             disabled={retryPaymentMutation.isPending}
-            sx={{ ml: 1, textTransform: "none" }}
+            sx={{ ml: 1 }}
             variant="contained"
             startIcon={<CreditCard />}
           >
             {retryPaymentMutation.isPending
               ? t("common.loading")
               : t("orders.retryPayment")}
-          </Button>
+          </CustomButton>
         </Alert>
       )}
       <Box
@@ -177,27 +178,34 @@ const OrderDetailPage = () => {
           mb: 3,
         }}
       >
-        <Button startIcon={<ArrowBack />} onClick={() => navigate("/orders")}>
+        <CustomButton
+          appVariant="secondary"
+          variant="outlined"
+          startIcon={<ArrowBack />}
+          onClick={() => navigate("/orders")}
+        >
           {t("common.back")} {t("orders.toMyOrders")}
-        </Button>
+        </CustomButton>
         <Box sx={{ display: "flex", gap: 1 }}>
-          <Button
+          <CustomButton
             variant="outlined"
+            appVariant="secondary"
             size="small"
             startIcon={<Refresh />}
             onClick={() => refetch()}
             disabled={isLoading}
           >
             {t("common.refresh")}
-          </Button>
+          </CustomButton>
           {order?.paymentStatus === "COMPLETED" && (
-            <Button
+            <CustomButton
               variant="outlined"
+              appVariant="secondary"
               startIcon={<Download />}
               onClick={() => generateInvoicePDF(order)}
             >
               {t("orders.downloadInvoice")}
-            </Button>
+            </CustomButton>
           )}
         </Box>
       </Box>

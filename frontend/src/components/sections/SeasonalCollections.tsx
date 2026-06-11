@@ -1,11 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Container, Box, Typography, Button, Skeleton } from "@/mui/material";
+import { Container, Box, Typography, Skeleton } from "@/mui/material";
 import { ArrowForward } from "@/mui/icons";
 import { productsApi } from "../../api/products";
 import { tokens } from "../../theme/theme";
 import { appIconSx } from "@/components/ui/navigationStyles";
+import { CustomButton } from "@/components/ui/CustomButton";
 
 interface SeasonalCollection {
   id: string;
@@ -193,19 +194,18 @@ const SeasonalCollections: React.FC<SeasonalCollectionsProps> = ({
                   >
                     {t(collection.description)}
                   </Typography>
-                  <Button
+                  <CustomButton
                     size="small"
+                    appVariant="ghost"
                     endIcon={<ArrowForward sx={appIconSx.xs} />}
                     sx={{
                       color: "white",
-                      textTransform: "none",
-                      fontWeight: 600,
                       p: 0,
                       "&:hover": { bgcolor: "transparent" },
                     }}
                   >
                     {t("common.explore")}
-                  </Button>
+                  </CustomButton>
                 </Box>
               </Box>
             );

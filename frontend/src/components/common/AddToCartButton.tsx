@@ -1,11 +1,12 @@
 import { useState } from "react";
-import { Button, CircularProgress } from "@/mui/material";
+import { CircularProgress } from "@/mui/material";
 import { ShoppingCart } from "@/mui/icons";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "../../context/CartContext";
 import { useAuth } from "../../context/AuthContext";
 import { useTranslation } from "react-i18next";
 import { appIconSx } from "@/components/ui/navigationStyles";
+import { CustomButton } from "@/components/ui/CustomButton";
 
 interface AddToCartButtonProps {
   productId: string;
@@ -51,8 +52,9 @@ export const AddToCartButton = ({
   };
 
   return (
-    <Button
+    <CustomButton
       variant={variant}
+      appVariant="commerce"
       size={size}
       startIcon={<ShoppingCart sx={appIconSx.md} />}
       onClick={handleClick}
@@ -65,7 +67,7 @@ export const AddToCartButton = ({
       ) : (
         children || t("products.addToCart")
       )}
-    </Button>
+    </CustomButton>
   );
 };
 

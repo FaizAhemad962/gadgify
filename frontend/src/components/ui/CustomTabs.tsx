@@ -6,7 +6,7 @@ const StyledTabs = styled(Tabs)<TabsProps>(() => ({
   "& .MuiTabs-indicator": {
     height: 3,
     borderRadius: "3px 3px 0 0",
-    backgroundColor: tokens.accent,
+    backgroundColor: tokens.primary,
   },
 }));
 
@@ -17,10 +17,10 @@ const StyledTab = styled(Tab)<TabProps>(() => ({
   minHeight: 48,
   transition: "all 0.2s ease",
   "&.Mui-selected": {
-    color: tokens.accent,
+    color: tokens.primary,
   },
   "&:hover": {
-    color: tokens.accentLight,
+    color: tokens.primaryLight,
     opacity: 1,
   },
 }));

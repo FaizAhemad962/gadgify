@@ -1,6 +1,5 @@
 import {
   Box,
-  Button,
   Typography,
   type SxProps,
   type Theme,
@@ -8,6 +7,7 @@ import {
 import { ArrowForward } from "@/mui/icons";
 import { tokens } from "@/theme/theme";
 import type { ReactNode } from "react";
+import { CustomButton } from "@/components/ui/CustomButton";
 
 type SectionHeaderProps = {
   title: ReactNode;
@@ -73,19 +73,18 @@ const SectionHeader = ({
       </Box>
 
       {hasAction && (
-        <Button
+        <CustomButton
+          appVariant="ghost"
           endIcon={<ArrowForward />}
           onClick={onActionClick}
           sx={{
-            textTransform: "none",
-            fontWeight: 600,
             color: tokens.primary,
             minHeight: 44,
             px: 2,
           }}
         >
           {actionLabel}
-        </Button>
+        </CustomButton>
       )}
     </Box>
   );

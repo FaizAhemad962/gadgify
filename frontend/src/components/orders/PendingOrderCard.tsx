@@ -3,7 +3,6 @@ import {
   Card,
   CardContent,
   CardActions,
-  Button,
   Badge,
   Box,
   Chip,
@@ -29,6 +28,7 @@ import {
   getPaymentStatusChipColor,
   getPaymentStatusLabel,
 } from "@/utils/orderStatus";
+import { CustomButton } from "@/components/ui/CustomButton";
 
 interface OrderCardProps {
   orderId: string;
@@ -203,7 +203,7 @@ export const PendingOrderCard: React.FC<OrderCardProps> = ({
 
         {paymentStatus === "PENDING" && (
           <CardActions sx={{ justifyContent: "flex-end", gap: 1 }}>
-            <Button
+            <CustomButton
               startIcon={
                 retryPaymentMutation.isPending ? (
                   <CircularProgress size={20} />
@@ -212,15 +212,15 @@ export const PendingOrderCard: React.FC<OrderCardProps> = ({
                 )
               }
               variant="contained"
-              color="primary"
+              appVariant="commerce"
               onClick={() => retryPaymentMutation.mutate()}
               disabled={
                 retryPaymentMutation.isPending || cancelOrderMutation.isPending
               }
             >
               {t("Retry Payment")}
-            </Button>
-            <Button
+            </CustomButton>
+            <CustomButton
               startIcon={
                 cancelOrderMutation.isPending ? (
                   <CircularProgress size={20} />
@@ -229,14 +229,14 @@ export const PendingOrderCard: React.FC<OrderCardProps> = ({
                 )
               }
               variant="outlined"
-              color="error"
+              appVariant="danger"
               onClick={handleCancelClick}
               disabled={
                 retryPaymentMutation.isPending || cancelOrderMutation.isPending
               }
             >
               {t("Cancel Order")}
-            </Button>
+            </CustomButton>
           </CardActions>
         )}
       </Card>
@@ -259,16 +259,18 @@ export const PendingOrderCard: React.FC<OrderCardProps> = ({
           </Typography>
         </DialogContent>
         <DialogActions>
-          <Button
+          <CustomButton
+            appVariant="secondary"
+            variant="outlined"
             onClick={() => setOpenConfirm(false)}
             disabled={cancelOrderMutation.isPending}
           >
             {t("Keep Order")}
-          </Button>
-          <Button
+          </CustomButton>
+          <CustomButton
             onClick={handleConfirmCancel}
             variant="contained"
-            color="error"
+            appVariant="danger"
             disabled={cancelOrderMutation.isPending}
           >
             {cancelOrderMutation.isPending ? (
@@ -276,7 +278,7 @@ export const PendingOrderCard: React.FC<OrderCardProps> = ({
             ) : (
               t("Confirm Cancel")
             )}
-          </Button>
+          </CustomButton>
         </DialogActions>
       </Dialog>
     </>

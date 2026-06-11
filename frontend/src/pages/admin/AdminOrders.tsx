@@ -39,7 +39,20 @@ const AdminOrders = () => {
       orderId: string;
       status: Order["status"];
     }) => ordersApi.updateOrderStatus(orderId, status),
-    onSuccess: (_, variables) => {
+    onSuccess: (updatedOrder, variables) => {
+      queryClient.setQueriesData<{ orders: Order[]; total: number }>(
+        { queryKey: queryKeys.orders.admin },
+        (current) =>
+          current
+            ? {
+                ...current,
+                orders: current.orders.map((order) =>
+                  order.id === variables.orderId ? updatedOrder : order,
+                ),
+              }
+            : current,
+      );
+      queryClient.setQueryData(queryKeys.orders.detail(variables.orderId), updatedOrder);
       setStatusError("");
       invalidateOrderData(queryClient, variables.orderId);
     },

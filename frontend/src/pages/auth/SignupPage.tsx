@@ -118,11 +118,11 @@ const SignupPage = () => {
             sx={{
               display: "inline-flex",
               mt: 1,
-              color: tokens.accent,
+              color: tokens.primary,
               textDecoration: "none",
               fontWeight: 800,
               "&:hover": {
-                color: tokens.accentDark,
+                color: tokens.primaryDark,
                 textDecoration: "underline",
               },
             }}
@@ -297,7 +297,7 @@ const SignupPage = () => {
         <CustomButton
           fullWidth
           variant="contained"
-          appVariant="admin"
+          appVariant="success"
           size="large"
           type="submit"
           isLoading={signupMutation.isPending}

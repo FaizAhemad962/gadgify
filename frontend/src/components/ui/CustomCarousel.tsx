@@ -323,13 +323,13 @@ export const CustomCarousel = ({
               transform: "translateY(-50%)",
               zIndex: 10,
               backgroundColor: `${tokens.white}cc`,
-              color: tokens.accent,
+              color: tokens.primary,
               transition: "all 0.3s ease",
               opacity: isHovered ? 1 : 0.7,
               "&:hover": {
                 backgroundColor: tokens.white,
                 color: tokens.primary,
-                boxShadow: `0 4px 12px rgba(255, 152, 0, 0.3)`,
+                boxShadow: `0 4px 12px rgba(37, 99, 235, 0.24)`,
               },
               width: { xs: 36, sm: 40, md: 44 },
               height: { xs: 36, sm: 40, md: 44 },
@@ -351,13 +351,13 @@ export const CustomCarousel = ({
               transform: "translateY(-50%)",
               zIndex: 10,
               backgroundColor: `${tokens.white}cc`,
-              color: tokens.accent,
+              color: tokens.primary,
               transition: "all 0.3s ease",
               opacity: isHovered ? 1 : 0.7,
               "&:hover": {
                 backgroundColor: tokens.white,
                 color: tokens.primary,
-                boxShadow: `0 4px 12px rgba(255, 152, 0, 0.3)`,
+                boxShadow: `0 4px 12px rgba(37, 99, 235, 0.24)`,
               },
               width: { xs: 36, sm: 40, md: 44 },
               height: { xs: 36, sm: 40, md: 44 },
@@ -388,20 +388,20 @@ export const CustomCarousel = ({
         }
 
         .gadgify-carousel .swiper-pagination-bullet-active {
-          background-color: ${tokens.accent};
+          background-color: ${tokens.primary};
           width: 24px;
           border-radius: 4px;
           opacity: 1;
         }
 
         .gadgify-carousel .swiper-pagination-progressbar-fill {
-          background: linear-gradient(90deg, ${tokens.accent}, ${tokens.primary});
+          background: linear-gradient(90deg, ${tokens.primary}, ${tokens.primaryLight});
         }
 
         /* Keyboard focus styles for accessibility */
         .gadgify-carousel .carousel-prev:focus,
         .gadgify-carousel .carousel-next:focus {
-          outline: 2px solid ${tokens.accent};
+          outline: 2px solid ${tokens.primary};
           outline-offset: 2px;
         }
 

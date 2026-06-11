@@ -73,7 +73,7 @@ const ForgotPasswordPage = () => {
               color: tokens.primary,
               textDecoration: "none",
               fontWeight: 800,
-              "&:hover": { color: tokens.accent },
+              "&:hover": { color: tokens.primaryDark },
             }}
           >
             <ArrowBack fontSize="small" />
@@ -112,7 +112,7 @@ const ForgotPasswordPage = () => {
           </Typography>
           <CustomButton
             variant="contained"
-            appVariant="admin"
+            appVariant="primary"
             onClick={() => navigate("/login")}
             sx={{ mt: 1 }}
           >
@@ -196,7 +196,7 @@ const ForgotPasswordPage = () => {
             <CustomButton
               fullWidth
               variant="contained"
-              appVariant="admin"
+              appVariant="primary"
               size="large"
               type="submit"
               isLoading={isLoading}

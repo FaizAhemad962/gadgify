@@ -1,6 +1,7 @@
 import React from "react";
 import { Box, Typography, Breadcrumbs, Link } from "@/mui/material";
 import { Link as RouterLink } from "react-router-dom";
+import { tokens } from "@/theme/theme";
 
 interface BreadcrumbItem {
   label: string;
@@ -32,15 +33,23 @@ export const PageHeader = ({
                 to={item.path}
                 underline="hover"
                 color="inherit"
-                sx={{ fontSize: "0.85rem" }}
+                sx={{
+                  color: tokens.secondary,
+                  typography: "body2",
+                  fontWeight: 600,
+                  "&:hover": { color: tokens.primary },
+                }}
               >
                 {item.label}
               </Link>
             ) : (
               <Typography
                 key={index}
-                color="text.primary"
-                sx={{ fontSize: "0.85rem", fontWeight: 600 }}
+                sx={{
+                  color: tokens.gray700,
+                  typography: "body2",
+                  fontWeight: 700,
+                }}
               >
                 {item.label}
               </Typography>
@@ -48,13 +57,25 @@ export const PageHeader = ({
           )}
         </Breadcrumbs>
       )}
-      <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: { xs: "flex-start", sm: "flex-end" },
+          flexDirection: { xs: "column", sm: "row" },
+          gap: 2,
+        }}
+      >
         <Box>
-          <Typography variant="h2" fontWeight={900} gutterBottom>
+          <Typography
+            variant="h2"
+            gutterBottom
+            sx={{ color: tokens.gray900, fontWeight: 800 }}
+          >
             {title}
           </Typography>
           {subtitle && (
-            <Typography variant="body1" color="text.secondary">
+            <Typography variant="body1" sx={{ color: tokens.gray600 }}>
               {subtitle}
             </Typography>
           )}

@@ -3,7 +3,6 @@ import {
   Card,
   CardContent,
   CardActions,
-  Button,
   Box,
   IconButton,
   Typography,
@@ -21,6 +20,7 @@ import { useCompare } from "../context/CompareContext";
 import { tokens } from "@/theme/theme";
 import { productCardLayout } from "@/components/products/productLayout";
 import { appIconSx } from "@/components/ui/navigationStyles";
+import { CustomButton } from "@/components/ui/CustomButton";
 import type { Product, ProductMedia } from "../types";
 
 interface ProductCardProps {
@@ -164,13 +164,13 @@ const ProductCard: React.FC<ProductCardProps> = memo(
               top: 50,
               right: 10,
               bgcolor: isInCompare(product.id)
-                ? tokens.accent
+                ? tokens.primary
                 : "rgba(255,255,255,0.9)",
               boxShadow: "0 1px 6px rgba(15, 23, 42, 0.08)",
               p: 1,
               transition: "background-color 0.2s ease, color 0.2s ease",
               "&:hover": {
-                bgcolor: isInCompare(product.id) ? tokens.accentDark : "#fff",
+                bgcolor: isInCompare(product.id) ? tokens.primaryDark : "#fff",
               },
             }}
           >
@@ -209,7 +209,7 @@ const ProductCard: React.FC<ProductCardProps> = memo(
               overflow: "hidden",
               lineHeight: 1.3,
               minHeight: isList ? "auto" : productCardLayout.titleMinHeight,
-              "&:hover": { color: tokens.accent },
+              "&:hover": { color: tokens.primaryDark },
             }}
           >
             {product.name}
@@ -283,8 +283,9 @@ const ProductCard: React.FC<ProductCardProps> = memo(
           {/* Action buttons (only for list view) */}
           {isList && (
             <CardActions sx={{ p: 0, mt: 2, gap: 2 }}>
-              <Button
+              <CustomButton
                 variant="contained"
+                appVariant="commerce"
                 startIcon={
                   isAddingToCart ? (
                     <CircularProgress size={20} color="inherit" />
@@ -295,30 +296,23 @@ const ProductCard: React.FC<ProductCardProps> = memo(
                 onClick={() => onAddToCart(product.id)}
                 disabled={isAddingToCart}
                 sx={{
-                  bgcolor: tokens.primary,
-                  "&:hover": { bgcolor: tokens.primaryDark },
                   px: 3,
                   borderRadius: productCardLayout.actionRadius,
                 }}
               >
                 {label("common.addToCart", "Add to Cart")}
-              </Button>
-              <Button
+              </CustomButton>
+              <CustomButton
                 variant="outlined"
+                appVariant="secondary"
                 onClick={() => onBuyNow(product.id)}
                 sx={{
-                  color: tokens.primary,
-                  borderColor: tokens.primary,
-                  "&:hover": {
-                    borderColor: tokens.primaryDark,
-                    bgcolor: "rgba(27,42,74,0.04)",
-                  },
                   px: 3,
                   borderRadius: productCardLayout.actionRadius,
                 }}
               >
                 {label("common.buyNow", "Buy Now")}
-              </Button>
+              </CustomButton>
             </CardActions>
           )}
         </CardContent>
@@ -333,9 +327,10 @@ const ProductCard: React.FC<ProductCardProps> = memo(
               gap: 1,
             }}
           >
-            <Button
+            <CustomButton
               fullWidth
               variant="contained"
+              appVariant="commerce"
               size="small"
               startIcon={
                 isAddingToCart ? (
@@ -347,8 +342,6 @@ const ProductCard: React.FC<ProductCardProps> = memo(
               onClick={() => onAddToCart(product.id)}
               disabled={isAddingToCart}
               sx={{
-                bgcolor: tokens.primary,
-                "&:hover": { bgcolor: tokens.primaryDark },
                 borderRadius: productCardLayout.actionRadius,
                 py: 1,
                 fontSize: "0.75rem",
@@ -356,19 +349,14 @@ const ProductCard: React.FC<ProductCardProps> = memo(
               }}
             >
               {label("common.add", "Add")}
-            </Button>
-            <Button
+            </CustomButton>
+            <CustomButton
               fullWidth
               variant="outlined"
+              appVariant="secondary"
               size="small"
               onClick={() => onBuyNow(product.id)}
               sx={{
-                color: tokens.primary,
-                borderColor: tokens.primary,
-                "&:hover": {
-                  borderColor: tokens.primaryDark,
-                  bgcolor: "rgba(27,42,74,0.04)",
-                },
                 borderRadius: productCardLayout.actionRadius,
                 py: 1,
                 fontSize: "0.75rem",
@@ -376,7 +364,7 @@ const ProductCard: React.FC<ProductCardProps> = memo(
               }}
             >
               {label("common.buy", "Buy")}
-            </Button>
+            </CustomButton>
           </CardActions>
         )}
       </Card>

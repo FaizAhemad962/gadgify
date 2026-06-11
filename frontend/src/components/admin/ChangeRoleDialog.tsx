@@ -146,7 +146,7 @@ export const ChangeRoleDialog: React.FC<ChangeRoleDialogProps> = ({
             <CustomButton
               type="submit"
               variant="contained"
-              appVariant="primary"
+              appVariant="admin"
               isLoading={changeRoleMutation.isPending}
               disabled={
                 changeRoleMutation.isPending || selectedRole === currentRole

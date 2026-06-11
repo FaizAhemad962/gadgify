@@ -4,7 +4,6 @@ import {
   Container,
   Typography,
   Box,
-  Button,
   Card,
   CardContent,
   TextField,
@@ -49,6 +48,7 @@ import {
   // PaymentSecurity,
   // CustomerHighlights,
 } from "@/components/sections";
+import { CustomButton } from "@/components/ui/CustomButton";
 
 // Fake testimonials (static — replace with real API data when available)
 // Using translation keys now
@@ -522,25 +522,19 @@ const HomePage = () => {
                   </Typography>
                 </Box>
                 <DealCountdown />
-                <Button
+                <CustomButton
                   variant="contained"
+                  appVariant="secondary"
                   onClick={() => navigate(`/products/${dealProduct.id}`)}
                   sx={{
-                    bgcolor: "white",
-                    color: tokens.primary,
-                    fontWeight: 700,
                     alignSelf: "flex-start",
                     px: 4,
                     py: 1.5,
                     borderRadius: 2,
-                    "&:hover": {
-                      bgcolor: tokens.accent,
-                      color: "white",
-                    },
                   }}
                 >
                   {t("common.grabDealNow")} →
-                </Button>
+                </CustomButton>
               </Box>
             </Box>
           </Container>
@@ -953,31 +947,21 @@ const HomePage = () => {
                       },
                     }}
                   />
-                  <Button
+                  <CustomButton
                     variant="contained"
+                    appVariant="primary"
                     onClick={handleSubscribe}
                     disabled={isPending || !email.trim()}
                     sx={{
-                      bgcolor: tokens.accent,
-                      color: "white",
-                      textTransform: "none",
-                      fontWeight: 700,
                       px: 4,
                       borderRadius: 2,
                       whiteSpace: "nowrap",
                       height: 48,
                       width: { xs: "100%", sm: "auto" },
-                      "&:hover": {
-                        bgcolor: tokens.accentDark,
-                      },
-                      "&.Mui-disabled": {
-                        bgcolor: "rgba(255, 255, 255, 0.12)",
-                        color: "rgba(255, 255, 255, 0.3)",
-                      },
                     }}
                   >
                     {isPending ? t("common.loading") : t("common.subscribe")}
-                  </Button>
+                  </CustomButton>
                 </Box>
                 {error && (
                   <Typography
@@ -1033,27 +1017,21 @@ const HomePage = () => {
             >
               {t("common.startShopping")}
             </Typography>
-            <Button
+            <CustomButton
               variant="contained"
+              appVariant="commerce"
               size="large"
               onClick={() => navigate("/products")}
               sx={{
-                bgcolor: tokens.accent,
-                fontWeight: 700,
                 py: 2,
                 px: 4,
                 fontSize: { xs: "0.95rem", md: "1.05rem" },
                 borderRadius: 2,
-                textTransform: "none",
                 minHeight: 44,
-                "&:hover": {
-                  bgcolor: tokens.accentDark,
-                  boxShadow: `0 6px 20px ${tokens.accent}44`,
-                },
               }}
             >
               {t("common.shopNow")} →
-            </Button>
+            </CustomButton>
           </Container>
         </Box>
       </InView>

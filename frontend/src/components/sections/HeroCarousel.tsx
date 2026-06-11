@@ -1,7 +1,8 @@
-import { Box, Container, Typography, Button, Divider } from "@/mui/material";
+import { Box, Container, Typography, Divider } from "@/mui/material";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { CustomCarousel } from "@/components/ui";
+import { CustomButton } from "@/components/ui/CustomButton";
 import { tokens } from "@/theme/theme";
 
 const heroSlideSx = {
@@ -99,21 +100,15 @@ const HeroCarousel = () => {
             flexWrap: "wrap",
           }}
         >
-          <Button
+          <CustomButton
+            appVariant="commerce"
             variant="contained"
             size="large"
             onClick={() => navigate("/products")}
-            sx={{
-              bgcolor: tokens.accent,
-              ...primaryCtaSx,
-              "&:hover": {
-                bgcolor: tokens.accentDark,
-                boxShadow: `0 6px 20px ${tokens.accent}44`,
-              },
-            }}
+            sx={primaryCtaSx}
           >
             🛍️ {t("products.title")}
-          </Button>
+          </CustomButton>
         </Box>
       </Container>
     </Box>
@@ -123,7 +118,7 @@ const HeroCarousel = () => {
   const promoSlide = (
     <Box
       sx={{
-        background: `linear-gradient(135deg, #FF6B6B 0%, #FF8E72 100%)`,
+        background: `linear-gradient(135deg, ${tokens.accent} 0%, ${tokens.accentDark} 100%)`,
         ...heroSlideSx,
         "&::before": {
           content: '""',
@@ -152,7 +147,7 @@ const HeroCarousel = () => {
             fontSize: { xs: "1.35rem", md: "2.1rem" },
             mb: 2,
             fontWeight: 700,
-            background: "linear-gradient(90deg, #FFE66D, #FFFFFF)",
+            background: `linear-gradient(90deg, ${tokens.warningLight}, ${tokens.white})`,
             backgroundClip: "text",
             WebkitBackgroundClip: "text",
             WebkitTextFillColor: "transparent",
@@ -166,22 +161,15 @@ const HeroCarousel = () => {
         >
           Don't miss our biggest sale of the year!
         </Typography>
-        <Button
+        <CustomButton
+          appVariant="commerce"
           variant="contained"
           size="large"
           onClick={() => navigate("/products")}
-          sx={{
-            bgcolor: "white",
-            color: "#FF6B6B",
-            ...primaryCtaSx,
-            "&:hover": {
-              bgcolor: "#FFE66D",
-              boxShadow: "0 8px 24px rgba(0,0,0,0.2)",
-            },
-          }}
+          sx={primaryCtaSx}
         >
           Shop Now →
-        </Button>
+        </CustomButton>
       </Container>
     </Box>
   );
@@ -190,7 +178,7 @@ const HeroCarousel = () => {
   const freeShippingSlide = (
     <Box
       sx={{
-        background: `linear-gradient(135deg, #4ECDC4 0%, #44A08D 100%)`,
+        background: `linear-gradient(135deg, ${tokens.success} 0%, #15803D 100%)`,
         ...heroSlideSx,
         "&::before": {
           content: '""',
@@ -225,22 +213,15 @@ const HeroCarousel = () => {
         >
           On orders above ₹500 | Across Maharashtra
         </Typography>
-        <Button
+        <CustomButton
+          appVariant="commerce"
           variant="contained"
           size="large"
           onClick={() => navigate("/products")}
-          sx={{
-            bgcolor: "white",
-            color: "#4ECDC4",
-            ...primaryCtaSx,
-            "&:hover": {
-              bgcolor: "#E0F7F6",
-              boxShadow: "0 8px 24px rgba(0,0,0,0.2)",
-            },
-          }}
+          sx={primaryCtaSx}
         >
           Start Shopping →
-        </Button>
+        </CustomButton>
       </Container>
     </Box>
   );
@@ -249,7 +230,7 @@ const HeroCarousel = () => {
   const newArrivalsSlide = (
     <Box
       sx={{
-        background: `linear-gradient(135deg, #667eea 0%, #764ba2 100%)`,
+        background: `linear-gradient(135deg, ${tokens.primary} 0%, ${tokens.primaryDark} 100%)`,
         ...heroSlideSx,
         "&::before": {
           content: '""',
@@ -284,22 +265,15 @@ const HeroCarousel = () => {
         >
           Discover the latest gadgets and products from top brands
         </Typography>
-        <Button
+        <CustomButton
+          appVariant="commerce"
           variant="contained"
           size="large"
           onClick={() => navigate("/products")}
-          sx={{
-            bgcolor: "white",
-            color: "#667eea",
-            ...primaryCtaSx,
-            "&:hover": {
-              bgcolor: "#F0E6FF",
-              boxShadow: "0 8px 24px rgba(0,0,0,0.2)",
-            },
-          }}
+          sx={primaryCtaSx}
         >
           Explore →
-        </Button>
+        </CustomButton>
       </Container>
     </Box>
   );
@@ -308,7 +282,7 @@ const HeroCarousel = () => {
   const qualitySlide = (
     <Box
       sx={{
-        background: `linear-gradient(135deg, #f093fb 0%, #f5576c 100%)`,
+        background: `linear-gradient(135deg, ${tokens.info} 0%, ${tokens.primary} 100%)`,
         ...heroSlideSx,
         "&::before": {
           content: '""',
@@ -349,22 +323,15 @@ const HeroCarousel = () => {
           100% Original Products | 30-Day Money Back Guarantee | 24/7 Customer
           Support
         </Typography>
-        <Button
+        <CustomButton
+          appVariant="commerce"
           variant="contained"
           size="large"
           onClick={() => navigate("/products")}
-          sx={{
-            bgcolor: "white",
-            color: "#f5576c",
-            ...primaryCtaSx,
-            "&:hover": {
-              bgcolor: "#FFE5E9",
-              boxShadow: "0 8px 24px rgba(0,0,0,0.2)",
-            },
-          }}
+          sx={primaryCtaSx}
         >
           Shop With Confidence →
-        </Button>
+        </CustomButton>
       </Container>
     </Box>
   );
@@ -373,7 +340,7 @@ const HeroCarousel = () => {
   const limitedOfferSlide = (
     <Box
       sx={{
-        background: `linear-gradient(135deg, #fa709a 0%, #fee140 100%)`,
+        background: `linear-gradient(135deg, ${tokens.accentDark} 0%, ${tokens.warning} 100%)`,
         ...heroSlideSx,
         "&::before": {
           content: '""',
@@ -421,22 +388,15 @@ const HeroCarousel = () => {
         >
           Selected Items: Flat 40% Off for Next 24 Hours Only!
         </Typography>
-        <Button
+        <CustomButton
+          appVariant="commerce"
           variant="contained"
           size="large"
           onClick={() => navigate("/products")}
-          sx={{
-            bgcolor: "white",
-            color: "#fa709a",
-            ...primaryCtaSx,
-            "&:hover": {
-              bgcolor: "#FFF8E1",
-              boxShadow: "0 8px 24px rgba(0,0,0,0.2)",
-            },
-          }}
+          sx={primaryCtaSx}
         >
           Grab Deal Before It Ends →
-        </Button>
+        </CustomButton>
       </Container>
     </Box>
   );

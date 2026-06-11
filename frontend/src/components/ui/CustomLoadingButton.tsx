@@ -1,7 +1,9 @@
-import { Button, CircularProgress, type ButtonProps } from '@/mui/material'
+import { CircularProgress, type ButtonProps } from '@/mui/material'
+import { CustomButton, type CustomButtonVariant } from './CustomButton'
 
 type CustomLoadingButtonProps = ButtonProps & {
   isLoading?: boolean
+  appVariant?: CustomButtonVariant
 }
 
 export const CustomLoadingButton = ({
@@ -13,18 +15,15 @@ export const CustomLoadingButton = ({
   const loading = isLoading
 
   return (
-    <Button
+    <CustomButton
       {...props}
       disabled={disabled || loading}
       startIcon={loading ? <CircularProgress size={18} color="inherit" /> : props.startIcon}
       sx={{
-        textTransform: 'none',
-        fontWeight: '600',
-        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
         ...props.sx,
       }}
     >
       {children}
-    </Button>
+    </CustomButton>
   )
 }

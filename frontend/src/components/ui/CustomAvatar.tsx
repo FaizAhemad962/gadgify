@@ -8,7 +8,7 @@ const StyledAvatar = styled(Avatar)<AvatarProps>(() => ({
   border: `1px solid ${tokens.gray200}`,
   transition: "all 0.2s ease-in-out",
   "&:hover": {
-    borderColor: tokens.accent,
+    borderColor: tokens.primary,
     transform: "scale(1.05)",
   },
 }));

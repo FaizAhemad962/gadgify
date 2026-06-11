@@ -5,10 +5,10 @@ import { appIconSizes } from "./navigationStyles";
 const StyledCheckbox = styled(Checkbox)<CheckboxProps>(() => ({
   color: tokens.gray400,
   "&.Mui-checked": {
-    color: tokens.accent,
+    color: tokens.primary,
   },
   "&:hover": {
-    backgroundColor: `${tokens.accent}10`,
+    backgroundColor: `${tokens.primary}10`,
   },
   "& .MuiSvgIcon-root": {
     fontSize: appIconSizes.xl,

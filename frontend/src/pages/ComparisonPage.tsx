@@ -6,7 +6,6 @@ import {
   Typography,
   Box,
   Paper,
-  Button,
   CircularProgress,
   Table,
   TableBody,
@@ -21,6 +20,7 @@ import { ArrowBack, Close } from "@/mui/icons";
 import { productsApi } from "../api/products";
 import { useCompare } from "../context/CompareContext";
 import { tokens } from "@/theme/theme";
+import { CustomButton } from "@/components/ui/CustomButton";
 
 import type { Product } from "../types";
 
@@ -48,9 +48,13 @@ const ComparisonPage = () => {
         <Typography color="text.secondary" sx={{ mb: 3 }}>
           {t("compare.needAtLeast")}
         </Typography>
-        <Button variant="contained" onClick={() => navigate("/products")}>
+        <CustomButton
+          variant="contained"
+          appVariant="commerce"
+          onClick={() => navigate("/products")}
+        >
           {t("compare.browseProducts")}
-        </Button>
+        </CustomButton>
       </Container>
     );
   }
@@ -141,16 +145,21 @@ const ComparisonPage = () => {
         }}
       >
         <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-          <Button startIcon={<ArrowBack />} onClick={() => navigate(-1)}>
+          <CustomButton
+            appVariant="secondary"
+            variant="outlined"
+            startIcon={<ArrowBack />}
+            onClick={() => navigate(-1)}
+          >
             {t("common.back")}
-          </Button>
+          </CustomButton>
           <Typography variant="h5" fontWeight={700}>
             {t("compare.title")}
           </Typography>
         </Box>
-        <Button
+        <CustomButton
           variant="outlined"
-          color="error"
+          appVariant="danger"
           size="small"
           onClick={() => {
             clearCompare();
@@ -158,7 +167,7 @@ const ComparisonPage = () => {
           }}
         >
           {t("compare.clearAll")}
-        </Button>
+        </CustomButton>
       </Box>
 
       <TableContainer component={Paper} sx={{ borderRadius: 2 }}>

@@ -3,7 +3,6 @@ import { useTranslation } from "react-i18next";
 import {
   Alert,
   Box,
-  Button,
   Container,
   Paper,
   Typography,
@@ -14,6 +13,7 @@ import { useWishlist } from "@/context/WishlistContext";
 import { useCart } from "@/context/CartContext";
 import { tokens } from "@/theme/theme";
 import { appIconSx } from "@/components/ui/navigationStyles";
+import { CustomButton } from "@/components/ui/CustomButton";
 import type { Product } from "@/types";
 
 const WishlistPage = () => {
@@ -69,20 +69,17 @@ const WishlistPage = () => {
       <Typography sx={{ mt: 1, mb: 3, color: tokens.gray600 }}>
         Save products you like and come back to them anytime.
       </Typography>
-      <Button
+      <CustomButton
         variant="contained"
+        appVariant="commerce"
         startIcon={<ShoppingBag sx={appIconSx.lg} />}
         onClick={() => navigate("/products")}
         sx={{
-          bgcolor: tokens.accent,
-          borderRadius: "999px",
           px: 3,
-          fontWeight: 800,
-          "&:hover": { bgcolor: tokens.accentDark },
         }}
       >
         {t("wishlist.browseProducts")}
-      </Button>
+      </CustomButton>
     </Paper>
   );
 
@@ -118,19 +115,14 @@ const WishlistPage = () => {
           </Typography>
         </Box>
         {wishlistItems.length > 0 && (
-          <Button
+          <CustomButton
             variant="outlined"
+            appVariant="secondary"
             startIcon={<ShoppingBag />}
             onClick={() => navigate("/products")}
-            sx={{
-              borderRadius: "999px",
-              borderColor: tokens.gray300,
-              color: tokens.primary,
-              fontWeight: 800,
-            }}
           >
             {t("cart.continueShopping")}
-          </Button>
+          </CustomButton>
         )}
       </Box>
 

@@ -13,7 +13,7 @@ const StyledSwitch = styled(Switch)<SwitchProps>(({ theme }) => ({
       transform: "translateX(16px)",
       color: "#fff",
       "& + .MuiSwitch-track": {
-        backgroundColor: tokens.accent,
+        backgroundColor: tokens.primary,
         opacity: 1,
         border: 0,
       },
@@ -22,7 +22,7 @@ const StyledSwitch = styled(Switch)<SwitchProps>(({ theme }) => ({
       },
     },
     "&.Mui-focusVisible .MuiSwitch-thumb": {
-      color: tokens.accent,
+      color: tokens.primary,
       border: "6px solid #fff",
     },
     "&.Mui-disabled .MuiSwitch-thumb": {

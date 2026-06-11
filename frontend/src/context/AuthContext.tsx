@@ -9,6 +9,7 @@ import {
 } from "react";
 import { authApi } from "../api/auth";
 import type { User } from "../types";
+import { ErrorHandler } from "@/utils/errorHandler";
 
 interface AuthContextType {
   user: User | null;
@@ -68,7 +69,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       await authApi.logout();
     } catch (error) {
-      console.error("Logout error:", error);
+      ErrorHandler.logError("Logout failed", error);
     } finally {
       setUser(null);
       window.location.href = "/login";

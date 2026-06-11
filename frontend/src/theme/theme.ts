@@ -23,26 +23,26 @@ import { createTheme, type ThemeOptions } from "@/mui/styles";
 // ─── Design tokens ───────────────────────────────────────
 const tokens = {
   // Core brand
-  primary: "#1B2A4A",
-  primaryLight: "#2D4A7A",
-  primaryDark: "#0F1B30",
+  primary: "#2563EB",
+  primaryLight: "#60A5FA",
+  primaryDark: "#1D4ED8",
 
-  accent: "#FF6B2C",
-  accentLight: "#FF8F5E",
-  accentDark: "#E05A1F",
+  accent: "#F97316",
+  accentLight: "#FDBA74",
+  accentDark: "#EA580C",
 
-  secondary: "#0EA5E9",
-  secondaryLight: "#38BDF8",
-  secondaryDark: "#0284C7",
+  secondary: "#475569",
+  secondaryLight: "#94A3B8",
+  secondaryDark: "#334155",
 
   // Semantic
   success: "#16A34A",
   successLight: "#DCFCE7",
   error: "#DC2626",
   errorLight: "#FEE2E2",
-  warning: "#F59E0B",
+  warning: "#D97706",
   warningLight: "#FEF3C7",
-  info: "#0EA5E9",
+  info: "#0284C7",
   infoLight: "#E0F2FE",
 
   // Neutrals (warm gray)
@@ -68,6 +68,11 @@ const tokens = {
   darkBg: "#0F172A",
   darkPaper: "#1E293B",
   darkSubtle: "#334155",
+  admin: "#172554",
+  adminLight: "#1E3A8A",
+  adminDark: "#0F172A",
+  disabledBg: "#E5E7EB",
+  disabledText: "#9CA3AF",
 
   // Layout
   appMaxWidth: 1400,
@@ -186,23 +191,31 @@ function componentOverrides(
             outline: `2px solid ${tokens.accent}`,
             outlineOffset: 2,
           },
+          "&.Mui-disabled": {
+            backgroundColor: tokens.disabledBg,
+            borderColor: tokens.disabledBg,
+            color: tokens.disabledText,
+            cursor: "not-allowed",
+            pointerEvents: "auto",
+            boxShadow: "none",
+          },
         },
         containedPrimary: {
-          backgroundColor: tokens.accent,
+          backgroundColor: tokens.primary,
           color: tokens.white,
           "&:hover": {
-            backgroundColor: tokens.accentDark,
-            boxShadow: "0 4px 14px rgba(255,107,44,0.35)",
+            backgroundColor: tokens.primaryDark,
+            boxShadow: "0 4px 14px rgba(37,99,235,0.28)",
           },
         },
         outlinedPrimary: {
-          borderColor: tokens.accent,
-          color: tokens.accent,
+          borderColor: tokens.primary,
+          color: tokens.primary,
           "&:hover": {
             backgroundColor: isDark
-              ? "rgba(255,107,44,0.08)"
-              : "rgba(255,107,44,0.06)",
-            borderColor: tokens.accentDark,
+              ? "rgba(96,165,250,0.12)"
+              : "rgba(37,99,235,0.08)",
+            borderColor: tokens.primaryDark,
           },
         },
         text: {

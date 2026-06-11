@@ -419,7 +419,7 @@ const ChangePasswordPage = () => {
             <CustomButton
               type="submit"
               variant="contained"
-              appVariant="admin"
+              appVariant="primary"
               size="large"
               isLoading={isLoading}
               disabled={isLoading}

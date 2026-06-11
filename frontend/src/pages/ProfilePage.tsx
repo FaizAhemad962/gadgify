@@ -6,7 +6,6 @@ import {
   Avatar,
   Badge,
   Box,
-  Button,
   Chip,
   CircularProgress,
   Container,
@@ -40,6 +39,7 @@ import {
   getMaharashtraCities,
 } from "@/constants/location";
 import { authApi } from "@/api/auth";
+import { CustomButton } from "@/components/ui/CustomButton";
 
 const profileInputSx = {
   "& .MuiOutlinedInput-root": {
@@ -262,13 +262,14 @@ const ProfilePage = () => {
       }}
     >
       <Box sx={{ mb: 3 }}>
-        <Button
+        <CustomButton
           startIcon={<ArrowBack />}
           onClick={() => navigate(-1)}
-          sx={{ color: tokens.primary, fontWeight: 800, mb: 1 }}
+          appVariant="ghost"
+          sx={{ mb: 1 }}
         >
           {t("common.back")}
-        </Button>
+        </CustomButton>
         <Typography variant="h3" sx={{ fontWeight: 900, color: tokens.gray900 }}>
           {t("common.profileTitle")}
         </Typography>
@@ -381,21 +382,14 @@ const ProfilePage = () => {
             </Box>
           </Box>
 
-          <Button
+          <CustomButton
             variant={isEditing ? "outlined" : "contained"}
+            appVariant={isEditing ? "secondary" : "primary"}
             startIcon={isEditing ? <Cancel /> : <Edit />}
             onClick={() => (isEditing ? handleCancel() : setIsEditing(true))}
-            sx={{
-              borderRadius: "999px",
-              fontWeight: 800,
-              bgcolor: isEditing ? "transparent" : tokens.accent,
-              "&:hover": {
-                bgcolor: isEditing ? `${tokens.error}10` : tokens.accentDark,
-              },
-            }}
           >
             {isEditing ? t("common.cancel") : t("common.edit")}
-          </Button>
+          </CustomButton>
         </Box>
 
         <Typography variant="h5" sx={{ fontWeight: 900, mb: 3 }}>
@@ -488,28 +482,23 @@ const ProfilePage = () => {
 
         {isEditing && (
           <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 2, mt: 3 }}>
-            <Button
+            <CustomButton
               variant="outlined"
+              appVariant="secondary"
               onClick={handleCancel}
               disabled={isLoading}
-              sx={{ borderRadius: "999px", fontWeight: 800 }}
             >
               {t("common.cancel")}
-            </Button>
-            <Button
+            </CustomButton>
+            <CustomButton
               variant="contained"
+              appVariant="success"
               startIcon={<Save />}
               onClick={handleSave}
               disabled={isLoading}
-              sx={{
-                borderRadius: "999px",
-                fontWeight: 800,
-                bgcolor: tokens.accent,
-                "&:hover": { bgcolor: tokens.accentDark },
-              }}
             >
               {isLoading ? <CircularProgress size={22} /> : t("common.save")}
-            </Button>
+            </CustomButton>
           </Box>
         )}
 
@@ -534,16 +523,16 @@ const ProfilePage = () => {
             </Typography>
           </Box>
           <Box sx={{ display: "flex", gap: 1.5, flexWrap: "wrap" }}>
-            <Button
+            <CustomButton
               variant="outlined"
+              appVariant="secondary"
               onClick={() => navigate("/change-password")}
-              sx={{ borderRadius: "999px", fontWeight: 800 }}
             >
               {t("common.profileChangePassword")}
-            </Button>
-            <Button
+            </CustomButton>
+            <CustomButton
               variant="outlined"
-              color="error"
+              appVariant="danger"
               startIcon={<Logout />}
               onClick={() => {
                 if (window.confirm(t("common.profileConfirmLogout"))) {
@@ -551,10 +540,9 @@ const ProfilePage = () => {
                   navigate("/login");
                 }
               }}
-              sx={{ borderRadius: "999px", fontWeight: 800 }}
             >
               {t("nav.logout")}
-            </Button>
+            </CustomButton>
           </Box>
         </Box>
 

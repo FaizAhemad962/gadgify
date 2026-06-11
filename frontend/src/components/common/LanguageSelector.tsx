@@ -3,7 +3,6 @@ import { useTranslation } from "react-i18next";
 import i18n from "i18next";
 import {
   Box,
-  Button,
   ListItemIcon,
   ListItemText,
   Typography,
@@ -11,6 +10,7 @@ import {
 import { Check, ExpandMore, Language } from "@/mui/icons";
 import { tokens } from "@/theme/theme";
 import { CustomMenu, CustomMenuItem } from "@/components/ui/CustomMenu";
+import { CustomButton } from "@/components/ui/CustomButton";
 import { navLinkIconSx, navMenuIconSx } from "@/components/ui/navigationStyles";
 
 const LanguageSelector = ({
@@ -44,8 +44,9 @@ const LanguageSelector = ({
 
   return (
     <Box sx={{ display: "flex", alignItems: "center" }}>
-      <Button
+      <CustomButton
         size="small"
+        appVariant="ghost"
         startIcon={<Language sx={navLinkIconSx} />}
         endIcon={<ExpandMore sx={navLinkIconSx} />}
         onClick={(event) => setAnchorEl(event.currentTarget)}
@@ -78,7 +79,7 @@ const LanguageSelector = ({
         <Typography component="span" fontWeight={800} noWrap>
           {selectedLanguage.label}
         </Typography>
-      </Button>
+      </CustomButton>
       <CustomMenu
         anchorEl={anchorEl}
         open={Boolean(anchorEl)}

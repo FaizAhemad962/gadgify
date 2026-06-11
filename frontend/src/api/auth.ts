@@ -1,5 +1,6 @@
 import { apiClient } from "./client";
 import type { AuthResponse, LoginRequest, SignupRequest, User } from "../types";
+import { ErrorHandler } from "@/utils/errorHandler";
 
 export interface UpdateProfileRequest {
   name: string;
@@ -114,7 +115,7 @@ export const authApi = {
         { withCredentials: true }
       );
     } catch (error) {
-      console.error("Logout error:", error);
+      ErrorHandler.logError("Logout API failed", error);
     }
   },
 };

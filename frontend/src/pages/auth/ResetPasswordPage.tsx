@@ -97,7 +97,7 @@ const ResetPasswordPage = () => {
           </Box>
           <CustomButton
             variant="contained"
-            appVariant="admin"
+            appVariant="primary"
             onClick={() => navigate("/forgot-password")}
           >
             {t("auth.requestNewLink", "Request New Link")}
@@ -132,7 +132,7 @@ const ResetPasswordPage = () => {
               color: tokens.primary,
               textDecoration: "none",
               fontWeight: 800,
-              "&:hover": { color: tokens.accent },
+              "&:hover": { color: tokens.primaryDark },
             }}
           >
             <ArrowBack fontSize="small" />
@@ -163,7 +163,7 @@ const ResetPasswordPage = () => {
           >
             <CheckCircle sx={{ ...appIconSx.category, color: tokens.success }} />
           </Box>
-          <CustomButton variant="contained" appVariant="admin" onClick={() => navigate("/login")}>
+          <CustomButton variant="contained" appVariant="primary" onClick={() => navigate("/login")}>
             {t("auth.backToLogin")}
           </CustomButton>
         </Box>
@@ -227,7 +227,7 @@ const ResetPasswordPage = () => {
             <CustomButton
               fullWidth
               variant="contained"
-              appVariant="admin"
+              appVariant="primary"
               size="large"
               type="submit"
               isLoading={loading}

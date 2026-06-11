@@ -105,7 +105,7 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
               <ListItemIcon
                 sx={{
                   minWidth: 42,
-                  color: item.selected ? tokens.accent : "rgba(255,255,255,0.76)",
+                  color: item.selected ? tokens.primaryLight : "rgba(255,255,255,0.76)",
                   "& .MuiSvgIcon-root": navDrawerIconSx,
                   "& .MuiBadge-root .MuiSvgIcon-root": navDrawerIconSx,
                 }}

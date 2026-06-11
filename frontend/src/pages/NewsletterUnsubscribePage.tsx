@@ -4,7 +4,6 @@ import {
   Container,
   Box,
   Typography,
-  Button,
   Card,
   CardContent,
   CircularProgress,
@@ -20,6 +19,7 @@ import { useTranslation } from "react-i18next";
 import { newsletterApi } from "@/api/newsletters";
 import { tokens } from "@/theme/theme";
 import { appIconSx } from "@/components/ui/navigationStyles";
+import { CustomButton } from "@/components/ui/CustomButton";
 
 export const NewsletterUnsubscribePage = () => {
   const { t } = useTranslation();
@@ -129,22 +129,19 @@ export const NewsletterUnsubscribePage = () => {
                     {email} has been removed from our newsletter list.
                   </Typography>
                 </Alert>
-                <Button
+                <CustomButton
                   variant="contained"
+                  appVariant="primary"
                   onClick={() => navigate("/")}
                   startIcon={<Home sx={appIconSx.lg} />}
                   sx={{
-                    bgcolor: tokens.primary,
-                    textTransform: "none",
-                    fontWeight: 700,
                     px: 4,
                     py: 1.5,
                     borderRadius: 2,
-                    "&:hover": { bgcolor: tokens.primaryDark },
                   }}
                 >
                   {t("common.backToHome") || "Back to Home"}
-                </Button>
+                </CustomButton>
               </Box>
             ) : error ? (
               <Box>
@@ -179,38 +176,28 @@ export const NewsletterUnsubscribePage = () => {
                     "Please contact support if you continue to receive emails."}
                 </Typography>
                 <Box sx={{ display: "flex", gap: 2, justifyContent: "center" }}>
-                  <Button
+                  <CustomButton
                     variant="outlined"
+                    appVariant="secondary"
                     onClick={() => window.location.reload()}
                     sx={{
-                      textTransform: "none",
-                      fontWeight: 700,
                       px: 3,
                       borderRadius: 2,
-                      borderColor: tokens.primary,
-                      color: tokens.primary,
-                      "&:hover": {
-                        borderColor: tokens.primaryDark,
-                        bgcolor: `${tokens.primary}10`,
-                      },
                     }}
                   >
                     {t("common.tryAgain") || "Try Again"}
-                  </Button>
-                  <Button
+                  </CustomButton>
+                  <CustomButton
                     variant="contained"
+                    appVariant="primary"
                     onClick={() => navigate("/")}
                     sx={{
-                      bgcolor: tokens.primary,
-                      textTransform: "none",
-                      fontWeight: 700,
                       px: 3,
                       borderRadius: 2,
-                      "&:hover": { bgcolor: tokens.primaryDark },
                     }}
                   >
                     {t("common.backToHome") || "Back to Home"}
-                  </Button>
+                  </CustomButton>
                 </Box>
               </Box>
             ) : null}

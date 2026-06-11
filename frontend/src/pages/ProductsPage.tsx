@@ -117,7 +117,7 @@ const ProductsGrid = memo(
           ))}
         </Box>
 
-        <Box ref={sentinelRef} sx={{ height: 1 }} />
+        <Box ref={sentinelRef} sx={{ height: "1px" }} />
 
         {/* Loading indicator when fetching more products */}
         {isFetching && products.length > 0 && (
@@ -129,7 +129,7 @@ const ProductsGrid = memo(
               mt: 2,
             }}
           >
-            <CircularProgress size={30} sx={{ color: tokens.accent }} />
+            <CircularProgress size={30} sx={{ color: tokens.primary }} />
           </Box>
         )}
 
@@ -466,10 +466,10 @@ const ProductsPage = () => {
               <IconButton
                 onClick={() => setFilterDrawerOpen(true)}
                 sx={{
-                  border: `2px solid ${tokens.accent}`,
+                  border: `2px solid ${tokens.primary}`,
                   borderRadius: "8px",
                   padding: "10px 14px",
-                  color: tokens.accent,
+                  color: tokens.primary,
                   fontWeight: 600,
                   fontSize: "14px",
                   backgroundColor: tokens.white,
@@ -489,7 +489,7 @@ const ProductsPage = () => {
                       width: "8px",
                       height: "8px",
                       borderRadius: "50%",
-                      backgroundColor: tokens.accent,
+                      backgroundColor: tokens.primary,
                     }}
                   />
                 )}
@@ -582,7 +582,7 @@ const ProductsPage = () => {
                 {t("common.filters")}
               </Typography>
               {isFiltersActive && (
-                <Typography variant="caption" sx={{ color: tokens.accent }}>
+                <Typography variant="caption" sx={{ color: tokens.primary }}>
                   {t("common.filtersActive", "Filters Active")} ✓
                 </Typography>
               )}
