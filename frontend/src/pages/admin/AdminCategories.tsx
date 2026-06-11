@@ -77,7 +77,15 @@ const AdminCategories = () => {
 
   const createMutation = useMutation({
     mutationFn: categoriesApi.create,
-    onSuccess: () => {
+    onSuccess: (createdCategory) => {
+      queryClient.setQueryData<Category[]>(
+        queryKeys.categories.admin,
+        (current = []) => [createdCategory, ...current],
+      );
+      queryClient.setQueryData<Category[]>(
+        queryKeys.categories.all,
+        (current = []) => [createdCategory, ...current],
+      );
       invalidateCategoryData(queryClient);
       setDialogOpen(false);
       setSnackbar({
@@ -103,7 +111,21 @@ const AdminCategories = () => {
       id: string;
       data: Partial<CreateCategoryRequest> & { isActive?: boolean };
     }) => categoriesApi.update(id, data),
-    onSuccess: () => {
+    onSuccess: (updatedCategory) => {
+      queryClient.setQueryData<Category[]>(
+        queryKeys.categories.admin,
+        (current = []) =>
+          current.map((category) =>
+            category.id === updatedCategory.id ? updatedCategory : category,
+          ),
+      );
+      queryClient.setQueryData<Category[]>(
+        queryKeys.categories.all,
+        (current = []) =>
+          current.map((category) =>
+            category.id === updatedCategory.id ? updatedCategory : category,
+          ),
+      );
       invalidateCategoryData(queryClient);
       setDialogOpen(false);
       setEditingCategory(null);
@@ -124,7 +146,17 @@ const AdminCategories = () => {
 
   const deleteMutation = useMutation({
     mutationFn: categoriesApi.delete,
-    onSuccess: () => {
+    onSuccess: (_, deletedId) => {
+      queryClient.setQueryData<Category[]>(
+        queryKeys.categories.admin,
+        (current = []) =>
+          current.filter((category) => category.id !== deletedId),
+      );
+      queryClient.setQueryData<Category[]>(
+        queryKeys.categories.all,
+        (current = []) =>
+          current.filter((category) => category.id !== deletedId),
+      );
       invalidateCategoryData(queryClient);
       setDeleteDialogOpen(false);
       setDeletingCategory(null);

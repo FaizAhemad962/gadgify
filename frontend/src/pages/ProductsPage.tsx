@@ -117,7 +117,7 @@ const ProductsGrid = memo(
           ))}
         </Box>
 
-        <Box ref={sentinelRef} sx={{ height: 1 }} />
+        <Box ref={sentinelRef} sx={{ height: "1px" }} />
 
         {/* Loading indicator when fetching more products */}
         {isFetching && products.length > 0 && (

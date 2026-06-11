@@ -71,7 +71,11 @@ const AdminCoupons = () => {
 
   const createMutation = useMutation({
     mutationFn: couponsApi.create,
-    onSuccess: () => {
+    onSuccess: (createdCoupon) => {
+      queryClient.setQueryData<Coupon[]>(
+        queryKeys.coupons.admin,
+        (current = []) => [createdCoupon, ...current],
+      );
       invalidateCouponData(queryClient);
       handleCloseDialog();
       setSnackbar({
@@ -97,7 +101,14 @@ const AdminCoupons = () => {
       id: string;
       data: Partial<CreateCouponRequest> & { isActive?: boolean };
     }) => couponsApi.update(id, data),
-    onSuccess: () => {
+    onSuccess: (updatedCoupon) => {
+      queryClient.setQueryData<Coupon[]>(
+        queryKeys.coupons.admin,
+        (current = []) =>
+          current.map((coupon) =>
+            coupon.id === updatedCoupon.id ? updatedCoupon : coupon,
+          ),
+      );
       invalidateCouponData(queryClient);
       handleCloseDialog();
       setSnackbar({
@@ -117,7 +128,11 @@ const AdminCoupons = () => {
 
   const deleteMutation = useMutation({
     mutationFn: couponsApi.delete,
-    onSuccess: () => {
+    onSuccess: (_, deletedId) => {
+      queryClient.setQueryData<Coupon[]>(
+        queryKeys.coupons.admin,
+        (current = []) => current.filter((coupon) => coupon.id !== deletedId),
+      );
       invalidateCouponData(queryClient);
       setSnackbar({
         open: true,

@@ -68,7 +68,7 @@ const LoginPage = () => {
     try {
       await loginMutation.mutateAsync(data);
     } catch (error) {
-      console.error("Login error:", error);
+      ErrorHandler.logError("Login submit failed", error);
     }
   };
 

@@ -2,7 +2,7 @@ import type { QueryClient } from "@tanstack/react-query";
 import { queryKeys } from "./queryKeys";
 
 const invalidate = (queryClient: QueryClient, queryKey: readonly unknown[]) =>
-  queryClient.invalidateQueries({ queryKey });
+  queryClient.invalidateQueries({ queryKey, refetchType: "active" });
 
 export const invalidateProductData = (
   queryClient: QueryClient,
