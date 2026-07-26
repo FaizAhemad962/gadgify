@@ -259,13 +259,22 @@ app.use(errorHandler);
 
 const PORT = config.port;
 
-const startServer = async () => {
+export const initializeApp = async () => {
   try {
     // Initialize database connection pool
     await initializeConnectionPool();
 
     // ✅ SECURITY: Initialize Redis for token blacklist and session management
     await initializeRedis();
+  } catch (error) {
+    logger.error("Failed to initialize app:", error);
+    throw error;
+  }
+};
+
+export const startServer = async () => {
+  try {
+    await initializeApp();
 
     app.listen(PORT, () => {
       logger.info(`🚀 Server running on port ${PORT}`);
@@ -279,6 +288,8 @@ const startServer = async () => {
   }
 };
 
-startServer();
+if (!process.env.VERCEL) {
+  startServer();
+}
 
 export default app;
