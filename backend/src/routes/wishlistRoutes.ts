@@ -6,6 +6,13 @@ import logger from '../utils/logger'
 
 const router = Router()
 
+const firstString = (value: unknown): string => {
+  if (Array.isArray(value)) {
+    return value[0] ?? '';
+  }
+  return typeof value === 'string' ? value : '';
+}
+
 // Get wishlist for current user
 router.get('/', authenticate, async (req: AuthRequest, res: Response) => {
   try {
@@ -88,7 +95,10 @@ router.post('/', authenticate, async (req: AuthRequest, res: Response) => {
 router.delete('/:productId', authenticate, async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.user!.id
-    const { productId } = req.params
+    const productId = firstString(req.params.productId)
+    if (!productId) {
+      return res.status(400).json({ message: 'Product ID is required' })
+    }
 
     const wishlistItem = await prisma.wishlist.findUnique({
       where: {

@@ -7,19 +7,32 @@ exports.rateDelivery = exports.getDeliveryStaffInfo = exports.getOrderTracking =
 const database_1 = __importDefault(require("../config/database"));
 const deliveryTrackingService_1 = require("../services/deliveryTrackingService");
 const deliveryMetricsService_1 = require("../services/deliveryMetricsService");
+const firstString = (value) => {
+    if (Array.isArray(value)) {
+        return value[0] ?? "";
+    }
+    return typeof value === "string" ? value : "";
+};
 /**
  * GET /api/delivery/orders/:orderId/tracking
  * Get real-time tracking information for an order
  */
 const getOrderTracking = async (req, res) => {
     try {
-        const { orderId } = req.params;
-        const assignment = await database_1.default.deliveryAssignment.findUnique({
+        const orderId = firstString(req.params.orderId);
+        if (!orderId) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid order id",
+                data: null,
+            });
+        }
+        const assignment = (await database_1.default.deliveryAssignment.findUnique({
             where: { orderId },
             include: {
                 trackingPoints: { orderBy: { createdAt: "desc" }, take: 1 },
             },
-        });
+        }));
         if (!assignment) {
             return res.status(404).json({
                 success: false,
@@ -58,11 +71,18 @@ exports.getOrderTracking = getOrderTracking;
  */
 const getDeliveryStaffInfo = async (req, res) => {
     try {
-        const { orderId } = req.params;
-        const assignment = await database_1.default.deliveryAssignment.findUnique({
+        const orderId = firstString(req.params.orderId);
+        if (!orderId) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid order id",
+                data: null,
+            });
+        }
+        const assignment = (await database_1.default.deliveryAssignment.findUnique({
             where: { orderId },
             include: { deliveryStaff: true },
-        });
+        }));
         if (!assignment) {
             return res.status(404).json({
                 success: false,

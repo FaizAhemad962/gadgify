@@ -46,6 +46,12 @@ const transformOrder = (order) => {
             : order.shippingAddress,
     };
 };
+const firstString = (value) => {
+    if (Array.isArray(value)) {
+        return value[0] ?? "";
+    }
+    return typeof value === "string" ? value : "";
+};
 const createOrder = async (req, res, next) => {
     try {
         const { items, subtotal, shipping, total, shippingAddress, couponCode } = req.body;
@@ -225,8 +231,12 @@ const getOrders = async (req, res, next) => {
 exports.getOrders = getOrders;
 const getOrderById = async (req, res, next) => {
     try {
-        const { id } = req.params;
-        const order = await database_1.default.order.findUnique({
+        const id = firstString(req.params.id);
+        if (!id) {
+            res.status(400).json({ message: "Invalid order id" });
+            return;
+        }
+        const order = (await database_1.default.order.findUnique({
             where: { id },
             include: {
                 items: {
@@ -251,7 +261,7 @@ const getOrderById = async (req, res, next) => {
                     },
                 },
             },
-        });
+        }));
         if (!order) {
             res.status(404).json({ message: "Order not found" });
             return;
@@ -270,10 +280,14 @@ const getOrderById = async (req, res, next) => {
 exports.getOrderById = getOrderById;
 const createPaymentIntent = async (req, res, next) => {
     try {
-        const { orderId } = req.params;
-        const order = await database_1.default.order.findUnique({
+        const orderId = firstString(req.params.orderId);
+        if (!orderId) {
+            res.status(400).json({ message: "Invalid order id" });
+            return;
+        }
+        const order = (await database_1.default.order.findUnique({
             where: { id: orderId },
-        });
+        }));
         if (!order || order.userId !== req.user.id) {
             res.status(404).json({ message: "Order not found" });
             return;
@@ -307,9 +321,13 @@ const createPaymentIntent = async (req, res, next) => {
 exports.createPaymentIntent = createPaymentIntent;
 const confirmPayment = async (req, res, next) => {
     try {
-        const { orderId } = req.params;
+        const orderId = firstString(req.params.orderId);
+        if (!orderId) {
+            res.status(400).json({ message: "Invalid order id" });
+            return;
+        }
         const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
-        const order = await database_1.default.order.findUnique({
+        const order = (await database_1.default.order.findUnique({
             where: { id: orderId },
             include: {
                 items: {
@@ -330,7 +348,7 @@ const confirmPayment = async (req, res, next) => {
                     },
                 },
             },
-        });
+        }));
         if (!order || order.userId !== req.user.id) {
             res.status(404).json({ message: "Order not found" });
             return;
@@ -349,7 +367,7 @@ const confirmPayment = async (req, res, next) => {
             res.status(400).json({ message: "Invalid payment signature" });
             return;
         }
-        const updatedOrder = await database_1.default.$transaction(async (tx) => {
+        const updatedOrder = (await database_1.default.$transaction(async (tx) => {
             for (const item of order.items) {
                 const stockUpdate = await tx.product.updateMany({
                     where: {
@@ -400,7 +418,7 @@ const confirmPayment = async (req, res, next) => {
                     },
                 },
             });
-        });
+        }));
         // Check for low stock and alert admin
         await checkLowStockAndAlert(updatedOrder.items);
         // Send payment success email (non-blocking)
@@ -425,9 +443,13 @@ exports.confirmPayment = confirmPayment;
  */
 const retryPayment = async (req, res, next) => {
     try {
-        const { orderId } = req.params;
+        const orderId = firstString(req.params.orderId);
+        if (!orderId) {
+            res.status(400).json({ success: false, message: "Invalid order id" });
+            return;
+        }
         logger_1.default.info(`[retryPayment] Processing retry for order: ${orderId}, user: ${req.user.id}`);
-        const order = await database_1.default.order.findUnique({
+        const order = (await database_1.default.order.findUnique({
             where: { id: orderId },
             include: {
                 items: {
@@ -448,7 +470,7 @@ const retryPayment = async (req, res, next) => {
                     },
                 },
             },
-        });
+        }));
         if (!order) {
             logger_1.default.warn(`[retryPayment] Order not found: ${orderId}`);
             res.status(404).json({ success: false, message: "Order not found" });
@@ -533,15 +555,19 @@ exports.retryPayment = retryPayment;
  */
 const cancelPendingOrder = async (req, res, next) => {
     try {
-        const { orderId } = req.params;
-        const order = await database_1.default.order.findUnique({
+        const orderId = firstString(req.params.orderId);
+        if (!orderId) {
+            res.status(400).json({ success: false, message: "Invalid order id" });
+            return;
+        }
+        const order = (await database_1.default.order.findUnique({
             where: { id: orderId },
             include: {
                 items: {
                     include: { product: true },
                 },
             },
-        });
+        }));
         if (!order) {
             res.status(404).json({ success: false, message: "Order not found" });
             return;
@@ -560,7 +586,7 @@ const cancelPendingOrder = async (req, res, next) => {
             return;
         }
         // Mark order as cancelled (stock was never decremented, so no need to restore)
-        const cancelledOrder = await database_1.default.order.update({
+        const cancelledOrder = (await database_1.default.order.update({
             where: { id: orderId },
             data: {
                 status: "CANCELLED",
@@ -571,7 +597,7 @@ const cancelPendingOrder = async (req, res, next) => {
                     include: { product: true },
                 },
             },
-        });
+        }));
         res.json({
             success: true,
             message: "Order cancelled successfully",
@@ -652,19 +678,22 @@ const getAllOrders = async (req, res, next) => {
 exports.getAllOrders = getAllOrders;
 const updateOrderStatus = async (req, res, next) => {
     try {
-        const { orderId } = req.params;
+        const orderId = firstString(req.params.orderId);
+        if (!orderId) {
+            throw new errorHandler_1.AppError("Invalid order id", 400);
+        }
         const { status } = req.body;
         if (!isOrderStatus(status)) {
             throw new errorHandler_1.AppError("Invalid order status", 400);
         }
-        const existingOrder = await database_1.default.order.findUnique({
+        const existingOrder = (await database_1.default.order.findUnique({
             where: { id: orderId },
             select: {
                 id: true,
                 status: true,
                 paymentStatus: true,
             },
-        });
+        }));
         if (!existingOrder) {
             throw new errorHandler_1.AppError("Order not found", 404);
         }
@@ -675,7 +704,7 @@ const updateOrderStatus = async (req, res, next) => {
         if (!allowedStatuses.includes(status)) {
             throw new errorHandler_1.AppError(`Cannot change order status from ${existingOrder.status} to ${status}`, 400);
         }
-        const order = await database_1.default.order.update({
+        const order = (await database_1.default.order.update({
             where: { id: orderId },
             data: { status },
             include: {
@@ -697,7 +726,7 @@ const updateOrderStatus = async (req, res, next) => {
                     },
                 },
             },
-        });
+        }));
         // Send status update email (non-blocking)
         if (order.user?.email) {
             (0, email_1.sendOrderStatusEmail)(order.user.email, {

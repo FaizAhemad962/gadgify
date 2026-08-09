@@ -4,20 +4,34 @@ import { AuthRequest } from "../middlewares/auth";
 import { DeliveryTrackingService } from "../services/deliveryTrackingService";
 import { DeliveryMetricsService } from "../services/deliveryMetricsService";
 
+const firstString = (value: unknown): string => {
+  if (Array.isArray(value)) {
+    return value[0] ?? "";
+  }
+  return typeof value === "string" ? value : "";
+};
+
 /**
  * GET /api/delivery/orders/:orderId/tracking
  * Get real-time tracking information for an order
  */
 export const getOrderTracking = async (req: AuthRequest, res: Response) => {
   try {
-    const { orderId } = req.params;
+    const orderId = firstString(req.params.orderId);
+    if (!orderId) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid order id",
+        data: null,
+      });
+    }
 
-    const assignment = await prisma.deliveryAssignment.findUnique({
+    const assignment = (await prisma.deliveryAssignment.findUnique({
       where: { orderId },
       include: {
         trackingPoints: { orderBy: { createdAt: "desc" }, take: 1 },
       },
-    });
+    })) as any;
 
     if (!assignment) {
       return res.status(404).json({
@@ -61,12 +75,19 @@ export const getOrderTracking = async (req: AuthRequest, res: Response) => {
  */
 export const getDeliveryStaffInfo = async (req: AuthRequest, res: Response) => {
   try {
-    const { orderId } = req.params;
+    const orderId = firstString(req.params.orderId);
+    if (!orderId) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid order id",
+        data: null,
+      });
+    }
 
-    const assignment = await prisma.deliveryAssignment.findUnique({
+    const assignment = (await prisma.deliveryAssignment.findUnique({
       where: { orderId },
       include: { deliveryStaff: true },
-    });
+    })) as any;
 
     if (!assignment) {
       return res.status(404).json({

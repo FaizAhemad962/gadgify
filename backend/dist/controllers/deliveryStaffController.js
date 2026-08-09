@@ -9,6 +9,12 @@ const deliveryAssignmentService_1 = require("../services/deliveryAssignmentServi
 const deliveryTrackingService_1 = require("../services/deliveryTrackingService");
 const deliveryMetricsService_1 = require("../services/deliveryMetricsService");
 const deliveryEarningsService_1 = require("../services/deliveryEarningsService");
+const firstString = (value) => {
+    if (Array.isArray(value)) {
+        return value[0] ?? "";
+    }
+    return typeof value === "string" ? value : "";
+};
 /**
  * GET /api/delivery/dashboard
  * Staff member's dashboard with key metrics
@@ -59,7 +65,14 @@ exports.getActiveOrders = getActiveOrders;
  */
 const acceptDelivery = async (req, res) => {
     try {
-        const { orderId } = req.params;
+        const orderId = firstString(req.params.orderId);
+        if (!orderId) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid order id",
+                data: null,
+            });
+        }
         const staffId = req.user?.id;
         const assignment = await deliveryAssignmentService_1.DeliveryAssignmentService.acceptOrder(orderId, staffId);
         res.status(200).json({
@@ -136,7 +149,14 @@ exports.updateLocation = updateLocation;
  */
 const markPickup = async (req, res) => {
     try {
-        const { orderId } = req.params;
+        const orderId = firstString(req.params.orderId);
+        if (!orderId) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid order id",
+                data: null,
+            });
+        }
         const staffId = req.user?.id;
         const assignment = await deliveryAssignmentService_1.DeliveryAssignmentService.markPickedUp(orderId, staffId);
         res.status(200).json({

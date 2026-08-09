@@ -2,6 +2,13 @@ import { Response, NextFunction } from "express";
 import { AuthRequest } from "../middlewares/auth";
 import roleChangeService from "../services/roleChangeService";
 
+const firstString = (value: unknown): string => {
+  if (Array.isArray(value)) {
+    return value[0] ?? "";
+  }
+  return typeof value === "string" ? value : "";
+};
+
 export const grantRoleChangePermission = async (
   req: AuthRequest,
   res: Response,
@@ -39,7 +46,7 @@ export const revokeRoleChangePermission = async (
   next: NextFunction,
 ) => {
   try {
-    const { userId } = req.params;
+    const userId = firstString(req.params.userId);
 
     if (!req.user?.id) {
       res
@@ -69,7 +76,7 @@ export const changeUserRole = async (
   next: NextFunction,
 ) => {
   try {
-    const { userId } = req.params;
+    const userId = firstString(req.params.userId);
     const { role } = req.body;
 
     if (!req.user?.id) {
@@ -126,7 +133,7 @@ export const getUserPermission = async (
   next: NextFunction,
 ) => {
   try {
-    const { userId } = req.params;
+    const userId = firstString(req.params.userId);
 
     if (!req.user?.id) {
       res

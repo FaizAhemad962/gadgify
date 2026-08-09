@@ -61,6 +61,13 @@ const transformOrder = (order: any) => {
   };
 };
 
+const firstString = (value: unknown): string => {
+  if (Array.isArray(value)) {
+    return value[0] ?? "";
+  }
+  return typeof value === "string" ? value : "";
+};
+
 export const createOrder = async (
   req: AuthRequest,
   res: Response,
@@ -278,9 +285,13 @@ export const getOrderById = async (
   next: NextFunction,
 ): Promise<void> => {
   try {
-    const { id } = req.params;
+    const id = firstString(req.params.id);
+    if (!id) {
+      res.status(400).json({ message: "Invalid order id" });
+      return;
+    }
 
-    const order = await prisma.order.findUnique({
+    const order = (await prisma.order.findUnique({
       where: { id },
       include: {
         items: {
@@ -305,7 +316,7 @@ export const getOrderById = async (
           },
         },
       },
-    });
+    })) as any;
 
     if (!order) {
       res.status(404).json({ message: "Order not found" });
@@ -330,11 +341,15 @@ export const createPaymentIntent = async (
   next: NextFunction,
 ): Promise<void> => {
   try {
-    const { orderId } = req.params;
+    const orderId = firstString(req.params.orderId);
+    if (!orderId) {
+      res.status(400).json({ message: "Invalid order id" });
+      return;
+    }
 
-    const order = await prisma.order.findUnique({
+    const order = (await prisma.order.findUnique({
       where: { id: orderId },
-    });
+    })) as any;
 
     if (!order || order.userId !== req.user!.id) {
       res.status(404).json({ message: "Order not found" });
@@ -375,11 +390,15 @@ export const confirmPayment = async (
   next: NextFunction,
 ): Promise<void> => {
   try {
-    const { orderId } = req.params;
+    const orderId = firstString(req.params.orderId);
+    if (!orderId) {
+      res.status(400).json({ message: "Invalid order id" });
+      return;
+    }
     const { razorpay_order_id, razorpay_payment_id, razorpay_signature } =
       req.body;
 
-    const order = await prisma.order.findUnique({
+    const order = (await prisma.order.findUnique({
       where: { id: orderId },
       include: {
         items: {
@@ -400,7 +419,7 @@ export const confirmPayment = async (
           },
         },
       },
-    });
+    })) as any;
 
     if (!order || order.userId !== req.user!.id) {
       res.status(404).json({ message: "Order not found" });
@@ -424,7 +443,7 @@ export const confirmPayment = async (
       return;
     }
 
-    const updatedOrder = await prisma.$transaction(async (tx) => {
+    const updatedOrder = (await prisma.$transaction(async (tx) => {
       for (const item of order.items) {
         const stockUpdate = await tx.product.updateMany({
           where: {
@@ -481,7 +500,7 @@ export const confirmPayment = async (
           },
         },
       });
-    });
+    })) as any;
 
     // Check for low stock and alert admin
     await checkLowStockAndAlert(updatedOrder.items);
@@ -516,13 +535,17 @@ export const retryPayment = async (
   next: NextFunction,
 ): Promise<void> => {
   try {
-    const { orderId } = req.params;
+    const orderId = firstString(req.params.orderId);
+    if (!orderId) {
+      res.status(400).json({ success: false, message: "Invalid order id" });
+      return;
+    }
 
     logger.info(
       `[retryPayment] Processing retry for order: ${orderId}, user: ${req.user!.id}`,
     );
 
-    const order = await prisma.order.findUnique({
+    const order = (await prisma.order.findUnique({
       where: { id: orderId },
       include: {
         items: {
@@ -543,7 +566,7 @@ export const retryPayment = async (
           },
         },
       },
-    });
+    })) as any;
 
     if (!order) {
       logger.warn(`[retryPayment] Order not found: ${orderId}`);
@@ -648,16 +671,20 @@ export const cancelPendingOrder = async (
   next: NextFunction,
 ): Promise<void> => {
   try {
-    const { orderId } = req.params;
+    const orderId = firstString(req.params.orderId);
+    if (!orderId) {
+      res.status(400).json({ success: false, message: "Invalid order id" });
+      return;
+    }
 
-    const order = await prisma.order.findUnique({
+    const order = (await prisma.order.findUnique({
       where: { id: orderId },
       include: {
         items: {
           include: { product: true },
         },
       },
-    });
+    })) as any;
 
     if (!order) {
       res.status(404).json({ success: false, message: "Order not found" });
@@ -680,7 +707,7 @@ export const cancelPendingOrder = async (
     }
 
     // Mark order as cancelled (stock was never decremented, so no need to restore)
-    const cancelledOrder = await prisma.order.update({
+    const cancelledOrder = (await prisma.order.update({
       where: { id: orderId },
       data: {
         status: "CANCELLED",
@@ -691,7 +718,7 @@ export const cancelPendingOrder = async (
           include: { product: true },
         },
       },
-    });
+    })) as any;
 
     res.json({
       success: true,
@@ -783,21 +810,24 @@ export const updateOrderStatus = async (
   next: NextFunction,
 ): Promise<void> => {
   try {
-    const { orderId } = req.params;
+    const orderId = firstString(req.params.orderId);
+    if (!orderId) {
+      throw new AppError("Invalid order id", 400);
+    }
     const { status } = req.body;
 
     if (!isOrderStatus(status)) {
       throw new AppError("Invalid order status", 400);
     }
 
-    const existingOrder = await prisma.order.findUnique({
+    const existingOrder = (await prisma.order.findUnique({
       where: { id: orderId },
       select: {
         id: true,
         status: true,
         paymentStatus: true,
       },
-    });
+    })) as any;
 
     if (!existingOrder) {
       throw new AppError("Order not found", 404);
@@ -819,7 +849,7 @@ export const updateOrderStatus = async (
       );
     }
 
-    const order = await prisma.order.update({
+    const order = (await prisma.order.update({
       where: { id: orderId },
       data: { status },
       include: {
@@ -841,7 +871,7 @@ export const updateOrderStatus = async (
           },
         },
       },
-    });
+    })) as any;
 
     // Send status update email (non-blocking)
     if (order.user?.email) {

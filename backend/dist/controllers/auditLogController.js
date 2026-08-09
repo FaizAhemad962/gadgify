@@ -5,6 +5,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.cleanOldLogs = exports.getAuditDashboard = exports.getFailedAuditLogs = exports.getAuditLogsByAction = exports.getEmailAuditLogs = exports.getUserAuditLogs = void 0;
 const auditLogService_1 = __importDefault(require("../services/auditLogService"));
+const firstString = (value) => {
+    if (Array.isArray(value)) {
+        return value[0] ?? "";
+    }
+    return typeof value === "string" ? value : "";
+};
 const getUserAuditLogs = async (req, res, next) => {
     try {
         if (!req.user?.id) {
@@ -13,8 +19,8 @@ const getUserAuditLogs = async (req, res, next) => {
                 .json({ success: false, message: "Authentication required" });
             return;
         }
-        const limit = Math.min(parseInt(req.query.limit) || 50, 100);
-        const offset = parseInt(req.query.offset) || 0;
+        const limit = Math.min(parseInt(firstString(req.query.limit)) || 50, 100);
+        const offset = parseInt(firstString(req.query.offset)) || 0;
         const logs = await auditLogService_1.default.getUserAuditLogs(req.user.id, limit, offset);
         res.json({
             success: true,
@@ -37,10 +43,10 @@ const getEmailAuditLogs = async (req, res, next) => {
         }
         // Only allow users to view their own email logs (or admins view any)
         const email = req.user.role === "ADMIN" || req.user.role === "SUPER_ADMIN"
-            ? req.params.email || req.user.email
+            ? firstString(req.params.email) || req.user.email
             : req.user.email;
-        const limit = Math.min(parseInt(req.query.limit) || 100, 200);
-        const offset = parseInt(req.query.offset) || 0;
+        const limit = Math.min(parseInt(firstString(req.query.limit)) || 100, 200);
+        const offset = parseInt(firstString(req.query.offset)) || 0;
         const logs = await auditLogService_1.default.getEmailAuditLogs(email, limit, offset);
         res.json({
             success: true,
@@ -60,9 +66,9 @@ const getAuditLogsByAction = async (req, res, next) => {
             res.status(403).json({ success: false, message: "Access denied" });
             return;
         }
-        const { action } = req.params;
-        const limit = Math.min(parseInt(req.query.limit) || 100, 200);
-        const offset = parseInt(req.query.offset) || 0;
+        const action = firstString(req.params.action);
+        const limit = Math.min(parseInt(firstString(req.query.limit)) || 100, 200);
+        const offset = parseInt(firstString(req.query.offset)) || 0;
         const logs = await auditLogService_1.default.getAuditLogsByAction(action, limit, offset);
         res.json({
             success: true,
@@ -82,8 +88,8 @@ const getFailedAuditLogs = async (req, res, next) => {
             res.status(403).json({ success: false, message: "Access denied" });
             return;
         }
-        const limit = Math.min(parseInt(req.query.limit) || 50, 100);
-        const offset = parseInt(req.query.offset) || 0;
+        const limit = Math.min(parseInt(firstString(req.query.limit)) || 50, 100);
+        const offset = parseInt(firstString(req.query.offset)) || 0;
         const logs = await auditLogService_1.default.getFailedAuditLogs(limit, offset);
         res.json({
             success: true,

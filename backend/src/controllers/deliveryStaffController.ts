@@ -6,6 +6,13 @@ import { DeliveryTrackingService } from "../services/deliveryTrackingService";
 import { DeliveryMetricsService } from "../services/deliveryMetricsService";
 import { DeliveryEarningsService } from "../services/deliveryEarningsService";
 
+const firstString = (value: unknown): string => {
+  if (Array.isArray(value)) {
+    return value[0] ?? "";
+  }
+  return typeof value === "string" ? value : "";
+};
+
 /**
  * GET /api/delivery/dashboard
  * Staff member's dashboard with key metrics
@@ -61,7 +68,14 @@ export const getActiveOrders = async (req: AuthRequest, res: Response) => {
  */
 export const acceptDelivery = async (req: AuthRequest, res: Response) => {
   try {
-    const { orderId } = req.params;
+    const orderId = firstString(req.params.orderId);
+    if (!orderId) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid order id",
+        data: null,
+      });
+    }
     const staffId = req.user?.id!;
 
     const assignment = await DeliveryAssignmentService.acceptOrder(
@@ -152,7 +166,14 @@ export const updateLocation = async (req: AuthRequest, res: Response) => {
  */
 export const markPickup = async (req: AuthRequest, res: Response) => {
   try {
-    const { orderId } = req.params;
+    const orderId = firstString(req.params.orderId);
+    if (!orderId) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid order id",
+        data: null,
+      });
+    }
     const staffId = req.user?.id!;
 
     const assignment = await DeliveryAssignmentService.markPickedUp(

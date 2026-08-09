@@ -5,6 +5,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.checkRoleChangePermission = exports.getUserPermission = exports.getAllPermissions = exports.changeUserRole = exports.revokeRoleChangePermission = exports.grantRoleChangePermission = void 0;
 const roleChangeService_1 = __importDefault(require("../services/roleChangeService"));
+const firstString = (value) => {
+    if (Array.isArray(value)) {
+        return value[0] ?? "";
+    }
+    return typeof value === "string" ? value : "";
+};
 const grantRoleChangePermission = async (req, res, next) => {
     try {
         const { email, canRemovePermission } = req.body;
@@ -28,7 +34,7 @@ const grantRoleChangePermission = async (req, res, next) => {
 exports.grantRoleChangePermission = grantRoleChangePermission;
 const revokeRoleChangePermission = async (req, res, next) => {
     try {
-        const { userId } = req.params;
+        const userId = firstString(req.params.userId);
         if (!req.user?.id) {
             res
                 .status(401)
@@ -49,7 +55,7 @@ const revokeRoleChangePermission = async (req, res, next) => {
 exports.revokeRoleChangePermission = revokeRoleChangePermission;
 const changeUserRole = async (req, res, next) => {
     try {
-        const { userId } = req.params;
+        const userId = firstString(req.params.userId);
         const { role } = req.body;
         if (!req.user?.id) {
             res
@@ -91,7 +97,7 @@ const getAllPermissions = async (req, res, next) => {
 exports.getAllPermissions = getAllPermissions;
 const getUserPermission = async (req, res, next) => {
     try {
-        const { userId } = req.params;
+        const userId = firstString(req.params.userId);
         if (!req.user?.id) {
             res
                 .status(401)

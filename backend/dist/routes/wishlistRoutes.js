@@ -8,6 +8,12 @@ const auth_1 = require("../middlewares/auth");
 const database_1 = __importDefault(require("../config/database"));
 const logger_1 = __importDefault(require("../utils/logger"));
 const router = (0, express_1.Router)();
+const firstString = (value) => {
+    if (Array.isArray(value)) {
+        return value[0] ?? '';
+    }
+    return typeof value === 'string' ? value : '';
+};
 // Get wishlist for current user
 router.get('/', auth_1.authenticate, async (req, res) => {
     try {
@@ -77,7 +83,10 @@ router.post('/', auth_1.authenticate, async (req, res) => {
 router.delete('/:productId', auth_1.authenticate, async (req, res) => {
     try {
         const userId = req.user.id;
-        const { productId } = req.params;
+        const productId = firstString(req.params.productId);
+        if (!productId) {
+            return res.status(400).json({ message: 'Product ID is required' });
+        }
         const wishlistItem = await database_1.default.wishlist.findUnique({
             where: {
                 userId_productId: { userId, productId },

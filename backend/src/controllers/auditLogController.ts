@@ -2,6 +2,14 @@ import { Response, NextFunction } from "express";
 import { AuthRequest } from "../middlewares/auth";
 import auditLogService from "../services/auditLogService";
 
+const firstString = (value: unknown): string => {
+  if (Array.isArray(value)) {
+    return value[0] ?? "";
+  }
+
+  return typeof value === "string" ? value : "";
+};
+
 export const getUserAuditLogs = async (
   req: AuthRequest,
   res: Response,
@@ -15,8 +23,8 @@ export const getUserAuditLogs = async (
       return;
     }
 
-    const limit = Math.min(parseInt(req.query.limit as string) || 50, 100);
-    const offset = parseInt(req.query.offset as string) || 0;
+    const limit = Math.min(parseInt(firstString(req.query.limit)) || 50, 100);
+    const offset = parseInt(firstString(req.query.offset)) || 0;
 
     const logs = await auditLogService.getUserAuditLogs(
       req.user.id,
@@ -50,11 +58,11 @@ export const getEmailAuditLogs = async (
     // Only allow users to view their own email logs (or admins view any)
     const email =
       req.user.role === "ADMIN" || req.user.role === "SUPER_ADMIN"
-        ? req.params.email || req.user.email
+        ? firstString(req.params.email) || req.user.email
         : req.user.email;
 
-    const limit = Math.min(parseInt(req.query.limit as string) || 100, 200);
-    const offset = parseInt(req.query.offset as string) || 0;
+    const limit = Math.min(parseInt(firstString(req.query.limit)) || 100, 200);
+    const offset = parseInt(firstString(req.query.offset)) || 0;
 
     const logs = await auditLogService.getEmailAuditLogs(email, limit, offset);
 
@@ -80,9 +88,9 @@ export const getAuditLogsByAction = async (
       return;
     }
 
-    const { action } = req.params;
-    const limit = Math.min(parseInt(req.query.limit as string) || 100, 200);
-    const offset = parseInt(req.query.offset as string) || 0;
+    const action = firstString(req.params.action);
+    const limit = Math.min(parseInt(firstString(req.query.limit)) || 100, 200);
+    const offset = parseInt(firstString(req.query.offset)) || 0;
 
     const logs = await auditLogService.getAuditLogsByAction(
       action,
@@ -112,8 +120,8 @@ export const getFailedAuditLogs = async (
       return;
     }
 
-    const limit = Math.min(parseInt(req.query.limit as string) || 50, 100);
-    const offset = parseInt(req.query.offset as string) || 0;
+    const limit = Math.min(parseInt(firstString(req.query.limit)) || 50, 100);
+    const offset = parseInt(firstString(req.query.offset)) || 0;
 
     const logs = await auditLogService.getFailedAuditLogs(limit, offset);
 
