@@ -10,7 +10,6 @@
   ],
   "rewrites": [
     { "source": "/api/:path*", "destination": "/backend/api/vercel.ts" },
-    { "source": "/health", "destination": "/backend/api/vercel.ts" },
-    { "source": "/:path*", "destination": "/frontend/:path*" }
+    { "source": "/health", "destination": "/backend/api/vercel.ts" }
   ]
 }
