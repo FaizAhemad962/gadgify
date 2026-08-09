@@ -1,15 +1,17 @@
 {
   "version": 2,
   "builds": [
-    { "src": "backend/api/**/*.{js,ts}", "use": "@vercel/node" },
+    { "src": "backend/api/vercel.js", "use": "@vercel/node" },
     {
       "src": "frontend/package.json",
       "use": "@vercel/static-build",
       "config": { "distDir": "dist" }
     }
   ],
-  "rewrites": [
-    { "source": "/api/:path*", "destination": "/backend/api/vercel.ts" },
-    { "source": "/health", "destination": "/backend/api/vercel.ts" }
+  "routes": [
+    { "src": "/api/(.*)", "dest": "/backend/api/vercel.js?path=$1" },
+    { "src": "/health", "dest": "/backend/api/vercel.js?path=health" },
+    { "handle": "filesystem" },
+    { "src": "/(.*)", "dest": "/index.html" }
   ]
 }

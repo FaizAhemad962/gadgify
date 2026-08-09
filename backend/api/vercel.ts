@@ -5,6 +5,20 @@ let initializationStarted = false;
 let initialized = false;
 
 const resolveForwardedPath = (req: any): string | null => {
+  const normalize = (value: unknown): string | null => {
+    if (!value) return null;
+    const raw = Array.isArray(value) ? value[0] : String(value);
+    if (!raw) return null;
+    const path = raw.startsWith("/") ? raw : `/${raw}`;
+    if (path === "/health" || path.startsWith("/api/")) {
+      return path;
+    }
+    return `/api${path}`;
+  };
+
+  const queryPath = normalize(req.query?.path || req.query?.pathname);
+  if (queryPath) return queryPath;
+
   const headers = [
     req.headers?.["x-vercel-original-url"],
     req.headers?.["x-original-url"],
@@ -19,18 +33,13 @@ const resolveForwardedPath = (req: any): string | null => {
         ? new URL(value)
         : new URL(value, "http://localhost");
       if (parsed.pathname && parsed.pathname !== "/") {
-        return `${parsed.pathname}${parsed.search}`;
+        return normalize(`${parsed.pathname}${parsed.search}`);
       }
     } catch {
       if (value.startsWith("/")) {
-        return value;
+        return normalize(value);
       }
     }
-  }
-
-  const queryPath = req.query?.path || req.query?.pathname;
-  if (typeof queryPath === "string" && queryPath.trim()) {
-    return queryPath.startsWith("/") ? queryPath : `/${queryPath}`;
   }
 
   return null;
