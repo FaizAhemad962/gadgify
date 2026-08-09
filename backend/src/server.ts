@@ -93,6 +93,10 @@ app.use(
 
       const allowedOrigins = [config.frontendUrl.replace(/\/$/, "")];
 
+      if (process.env.VERCEL_URL) {
+        allowedOrigins.push(`https://${process.env.VERCEL_URL}`);
+      }
+
       // Add common development origins if in development mode
       if (process.env.NODE_ENV !== "production") {
         allowedOrigins.push("http://localhost:3000");
@@ -128,9 +132,14 @@ app.use(
       }
 
       // Check if the clean origin is in our allowed list
-      const isAllowed = allowedOrigins.some(
-        (allowed) => allowed.replace(/\/$/, "") === cleanOrigin,
-      );
+      const isVercelPreview =
+        process.env.VERCEL === "1" &&
+        /^https:\/\/[a-z0-9-]+\.vercel\.app$/i.test(cleanOrigin);
+      const isAllowed =
+        isVercelPreview ||
+        allowedOrigins.some(
+          (allowed) => allowed.replace(/\/$/, "") === cleanOrigin,
+        );
 
       if (isAllowed) {
         callback(null, true);
@@ -207,6 +216,15 @@ app.use(
 );
 
 // Health check
+app.get("/api/ping", (req: Request, res: Response) => {
+  res.json({
+    status: "ok",
+    runtime: "vercel",
+    timestamp: new Date().toISOString(),
+    hasDatabaseUrl: Boolean(process.env.DATABASE_URL),
+  });
+});
+
 app.get("/health", async (req: Request, res: Response) => {
   try {
     const isDbHealthy = await checkConnectionHealth();
@@ -261,8 +279,12 @@ const PORT = config.port;
 
 export const initializeApp = async () => {
   try {
-    // Initialize database connection pool
-    await initializeConnectionPool();
+    if (process.env.VERCEL === "1") {
+      logger.info("Skipping startup database health check on Vercel");
+    } else {
+      // Initialize database connection pool
+      await initializeConnectionPool();
+    }
 
     // ✅ SECURITY: Initialize Redis for token blacklist and session management
     await initializeRedis();

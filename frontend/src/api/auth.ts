@@ -39,7 +39,8 @@ export const authApi = {
 
   getProfile: async (): Promise<User> => {
     const response = await apiClient.get<User>("/auth/profile", {
-      withCredentials: true
+      withCredentials: true,
+      timeout: 5000,
     });
     return response.data;
   },
