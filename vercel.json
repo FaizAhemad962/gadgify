@@ -8,9 +8,9 @@
       "config": { "distDir": "dist" }
     }
   ],
-  "routes": [
-    { "src": "^/api/(.*)$", "dest": "/backend/api/vercel.ts?path=$1" },
-    { "src": "^/health$", "dest": "/backend/api/vercel.ts?path=health" },
-    { "src": "^/(.*)$", "dest": "/frontend/$1" }
+  "rewrites": [
+    { "source": "/api/:path*", "destination": "/backend/api/vercel.ts" },
+    { "source": "/health", "destination": "/backend/api/vercel.ts" },
+    { "source": "/:path*", "destination": "/frontend/:path*" }
   ]
 }
