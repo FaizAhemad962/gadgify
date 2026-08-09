@@ -2,12 +2,15 @@
   "services": {
     "frontend": {
       "root": "frontend/",
-      "framework": "vite"
+      "framework": "vite",
+      "buildCommand": "npm run build",
+      "outputDirectory": "dist"
     },
     "backend": {
       "root": "backend/",
       "entrypoint": "src/server.ts",
-      "framework": "express"
+      "framework": "express",
+      "buildCommand": "prisma generate"
     }
   },
   "rewrites": [
