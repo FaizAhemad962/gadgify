@@ -38,6 +38,12 @@ Current Vercel link metadata:
 - `.vercel/project.json` links project `learn-deployment`
 - `.vercel/repo.json` still records the project directory as `frontend`
 
+Current deployment shape after the cleanup:
+
+- root `vercel.json` now uses Vercel `services`
+- nested `frontend/vercel.json` and `backend/vercel.json` were removed
+- the backend is intended to run from `backend/src/server.ts`
+
 ## Config Files Reviewed
 
 - [root `vercel.json`](./vercel.json)
@@ -64,11 +70,8 @@ Current Vercel link metadata:
 
 ## Known Mismatches
 
-- The monorepo is currently linked in Vercel metadata to `frontend`, which conflicts with the root-level combined `vercel.json`.
-- The root `vercel.json` is trying to serve the frontend and proxy the backend inside one project. That is not the documented monorepo flow for separate frontend/backend projects.
-- `backend/vercel.json` exists separately, which is only useful if `backend/` is deployed as its own Vercel project.
-- `frontend/vercel.json` exists separately, which is only useful if `frontend/` is deployed as its own Vercel project.
-- The presence of both `backend/api/vercel.js` and `backend/api/vercel.ts` means production must match the JS wrapper if Vercel is using the backend folder directly.
+- The `.vercel/repo.json` metadata may still reflect an older root-directory link and should be refreshed or re-linked if Vercel CLI keeps using stale project metadata.
+- `backend/api/vercel.js` and `backend/api/vercel.ts` are now legacy wrappers and are no longer the documented entrypoint for the backend service.
 - The GitHub Actions workflow in `.github/workflows/ci.yaml` is Azure deployment logic, not Vercel deployment logic.
 
 ## Important Unknowns
@@ -81,25 +84,28 @@ Current Vercel link metadata:
 
 ## Current Diagnosis
 
-The repo can be made to work on Vercel, but the current setup is not aligned with the documented monorepo pattern.
+The repo is now much closer to the documented one-project Services pattern.
 
 The most likely workable options are:
 
-1. Separate Vercel projects
+1. One Vercel project using Services
+   - frontend service at `frontend/`
+   - backend service at `backend/`
+   - public traffic routed by top-level rewrites
+
+2. Separate Vercel projects
    - one project for `frontend`
    - one project for `backend`
-   - proxy the frontend to the backend using a stable backend URL or related projects
-
-2. Single Vercel project
-   - frontend at the project root
-   - backend moved to a root `api/` directory
-   - avoid nested `backend/api/vercel.*` routing if possible
-
-The current repository is closer to option 1 in structure, but the active root `vercel.json` is trying to behave like option 2.
+   - not needed if Services is available and enabled
 
 ## Recommendation
 
-For this repository, the documented Vercel-native approach is to split the monorepo into separate projects and give each app its own Root Directory.
+For this repository, the documented Vercel-native approach for a single shared domain is now the Services model:
+
+- set the project framework to `Services` in the Vercel dashboard
+- keep the root `vercel.json` services configuration
+- route `/api/*` to the backend service
+- route everything else to the frontend service
 
 That is the least ambiguous path because:
 
@@ -110,16 +116,13 @@ That is the least ambiguous path because:
 
 ## Action Items
 
-- Remove the combined root deployment shape if you want to follow the docs strictly.
-- Decide whether the target deployment is:
-  - one Vercel project
-  - or two Vercel projects
-- If using one Vercel project, move the backend to the root `api/` convention.
-- If using two Vercel projects, create one Vercel project per app directory and remove the custom cross-folder routing pressure.
-- Verify the current Vercel dashboard Root Directory and Deployment Protection settings.
+- In Vercel dashboard, set the project framework to `Services`.
+- Redeploy from the repo root.
+- Verify the current Vercel dashboard Root Directory is not pinned to `frontend`.
+- Verify Deployment Protection is not blocking public traffic.
 
 ## Practical Verdict
 
-If the question is "is the current app already set up according to Vercel docs?", the answer is no.
+If the question is "is the current app already set up according to Vercel docs?", the answer is now closer to yes, but it still depends on the dashboard framework setting being switched to `Services`.
 
-If the question is "can it be made to work on Vercel?", the answer is yes, but the repo should be normalized to one of the documented patterns above rather than mixing both.
+If the question is "can it be made to work on Vercel without splitting into two projects?", the answer is yes, and the Services model is the right fit.
