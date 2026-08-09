@@ -80,7 +80,11 @@ exports.createFAQ = createFAQ;
 // Update FAQ (Admin only)
 const updateFAQ = async (req, res, next) => {
     try {
-        const { id } = req.params;
+        const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+        if (!id) {
+            res.status(400).json({ success: false, message: "Invalid FAQ id" });
+            return;
+        }
         const { question, answer, category, order, isActive } = req.body;
         const faq = await prisma.fAQ.update({
             where: { id },
@@ -106,7 +110,11 @@ exports.updateFAQ = updateFAQ;
 // Delete FAQ (Admin only)
 const deleteFAQ = async (req, res, next) => {
     try {
-        const { id } = req.params;
+        const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+        if (!id) {
+            res.status(400).json({ success: false, message: "Invalid FAQ id" });
+            return;
+        }
         await prisma.fAQ.delete({ where: { id } });
         res.json({
             success: true,
@@ -121,7 +129,11 @@ exports.deleteFAQ = deleteFAQ;
 // Increment FAQ views
 const incrementFAQViews = async (req, res, next) => {
     try {
-        const { id } = req.params;
+        const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+        if (!id) {
+            res.status(400).json({ success: false, message: "Invalid FAQ id" });
+            return;
+        }
         const faq = await prisma.fAQ.update({
             where: { id },
             data: { views: { increment: 1 } },

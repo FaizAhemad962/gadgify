@@ -73,7 +73,11 @@ export const updateAddress = async (
 ): Promise<void> => {
   try {
     const userId = req.user!.id;
-    const { id } = req.params;
+    const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+    if (!id) {
+      res.status(400).json({ message: "Invalid address id" });
+      return;
+    }
     const { label, name, phone, address, city, state, pincode, isDefault } =
       req.body;
 
@@ -122,7 +126,11 @@ export const deleteAddress = async (
 ): Promise<void> => {
   try {
     const userId = req.user!.id;
-    const { id } = req.params;
+    const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+    if (!id) {
+      res.status(400).json({ message: "Invalid address id" });
+      return;
+    }
 
     const existing = await prisma.address.findFirst({
       where: { id, userId },

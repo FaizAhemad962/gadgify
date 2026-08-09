@@ -14,10 +14,7 @@ import {
   CircularProgress,
   Typography,
 } from "@/mui/material";
-import {
-  Delete as DeleteIcon,
-  Refresh as RefreshIcon,
-} from "@/mui/icons";
+import { Delete as DeleteIcon, Refresh as RefreshIcon } from "@/mui/icons";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { apiClient } from "@/api/client";
@@ -29,6 +26,7 @@ import {
   getPaymentStatusLabel,
 } from "@/utils/orderStatus";
 import { CustomButton } from "@/components/ui/CustomButton";
+import loadRazorpay from "@/utils/loadRazorpay";
 
 interface OrderCardProps {
   orderId: string;
@@ -58,8 +56,14 @@ export const PendingOrderCard: React.FC<OrderCardProps> = ({
       );
       return response.data;
     },
-    onSuccess: (data) => {
-      // Open Razorpay payment gateway
+    onSuccess: async (data) => {
+      try {
+        await loadRazorpay();
+      } catch {
+        // Failed to load script — ignore for now, mutation will have handled error
+        return;
+      }
+
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const RazorpayWindow = window as any;
       if (RazorpayWindow.Razorpay) {

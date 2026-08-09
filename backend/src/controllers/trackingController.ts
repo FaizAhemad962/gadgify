@@ -101,7 +101,16 @@ export const getDeliveryStaffInfo = async (req: AuthRequest, res: Response) => {
  */
 export const rateDelivery = async (req: AuthRequest, res: Response) => {
   try {
-    const { orderId } = req.params;
+    const orderId = Array.isArray(req.params.orderId)
+      ? req.params.orderId[0]
+      : req.params.orderId;
+    if (!orderId) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid order id",
+        data: null,
+      });
+    }
     const { rating, review } = req.body;
 
     const assignment = await prisma.deliveryAssignment.findUnique({

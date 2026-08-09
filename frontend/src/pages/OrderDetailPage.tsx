@@ -29,6 +29,7 @@ import {
   getPaymentStatusLabel,
 } from "@/utils/orderStatus";
 import { CustomButton } from "@/components/ui/CustomButton";
+import loadRazorpay from "@/utils/loadRazorpay";
 
 declare global {
   interface Window {
@@ -104,6 +105,13 @@ const OrderDetailPage = () => {
           color: tokens.primary,
         },
       };
+
+      try {
+        await loadRazorpay();
+      } catch {
+        setError(t("errors.failedToInitiatePayment"));
+        return;
+      }
 
       const razorpay = new window.Razorpay(options);
       razorpay.on("payment.failed", function () {

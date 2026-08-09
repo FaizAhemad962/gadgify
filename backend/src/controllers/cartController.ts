@@ -68,7 +68,7 @@ export const addToCart = async (
     }
 
     // Use transaction to handle concurrent add-to-cart requests safely
-    const updatedCart = await prisma.$transaction(async (tx) => {
+    const updatedCart = await prisma.$transaction(async (tx: any) => {
       // Get or create cart
       let cart = await tx.cart.findUnique({ where: { userId } });
       if (!cart) {
@@ -130,12 +130,26 @@ export const updateCartItem = async (
   next: NextFunction,
 ): Promise<void> => {
   try {
-    const { itemId } = req.params;
+    const rawItemId = req.params.itemId;
+    const itemId = Array.isArray(rawItemId) ? rawItemId[0] : rawItemId;
     const { quantity } = req.body;
+
+    if (!itemId) {
+      res.status(400).json({ message: "Cart item id is required" });
+      return;
+    }
 
     const cartItem = await prisma.cartItem.findUnique({
       where: { id: itemId },
-      include: { cart: true, product: true },
+      include: {
+        cart: true,
+        product: {
+          select: {
+            id: true,
+            stock: true,
+          },
+        },
+      },
     });
 
     if (!cartItem || cartItem.cart.userId !== req.user!.id) {
@@ -174,7 +188,13 @@ export const removeFromCart = async (
   next: NextFunction,
 ): Promise<void> => {
   try {
-    const { itemId } = req.params;
+    const rawItemId = req.params.itemId;
+    const itemId = Array.isArray(rawItemId) ? rawItemId[0] : rawItemId;
+
+    if (!itemId) {
+      res.status(400).json({ message: "Cart item id is required" });
+      return;
+    }
 
     const cartItem = await prisma.cartItem.findUnique({
       where: { id: itemId },

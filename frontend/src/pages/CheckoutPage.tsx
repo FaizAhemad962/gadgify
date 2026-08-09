@@ -29,6 +29,7 @@ import { useCart } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
 import { tokens } from "@/theme/theme";
 import { ErrorHandler } from "../utils/errorHandler";
+import loadRazorpay from "@/utils/loadRazorpay";
 import { ordersApi } from "../api/orders";
 import { addressesApi, type Address } from "../api/addresses";
 import { useCoupon } from "../hooks/useCoupon";
@@ -171,6 +172,13 @@ const CheckoutPage = () => {
             color: tokens.primary,
           },
         };
+
+        try {
+          await loadRazorpay();
+        } catch {
+          setError(t("errors.failedToInitiatePayment"));
+          return;
+        }
 
         const razorpay = new (
           window as unknown as {
@@ -381,7 +389,8 @@ const CheckoutPage = () => {
                             selectedAddressId === addr.id
                               ? `${tokens.accent}0F`
                               : tokens.white,
-                          transition: "border-color 160ms ease, background-color 160ms ease",
+                          transition:
+                            "border-color 160ms ease, background-color 160ms ease",
                         }}
                         onClick={() => setSelectedAddressId(addr.id)}
                       >
@@ -764,7 +773,11 @@ const CheckoutPage = () => {
                       InputProps={{
                         startAdornment: (
                           <LocalOffer
-                            sx={{ ...appIconSx.md, mr: 1, color: tokens.gray400 }}
+                            sx={{
+                              ...appIconSx.md,
+                              mr: 1,
+                              color: tokens.gray400,
+                            }}
                           />
                         ),
                       }}
@@ -874,7 +887,9 @@ const CheckoutPage = () => {
                 size="large"
                 type="submit"
                 disabled={createOrderMutation.isPending}
-                endIcon={!createOrderMutation.isPending ? <ArrowForward /> : null}
+                endIcon={
+                  !createOrderMutation.isPending ? <ArrowForward /> : null
+                }
                 sx={{
                   mb: 2,
                   py: 1.5,

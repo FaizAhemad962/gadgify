@@ -112,11 +112,24 @@ const addToCart = async (req, res, next) => {
 exports.addToCart = addToCart;
 const updateCartItem = async (req, res, next) => {
     try {
-        const { itemId } = req.params;
+        const rawItemId = req.params.itemId;
+        const itemId = Array.isArray(rawItemId) ? rawItemId[0] : rawItemId;
         const { quantity } = req.body;
+        if (!itemId) {
+            res.status(400).json({ message: "Cart item id is required" });
+            return;
+        }
         const cartItem = await database_1.default.cartItem.findUnique({
             where: { id: itemId },
-            include: { cart: true, product: true },
+            include: {
+                cart: true,
+                product: {
+                    select: {
+                        id: true,
+                        stock: true,
+                    },
+                },
+            },
         });
         if (!cartItem || cartItem.cart.userId !== req.user.id) {
             res.status(404).json({ message: "Cart item not found" });
@@ -147,7 +160,12 @@ const updateCartItem = async (req, res, next) => {
 exports.updateCartItem = updateCartItem;
 const removeFromCart = async (req, res, next) => {
     try {
-        const { itemId } = req.params;
+        const rawItemId = req.params.itemId;
+        const itemId = Array.isArray(rawItemId) ? rawItemId[0] : rawItemId;
+        if (!itemId) {
+            res.status(400).json({ message: "Cart item id is required" });
+            return;
+        }
         const cartItem = await database_1.default.cartItem.findUnique({
             where: { id: itemId },
             include: { cart: true },

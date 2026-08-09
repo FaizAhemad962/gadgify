@@ -172,7 +172,13 @@ export const listAssignments = async (req: AuthRequest, res: Response) => {
  */
 export const getAssignmentDetails = async (req: AuthRequest, res: Response) => {
   try {
-    const { id } = req.params;
+    const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+    if (!id) {
+      res
+        .status(400)
+        .json({ success: false, message: "Invalid assignment id" });
+      return;
+    }
 
     const assignment = await prisma.deliveryAssignment.findUnique({
       where: { id },

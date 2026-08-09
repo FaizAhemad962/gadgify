@@ -38,7 +38,11 @@ export const updateUserRole = async (
   next: NextFunction,
 ) => {
   try {
-    const { id } = req.params;
+    const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+    if (!id) {
+      res.status(400).json({ success: false, message: "Invalid user id" });
+      return;
+    }
     const { role } = req.body;
 
     // Prevent admin from changing their own role
@@ -78,7 +82,11 @@ export const softDeleteUser = async (
   next: NextFunction,
 ) => {
   try {
-    const { id } = req.params;
+    const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+    if (!id) {
+      res.status(400).json({ success: false, message: "Invalid user id" });
+      return;
+    }
 
     // Prevent admin from deleting themselves
     if (req.user?.id === id) {

@@ -74,7 +74,11 @@ export const updateCategory = async (
   next: NextFunction,
 ): Promise<void> => {
   try {
-    const { id } = req.params;
+    const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+    if (!id) {
+      res.status(400).json({ message: "Invalid category id" });
+      return;
+    }
     const { name, description, icon, sortOrder, isActive } = req.body;
 
     const existing = await prisma.category.findUnique({ where: { id } });
@@ -118,7 +122,11 @@ export const deleteCategory = async (
   next: NextFunction,
 ): Promise<void> => {
   try {
-    const { id } = req.params;
+    const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+    if (!id) {
+      res.status(400).json({ message: "Invalid category id" });
+      return;
+    }
 
     const existing = await prisma.category.findUnique({ where: { id } });
     if (!existing) {

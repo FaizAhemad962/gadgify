@@ -99,7 +99,11 @@ export const updateFAQ = async (
   next: NextFunction,
 ) => {
   try {
-    const { id } = req.params;
+    const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+    if (!id) {
+      res.status(400).json({ success: false, message: "Invalid FAQ id" });
+      return;
+    }
     const { question, answer, category, order, isActive } = req.body;
 
     const faq = await prisma.fAQ.update({
@@ -130,7 +134,11 @@ export const deleteFAQ = async (
   next: NextFunction,
 ) => {
   try {
-    const { id } = req.params;
+    const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+    if (!id) {
+      res.status(400).json({ success: false, message: "Invalid FAQ id" });
+      return;
+    }
 
     await prisma.fAQ.delete({ where: { id } });
 
@@ -150,7 +158,11 @@ export const incrementFAQViews = async (
   next: NextFunction,
 ) => {
   try {
-    const { id } = req.params;
+    const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+    if (!id) {
+      res.status(400).json({ success: false, message: "Invalid FAQ id" });
+      return;
+    }
 
     const faq = await prisma.fAQ.update({
       where: { id },
