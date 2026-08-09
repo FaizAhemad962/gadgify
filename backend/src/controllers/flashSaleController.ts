@@ -1,7 +1,5 @@
-import { PrismaClient } from "@prisma/client";
 import { Request, Response, NextFunction } from "express";
-
-const prisma = new PrismaClient();
+import prisma from "../config/database";
 
 // Get all active flash sales
 export const getAllFlashSales = async (

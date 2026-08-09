@@ -8,7 +8,7 @@ export const apiClient = axios.create({
   headers: {
     "Content-Type": "application/json",
   },
-  timeout: 30000, // 30 second timeout
+  timeout: 10000, // Keep serverless/API failures from hanging the UI.
   // ✅ SECURITY: Enable cross-domain cookie support (for production domains)
   withCredentials: true,
 });

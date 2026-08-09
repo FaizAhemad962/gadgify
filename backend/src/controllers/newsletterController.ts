@@ -1,9 +1,7 @@
-import { PrismaClient } from "@prisma/client";
 import { Request, Response, NextFunction } from "express";
 import { sendNewsletterWelcomeEmail } from "../utils/email";
 import logger from "../utils/logger";
-
-const prisma = new PrismaClient();
+import prisma from "../config/database";
 
 /**
  * Subscribe to newsletter
