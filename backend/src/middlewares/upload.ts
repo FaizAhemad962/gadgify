@@ -7,10 +7,13 @@ import {
 } from "../utils/fileValidation";
 import logger from "../utils/logger";
 
-// Ensure uploads directory exists
-// Use Render's persistent disk in production, local path in development
+// Ensure uploads directory exists.
+// Vercel functions can only write to /tmp. Uploaded files stored there are
+// ephemeral, so production media should be moved to external object storage.
 const uploadsDir =
-  process.env.NODE_ENV === "production"
+  process.env.VERCEL === "1"
+    ? "/tmp/uploads"
+    : process.env.NODE_ENV === "production"
     ? "/var/data/uploads"
     : path.join(__dirname, "../../uploads");
 
@@ -18,17 +21,22 @@ if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir, { recursive: true });
 }
 
-// Configure storage
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, uploadsDir);
-  },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    const prefix = file.fieldname === "image" ? "profile-" : "product-";
-    cb(null, prefix + uniqueSuffix + path.extname(file.originalname));
-  },
-});
+const isServerless = process.env.VERCEL === "1";
+
+// Configure storage. Vercel Blob uploads need an in-memory buffer; local and
+// server deployments keep the existing disk behavior.
+const storage = isServerless
+  ? multer.memoryStorage()
+  : multer.diskStorage({
+      destination: (req, file, cb) => {
+        cb(null, uploadsDir);
+      },
+      filename: (req, file, cb) => {
+        const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+        const prefix = file.fieldname === "image" ? "profile-" : "product-";
+        cb(null, prefix + uniqueSuffix + path.extname(file.originalname));
+      },
+    });
 
 // File filter for images
 const imageFileFilter = (
@@ -76,7 +84,7 @@ export const validateMagicBytesMiddleware = (allowedExtensions: string[]) => {
     }
 
     try {
-      const fileBuffer = fs.readFileSync(req.file.path);
+      const fileBuffer = req.file.buffer || fs.readFileSync(req.file.path);
       const fileName = req.file.originalname;
       const mimeType = req.file.mimetype;
 
@@ -84,7 +92,9 @@ export const validateMagicBytesMiddleware = (allowedExtensions: string[]) => {
 
       if (!validation.valid) {
         // Delete the uploaded file
-        fs.unlinkSync(req.file.path);
+        if (req.file.path) {
+          fs.unlinkSync(req.file.path);
+        }
 
         const detectedType = getFileTypeFromMagicBytes(fileBuffer);
         const errorMsg =
