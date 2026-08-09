@@ -2,53 +2,58 @@ import winston from 'winston'
 import path from 'path'
 import fs from 'fs'
 
-// Create logs directory if it doesn't exist
-const logsDir = path.join(__dirname, '../../logs')
-if (!fs.existsSync(logsDir)) {
-  fs.mkdirSync(logsDir, { recursive: true })
-}
+const isServerless = process.env.VERCEL === '1'
+const isProduction = process.env.NODE_ENV === 'production'
+const transports: winston.transport[] = []
 
-const logger = winston.createLogger({
-  level: process.env.NODE_ENV === 'production' ? 'info' : 'debug',
-  format: winston.format.combine(
-    winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
-    winston.format.errors({ stack: true }),
-    winston.format.json()
-  ),
-  transports: [
-    // Error logs
-    new winston.transports.File({ 
-      filename: path.join(logsDir, 'error.log'), 
+if (!isServerless) {
+  // Local/server deployments can write log files. Vercel functions cannot write
+  // to the bundled app directory, so they must log to stdout/stderr instead.
+  const logsDir = path.join(__dirname, '../../logs')
+  if (!fs.existsSync(logsDir)) {
+    fs.mkdirSync(logsDir, { recursive: true })
+  }
+
+  transports.push(
+    new winston.transports.File({
+      filename: path.join(logsDir, 'error.log'),
       level: 'error',
-      maxsize: 5242880, // 5MB
+      maxsize: 5242880,
       maxFiles: 5,
     }),
-    // Combined logs
-    new winston.transports.File({ 
+    new winston.transports.File({
       filename: path.join(logsDir, 'combined.log'),
-      maxsize: 5242880, // 5MB
+      maxsize: 5242880,
       maxFiles: 5,
     }),
-    // Security events
-    new winston.transports.File({ 
+    new winston.transports.File({
       filename: path.join(logsDir, 'security.log'),
       level: 'warn',
-      maxsize: 5242880, // 5MB
+      maxsize: 5242880,
       maxFiles: 5,
     }),
-  ],
-})
+  )
+}
 
-// Console output in development
-if (process.env.NODE_ENV !== 'production') {
-  logger.add(
+if (isServerless || !isProduction) {
+  transports.push(
     new winston.transports.Console({
       format: winston.format.combine(
-        winston.format.colorize(),
+        isProduction ? winston.format.uncolorize() : winston.format.colorize(),
         winston.format.simple()
       ),
     })
   )
 }
+
+const logger = winston.createLogger({
+  level: isProduction ? 'info' : 'debug',
+  format: winston.format.combine(
+    winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
+    winston.format.errors({ stack: true }),
+    winston.format.json()
+  ),
+  transports,
+})
 
 export default logger
