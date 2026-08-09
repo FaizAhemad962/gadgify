@@ -3,22 +3,39 @@ const serverless = require("serverless-http");
 const { default: app, initializeApp } = require("../src/server");
 
 let initialized = false;
-let handler;
+let initializingPromise = null;
+let handler = null;
+
+const initializeServerlessApp = async () => {
+  if (initialized && handler) {
+    return;
+  }
+
+  if (!initializingPromise) {
+    initializingPromise = initializeApp()
+      .then(() => {
+        handler = serverless(app);
+        initialized = true;
+      })
+      .catch((error) => {
+        initializingPromise = null;
+        throw error;
+      });
+  }
+
+  await initializingPromise;
+};
 
 async function vercelHandler(req, res) {
-  if (!initialized) {
-    initialized = true;
-    try {
-      await initializeApp();
-      handler = serverless(app);
-      console.log("App initialized for serverless function");
-    } catch (err) {
-      console.error("Serverless initialization failed:", err);
-      res.statusCode = 500;
-      res.end("Server initialization error");
-      return;
-    }
+  try {
+    await initializeServerlessApp();
+  } catch (err) {
+    console.error("Serverless initialization failed:", err);
+    res.statusCode = 500;
+    res.end("Server initialization error");
+    return;
   }
+
   return handler(req, res);
 }
 
