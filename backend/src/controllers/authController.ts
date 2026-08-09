@@ -31,6 +31,7 @@ import {
   isEmailRegisteredWithAnyRole,
 } from "../utils/userQueryHelper";
 import { setAuthCookie, clearAuthCookie } from "../utils/cookieHelper";
+import { isBlobStorageEnabled, uploadFileToBlob } from "../utils/blobStorage";
 
 // SECURITY: Track failed login attempts (use Redis in production)
 const failedLoginAttempts = new Map<
@@ -429,8 +430,9 @@ export const updateProfilePhoto = async (
       return;
     }
 
-    // Get file URL (relative path for serving via static middleware)
-    const profilePhotoUrl = `/uploads/${req.file.filename}`;
+    const profilePhotoUrl = isBlobStorageEnabled()
+      ? await uploadFileToBlob(req.file, "profiles")
+      : `/uploads/${req.file.filename}`;
 
     // Update user profile photo
     const updatedUser = await prisma.user.update({

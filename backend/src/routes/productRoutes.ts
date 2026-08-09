@@ -22,6 +22,7 @@ import {
   videoUpload,
   validateMagicBytesMiddleware,
 } from "../middlewares/upload";
+import { isBlobStorageEnabled, uploadFileToBlob } from "../utils/blobStorage";
 import { Request, Response } from "express";
 
 const router = Router();
@@ -39,12 +40,19 @@ router.post(
   uploadLimiter,
   upload.single("image"),
   validateMagicBytesMiddleware(["jpg", "jpeg", "png", "gif", "webp"]),
-  (req: Request, res: Response) => {
+  async (req: Request, res: Response, next) => {
     if (!req.file) {
       return res.status(400).json({ message: "No file uploaded" });
     }
-    const imageUrl = `/uploads/${req.file.filename}`;
-    res.json({ imageUrl });
+
+    try {
+      const imageUrl = isBlobStorageEnabled()
+        ? await uploadFileToBlob(req.file, "products")
+        : `/uploads/${req.file.filename}`;
+      res.json({ imageUrl });
+    } catch (error) {
+      next(error);
+    }
   },
 );
 
@@ -67,10 +75,17 @@ router.post(
       }
 
       // ✅ SECURITY: Validate magic bytes before saving
-      validateMagicBytesMiddleware(["mp4", "webm"])(req, res, () => {
+      validateMagicBytesMiddleware(["mp4", "webm"])(req, res, async () => {
         if (!res.headersSent) {
-          const videoUrl = `/uploads/${req.file?.filename}`;
-          res.json({ success: true, videoUrl });
+          try {
+            const videoUrl =
+              isBlobStorageEnabled() && req.file
+                ? await uploadFileToBlob(req.file, "videos")
+                : `/uploads/${req.file?.filename}`;
+            res.json({ success: true, videoUrl });
+          } catch (error) {
+            next(error);
+          }
         }
       });
     });
