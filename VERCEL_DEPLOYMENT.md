@@ -28,6 +28,10 @@ This guide is a short, practical setup for deploying Gadgify with Vercel.
    - any other frontend env variables used by the app
 7. Deploy.
 
+For this frontend codebase, set:
+
+- `VITE_API_URL` = `https://your-backend-project.vercel.app/api`
+
 ## 4. Backend deployment on Vercel
 
 If you want to host the API on Vercel:
@@ -39,11 +43,13 @@ If you want to host the API on Vercel:
 5. Add environment variables:
    - `DATABASE_URL`
    - `JWT_SECRET`
-   - `FRONTEND_URL`
-   - `CROSS_DOMAIN_COOKIES`
+   - `FRONTEND_URL` = `https://your-frontend-project.vercel.app`
+   - `CROSS_DOMAIN_COOKIES` = `true`
    - `STRIPE_SECRET_KEY`
    - `RAZORPAY_KEY_ID`
    - `RAZORPAY_KEY_SECRET`
+   - `RESEND_API_KEY`
+   - `EMAIL_FROM`
 6. Deploy.
 
 ## 5. Important notes
@@ -51,8 +57,10 @@ If you want to host the API on Vercel:
 - Vercel is best for the frontend.
 - The backend should be deployed only if the project is adapted for serverless functions.
 - The current app uses Express and Prisma, so the server must be wrapped for serverless usage.
+- Prisma Client is generated during dependency installation with `postinstall`.
 - Do not hardcode secrets in the codebase.
 - Make sure CORS and cookies are configured correctly for frontend-to-backend requests.
+- Vercel serverless functions do not provide persistent file storage. Product/media uploads should use external storage such as Cloudinary, S3, Azure Blob Storage, or Vercel Blob.
 
 ## 6. Quick checklist
 
@@ -89,7 +97,7 @@ If you want to host the API on Vercel:
 
 ### Remaining
 
-- Backend Vercel deployment still needs a proper serverless-compatible entry file and config.
+- Backend must be deployed as its own Vercel project with root directory set to `backend`.
 - Environment variables must be added in Vercel for the backend project.
-- Database connection and Prisma setup must be verified in the deployed backend environment.
-- Production testing for login, cookies, and API requests still needs to be completed.
+- Database connection and Prisma migrations must be verified in the deployed backend environment.
+- Production testing for login, cookies, uploads, and API requests still needs to be completed.

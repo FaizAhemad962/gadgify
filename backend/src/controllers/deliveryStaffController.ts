@@ -92,7 +92,16 @@ export const acceptDelivery = async (req: AuthRequest, res: Response) => {
  */
 export const rejectDelivery = async (req: AuthRequest, res: Response) => {
   try {
-    const { orderId } = req.params;
+    const orderId = Array.isArray(req.params.orderId)
+      ? req.params.orderId[0]
+      : req.params.orderId;
+    if (!orderId) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid order id",
+        data: null,
+      });
+    }
     const { reason } = req.body;
     const staffId = req.user?.id!;
 
@@ -167,7 +176,16 @@ export const markPickup = async (req: AuthRequest, res: Response) => {
  */
 export const markDelivered = async (req: AuthRequest, res: Response) => {
   try {
-    const { orderId } = req.params;
+    const orderId = Array.isArray(req.params.orderId)
+      ? req.params.orderId[0]
+      : req.params.orderId;
+    if (!orderId) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid order id",
+        data: null,
+      });
+    }
     const { note } = req.body;
     const staffId = req.user?.id!;
 

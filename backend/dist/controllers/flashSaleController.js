@@ -46,7 +46,11 @@ exports.getAllFlashSales = getAllFlashSales;
 // Get single flash sale by ID
 const getFlashSaleById = async (req, res, next) => {
     try {
-        const { id } = req.params;
+        const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+        if (!id) {
+            res.status(400).json({ success: false, message: "Invalid flash sale id" });
+            return;
+        }
         const flashSale = await prisma.flashSale.findUnique({
             where: { id },
         });
@@ -118,7 +122,11 @@ exports.createFlashSale = createFlashSale;
 // Update flash sale (Admin only)
 const updateFlashSale = async (req, res, next) => {
     try {
-        const { id } = req.params;
+        const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+        if (!id) {
+            res.status(400).json({ success: false, message: "Invalid flash sale id" });
+            return;
+        }
         const { title, description, discountPercentage, maxDiscount, startTime, endTime, isActive, } = req.body;
         const flashSale = await prisma.flashSale.update({
             where: { id },
@@ -146,7 +154,11 @@ exports.updateFlashSale = updateFlashSale;
 // Delete flash sale (Admin only)
 const deleteFlashSale = async (req, res, next) => {
     try {
-        const { id } = req.params;
+        const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+        if (!id) {
+            res.status(400).json({ success: false, message: "Invalid flash sale id" });
+            return;
+        }
         await prisma.flashSale.delete({ where: { id } });
         res.json({
             success: true,

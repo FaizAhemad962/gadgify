@@ -288,7 +288,7 @@ const AuthLayout = ({
             </Box>
 
             <Box sx={{ pt: 3 }}>
-              <LanguageSelector color={tokens.primary} />
+              <LanguageSelector tone="surface" />
             </Box>
           </Paper>
         </Box>

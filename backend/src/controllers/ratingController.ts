@@ -8,7 +8,13 @@ export const getRatings = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const { productId } = req.params
+    const rawProductId = req.params.productId
+    const productId = Array.isArray(rawProductId) ? rawProductId[0] : rawProductId
+
+    if (!productId) {
+      res.status(400).json({ message: 'Product id is required' })
+      return
+    }
 
     const ratings = await prisma.rating.findMany({
       where: { productId },
@@ -43,9 +49,15 @@ export const createRating = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const { productId } = req.params
+    const rawProductId = req.params.productId
+    const productId = Array.isArray(rawProductId) ? rawProductId[0] : rawProductId
     const { rating, comment } = req.body
     const userId = req.user?.id
+
+    if (!productId) {
+      res.status(400).json({ message: 'Product id is required' })
+      return
+    }
 
     if (!userId) {
       res.status(401).json({ message: 'Unauthorized' })
@@ -102,8 +114,14 @@ export const deleteRating = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const { productId } = req.params
+    const rawProductId = req.params.productId
+    const productId = Array.isArray(rawProductId) ? rawProductId[0] : rawProductId
     const userId = req.user?.id
+
+    if (!productId) {
+      res.status(400).json({ message: 'Product id is required' })
+      return
+    }
 
     if (!userId) {
       res.status(401).json({ message: 'Unauthorized' })

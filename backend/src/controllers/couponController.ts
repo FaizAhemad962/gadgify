@@ -35,12 +35,10 @@ export const validateCoupon = async (
     }
 
     if (coupon.usageLimit !== null && coupon.usedCount >= coupon.usageLimit) {
-      res
-        .status(400)
-        .json({
-          success: false,
-          message: "This coupon has reached its usage limit",
-        });
+      res.status(400).json({
+        success: false,
+        message: "This coupon has reached its usage limit",
+      });
       return;
     }
 
@@ -160,7 +158,11 @@ export const updateCoupon = async (
   next: NextFunction,
 ): Promise<void> => {
   try {
-    const { id } = req.params;
+    const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+    if (!id) {
+      res.status(400).json({ success: false, message: "Invalid coupon id" });
+      return;
+    }
     const {
       discountType,
       discountValue,
@@ -205,7 +207,11 @@ export const deleteCoupon = async (
   next: NextFunction,
 ): Promise<void> => {
   try {
-    const { id } = req.params;
+    const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+    if (!id) {
+      res.status(400).json({ success: false, message: "Invalid coupon id" });
+      return;
+    }
 
     const coupon = await prisma.coupon.findUnique({ where: { id } });
     if (!coupon) {

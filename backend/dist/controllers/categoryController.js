@@ -58,7 +58,11 @@ exports.createCategory = createCategory;
 // Admin: update category
 const updateCategory = async (req, res, next) => {
     try {
-        const { id } = req.params;
+        const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+        if (!id) {
+            res.status(400).json({ message: "Invalid category id" });
+            return;
+        }
         const { name, description, icon, sortOrder, isActive } = req.body;
         const existing = await database_1.default.category.findUnique({ where: { id } });
         if (!existing) {
@@ -95,7 +99,11 @@ exports.updateCategory = updateCategory;
 // Admin: delete category
 const deleteCategory = async (req, res, next) => {
     try {
-        const { id } = req.params;
+        const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+        if (!id) {
+            res.status(400).json({ message: "Invalid category id" });
+            return;
+        }
         const existing = await database_1.default.category.findUnique({ where: { id } });
         if (!existing) {
             res.status(404).json({ message: "Category not found" });

@@ -86,7 +86,16 @@ exports.acceptDelivery = acceptDelivery;
  */
 const rejectDelivery = async (req, res) => {
     try {
-        const { orderId } = req.params;
+        const orderId = Array.isArray(req.params.orderId)
+            ? req.params.orderId[0]
+            : req.params.orderId;
+        if (!orderId) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid order id",
+                data: null,
+            });
+        }
         const { reason } = req.body;
         const staffId = req.user?.id;
         const assignment = await deliveryAssignmentService_1.DeliveryAssignmentService.rejectOrder(orderId, staffId, reason);
@@ -147,7 +156,16 @@ exports.markPickup = markPickup;
  */
 const markDelivered = async (req, res) => {
     try {
-        const { orderId } = req.params;
+        const orderId = Array.isArray(req.params.orderId)
+            ? req.params.orderId[0]
+            : req.params.orderId;
+        if (!orderId) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid order id",
+                data: null,
+            });
+        }
         const { note } = req.body;
         const staffId = req.user?.id;
         const assignment = await deliveryAssignmentService_1.DeliveryAssignmentService.markDelivered(orderId, staffId, note);

@@ -59,7 +59,11 @@ exports.createAddress = createAddress;
 const updateAddress = async (req, res, next) => {
     try {
         const userId = req.user.id;
-        const { id } = req.params;
+        const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+        if (!id) {
+            res.status(400).json({ message: "Invalid address id" });
+            return;
+        }
         const { label, name, phone, address, city, state, pincode, isDefault } = req.body;
         const existing = await database_1.default.address.findFirst({
             where: { id, userId },
@@ -99,7 +103,11 @@ exports.updateAddress = updateAddress;
 const deleteAddress = async (req, res, next) => {
     try {
         const userId = req.user.id;
-        const { id } = req.params;
+        const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+        if (!id) {
+            res.status(400).json({ message: "Invalid address id" });
+            return;
+        }
         const existing = await database_1.default.address.findFirst({
             where: { id, userId },
         });

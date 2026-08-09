@@ -56,7 +56,13 @@ export const getFlashSaleById = async (
   next: NextFunction,
 ) => {
   try {
-    const { id } = req.params;
+    const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+    if (!id) {
+      res
+        .status(400)
+        .json({ success: false, message: "Invalid flash sale id" });
+      return;
+    }
 
     const flashSale = await prisma.flashSale.findUnique({
       where: { id },
@@ -152,7 +158,13 @@ export const updateFlashSale = async (
   next: NextFunction,
 ) => {
   try {
-    const { id } = req.params;
+    const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+    if (!id) {
+      res
+        .status(400)
+        .json({ success: false, message: "Invalid flash sale id" });
+      return;
+    }
     const {
       title,
       description,
@@ -193,7 +205,13 @@ export const deleteFlashSale = async (
   next: NextFunction,
 ) => {
   try {
-    const { id } = req.params;
+    const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+    if (!id) {
+      res
+        .status(400)
+        .json({ success: false, message: "Invalid flash sale id" });
+      return;
+    }
 
     await prisma.flashSale.delete({ where: { id } });
 

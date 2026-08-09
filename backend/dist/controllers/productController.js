@@ -201,7 +201,12 @@ const createProduct = async (req, res, next) => {
 exports.createProduct = createProduct;
 const updateProduct = async (req, res, next) => {
     try {
-        const { id } = req.params;
+        const rawId = req.params.id;
+        const id = Array.isArray(rawId) ? rawId[0] : rawId;
+        if (!id) {
+            res.status(400).json({ message: "Product id is required" });
+            return;
+        }
         const { name, description, price, stock, media, colors, category, hsnNo, gstPercentage, } = req.body;
         const product = await database_1.default.product.update({
             where: { id },
@@ -237,7 +242,12 @@ const updateProduct = async (req, res, next) => {
 exports.updateProduct = updateProduct;
 const deleteProduct = async (req, res, next) => {
     try {
-        const { id } = req.params;
+        const rawId = req.params.id;
+        const id = Array.isArray(rawId) ? rawId[0] : rawId;
+        if (!id) {
+            res.status(400).json({ message: "Product id is required" });
+            return;
+        }
         const existing = await database_1.default.product.findUnique({ where: { id } });
         if (!existing) {
             res.status(404).json({ message: "Product not found" });

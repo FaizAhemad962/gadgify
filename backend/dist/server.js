@@ -3,6 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.startServer = exports.initializeApp = void 0;
 const express_1 = __importDefault(require("express"));
 const cors_1 = __importDefault(require("cors"));
 const helmet_1 = __importDefault(require("helmet"));
@@ -215,12 +216,22 @@ app.use((req, res) => {
 // Error handler
 app.use(errorHandler_1.errorHandler);
 const PORT = config_1.config.port;
-const startServer = async () => {
+const initializeApp = async () => {
     try {
         // Initialize database connection pool
         await (0, connectionPool_1.initializeConnectionPool)();
         // ✅ SECURITY: Initialize Redis for token blacklist and session management
         await (0, redis_1.initializeRedis)();
+    }
+    catch (error) {
+        logger_1.default.error("Failed to initialize app:", error);
+        throw error;
+    }
+};
+exports.initializeApp = initializeApp;
+const startServer = async () => {
+    try {
+        await (0, exports.initializeApp)();
         app.listen(PORT, () => {
             logger_1.default.info(`🚀 Server running on port ${PORT}`);
             logger_1.default.info(`📝 Environment: ${config_1.config.nodeEnv}`);
@@ -233,5 +244,8 @@ const startServer = async () => {
         process.exit(1);
     }
 };
-startServer();
+exports.startServer = startServer;
+if (!process.env.VERCEL) {
+    (0, exports.startServer)();
+}
 exports.default = app;

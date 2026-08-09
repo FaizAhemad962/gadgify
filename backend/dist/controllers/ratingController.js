@@ -7,7 +7,12 @@ exports.deleteRating = exports.createRating = exports.getRatings = void 0;
 const database_1 = __importDefault(require("../config/database"));
 const getRatings = async (req, res, next) => {
     try {
-        const { productId } = req.params;
+        const rawProductId = req.params.productId;
+        const productId = Array.isArray(rawProductId) ? rawProductId[0] : rawProductId;
+        if (!productId) {
+            res.status(400).json({ message: 'Product id is required' });
+            return;
+        }
         const ratings = await database_1.default.rating.findMany({
             where: { productId },
             include: {
@@ -36,9 +41,14 @@ const getRatings = async (req, res, next) => {
 exports.getRatings = getRatings;
 const createRating = async (req, res, next) => {
     try {
-        const { productId } = req.params;
+        const rawProductId = req.params.productId;
+        const productId = Array.isArray(rawProductId) ? rawProductId[0] : rawProductId;
         const { rating, comment } = req.body;
         const userId = req.user?.id;
+        if (!productId) {
+            res.status(400).json({ message: 'Product id is required' });
+            return;
+        }
         if (!userId) {
             res.status(401).json({ message: 'Unauthorized' });
             return;
@@ -87,8 +97,13 @@ const createRating = async (req, res, next) => {
 exports.createRating = createRating;
 const deleteRating = async (req, res, next) => {
     try {
-        const { productId } = req.params;
+        const rawProductId = req.params.productId;
+        const productId = Array.isArray(rawProductId) ? rawProductId[0] : rawProductId;
         const userId = req.user?.id;
+        if (!productId) {
+            res.status(400).json({ message: 'Product id is required' });
+            return;
+        }
         if (!userId) {
             res.status(401).json({ message: 'Unauthorized' });
             return;

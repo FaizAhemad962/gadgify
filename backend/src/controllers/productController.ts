@@ -255,7 +255,13 @@ export const updateProduct = async (
   next: NextFunction,
 ): Promise<void> => {
   try {
-    const { id } = req.params;
+    const rawId = req.params.id;
+    const id = Array.isArray(rawId) ? rawId[0] : rawId;
+    if (!id) {
+      res.status(400).json({ message: "Product id is required" });
+      return;
+    }
+
     const {
       name,
       description,
@@ -311,7 +317,13 @@ export const deleteProduct = async (
   next: NextFunction,
 ): Promise<void> => {
   try {
-    const { id } = req.params;
+    const rawId = req.params.id;
+    const id = Array.isArray(rawId) ? rawId[0] : rawId;
+    if (!id) {
+      res.status(400).json({ message: "Product id is required" });
+      return;
+    }
+
     const existing = await prisma.product.findUnique({ where: { id } });
     if (!existing) {
       res.status(404).json({ message: "Product not found" });

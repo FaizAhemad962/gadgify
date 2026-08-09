@@ -93,7 +93,16 @@ exports.getDeliveryStaffInfo = getDeliveryStaffInfo;
  */
 const rateDelivery = async (req, res) => {
     try {
-        const { orderId } = req.params;
+        const orderId = Array.isArray(req.params.orderId)
+            ? req.params.orderId[0]
+            : req.params.orderId;
+        if (!orderId) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid order id",
+                data: null,
+            });
+        }
         const { rating, review } = req.body;
         const assignment = await database_1.default.deliveryAssignment.findUnique({
             where: { orderId },

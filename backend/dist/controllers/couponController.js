@@ -128,7 +128,11 @@ exports.createCoupon = createCoupon;
 // Update coupon
 const updateCoupon = async (req, res, next) => {
     try {
-        const { id } = req.params;
+        const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+        if (!id) {
+            res.status(400).json({ success: false, message: "Invalid coupon id" });
+            return;
+        }
         const { discountType, discountValue, minOrderAmount, maxDiscount, usageLimit, isActive, expiresAt, } = req.body;
         const coupon = await database_1.default.coupon.findUnique({ where: { id } });
         if (!coupon) {
@@ -159,7 +163,11 @@ exports.updateCoupon = updateCoupon;
 // Delete coupon
 const deleteCoupon = async (req, res, next) => {
     try {
-        const { id } = req.params;
+        const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+        if (!id) {
+            res.status(400).json({ success: false, message: "Invalid coupon id" });
+            return;
+        }
         const coupon = await database_1.default.coupon.findUnique({ where: { id } });
         if (!coupon) {
             res.status(404).json({ success: false, message: "Coupon not found" });
