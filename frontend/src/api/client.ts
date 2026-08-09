@@ -58,6 +58,7 @@ apiClient.interceptors.response.use(
     const isAuthEndpoint =
       config?.url?.includes("/auth/login") ||
       config?.url?.includes("/auth/signup");
+    const isProfileCheck = config?.url?.includes("/auth/profile");
     const status = error.response?.status;
     // ✅ SECURITY: 401 Unauthorized - redirect to login
     if (status === 401 && !isAuthEndpoint) {
@@ -84,7 +85,7 @@ apiClient.interceptors.response.use(
       maxRetries = maxRetriesForNetwork;
     }
 
-    if (shouldRetry && config.retryCount < maxRetries) {
+    if (!isProfileCheck && shouldRetry && config.retryCount < maxRetries) {
       config.retryCount++;
       const delay = getRetryDelay(config.retryCount - 1);
 

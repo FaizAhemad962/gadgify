@@ -157,6 +157,17 @@ app.use(
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 app.use(cookieParser());
+
+app.use((req: Request, res: Response, next) => {
+  const startedAt = Date.now();
+  logger.info(`API request started: ${req.method} ${req.originalUrl}`);
+  res.on("finish", () => {
+    logger.info(
+      `API request finished: ${req.method} ${req.originalUrl} ${res.statusCode} ${Date.now() - startedAt}ms`,
+    );
+  });
+  next();
+});
 // // Cookie parser - for secure httpOnly cookie handling
 // // Supports both httpOnly cookies and query parameter fallback for legacy clients
 // app.use((req: Request, res: Response, next) => {
