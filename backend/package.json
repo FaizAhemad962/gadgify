@@ -9,7 +9,7 @@
     "vercel-build": "prisma generate",
     "postinstall": "prisma generate",
     "start": "node dist/server.js",
-    "prisma:generate": "prisma generate",
+    "prisma:generate": "prisma generate && prisma migrate deploy",
     "prisma:migrate": "prisma migrate dev",
     "prisma:studio": "prisma studio",
     "seed": "npm run build && node dist/seed.js",

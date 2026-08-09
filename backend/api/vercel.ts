@@ -11,10 +11,12 @@ const initializeServerlessApp = async () => {
   }
 
   if (!initializingPromise) {
+    console.log("Serverless app initialization starting...");
     initializingPromise = initializeApp()
       .then(() => {
         handler = serverless(app as any);
         initialized = true;
+        console.log("Serverless app initialization completed");
       })
       .catch((error) => {
         initializingPromise = null;
@@ -26,6 +28,10 @@ const initializeServerlessApp = async () => {
 };
 
 export default async function vercelHandler(req: any, res: any) {
+  console.log(
+    `Vercel handler invoked: initialized=${initialized}, initializingPromise=${Boolean(initializingPromise)}`,
+  );
+
   try {
     await initializeServerlessApp();
   } catch (err) {
