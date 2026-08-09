@@ -9,25 +9,32 @@ const path_1 = __importDefault(require("path"));
 const fs_1 = __importDefault(require("fs"));
 const fileValidation_1 = require("../utils/fileValidation");
 const logger_1 = __importDefault(require("../utils/logger"));
-// Ensure uploads directory exists
-// Use Render's persistent disk in production, local path in development
-const uploadsDir = process.env.NODE_ENV === "production"
-    ? "/var/data/uploads"
-    : path_1.default.join(__dirname, "../../uploads");
+// Ensure uploads directory exists.
+// Vercel functions can only write to /tmp. Uploaded files stored there are
+// ephemeral, so production media should be moved to external object storage.
+const uploadsDir = process.env.VERCEL === "1"
+    ? "/tmp/uploads"
+    : process.env.NODE_ENV === "production"
+        ? "/var/data/uploads"
+        : path_1.default.join(__dirname, "../../uploads");
 if (!fs_1.default.existsSync(uploadsDir)) {
     fs_1.default.mkdirSync(uploadsDir, { recursive: true });
 }
-// Configure storage
-const storage = multer_1.default.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, uploadsDir);
-    },
-    filename: (req, file, cb) => {
-        const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-        const prefix = file.fieldname === "image" ? "profile-" : "product-";
-        cb(null, prefix + uniqueSuffix + path_1.default.extname(file.originalname));
-    },
-});
+const isServerless = process.env.VERCEL === "1";
+// Configure storage. Vercel Blob uploads need an in-memory buffer; local and
+// server deployments keep the existing disk behavior.
+const storage = isServerless
+    ? multer_1.default.memoryStorage()
+    : multer_1.default.diskStorage({
+        destination: (req, file, cb) => {
+            cb(null, uploadsDir);
+        },
+        filename: (req, file, cb) => {
+            const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+            const prefix = file.fieldname === "image" ? "profile-" : "product-";
+            cb(null, prefix + uniqueSuffix + path_1.default.extname(file.originalname));
+        },
+    });
 // File filter for images
 const imageFileFilter = (req, file, cb) => {
     const allowedTypes = /jpeg|jpg|png|gif|webp/;
@@ -59,13 +66,15 @@ const validateMagicBytesMiddleware = (allowedExtensions) => {
             return next();
         }
         try {
-            const fileBuffer = fs_1.default.readFileSync(req.file.path);
+            const fileBuffer = req.file.buffer || fs_1.default.readFileSync(req.file.path);
             const fileName = req.file.originalname;
             const mimeType = req.file.mimetype;
             const validation = (0, fileValidation_1.validateMagicBytes)(fileBuffer, mimeType, fileName);
             if (!validation.valid) {
                 // Delete the uploaded file
-                fs_1.default.unlinkSync(req.file.path);
+                if (req.file.path) {
+                    fs_1.default.unlinkSync(req.file.path);
+                }
                 const detectedType = (0, fileValidation_1.getFileTypeFromMagicBytes)(fileBuffer);
                 const errorMsg = validation.error || "File content does not match declared format";
                 logger_1.default.warn(`Malicious file detected: ${errorMsg}`);

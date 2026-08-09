@@ -5,6 +5,30 @@ const prisma = new client_1.PrismaClient({
     log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
     errorFormat: 'pretty',
 });
+const withTimeout = async (promise, timeoutMs, message) => {
+    let timeout;
+    const timeoutPromise = new Promise((_, reject) => {
+        timeout = setTimeout(() => {
+            const error = new Error(message);
+            error.statusCode = 503;
+            error.isOperational = true;
+            reject(error);
+        }, timeoutMs);
+    });
+    try {
+        return await Promise.race([promise, timeoutPromise]);
+    }
+    finally {
+        if (timeout) {
+            clearTimeout(timeout);
+        }
+    }
+};
+if (process.env.VERCEL === '1') {
+    prisma.$use(async (params, next) => {
+        return withTimeout(next(params), 8000, `Database query timed out: ${params.model || 'raw'}.${params.action}`);
+    });
+}
 // Guard against destructive deletes in production for critical models
 prisma.$use(async (params, next) => {
     if (process.env.NODE_ENV === 'production') {

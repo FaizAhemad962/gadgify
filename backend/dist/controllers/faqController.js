@@ -1,8 +1,10 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.incrementFAQViews = exports.deleteFAQ = exports.updateFAQ = exports.createFAQ = exports.getFAQCategories = exports.getAllFAQs = void 0;
-const client_1 = require("@prisma/client");
-const prisma = new client_1.PrismaClient();
+const database_1 = __importDefault(require("../config/database"));
 // Get all FAQs with optional category filter
 const getAllFAQs = async (req, res, next) => {
     try {
@@ -13,13 +15,13 @@ const getAllFAQs = async (req, res, next) => {
             where.category = String(category);
         }
         const [faqs, total] = await Promise.all([
-            prisma.fAQ.findMany({
+            database_1.default.fAQ.findMany({
                 where,
                 orderBy: { order: "asc" },
                 skip,
                 take: Number(limit),
             }),
-            prisma.fAQ.count({ where }),
+            database_1.default.fAQ.count({ where }),
         ]);
         res.json({
             success: true,
@@ -39,7 +41,7 @@ exports.getAllFAQs = getAllFAQs;
 // Get FAQ categories
 const getFAQCategories = async (req, res, next) => {
     try {
-        const categories = await prisma.fAQ.findMany({
+        const categories = await database_1.default.fAQ.findMany({
             where: { isActive: true },
             select: { category: true },
             distinct: ["category"],
@@ -58,7 +60,7 @@ exports.getFAQCategories = getFAQCategories;
 const createFAQ = async (req, res, next) => {
     try {
         const { question, answer, category, order } = req.body;
-        const faq = await prisma.fAQ.create({
+        const faq = await database_1.default.fAQ.create({
             data: {
                 question,
                 answer,
@@ -86,7 +88,7 @@ const updateFAQ = async (req, res, next) => {
             return;
         }
         const { question, answer, category, order, isActive } = req.body;
-        const faq = await prisma.fAQ.update({
+        const faq = await database_1.default.fAQ.update({
             where: { id },
             data: {
                 ...(question && { question }),
@@ -115,7 +117,7 @@ const deleteFAQ = async (req, res, next) => {
             res.status(400).json({ success: false, message: "Invalid FAQ id" });
             return;
         }
-        await prisma.fAQ.delete({ where: { id } });
+        await database_1.default.fAQ.delete({ where: { id } });
         res.json({
             success: true,
             message: "FAQ deleted successfully",
@@ -134,7 +136,7 @@ const incrementFAQViews = async (req, res, next) => {
             res.status(400).json({ success: false, message: "Invalid FAQ id" });
             return;
         }
-        const faq = await prisma.fAQ.update({
+        const faq = await database_1.default.fAQ.update({
             where: { id },
             data: { views: { increment: 1 } },
         });

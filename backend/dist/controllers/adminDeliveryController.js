@@ -153,7 +153,9 @@ const getAssignmentDetails = async (req, res) => {
     try {
         const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
         if (!id) {
-            res.status(400).json({ success: false, message: "Invalid assignment id" });
+            res
+                .status(400)
+                .json({ success: false, message: "Invalid assignment id" });
             return;
         }
         const assignment = await database_1.default.deliveryAssignment.findUnique({

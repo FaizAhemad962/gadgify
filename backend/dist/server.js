@@ -75,6 +75,9 @@ app.use((0, cors_1.default)({
         // Clean the incoming origin (remove trailing slash if any)
         const cleanOrigin = origin.replace(/\/$/, "");
         const allowedOrigins = [config_1.config.frontendUrl.replace(/\/$/, "")];
+        if (process.env.VERCEL_URL) {
+            allowedOrigins.push(`https://${process.env.VERCEL_URL}`);
+        }
         // Add common development origins if in development mode
         if (process.env.NODE_ENV !== "production") {
             allowedOrigins.push("http://localhost:3000");
@@ -105,7 +108,10 @@ app.use((0, cors_1.default)({
             // Fallback to just the config URL if parsing fails
         }
         // Check if the clean origin is in our allowed list
-        const isAllowed = allowedOrigins.some((allowed) => allowed.replace(/\/$/, "") === cleanOrigin);
+        const isVercelPreview = process.env.VERCEL === "1" &&
+            /^https:\/\/[a-z0-9-]+\.vercel\.app$/i.test(cleanOrigin);
+        const isAllowed = isVercelPreview ||
+            allowedOrigins.some((allowed) => allowed.replace(/\/$/, "") === cleanOrigin);
         if (isAllowed) {
             callback(null, true);
         }
@@ -121,6 +127,14 @@ app.use((0, cors_1.default)({
 app.use(express_1.default.json({ limit: "10mb" }));
 app.use(express_1.default.urlencoded({ extended: true, limit: "10mb" }));
 app.use((0, cookie_parser_1.default)());
+app.use((req, res, next) => {
+    const startedAt = Date.now();
+    logger_1.default.info(`API request started: ${req.method} ${req.originalUrl}`);
+    res.on("finish", () => {
+        logger_1.default.info(`API request finished: ${req.method} ${req.originalUrl} ${res.statusCode} ${Date.now() - startedAt}ms`);
+    });
+    next();
+});
 // // Cookie parser - for secure httpOnly cookie handling
 // // Supports both httpOnly cookies and query parameter fallback for legacy clients
 // app.use((req: Request, res: Response, next) => {
@@ -170,6 +184,14 @@ app.use("/uploads", express_1.default.static(uploadDir, {
     },
 }));
 // Health check
+app.get("/api/ping", (req, res) => {
+    res.json({
+        status: "ok",
+        runtime: "vercel",
+        timestamp: new Date().toISOString(),
+        hasDatabaseUrl: Boolean(process.env.DATABASE_URL),
+    });
+});
 app.get("/health", async (req, res) => {
     try {
         const isDbHealthy = await (0, connectionPool_1.checkConnectionHealth)();
@@ -218,8 +240,13 @@ app.use(errorHandler_1.errorHandler);
 const PORT = config_1.config.port;
 const initializeApp = async () => {
     try {
-        // Initialize database connection pool
-        await (0, connectionPool_1.initializeConnectionPool)();
+        if (process.env.VERCEL === "1") {
+            logger_1.default.info("Skipping startup database health check on Vercel");
+        }
+        else {
+            // Initialize database connection pool
+            await (0, connectionPool_1.initializeConnectionPool)();
+        }
         // ✅ SECURITY: Initialize Redis for token blacklist and session management
         await (0, redis_1.initializeRedis)();
     }

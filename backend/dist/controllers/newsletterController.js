@@ -4,10 +4,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getNewsletterStats = exports.getAllNewsletterSubscribers = exports.unsubscribeFromNewsletter = exports.subscribeToNewsletter = void 0;
-const client_1 = require("@prisma/client");
 const email_1 = require("../utils/email");
 const logger_1 = __importDefault(require("../utils/logger"));
-const prisma = new client_1.PrismaClient();
+const database_1 = __importDefault(require("../config/database"));
 /**
  * Subscribe to newsletter
  * POST /api/newsletters/subscribe
@@ -16,13 +15,13 @@ const subscribeToNewsletter = async (req, res, next) => {
     try {
         const { email } = req.body;
         // Check if email already exists
-        const existingSubscriber = await prisma.newsletter.findUnique({
+        const existingSubscriber = await database_1.default.newsletter.findUnique({
             where: { email },
         });
         if (existingSubscriber) {
             // Reactivate if previously unsubscribed
             if (!existingSubscriber.isActive) {
-                const updated = await prisma.newsletter.update({
+                const updated = await database_1.default.newsletter.update({
                     where: { email },
                     data: { isActive: true },
                 });
@@ -47,7 +46,7 @@ const subscribeToNewsletter = async (req, res, next) => {
             });
         }
         // Create new subscriber
-        const newsletter = await prisma.newsletter.create({
+        const newsletter = await database_1.default.newsletter.create({
             data: { email },
         });
         // Send welcome email
@@ -76,7 +75,7 @@ exports.subscribeToNewsletter = subscribeToNewsletter;
 const unsubscribeFromNewsletter = async (req, res, next) => {
     try {
         const { email } = req.body;
-        const newsletter = await prisma.newsletter.findUnique({
+        const newsletter = await database_1.default.newsletter.findUnique({
             where: { email },
         });
         if (!newsletter) {
@@ -85,7 +84,7 @@ const unsubscribeFromNewsletter = async (req, res, next) => {
                 message: "Email not found in newsletter list",
             });
         }
-        const updated = await prisma.newsletter.update({
+        const updated = await database_1.default.newsletter.update({
             where: { email },
             data: { isActive: false },
         });
@@ -113,13 +112,13 @@ const getAllNewsletterSubscribers = async (req, res, next) => {
             where.isActive = isActive === "true";
         }
         const [subscribers, total] = await Promise.all([
-            prisma.newsletter.findMany({
+            database_1.default.newsletter.findMany({
                 where,
                 orderBy: { createdAt: "desc" },
                 skip,
                 take: Number(limit),
             }),
-            prisma.newsletter.count({ where }),
+            database_1.default.newsletter.count({ where }),
         ]);
         res.json({
             success: true,
@@ -143,8 +142,8 @@ exports.getAllNewsletterSubscribers = getAllNewsletterSubscribers;
 const getNewsletterStats = async (req, res, next) => {
     try {
         const [totalSubscribers, activeSubscribers] = await Promise.all([
-            prisma.newsletter.count(),
-            prisma.newsletter.count({ where: { isActive: true } }),
+            database_1.default.newsletter.count(),
+            database_1.default.newsletter.count({ where: { isActive: true } }),
         ]);
         res.json({
             success: true,

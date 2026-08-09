@@ -29,9 +29,7 @@ const validateCoupon = async (req, res, next) => {
             return;
         }
         if (coupon.usageLimit !== null && coupon.usedCount >= coupon.usageLimit) {
-            res
-                .status(400)
-                .json({
+            res.status(400).json({
                 success: false,
                 message: "This coupon has reached its usage limit",
             });

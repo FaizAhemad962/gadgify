@@ -8,18 +8,26 @@ const validate_1 = require("../middlewares/validate");
 const rateLimiter_1 = require("../middlewares/rateLimiter");
 const validators_1 = require("../validators");
 const upload_1 = require("../middlewares/upload");
+const blobStorage_1 = require("../utils/blobStorage");
 const router = (0, express_1.Router)();
 router.get("/", productController_1.getAllProducts);
 router.get("/suggestions", productController_1.getProductSuggestions);
 router.get("/search", productController_1.searchProducts);
 router.get("/:id", productController_1.getProductById);
 // Image upload endpoint (Admin only)
-router.post("/upload-image", auth_1.authenticate, (0, auth_1.authorize)("ADMIN", "SUPER_ADMIN"), rateLimiter_1.uploadLimiter, upload_1.upload.single("image"), (0, upload_1.validateMagicBytesMiddleware)(["jpg", "jpeg", "png", "gif", "webp"]), (req, res) => {
+router.post("/upload-image", auth_1.authenticate, (0, auth_1.authorize)("ADMIN", "SUPER_ADMIN"), rateLimiter_1.uploadLimiter, upload_1.upload.single("image"), (0, upload_1.validateMagicBytesMiddleware)(["jpg", "jpeg", "png", "gif", "webp"]), async (req, res, next) => {
     if (!req.file) {
         return res.status(400).json({ message: "No file uploaded" });
     }
-    const imageUrl = `/uploads/${req.file.filename}`;
-    res.json({ imageUrl });
+    try {
+        const imageUrl = (0, blobStorage_1.isBlobStorageEnabled)()
+            ? await (0, blobStorage_1.uploadFileToBlob)(req.file, "products")
+            : `/uploads/${req.file.filename}`;
+        res.json({ imageUrl });
+    }
+    catch (error) {
+        next(error);
+    }
 });
 // Video upload endpoint (Admin only)
 router.post("/upload-video", auth_1.authenticate, (0, auth_1.authorize)("ADMIN", "SUPER_ADMIN"), rateLimiter_1.uploadLimiter, (req, res, next) => {
@@ -34,10 +42,17 @@ router.post("/upload-video", auth_1.authenticate, (0, auth_1.authorize)("ADMIN",
                 .json({ success: false, message: "No video file uploaded" });
         }
         // ✅ SECURITY: Validate magic bytes before saving
-        (0, upload_1.validateMagicBytesMiddleware)(["mp4", "webm"])(req, res, () => {
+        (0, upload_1.validateMagicBytesMiddleware)(["mp4", "webm"])(req, res, async () => {
             if (!res.headersSent) {
-                const videoUrl = `/uploads/${req.file?.filename}`;
-                res.json({ success: true, videoUrl });
+                try {
+                    const videoUrl = (0, blobStorage_1.isBlobStorageEnabled)() && req.file
+                        ? await (0, blobStorage_1.uploadFileToBlob)(req.file, "videos")
+                        : `/uploads/${req.file?.filename}`;
+                    res.json({ success: true, videoUrl });
+                }
+                catch (error) {
+                    next(error);
+                }
             }
         });
     });

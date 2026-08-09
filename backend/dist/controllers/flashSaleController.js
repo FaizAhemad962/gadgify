@@ -1,8 +1,10 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.deleteFlashSale = exports.updateFlashSale = exports.createFlashSale = exports.getUpcomingFlashSales = exports.getFlashSaleById = exports.getAllFlashSales = void 0;
-const client_1 = require("@prisma/client");
-const prisma = new client_1.PrismaClient();
+const database_1 = __importDefault(require("../config/database"));
 // Get all active flash sales
 const getAllFlashSales = async (req, res, next) => {
     try {
@@ -10,7 +12,7 @@ const getAllFlashSales = async (req, res, next) => {
         const skip = (Number(page) - 1) * Number(limit);
         const now = new Date();
         const [flashSales, total] = await Promise.all([
-            prisma.flashSale.findMany({
+            database_1.default.flashSale.findMany({
                 where: {
                     isActive: true,
                     startTime: { lte: now },
@@ -20,7 +22,7 @@ const getAllFlashSales = async (req, res, next) => {
                 skip,
                 take: Number(limit),
             }),
-            prisma.flashSale.count({
+            database_1.default.flashSale.count({
                 where: {
                     isActive: true,
                     startTime: { lte: now },
@@ -48,10 +50,12 @@ const getFlashSaleById = async (req, res, next) => {
     try {
         const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
         if (!id) {
-            res.status(400).json({ success: false, message: "Invalid flash sale id" });
+            res
+                .status(400)
+                .json({ success: false, message: "Invalid flash sale id" });
             return;
         }
-        const flashSale = await prisma.flashSale.findUnique({
+        const flashSale = await database_1.default.flashSale.findUnique({
             where: { id },
         });
         if (!flashSale) {
@@ -75,7 +79,7 @@ exports.getFlashSaleById = getFlashSaleById;
 const getUpcomingFlashSales = async (req, res, next) => {
     try {
         const now = new Date();
-        const flashSales = await prisma.flashSale.findMany({
+        const flashSales = await database_1.default.flashSale.findMany({
             where: {
                 isActive: true,
                 startTime: { gt: now },
@@ -97,7 +101,7 @@ exports.getUpcomingFlashSales = getUpcomingFlashSales;
 const createFlashSale = async (req, res, next) => {
     try {
         const { productId, title, description, discountPercentage, maxDiscount, startTime, endTime, } = req.body;
-        const flashSale = await prisma.flashSale.create({
+        const flashSale = await database_1.default.flashSale.create({
             data: {
                 productId,
                 title,
@@ -124,11 +128,13 @@ const updateFlashSale = async (req, res, next) => {
     try {
         const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
         if (!id) {
-            res.status(400).json({ success: false, message: "Invalid flash sale id" });
+            res
+                .status(400)
+                .json({ success: false, message: "Invalid flash sale id" });
             return;
         }
         const { title, description, discountPercentage, maxDiscount, startTime, endTime, isActive, } = req.body;
-        const flashSale = await prisma.flashSale.update({
+        const flashSale = await database_1.default.flashSale.update({
             where: { id },
             data: {
                 ...(title && { title }),
@@ -156,10 +162,12 @@ const deleteFlashSale = async (req, res, next) => {
     try {
         const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
         if (!id) {
-            res.status(400).json({ success: false, message: "Invalid flash sale id" });
+            res
+                .status(400)
+                .json({ success: false, message: "Invalid flash sale id" });
             return;
         }
-        await prisma.flashSale.delete({ where: { id } });
+        await database_1.default.flashSale.delete({ where: { id } });
         res.json({
             success: true,
             message: "Flash sale deleted successfully",

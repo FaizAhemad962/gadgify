@@ -14,6 +14,7 @@ const tokenBlacklist_1 = require("../utils/tokenBlacklist");
 const auditLog_1 = require("../utils/auditLog");
 const userQueryHelper_1 = require("../utils/userQueryHelper");
 const cookieHelper_1 = require("../utils/cookieHelper");
+const blobStorage_1 = require("../utils/blobStorage");
 // SECURITY: Track failed login attempts (use Redis in production)
 const failedLoginAttempts = new Map();
 const MAX_FAILED_ATTEMPTS = 5;
@@ -309,8 +310,9 @@ const updateProfilePhoto = async (req, res, next) => {
             res.status(400).json({ message: "No image file provided" });
             return;
         }
-        // Get file URL (relative path for serving via static middleware)
-        const profilePhotoUrl = `/uploads/${req.file.filename}`;
+        const profilePhotoUrl = (0, blobStorage_1.isBlobStorageEnabled)()
+            ? await (0, blobStorage_1.uploadFileToBlob)(req.file, "profiles")
+            : `/uploads/${req.file.filename}`;
         // Update user profile photo
         const updatedUser = await database_1.default.user.update({
             where: { id: userId },
