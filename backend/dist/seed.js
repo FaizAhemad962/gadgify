@@ -330,17 +330,19 @@ async function seed() {
     console.log(`✅ Created ${createdProducts.length} products with images`);
     // Create super admin user
     console.log("👥 Adding super admin...");
-    const hashedPassword = await bcryptjs_1.default.hash("FTej?Vz7+CqFM?J", 10);
+    const superAdminEmail = process.env.SUPER_ADMIN_EMAIL || "";
+    const superAdminPassword = process.env.SUPER_ADMIN_PASSWORD || "";
+    const hashedPassword = await bcryptjs_1.default.hash(superAdminPassword, 10);
     try {
         // Check if super admin already exists
         const existingAdmin = await database_1.default.user.findUnique({
-            where: { email: "super-admin@gadgify.com" },
+            where: { email: superAdminEmail },
         });
         let createdUsers = { count: 0 };
         if (!existingAdmin) {
             const users = [
                 {
-                    email: "super-admin@gadgify.com",
+                    email: superAdminEmail,
                     password: hashedPassword,
                     name: "Super Admin",
                     phone: "",
@@ -349,6 +351,7 @@ async function seed() {
                     city: "",
                     address: "",
                     pincode: "",
+                    emailVerified: true,
                 },
             ];
             createdUsers = await database_1.default.user.createMany({
@@ -358,7 +361,16 @@ async function seed() {
             console.log(`✅ Created ${createdUsers.count} super admin account`);
         }
         else {
-            console.log("ℹ️  Super Admin already exists");
+            await database_1.default.user.update({
+                where: { email: superAdminEmail },
+                data: {
+                    password: hashedPassword,
+                    role: "SUPER_ADMIN",
+                    emailVerified: true,
+                    deletedAt: null,
+                },
+            });
+            console.log("ℹ️  Super Admin already exists; credentials repaired");
         }
         console.log("🎉 Seeding completed!");
         console.log("📊 Summary:");
@@ -367,8 +379,8 @@ async function seed() {
         console.log(`   - Categories: 15+ (Accessories, Travel, Bags, Home Utility, Personal Care, Electronics, Home Gadgets, Kitchen, Storage, Toys & Collectibles, Stationery, Tools, Eco Products, Cleaning, Footwear Care, Baby Care, Travel Accessories)`);
         console.log("🖼️  Product images linked from: /uploads/product-*.jpeg");
         console.log("ℹ️  Super Admin Account:");
-        console.log("   Email: super-admin@gadgify.com");
-        console.log("   Password: super-admin9606@");
+        console.log("   Email:", superAdminEmail);
+        console.log("   Password:", superAdminPassword);
         console.log("   Role: SUPER_ADMIN");
     }
     catch (error) {
