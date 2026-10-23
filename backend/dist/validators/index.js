@@ -38,6 +38,7 @@ exports.productSchema = joi_1.default.object({
     category: joi_1.default.string().min(2).required(),
     hsnNo: joi_1.default.string().optional().allow(""),
     gstPercentage: joi_1.default.number().min(0).max(100).optional(),
+    offerStatus: joi_1.default.string().valid("NONE", "PENDING", "APPROVED", "REJECTED"),
 });
 exports.addToCartSchema = joi_1.default.object({
     productId: joi_1.default.string().required(),
@@ -50,14 +51,11 @@ exports.createOrderSchema = joi_1.default.object({
     items: joi_1.default.array()
         .items(joi_1.default.object({
         productId: joi_1.default.string().required(),
-        quantity: joi_1.default.number().min(1).required(),
-        price: joi_1.default.number().min(0).required(),
+        quantity: joi_1.default.number().integer().min(1).required(),
     }))
         .min(1)
         .required(),
-    subtotal: joi_1.default.number().min(0).required(),
-    shipping: joi_1.default.number().min(0).required(),
-    total: joi_1.default.number().min(0).required(),
+    paymentMethod: joi_1.default.string().valid("RAZORPAY", "COD").default("RAZORPAY"),
     couponCode: joi_1.default.string().trim().max(50).optional().allow(null, ""),
     shippingAddress: joi_1.default.object({
         name: joi_1.default.string().required(),

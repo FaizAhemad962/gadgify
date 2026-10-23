@@ -161,20 +161,24 @@ const OrderDetailPage = () => {
 
       {order?.paymentStatus === "PENDING" && order?.status !== "CANCELLED" && (
         <Alert severity="warning" sx={{ mb: 3 }}>
-          {t("orders.paymentPending")}
-          <CustomButton
-            size="small"
-            appVariant="commerce"
-            onClick={() => retryPaymentMutation.mutate()}
-            disabled={retryPaymentMutation.isPending}
-            sx={{ ml: 1 }}
-            variant="contained"
-            startIcon={<CreditCard />}
-          >
-            {retryPaymentMutation.isPending
-              ? t("common.loading")
-              : t("orders.retryPayment")}
-          </CustomButton>
+          {order.paymentMethod === "COD"
+            ? t("orders.cashDueOnDelivery", "Pay in cash when your order is delivered.")
+            : t("orders.paymentPending")}
+          {order.paymentMethod !== "COD" && (
+            <CustomButton
+              size="small"
+              appVariant="commerce"
+              onClick={() => retryPaymentMutation.mutate()}
+              disabled={retryPaymentMutation.isPending}
+              sx={{ ml: 1 }}
+              variant="contained"
+              startIcon={<CreditCard />}
+            >
+              {retryPaymentMutation.isPending
+                ? t("common.loading")
+                : t("orders.retryPayment")}
+            </CustomButton>
+          )}
         </Alert>
       )}
       <Box
@@ -265,6 +269,15 @@ const OrderDetailPage = () => {
                 <Chip
                   label={`${t("payment.label")}: ${getPaymentStatusLabel(order.paymentStatus, t)}`}
                   color={getPaymentStatusChipColor(order.paymentStatus)}
+                  sx={{ fontWeight: 600 }}
+                />
+                <Chip
+                  label={`${t("checkout.paymentMethod")}: ${
+                    order.paymentMethod === "COD"
+                      ? t("checkout.cashOnDelivery", "Cash on delivery")
+                      : t("checkout.payOnline", "Razorpay")
+                  }`}
+                  variant="outlined"
                   sx={{ fontWeight: 600 }}
                 />
               </Box>

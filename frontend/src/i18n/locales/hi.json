@@ -102,10 +102,18 @@
     "quantity": "मात्रा"
   },
   "checkout": {
+    "subtitle": "ऑर्डर देखें, भुगतान का तरीका चुनें और डिलीवरी विवरण की पुष्टि करें।",
     "title": "चेकआउट",
     "shippingAddress": "शिपिंग पता",
     "paymentMethod": "भुगतान विधि",
     "paymentMethodInfo": "आप सुरक्षित भुगतान के लिए Razorpay पर रीडायरेक्ट किए जाएंगे",
+    "payOnline": "Razorpay से ऑनलाइन भुगतान करें",
+    "cashOnDelivery": "डिलीवरी पर नकद भुगतान",
+    "cashOnDeliveryInfo": "ऑर्डर मिलने पर भुगतान करें",
+    "payOnlineButton": "ऑनलाइन भुगतान करके ऑर्डर करें",
+    "placeCodOrder": "कैश ऑन डिलीवरी ऑर्डर करें",
+    "deliveryStep": "डिलीवरी विवरण",
+    "reviewPaymentStep": "समीक्षा और भुगतान",
     "orderSummary": "ऑर्डर सारांश",
     "placeOrder": "ऑर्डर करें",
     "items": "आइटम",
@@ -136,6 +144,7 @@
     "statusCancelledDescription": "यह ऑर्डर रद्द कर दिया गया है।",
     "paymentStatus": "भुगतान",
     "paymentPending": "भुगतान लंबित है। अपने ऑर्डर की पुष्टि करने के लिए कृपया भुगतान पूरा करें।",
+    "cashDueOnDelivery": "ऑर्डर डिलीवर होने पर नकद भुगतान करें।",
     "retryPayment": "भुगतान फिर से करें"
   },
   "errors": {
@@ -517,6 +526,10 @@
     "deliveryNotAvailable": "इस पिनकोड पर डिलीवरी उपलब्ध नहीं है",
     "deliveryEstimate": "अनुमानित डिलीवरी 3-5 कार्य दिवसों में",
     "shareProduct": "शेयर करें",
+    "shareFacebook": "Facebook पर शेयर करें",
+    "copyForInstagram": "Instagram के लिए लिंक कॉपी करें",
+    "copyForYoutube": "YouTube के लिए लिंक कॉपी करें",
+    "moreShareOptions": "शेयर करने के और विकल्प",
     "copyLink": "लिंक कॉपी करें",
     "linkCopied": "लिंक कॉपी हो गया!",
     "relatedProducts": "आपको ये भी पसंद आ सकते हैं",

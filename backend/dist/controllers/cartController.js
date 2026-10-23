@@ -35,7 +35,12 @@ const getCart = async (req, res, next) => {
                 },
             });
         }
-        res.json(cart);
+        res.json({
+            ...cart,
+            // Remove items that became unavailable after they were added.
+            items: cart.items.filter((item) => item.product?.offerStatus !== "PENDING" &&
+                item.product?.deletedAt === null),
+        });
     }
     catch (error) {
         next(error);
@@ -48,7 +53,7 @@ const addToCart = async (req, res, next) => {
         const userId = req.user.id;
         // Check if product exists and has stock
         const product = await database_1.default.product.findFirst({
-            where: { id: productId, deletedAt: null },
+            where: { id: productId, deletedAt: null, offerStatus: { not: "PENDING" } },
         });
         if (!product) {
             res.status(404).json({ message: "Product not found" });

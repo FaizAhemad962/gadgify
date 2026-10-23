@@ -66,8 +66,47 @@ const AdminOrders = () => {
     },
   });
 
+  const collectCashMutation = useMutation({
+    mutationFn: ordersApi.markCashOnDeliveryCollected,
+    onSuccess: (updatedOrder) => {
+      queryClient.setQueriesData<{ orders: Order[]; total: number }>(
+        { queryKey: queryKeys.orders.admin },
+        (current) =>
+          current
+            ? {
+                ...current,
+                orders: current.orders.map((order) =>
+                  order.id === updatedOrder.id ? updatedOrder : order,
+                ),
+              }
+            : current,
+      );
+      queryClient.setQueryData(queryKeys.orders.detail(updatedOrder.id), updatedOrder);
+      invalidateOrderData(queryClient, updatedOrder.id);
+      setStatusError("");
+    },
+    onError: (error) => {
+      setStatusError(
+        ErrorHandler.getUserFriendlyMessage(error, t("errors.somethingWrong")),
+      );
+    },
+  });
+
   const handleStatusChange = (orderId: string, newStatus: Order["status"]) => {
     updateStatusMutation.mutate({ orderId, status: newStatus });
+  };
+
+  const handleMarkCashCollected = (orderId: string) => {
+    if (
+      window.confirm(
+        t(
+          "admin.confirmCashCollected",
+          "Confirm cash was received for this delivered order?",
+        ),
+      )
+    ) {
+      collectCashMutation.mutate(orderId);
+    }
   };
 
   const handlePageChange = (newPage: number) => {
@@ -129,6 +168,7 @@ const AdminOrders = () => {
       <AdminOrdersDataGrid
         orders={ordersData?.orders || []}
         onStatusChange={handleStatusChange}
+        onMarkCashCollected={handleMarkCashCollected}
         isLoading={isLoading}
         page={page}
         rowsPerPage={rowsPerPage}

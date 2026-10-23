@@ -102,10 +102,18 @@
     "quantity": "प्रमाण"
   },
   "checkout": {
+    "subtitle": "ऑर्डर तपासा, पेमेंट पद्धत निवडा आणि डिलिव्हरी तपशील निश्चित करा.",
     "title": "चेकआउट",
     "shippingAddress": "शिपिंग पत्ता",
     "paymentMethod": "पेमेंट पद्धत",
     "paymentMethodInfo": "आप सुरक्षित भुगतानासाठी Razorpay वर पुनर्निर्देशित केले जाईल",
+    "payOnline": "Razorpay द्वारे ऑनलाइन पेमेंट करा",
+    "cashOnDelivery": "डिलिव्हरीवेळी रोख पेमेंट",
+    "cashOnDeliveryInfo": "ऑर्डर मिळाल्यावर पेमेंट करा",
+    "payOnlineButton": "ऑनलाइन पेमेंट करून ऑर्डर द्या",
+    "placeCodOrder": "कॅश ऑन डिलिव्हरी ऑर्डर द्या",
+    "deliveryStep": "डिलिव्हरी तपशील",
+    "reviewPaymentStep": "तपासणी आणि पेमेंट",
     "orderSummary": "ऑर्डर सारांश",
     "placeOrder": "ऑर्डर द्या",
     "items": "वस्तू",
@@ -137,6 +145,7 @@
     "statusCancelledDescription": "हा ऑर्डर रद्द करण्यात आला आहे.",
     "paymentStatus": "पेमेंट",
     "paymentPending": "पेमेंट प्रलंबित आहे. आपले ऑर्डर पुष्टी करण्यासाठी कृपया पेमेंट पूर्ण करा.",
+    "cashDueOnDelivery": "ऑर्डर डिलिव्हर झाल्यावर रोख पेमेंट करा.",
     "retryPayment": "पेमेंट पुन्हा करा"
   },
   "errors": {
@@ -518,6 +527,10 @@
     "deliveryNotAvailable": "या पिनकोडवर डिलिव्हरी उपलब्ध नाही",
     "deliveryEstimate": "अंदाजे 3-5 कामकाजाच्या दिवसांत डिलिव्हरी",
     "shareProduct": "शेअर करा",
+    "shareFacebook": "Facebook वर शेअर करा",
+    "copyForInstagram": "Instagram साठी लिंक कॉपी करा",
+    "copyForYoutube": "YouTube साठी लिंक कॉपी करा",
+    "moreShareOptions": "शेअर करण्याचे आणखी पर्याय",
     "copyLink": "लिंक कॉपी करा",
     "linkCopied": "लिंक कॉपी झाली!",
     "relatedProducts": "तुम्हाला हे देखील आवडेल",

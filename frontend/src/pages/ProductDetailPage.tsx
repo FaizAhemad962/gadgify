@@ -69,6 +69,7 @@ const ProductDetailPage = () => {
   const [selectedColor, setSelectedColor] = useState<string>("");
   const [quantity, setQuantity] = useState(1);
   const [shareSnackbar, setShareSnackbar] = useState(false);
+  const [shareMessage, setShareMessage] = useState(t("common.linkCopied"));
   const [stockNotifySnackbar, setStockNotifySnackbar] = useState(false);
 
   const isNotifySubscribed = (productId: string) => {
@@ -159,12 +160,46 @@ const ProductDetailPage = () => {
 
   const handleShare = async () => {
     const url = window.location.href;
+    const shareData = {
+      title: product?.name || "Gadgify product",
+      text: product?.name
+        ? `${product.name} on Gadgify`
+        : "Check out this product on Gadgify",
+      url,
+    };
+
+    // On mobile, the native share sheet exposes the apps installed by the
+    // customer (such as WhatsApp, Facebook, and Instagram) without requiring
+    // separate integrations or access to their social accounts.
+    if (typeof navigator.share === "function") {
+      try {
+        await navigator.share(shareData);
+        return;
+      } catch (error) {
+        // Closing the share sheet is not an error and should not copy
+        // anything unexpectedly. Other share failures fall through to copy.
+        if (error instanceof DOMException && error.name === "AbortError") return;
+      }
+    }
+
     try {
       await navigator.clipboard.writeText(url);
+      setShareMessage(t("common.linkCopied"));
       setShareSnackbar(true);
     } catch {
-      // Fallback for older browsers
-      setShareSnackbar(true);
+      // Clipboard access can be unavailable outside secure contexts.
+      const input = document.createElement("textarea");
+      input.value = url;
+      input.style.position = "fixed";
+      input.style.opacity = "0";
+      document.body.appendChild(input);
+      input.select();
+      const copied = document.execCommand("copy");
+      document.body.removeChild(input);
+      if (copied) {
+        setShareMessage(t("common.linkCopied"));
+        setShareSnackbar(true);
+      }
     }
   };
 
@@ -567,7 +602,7 @@ const ProductDetailPage = () => {
         open={shareSnackbar}
         autoHideDuration={2000}
         onClose={() => setShareSnackbar(false)}
-        message={t("common.linkCopied")}
+        message={shareMessage}
       />
       <Snackbar
         open={stockNotifySnackbar}

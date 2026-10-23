@@ -23,6 +23,7 @@ import {
   CreditCard,
   LocalOffer,
   LocationOn,
+  LocalShipping,
   ShoppingBag,
 } from "@/mui/icons";
 import { useCart } from "../context/CartContext";
@@ -85,6 +86,9 @@ const CheckoutPage = () => {
     removePromo,
   } = useCoupon();
   const [selectedAddressId, setSelectedAddressId] = useState<string>("");
+  const [paymentMethod, setPaymentMethod] = useState<"RAZORPAY" | "COD">(
+    "RAZORPAY",
+  );
 
   const { data: savedAddresses = [] } = useQuery({
     queryKey: queryKeys.addresses.all,
@@ -128,6 +132,12 @@ const CheckoutPage = () => {
     onSuccess: async (order) => {
       invalidateOrderData(queryClient, order.id);
       invalidateAddressData(queryClient);
+      if (order.paymentMethod === "COD") {
+        invalidateCartData(queryClient);
+        clearCart();
+        navigate(`/orders/${order.id}`);
+        return;
+      }
       // Create Razorpay payment
       try {
         const paymentData = await ordersApi.createPaymentIntent(order.id);
@@ -252,19 +262,12 @@ const CheckoutPage = () => {
       return;
     }
 
-    const subtotal = calculateSubtotal();
-    const shipping = calculateShipping();
-    const total = subtotal + shipping;
-
     const orderData = {
       items: cart.items.map((item) => ({
         productId: item.product.id,
         quantity: item.quantity,
-        price: item.product.price,
       })),
-      subtotal,
-      shipping,
-      total: total - discount,
+      paymentMethod,
       couponCode: appliedCoupon?.code || undefined,
       shippingAddress,
     };
@@ -308,7 +311,10 @@ const CheckoutPage = () => {
             {t("checkout.title")}
           </Typography>
           <Typography sx={{ mt: 0.75, color: tokens.gray600 }}>
-            Review delivery details and complete secure payment.
+            {t(
+              "checkout.subtitle",
+              "Review your order, choose a payment method, and confirm delivery details.",
+            )}
           </Typography>
         </Box>
         <CustomButton
@@ -326,16 +332,39 @@ const CheckoutPage = () => {
         </Alert>
       )}
 
-      <form onSubmit={handleSubmit(onSubmit)}>
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          gap: 1,
+          mb: 2.5,
+          overflowX: "auto",
+          pb: 0.5,
+        }}
+      >
+        <Chip
+          label={`1 · ${t("checkout.reviewPaymentStep", "Review & payment")}`}
+          color="primary"
+        />
+        <Divider sx={{ width: 24, flexShrink: 0 }} />
+        <Chip
+          label={`2 · ${t("checkout.deliveryStep", "Delivery details")}`}
+          variant="outlined"
+        />
+      </Box>
+
+      <form id="checkout-form" onSubmit={handleSubmit(onSubmit)}>
         <Box
           sx={{
             display: "flex",
             flexDirection: { xs: "column", md: "row" },
-            gap: 4,
+            alignItems: "flex-start",
+            gap: { xs: 2, md: 3 },
+            pb: { xs: 10, md: 0 },
           }}
         >
           {/* Shipping Form */}
-          <Box sx={{ flex: { md: 2 } }}>
+          <Box sx={{ flex: { md: 2 }, width: "100%", order: { xs: 2, md: 1 } }}>
             <Paper
               elevation={0}
               sx={{
@@ -566,12 +595,19 @@ const CheckoutPage = () => {
           </Box>
 
           {/* Order Summary & Payment */}
-          <Box sx={{ flex: { md: 1 } }}>
+          <Box
+            sx={{
+              flex: { md: 1 },
+              width: "100%",
+              minWidth: 0,
+              order: { xs: 1, md: 2 },
+            }}
+          >
             <Paper
               elevation={0}
               sx={{
-                p: 3.5,
-                position: "sticky",
+                p: { xs: 2, sm: 3, lg: 3.5 },
+                position: { xs: "static", md: "sticky" },
                 top: tokens.filterStickyTop,
                 border: `1px solid ${tokens.gray200}`,
                 borderRadius: `${tokens.radiusXl}px`,
@@ -591,7 +627,13 @@ const CheckoutPage = () => {
               <Divider sx={{ mb: 2.5 }} />
 
               {/* Cart Items */}
-              <Box sx={{ maxHeight: 300, overflowY: "auto", mb: 2.5 }}>
+              <Box
+                sx={{
+                  maxHeight: { xs: 190, sm: 260, md: 300 },
+                  overflowY: "auto",
+                  mb: 2.5,
+                }}
+              >
                 {cart.items.map((item) => (
                   <Box
                     key={item.id}
@@ -847,36 +889,86 @@ const CheckoutPage = () => {
                 </Typography>
               </Box>
 
-              {/* Payment Method Info */}
-              <Box
-                sx={{
-                  p: 2,
-                  bgcolor: tokens.infoLight,
-                  borderLeft: `4px solid ${tokens.primary}`,
-                  borderRadius: `${tokens.radiusMd}px`,
-                  mb: 3,
-                }}
-              >
-                <Typography
-                  variant="caption"
-                  sx={{
-                    fontWeight: 600,
-                    color: tokens.primary,
-                    display: "block",
-                    mb: 0.5,
-                  }}
-                >
-                  <CreditCard
-                    sx={{ ...appIconSx.md, mr: 0.75, verticalAlign: "middle" }}
-                  />
-                  {t("checkout.paymentMethod")}
-                </Typography>
+              {/* Payment Method */}
+              <Box sx={{ mb: 2.5 }}>
                 <Typography
                   variant="body2"
-                  sx={{ color: "text.secondary", fontSize: "0.85rem" }}
+                  sx={{
+                    fontWeight: 700,
+                    color: "text.primary",
+                    mb: 1.25,
+                  }}
                 >
-                  {t("checkout.paymentMethodInfo")}
+                  {t("checkout.paymentMethod")}
                 </Typography>
+                <RadioGroup
+                  value={paymentMethod}
+                  onChange={(event) =>
+                    setPaymentMethod(event.target.value as "RAZORPAY" | "COD")
+                  }
+                  sx={{ gap: 1 }}
+                >
+                  <Paper
+                    variant="outlined"
+                    onClick={() => setPaymentMethod("RAZORPAY")}
+                    sx={{
+                      borderColor:
+                        paymentMethod === "RAZORPAY"
+                          ? tokens.primary
+                          : tokens.gray200,
+                      borderWidth: paymentMethod === "RAZORPAY" ? 2 : 1,
+                      borderRadius: `${tokens.radiusLg}px`,
+                      px: 1,
+                    }}
+                  >
+                    <FormControlLabel
+                      value="RAZORPAY"
+                      control={<Radio />}
+                      label={
+                        <Box sx={{ py: 1 }}>
+                          <Typography variant="body2" fontWeight={700}>
+                            <CreditCard sx={{ ...appIconSx.md, mr: 0.75, verticalAlign: "middle" }} />
+                            {t("checkout.payOnline", "Pay online with Razorpay")}
+                          </Typography>
+                          <Typography variant="caption" color="text.secondary">
+                            UPI, cards, and net banking
+                          </Typography>
+                        </Box>
+                      }
+                      sx={{ m: 0, width: "100%" }}
+                    />
+                  </Paper>
+                  <Paper
+                    variant="outlined"
+                    onClick={() => setPaymentMethod("COD")}
+                    sx={{
+                      borderColor:
+                        paymentMethod === "COD"
+                          ? tokens.primary
+                          : tokens.gray200,
+                      borderWidth: paymentMethod === "COD" ? 2 : 1,
+                      borderRadius: `${tokens.radiusLg}px`,
+                      px: 1,
+                    }}
+                  >
+                    <FormControlLabel
+                      value="COD"
+                      control={<Radio />}
+                      label={
+                        <Box sx={{ py: 1 }}>
+                          <Typography variant="body2" fontWeight={700}>
+                            <LocalShipping sx={{ ...appIconSx.md, mr: 0.75, verticalAlign: "middle" }} />
+                            {t("checkout.cashOnDelivery", "Cash on delivery")}
+                          </Typography>
+                          <Typography variant="caption" color="text.secondary">
+                            {t("checkout.cashOnDeliveryInfo", "Pay when your order arrives")}
+                          </Typography>
+                        </Box>
+                      }
+                      sx={{ m: 0, width: "100%" }}
+                    />
+                  </Paper>
+                </RadioGroup>
               </Box>
 
               {/* Place Order Button */}
@@ -891,13 +983,16 @@ const CheckoutPage = () => {
                   !createOrderMutation.isPending ? <ArrowForward /> : null
                 }
                 sx={{
+                  display: { xs: "none", md: "inline-flex" },
                   mb: 2,
                   py: 1.5,
                 }}
               >
                 {createOrderMutation.isPending
-                  ? t("common.processingPayment")
-                  : t("common.completeOrderAndPay")}
+                  ? t("common.processing")
+                  : paymentMethod === "COD"
+                    ? t("checkout.placeCodOrder", "Place cash on delivery order")
+                    : t("checkout.payOnlineButton", "Pay online & place order")}
               </CustomButton>
 
               {/* Security Info */}
@@ -918,6 +1013,47 @@ const CheckoutPage = () => {
             </Paper>
           </Box>
         </Box>
+
+        <Paper
+          elevation={8}
+          sx={{
+            display: { xs: "flex", md: "none" },
+            position: "fixed",
+            left: 0,
+            right: 0,
+            bottom: 0,
+            zIndex: 1200,
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 1.5,
+            p: 1.5,
+            pb: "max(12px, env(safe-area-inset-bottom))",
+            borderRadius: 0,
+            borderTop: `1px solid ${tokens.gray200}`,
+            bgcolor: tokens.white,
+          }}
+        >
+          <Box sx={{ minWidth: 0 }}>
+            <Typography variant="caption" color="text.secondary" display="block">
+              {t("cart.total")}
+            </Typography>
+            <Typography variant="h6" fontWeight={800} noWrap>
+              ₹{total.toLocaleString()}
+            </Typography>
+          </Box>
+          <CustomButton
+            form="checkout-form"
+            type="submit"
+            variant="contained"
+            appVariant="commerce"
+            disabled={createOrderMutation.isPending}
+            sx={{ minHeight: 48, flex: 1, maxWidth: 260 }}
+          >
+            {paymentMethod === "COD"
+              ? t("checkout.placeCodOrder", "Place COD order")
+              : t("checkout.payOnlineButton", "Pay online")}
+          </CustomButton>
+        </Paper>
       </form>
     </Container>
   );

@@ -29,12 +29,13 @@ const isOrderStatus = (status: unknown): status is OrderStatus =>
 const getAllowedOrderStatusTransitions = (
   currentStatus: OrderStatus,
   paymentStatus: string,
+  paymentMethod = "RAZORPAY",
 ): OrderStatus[] => {
   if (currentStatus === "CANCELLED" || currentStatus === "DELIVERED") {
     return [currentStatus];
   }
 
-  if (paymentStatus !== "COMPLETED") {
+  if (paymentStatus !== "COMPLETED" && paymentMethod !== "COD") {
     return currentStatus === "PENDING" ? ["PENDING", "CANCELLED"] : [currentStatus];
   }
 
@@ -74,14 +75,18 @@ export const createOrder = async (
   next: NextFunction,
 ): Promise<void> => {
   try {
-    const { items, subtotal, shipping, total, shippingAddress, couponCode } =
-      req.body;
+    const {
+      items,
+      shippingAddress,
+      couponCode,
+      paymentMethod = "RAZORPAY",
+    } = req.body;
     const userId = req.user!.id;
 
     // Fetch all products
     const productIds = items.map((item: any) => item.productId);
     const products = await prisma.product.findMany({
-      where: { id: { in: productIds }, deletedAt: null } as any,
+      where: { id: { in: productIds }, deletedAt: null, offerStatus: { not: "PENDING" } } as any,
     });
 
     // Create a map for quick lookup
@@ -105,6 +110,14 @@ export const createOrder = async (
         return;
       }
     }
+
+    // Always price orders from the catalog. Never trust prices or totals from the browser.
+    const subtotal = items.reduce(
+      (sum: number, item: any) =>
+        sum + productMap.get(item.productId)!.price * item.quantity,
+      0,
+    );
+    const shipping = 50;
 
     // Validate and apply coupon if provided
     let discount = 0;
@@ -158,44 +171,78 @@ export const createOrder = async (
 
     const finalTotal = subtotal + shipping - discount;
 
-    // Create order
-    const order = await prisma.order.create({
-      data: {
-        userId,
-        subtotal,
-        shipping,
-        discount,
-        couponCode: appliedCouponCode,
-        total: finalTotal,
-        shippingAddress: JSON.stringify(shippingAddress),
-        items: {
-          create: items.map((item: any) => ({
-            productId: item.productId,
-            quantity: item.quantity,
-            price: item.price,
-          })),
+    const orderData = {
+      userId,
+      subtotal,
+      shipping,
+      discount,
+      couponCode: appliedCouponCode,
+      total: finalTotal,
+      shippingAddress: JSON.stringify(shippingAddress),
+      paymentMethod,
+      status: paymentMethod === "COD" ? "PROCESSING" : "PENDING",
+      items: {
+        create: items.map((item: any) => ({
+          productId: item.productId,
+          quantity: item.quantity,
+          price: productMap.get(item.productId)!.price,
+        })),
+      },
+    };
+    const orderInclude = {
+      items: { include: { product: true } },
+      user: {
+        select: {
+          id: true,
+          email: true,
+          name: true,
+          phone: true,
+          role: true,
+          state: true,
+          city: true,
+          address: true,
+          pincode: true,
+          createdAt: true,
         },
       },
-      include: {
-        items: {
-          include: { product: true },
-        },
-        user: {
-          select: {
-            id: true,
-            email: true,
-            name: true,
-            phone: true,
-            role: true,
-            state: true,
-            city: true,
-            address: true,
-            pincode: true,
-            createdAt: true,
-          },
-        },
-      },
-    });
+    };
+
+    // COD orders reserve stock immediately; online orders reserve it after payment.
+    const order =
+      paymentMethod === "COD"
+        ? await prisma.$transaction(async (tx) => {
+          for (const item of items) {
+            const stockUpdate = await tx.product.updateMany({
+              where: {
+                id: item.productId,
+                deletedAt: null,
+                offerStatus: { not: "PENDING" },
+                stock: { gte: item.quantity },
+              } as any,
+              data: { stock: { decrement: item.quantity } },
+            });
+            if (stockUpdate.count === 0) {
+              throw new AppError(
+                "Product stock changed. Please review your cart.",
+                400,
+              );
+            }
+          }
+          if (appliedCouponCode) {
+            await tx.coupon.update({
+              where: { code: appliedCouponCode },
+              data: { usedCount: { increment: 1 } },
+            });
+          }
+          return tx.order.create({
+            data: orderData as any,
+            include: orderInclude,
+          });
+        })
+        : await prisma.order.create({
+            data: orderData as any,
+            include: orderInclude,
+          });
 
     // Clear cart
     const cart = await prisma.cart.findUnique({ where: { userId } });
@@ -356,6 +403,11 @@ export const createPaymentIntent = async (
       return;
     }
 
+    if (order.paymentMethod === "COD") {
+      res.status(400).json({ message: "This order is payable on delivery" });
+      return;
+    }
+
     if (order.paymentStatus === "COMPLETED") {
       res.status(400).json({ message: "Order already paid" });
       return;
@@ -423,6 +475,11 @@ export const confirmPayment = async (
 
     if (!order || order.userId !== req.user!.id) {
       res.status(404).json({ message: "Order not found" });
+      return;
+    }
+
+    if (order.paymentMethod === "COD") {
+      res.status(400).json({ message: "This order is payable on delivery" });
       return;
     }
 
@@ -588,7 +645,10 @@ export const retryPayment = async (
     }
 
     // Only allow retry on pending orders
-    if (order.paymentStatus !== "PENDING") {
+    if (
+      order.paymentStatus !== "PENDING" ||
+      order.paymentMethod === "COD"
+    ) {
       logger.warn(
         `[retryPayment] Cannot retry non-pending order ${orderId} with status: ${order.paymentStatus}`,
       );
@@ -697,27 +757,44 @@ export const cancelPendingOrder = async (
       return;
     }
 
-    // Only allow cancellation of pending orders
-    if (order.paymentStatus !== "PENDING") {
+    // COD orders can be cancelled before dispatch; online orders can be
+    // cancelled while awaiting payment.
+    const canCancelCodOrder =
+      order.paymentMethod === "COD" &&
+      ["PROCESSING", "PENDING"].includes(order.status);
+    const canCancelOnlineOrder =
+      order.paymentMethod !== "COD" && order.status === "PENDING";
+    if (
+      order.paymentStatus !== "PENDING" ||
+      (!canCancelCodOrder && !canCancelOnlineOrder)
+    ) {
       res.status(400).json({
         success: false,
-        message: `Cannot cancel order with payment status: ${order.paymentStatus}`,
+        message: "This order can no longer be cancelled.",
       });
       return;
     }
 
-    // Mark order as cancelled (stock was never decremented, so no need to restore)
-    const cancelledOrder = (await prisma.order.update({
-      where: { id: orderId },
-      data: {
-        status: "CANCELLED",
-        paymentStatus: "CANCELLED",
-      },
-      include: {
-        items: {
-          include: { product: true },
-        },
-      },
+    const cancelledOrder = (await prisma.$transaction(async (tx) => {
+      if (order.paymentMethod === "COD") {
+        for (const item of order.items) {
+          await tx.product.update({
+            where: { id: item.productId },
+            data: { stock: { increment: item.quantity } },
+          });
+        }
+        if (order.couponCode) {
+          await tx.coupon.updateMany({
+            where: { code: order.couponCode, usedCount: { gt: 0 } },
+            data: { usedCount: { decrement: 1 } },
+          });
+        }
+      }
+      return tx.order.update({
+        where: { id: orderId },
+        data: { status: "CANCELLED", paymentStatus: "CANCELLED" },
+        include: { items: { include: { product: true } } },
+      });
     })) as any;
 
     res.json({
@@ -826,6 +903,9 @@ export const updateOrderStatus = async (
         id: true,
         status: true,
         paymentStatus: true,
+        paymentMethod: true,
+        couponCode: true,
+        items: { select: { productId: true, quantity: true } },
       },
     })) as any;
 
@@ -840,6 +920,7 @@ export const updateOrderStatus = async (
     const allowedStatuses = getAllowedOrderStatusTransitions(
       existingOrder.status,
       existingOrder.paymentStatus,
+      existingOrder.paymentMethod,
     );
 
     if (!allowedStatuses.includes(status)) {
@@ -849,28 +930,44 @@ export const updateOrderStatus = async (
       );
     }
 
-    const order = (await prisma.order.update({
-      where: { id: orderId },
-      data: { status },
-      include: {
-        items: {
-          include: { product: true },
+    const order = (await prisma.$transaction(async (tx) => {
+      if (status === "CANCELLED" && existingOrder.paymentMethod === "COD") {
+        for (const item of existingOrder.items) {
+          await tx.product.update({
+            where: { id: item.productId },
+            data: { stock: { increment: item.quantity } },
+          });
+        }
+        if (existingOrder.couponCode) {
+          await tx.coupon.updateMany({
+            where: { code: existingOrder.couponCode, usedCount: { gt: 0 } },
+            data: { usedCount: { decrement: 1 } },
+          });
+        }
+      }
+      return tx.order.update({
+        where: { id: orderId },
+        data: {
+          status,
         },
-        user: {
-          select: {
-            id: true,
-            email: true,
-            name: true,
-            phone: true,
-            role: true,
-            state: true,
-            city: true,
-            address: true,
-            pincode: true,
-            createdAt: true,
+        include: {
+          items: { include: { product: true } },
+          user: {
+            select: {
+              id: true,
+              email: true,
+              name: true,
+              phone: true,
+              role: true,
+              state: true,
+              city: true,
+              address: true,
+              pincode: true,
+              createdAt: true,
+            },
           },
         },
-      },
+      });
     })) as any;
 
     // Send status update email (non-blocking)
@@ -890,4 +987,76 @@ export const updateOrderStatus = async (
   } catch (error) {
     next(error);
   }
+};
+
+export const markCashOnDeliveryCollected = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction,
+): Promise<void> => {
+  try {
+    const orderId = firstString(req.params.orderId);
+    if (!orderId) throw new AppError("Invalid order id", 400);
+
+    const order = await prisma.order.findUnique({
+      where: { id: orderId },
+      select: { id: true, paymentMethod: true, paymentStatus: true, status: true },
+    });
+    if (!order) throw new AppError("Order not found", 404);
+    if (order.paymentMethod !== "COD") {
+      throw new AppError("Only cash on delivery orders can be collected here", 400);
+    }
+    if (order.status !== "DELIVERED") {
+      throw new AppError("Confirm delivery before recording cash collection", 400);
+    }
+    if (order.paymentStatus === "COMPLETED") {
+      res.json({ success: true, data: await getOrderForAdmin(orderId) });
+      return;
+    }
+    if (order.paymentStatus !== "PENDING") {
+      throw new AppError("This COD payment cannot be marked collected", 400);
+    }
+
+    const result = await prisma.order.updateMany({
+      where: {
+        id: orderId,
+        paymentMethod: "COD",
+        paymentStatus: "PENDING",
+        status: "DELIVERED",
+      },
+      data: { paymentStatus: "COMPLETED" },
+    });
+    if (result.count !== 1) {
+      throw new AppError("Order changed. Refresh and try again.", 409);
+    }
+
+    logger.info(`COD cash collection confirmed by ${req.user!.id} for order ${orderId}`);
+    res.json({ success: true, data: await getOrderForAdmin(orderId) });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const getOrderForAdmin = async (orderId: string) => {
+  const order = await prisma.order.findUnique({
+    where: { id: orderId },
+    include: {
+      items: { include: { product: { include: { media: true } } } },
+      user: {
+        select: {
+          id: true,
+          email: true,
+          name: true,
+          phone: true,
+          role: true,
+          state: true,
+          city: true,
+          address: true,
+          pincode: true,
+          createdAt: true,
+        },
+      },
+    },
+  });
+  return transformOrder(order);
 };

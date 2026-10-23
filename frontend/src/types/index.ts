@@ -30,6 +30,7 @@ export interface Product {
   category: string;
   hsnNo?: string;
   gstPercentage?: number;
+  offerStatus?: "NONE" | "PENDING" | "APPROVED" | "REJECTED";
   createdAt: string;
   updatedAt: string;
   averageRating?: number;
@@ -83,6 +84,7 @@ export interface Order {
   total: number;
   status: "PENDING" | "PROCESSING" | "SHIPPED" | "DELIVERED" | "CANCELLED";
   paymentStatus: "PENDING" | "COMPLETED" | "FAILED" | "CANCELLED";
+  paymentMethod: "RAZORPAY" | "COD";
   paymentId?: string;
   shippingAddress: {
     name: string;
@@ -145,9 +147,8 @@ export interface CreateOrderRequest {
   items: {
     productId: string;
     quantity: number;
-    price: number;
   }[];
-  total: number;
+  paymentMethod: "RAZORPAY" | "COD";
   couponCode?: string;
   shippingAddress: {
     name: string;

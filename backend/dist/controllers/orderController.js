@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updateOrderStatus = exports.getAllOrders = exports.cancelPendingOrder = exports.retryPayment = exports.confirmPayment = exports.createPaymentIntent = exports.getOrderById = exports.getOrders = exports.createOrder = void 0;
+exports.markCashOnDeliveryCollected = exports.updateOrderStatus = exports.getAllOrders = exports.cancelPendingOrder = exports.retryPayment = exports.confirmPayment = exports.createPaymentIntent = exports.getOrderById = exports.getOrders = exports.createOrder = void 0;
 const database_1 = __importDefault(require("../config/database"));
 const razorpay_1 = require("../config/razorpay");
 const config_1 = require("../config");
@@ -19,11 +19,11 @@ const ORDER_STATUSES = [
     "CANCELLED",
 ];
 const isOrderStatus = (status) => typeof status === "string" && ORDER_STATUSES.includes(status);
-const getAllowedOrderStatusTransitions = (currentStatus, paymentStatus) => {
+const getAllowedOrderStatusTransitions = (currentStatus, paymentStatus, paymentMethod = "RAZORPAY") => {
     if (currentStatus === "CANCELLED" || currentStatus === "DELIVERED") {
         return [currentStatus];
     }
-    if (paymentStatus !== "COMPLETED") {
+    if (paymentStatus !== "COMPLETED" && paymentMethod !== "COD") {
         return currentStatus === "PENDING" ? ["PENDING", "CANCELLED"] : [currentStatus];
     }
     const transitions = {
@@ -54,12 +54,12 @@ const firstString = (value) => {
 };
 const createOrder = async (req, res, next) => {
     try {
-        const { items, subtotal, shipping, total, shippingAddress, couponCode } = req.body;
+        const { items, shippingAddress, couponCode, paymentMethod = "RAZORPAY", } = req.body;
         const userId = req.user.id;
         // Fetch all products
         const productIds = items.map((item) => item.productId);
         const products = await database_1.default.product.findMany({
-            where: { id: { in: productIds }, deletedAt: null },
+            where: { id: { in: productIds }, deletedAt: null, offerStatus: { not: "PENDING" } },
         });
         // Create a map for quick lookup
         const productMap = new Map(products.map((p) => [p.id, p]));
@@ -79,6 +79,9 @@ const createOrder = async (req, res, next) => {
                 return;
             }
         }
+        // Always price orders from the catalog. Never trust prices or totals from the browser.
+        const subtotal = items.reduce((sum, item) => sum + productMap.get(item.productId).price * item.quantity, 0);
+        const shipping = 50;
         // Validate and apply coupon if provided
         let discount = 0;
         let appliedCouponCode = null;
@@ -122,44 +125,73 @@ const createOrder = async (req, res, next) => {
             appliedCouponCode = coupon.code;
         }
         const finalTotal = subtotal + shipping - discount;
-        // Create order
-        const order = await database_1.default.order.create({
-            data: {
-                userId,
-                subtotal,
-                shipping,
-                discount,
-                couponCode: appliedCouponCode,
-                total: finalTotal,
-                shippingAddress: JSON.stringify(shippingAddress),
-                items: {
-                    create: items.map((item) => ({
-                        productId: item.productId,
-                        quantity: item.quantity,
-                        price: item.price,
-                    })),
+        const orderData = {
+            userId,
+            subtotal,
+            shipping,
+            discount,
+            couponCode: appliedCouponCode,
+            total: finalTotal,
+            shippingAddress: JSON.stringify(shippingAddress),
+            paymentMethod,
+            status: paymentMethod === "COD" ? "PROCESSING" : "PENDING",
+            items: {
+                create: items.map((item) => ({
+                    productId: item.productId,
+                    quantity: item.quantity,
+                    price: productMap.get(item.productId).price,
+                })),
+            },
+        };
+        const orderInclude = {
+            items: { include: { product: true } },
+            user: {
+                select: {
+                    id: true,
+                    email: true,
+                    name: true,
+                    phone: true,
+                    role: true,
+                    state: true,
+                    city: true,
+                    address: true,
+                    pincode: true,
+                    createdAt: true,
                 },
             },
-            include: {
-                items: {
-                    include: { product: true },
-                },
-                user: {
-                    select: {
-                        id: true,
-                        email: true,
-                        name: true,
-                        phone: true,
-                        role: true,
-                        state: true,
-                        city: true,
-                        address: true,
-                        pincode: true,
-                        createdAt: true,
-                    },
-                },
-            },
-        });
+        };
+        // COD orders reserve stock immediately; online orders reserve it after payment.
+        const order = paymentMethod === "COD"
+            ? await database_1.default.$transaction(async (tx) => {
+                for (const item of items) {
+                    const stockUpdate = await tx.product.updateMany({
+                        where: {
+                            id: item.productId,
+                            deletedAt: null,
+                            offerStatus: { not: "PENDING" },
+                            stock: { gte: item.quantity },
+                        },
+                        data: { stock: { decrement: item.quantity } },
+                    });
+                    if (stockUpdate.count === 0) {
+                        throw new errorHandler_1.AppError("Product stock changed. Please review your cart.", 400);
+                    }
+                }
+                if (appliedCouponCode) {
+                    await tx.coupon.update({
+                        where: { code: appliedCouponCode },
+                        data: { usedCount: { increment: 1 } },
+                    });
+                }
+                return tx.order.create({
+                    data: orderData,
+                    include: orderInclude,
+                });
+            })
+            : await database_1.default.order.create({
+                data: orderData,
+                include: orderInclude,
+            });
         // Clear cart
         const cart = await database_1.default.cart.findUnique({ where: { userId } });
         if (cart) {
@@ -292,6 +324,10 @@ const createPaymentIntent = async (req, res, next) => {
             res.status(404).json({ message: "Order not found" });
             return;
         }
+        if (order.paymentMethod === "COD") {
+            res.status(400).json({ message: "This order is payable on delivery" });
+            return;
+        }
         if (order.paymentStatus === "COMPLETED") {
             res.status(400).json({ message: "Order already paid" });
             return;
@@ -351,6 +387,10 @@ const confirmPayment = async (req, res, next) => {
         }));
         if (!order || order.userId !== req.user.id) {
             res.status(404).json({ message: "Order not found" });
+            return;
+        }
+        if (order.paymentMethod === "COD") {
+            res.status(400).json({ message: "This order is payable on delivery" });
             return;
         }
         if (order.paymentStatus === "COMPLETED") {
@@ -484,7 +524,8 @@ const retryPayment = async (req, res, next) => {
             return;
         }
         // Only allow retry on pending orders
-        if (order.paymentStatus !== "PENDING") {
+        if (order.paymentStatus !== "PENDING" ||
+            order.paymentMethod === "COD") {
             logger_1.default.warn(`[retryPayment] Cannot retry non-pending order ${orderId} with status: ${order.paymentStatus}`);
             res.status(400).json({
                 success: false,
@@ -577,26 +618,39 @@ const cancelPendingOrder = async (req, res, next) => {
             res.status(403).json({ success: false, message: "Access denied" });
             return;
         }
-        // Only allow cancellation of pending orders
-        if (order.paymentStatus !== "PENDING") {
+        // COD orders can be cancelled before dispatch; online orders can be
+        // cancelled while awaiting payment.
+        const canCancelCodOrder = order.paymentMethod === "COD" &&
+            ["PROCESSING", "PENDING"].includes(order.status);
+        const canCancelOnlineOrder = order.paymentMethod !== "COD" && order.status === "PENDING";
+        if (order.paymentStatus !== "PENDING" ||
+            (!canCancelCodOrder && !canCancelOnlineOrder)) {
             res.status(400).json({
                 success: false,
-                message: `Cannot cancel order with payment status: ${order.paymentStatus}`,
+                message: "This order can no longer be cancelled.",
             });
             return;
         }
-        // Mark order as cancelled (stock was never decremented, so no need to restore)
-        const cancelledOrder = (await database_1.default.order.update({
-            where: { id: orderId },
-            data: {
-                status: "CANCELLED",
-                paymentStatus: "CANCELLED",
-            },
-            include: {
-                items: {
-                    include: { product: true },
-                },
-            },
+        const cancelledOrder = (await database_1.default.$transaction(async (tx) => {
+            if (order.paymentMethod === "COD") {
+                for (const item of order.items) {
+                    await tx.product.update({
+                        where: { id: item.productId },
+                        data: { stock: { increment: item.quantity } },
+                    });
+                }
+                if (order.couponCode) {
+                    await tx.coupon.updateMany({
+                        where: { code: order.couponCode, usedCount: { gt: 0 } },
+                        data: { usedCount: { decrement: 1 } },
+                    });
+                }
+            }
+            return tx.order.update({
+                where: { id: orderId },
+                data: { status: "CANCELLED", paymentStatus: "CANCELLED" },
+                include: { items: { include: { product: true } } },
+            });
         }));
         res.json({
             success: true,
@@ -692,6 +746,9 @@ const updateOrderStatus = async (req, res, next) => {
                 id: true,
                 status: true,
                 paymentStatus: true,
+                paymentMethod: true,
+                couponCode: true,
+                items: { select: { productId: true, quantity: true } },
             },
         }));
         if (!existingOrder) {
@@ -700,32 +757,48 @@ const updateOrderStatus = async (req, res, next) => {
         if (!isOrderStatus(existingOrder.status)) {
             throw new errorHandler_1.AppError("Current order status is invalid", 400);
         }
-        const allowedStatuses = getAllowedOrderStatusTransitions(existingOrder.status, existingOrder.paymentStatus);
+        const allowedStatuses = getAllowedOrderStatusTransitions(existingOrder.status, existingOrder.paymentStatus, existingOrder.paymentMethod);
         if (!allowedStatuses.includes(status)) {
             throw new errorHandler_1.AppError(`Cannot change order status from ${existingOrder.status} to ${status}`, 400);
         }
-        const order = (await database_1.default.order.update({
-            where: { id: orderId },
-            data: { status },
-            include: {
-                items: {
-                    include: { product: true },
+        const order = (await database_1.default.$transaction(async (tx) => {
+            if (status === "CANCELLED" && existingOrder.paymentMethod === "COD") {
+                for (const item of existingOrder.items) {
+                    await tx.product.update({
+                        where: { id: item.productId },
+                        data: { stock: { increment: item.quantity } },
+                    });
+                }
+                if (existingOrder.couponCode) {
+                    await tx.coupon.updateMany({
+                        where: { code: existingOrder.couponCode, usedCount: { gt: 0 } },
+                        data: { usedCount: { decrement: 1 } },
+                    });
+                }
+            }
+            return tx.order.update({
+                where: { id: orderId },
+                data: {
+                    status,
                 },
-                user: {
-                    select: {
-                        id: true,
-                        email: true,
-                        name: true,
-                        phone: true,
-                        role: true,
-                        state: true,
-                        city: true,
-                        address: true,
-                        pincode: true,
-                        createdAt: true,
+                include: {
+                    items: { include: { product: true } },
+                    user: {
+                        select: {
+                            id: true,
+                            email: true,
+                            name: true,
+                            phone: true,
+                            role: true,
+                            state: true,
+                            city: true,
+                            address: true,
+                            pincode: true,
+                            createdAt: true,
+                        },
                     },
                 },
-            },
+            });
         }));
         // Send status update email (non-blocking)
         if (order.user?.email) {
@@ -742,3 +815,70 @@ const updateOrderStatus = async (req, res, next) => {
     }
 };
 exports.updateOrderStatus = updateOrderStatus;
+const markCashOnDeliveryCollected = async (req, res, next) => {
+    try {
+        const orderId = firstString(req.params.orderId);
+        if (!orderId)
+            throw new errorHandler_1.AppError("Invalid order id", 400);
+        const order = await database_1.default.order.findUnique({
+            where: { id: orderId },
+            select: { id: true, paymentMethod: true, paymentStatus: true, status: true },
+        });
+        if (!order)
+            throw new errorHandler_1.AppError("Order not found", 404);
+        if (order.paymentMethod !== "COD") {
+            throw new errorHandler_1.AppError("Only cash on delivery orders can be collected here", 400);
+        }
+        if (order.status !== "DELIVERED") {
+            throw new errorHandler_1.AppError("Confirm delivery before recording cash collection", 400);
+        }
+        if (order.paymentStatus === "COMPLETED") {
+            res.json({ success: true, data: await getOrderForAdmin(orderId) });
+            return;
+        }
+        if (order.paymentStatus !== "PENDING") {
+            throw new errorHandler_1.AppError("This COD payment cannot be marked collected", 400);
+        }
+        const result = await database_1.default.order.updateMany({
+            where: {
+                id: orderId,
+                paymentMethod: "COD",
+                paymentStatus: "PENDING",
+                status: "DELIVERED",
+            },
+            data: { paymentStatus: "COMPLETED" },
+        });
+        if (result.count !== 1) {
+            throw new errorHandler_1.AppError("Order changed. Refresh and try again.", 409);
+        }
+        logger_1.default.info(`COD cash collection confirmed by ${req.user.id} for order ${orderId}`);
+        res.json({ success: true, data: await getOrderForAdmin(orderId) });
+    }
+    catch (error) {
+        next(error);
+    }
+};
+exports.markCashOnDeliveryCollected = markCashOnDeliveryCollected;
+const getOrderForAdmin = async (orderId) => {
+    const order = await database_1.default.order.findUnique({
+        where: { id: orderId },
+        include: {
+            items: { include: { product: { include: { media: true } } } },
+            user: {
+                select: {
+                    id: true,
+                    email: true,
+                    name: true,
+                    phone: true,
+                    role: true,
+                    state: true,
+                    city: true,
+                    address: true,
+                    pincode: true,
+                    createdAt: true,
+                },
+            },
+        },
+    });
+    return transformOrder(order);
+};

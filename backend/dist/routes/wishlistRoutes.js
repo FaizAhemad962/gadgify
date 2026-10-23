@@ -22,6 +22,9 @@ router.get('/', auth_1.authenticate, async (req, res) => {
             where: {
                 userId,
                 deletedAt: null,
+                product: {
+                    is: { deletedAt: null, offerStatus: { not: 'PENDING' } },
+                },
             },
             include: {
                 product: {
@@ -53,7 +56,7 @@ router.post('/', auth_1.authenticate, async (req, res) => {
         const product = await database_1.default.product.findUnique({
             where: { id: productId },
         });
-        if (!product) {
+        if (!product || product.deletedAt || product.offerStatus === 'PENDING') {
             return res.status(404).json({ message: 'Product not found' });
         }
         // Check if already in wishlist

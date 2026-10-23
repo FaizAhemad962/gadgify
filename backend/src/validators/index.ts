@@ -37,6 +37,7 @@ export const productSchema = Joi.object({
   category: Joi.string().min(2).required(),
   hsnNo: Joi.string().optional().allow(""),
   gstPercentage: Joi.number().min(0).max(100).optional(),
+  offerStatus: Joi.string().valid("NONE", "PENDING", "APPROVED", "REJECTED"),
 });
 
 export const addToCartSchema = Joi.object({
@@ -53,15 +54,12 @@ export const createOrderSchema = Joi.object({
     .items(
       Joi.object({
         productId: Joi.string().required(),
-        quantity: Joi.number().min(1).required(),
-        price: Joi.number().min(0).required(),
+        quantity: Joi.number().integer().min(1).required(),
       }),
     )
     .min(1)
     .required(),
-  subtotal: Joi.number().min(0).required(),
-  shipping: Joi.number().min(0).required(),
-  total: Joi.number().min(0).required(),
+  paymentMethod: Joi.string().valid("RAZORPAY", "COD").default("RAZORPAY"),
   couponCode: Joi.string().trim().max(50).optional().allow(null, ""),
   shippingAddress: Joi.object({
     name: Joi.string().required(),

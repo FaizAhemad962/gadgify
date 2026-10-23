@@ -101,4 +101,13 @@ export const ordersApi = {
     );
     return response.data;
   },
+
+  markCashOnDeliveryCollected: async (orderId: string): Promise<Order> => {
+    const response = await apiClient.patch<{ success: boolean; data: Order }>(
+      `/admin/orders/${orderId}/cash-collected`,
+      {},
+      { withCredentials: true },
+    );
+    return response.data.data;
+  },
 };

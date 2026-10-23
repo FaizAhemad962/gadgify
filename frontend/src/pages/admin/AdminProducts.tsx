@@ -87,6 +87,8 @@ const productSchema = z.object({
     )
     .optional(),
 
+  offerStatus: z.enum(["NONE", "PENDING", "APPROVED", "REJECTED"]).default("NONE"),
+
   media: z.array(
     z.object({
       url: z.string(),
@@ -250,6 +252,7 @@ const AdminProducts = () => {
         category: product.category,
         hsnNo: product.hsnNo || "",
         gstPercentage: product.gstPercentage ?? undefined,
+        offerStatus: product.offerStatus ?? "NONE",
       });
     } else {
       setEditingProduct(null);
@@ -264,6 +267,7 @@ const AdminProducts = () => {
         category: categoriesData?.[0]?.name || "",
         hsnNo: "",
         gstPercentage: undefined,
+        offerStatus: "NONE",
       });
       setImagePreviews([]);
       setVideoPreviews([]);
@@ -677,6 +681,21 @@ const AdminProducts = () => {
                   />
                 </Box>
               </Box>
+
+              <FormControl fullWidth>
+                <InputLabel id="offer-status-label">Offer review status</InputLabel>
+                <Select
+                  labelId="offer-status-label"
+                  label="Offer review status"
+                  defaultValue={editingProduct?.offerStatus ?? "NONE"}
+                  {...register("offerStatus")}
+                >
+                  <MenuItem value="NONE">No offer awaiting review</MenuItem>
+                  <MenuItem value="PENDING">Pending review (hide product)</MenuItem>
+                  <MenuItem value="APPROVED">Approved</MenuItem>
+                  <MenuItem value="REJECTED">Rejected</MenuItem>
+                </Select>
+              </FormControl>
 
               <Box>
                 <FormControl fullWidth error={!!errors.category}>

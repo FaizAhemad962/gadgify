@@ -1,5 +1,5 @@
 import { type GridColDef, type GridRenderCellParams } from "@mui/x-data-grid";
-import { Box, IconButton, Skeleton } from "@/mui/material";
+import { Box, Chip, IconButton, Skeleton } from "@/mui/material";
 import { Edit, Delete } from "@/mui/icons";
 import { useTranslation } from "react-i18next";
 import { AppDataGrid } from "../ui/AppDataGrid";
@@ -121,6 +121,32 @@ export const AdminProductsDataGrid = ({
           {params.value}
         </span>
       ),
+    },
+    {
+      field: "offerStatus",
+      headerName: "Offer review",
+      minWidth: 145,
+      maxWidth: 175,
+      flex: 1,
+      sortable: false,
+      renderCell: (params: GridRenderCellParams) => {
+        const status = params.value || "NONE";
+        const color =
+          status === "PENDING"
+            ? "warning"
+            : status === "APPROVED"
+              ? "success"
+              : status === "REJECTED"
+                ? "error"
+                : "default";
+        return (
+          <Chip
+            size="small"
+            color={color}
+            label={status === "NONE" ? "No offer" : status}
+          />
+        );
+      },
     },
     {
       field: "actions",

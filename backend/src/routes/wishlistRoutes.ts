@@ -22,6 +22,9 @@ router.get('/', authenticate, async (req: AuthRequest, res: Response) => {
       where: {
         userId,
         deletedAt: null,
+        product: {
+          is: { deletedAt: null, offerStatus: { not: 'PENDING' } },
+        },
       },
       include: {
         product: {
@@ -59,7 +62,7 @@ router.post('/', authenticate, async (req: AuthRequest, res: Response) => {
       where: { id: productId },
     })
 
-    if (!product) {
+    if (!product || product.deletedAt || product.offerStatus === 'PENDING') {
       return res.status(404).json({ message: 'Product not found' })
     }
 

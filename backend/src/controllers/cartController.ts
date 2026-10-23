@@ -38,7 +38,15 @@ export const getCart = async (
       });
     }
 
-    res.json(cart);
+    res.json({
+      ...cart,
+      // Remove items that became unavailable after they were added.
+      items: cart.items.filter(
+        (item: any) =>
+          item.product?.offerStatus !== "PENDING" &&
+          item.product?.deletedAt === null,
+      ),
+    });
   } catch (error) {
     next(error);
   }
@@ -55,7 +63,7 @@ export const addToCart = async (
 
     // Check if product exists and has stock
     const product = await prisma.product.findFirst({
-      where: { id: productId, deletedAt: null } as any,
+      where: { id: productId, deletedAt: null, offerStatus: { not: "PENDING" } } as any,
     });
     if (!product) {
       res.status(404).json({ message: "Product not found" });

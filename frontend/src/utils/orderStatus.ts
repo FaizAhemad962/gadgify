@@ -116,12 +116,13 @@ export const getPaymentStatusChipColor = (
 export const getAllowedOrderStatusTransitions = (
   currentStatus: OrderStatus,
   paymentStatus: PaymentStatus,
+  paymentMethod = "RAZORPAY",
 ): OrderStatus[] => {
   if (currentStatus === "CANCELLED" || currentStatus === "DELIVERED") {
     return [currentStatus];
   }
 
-  if (paymentStatus !== "COMPLETED") {
+  if (paymentStatus !== "COMPLETED" && paymentMethod !== "COD") {
     return currentStatus === "PENDING" ? ["PENDING", "CANCELLED"] : [currentStatus];
   }
 

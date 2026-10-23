@@ -14,6 +14,7 @@ const getAllProducts = async (req, res, next) => {
         // Build where clause for filtering
         const whereClause = {
             deletedAt: null,
+            offerStatus: { not: "PENDING" },
             price: {
                 gte: parseInt(minPrice),
                 lte: parseInt(maxPrice),
@@ -152,7 +153,7 @@ const getProductById = async (req, res, next) => {
     try {
         const { id } = req.params;
         const product = await database_1.default.product.findFirst({
-            where: { id, deletedAt: null },
+            where: { id, deletedAt: null, offerStatus: { not: "PENDING" } },
             include: { media: true },
         });
         if (!product) {
@@ -168,7 +169,7 @@ const getProductById = async (req, res, next) => {
 exports.getProductById = getProductById;
 const createProduct = async (req, res, next) => {
     try {
-        const { name, description, price, stock, media, colors, category, hsnNo, gstPercentage, } = req.body;
+        const { name, description, price, stock, media, colors, category, hsnNo, gstPercentage, offerStatus = "NONE", } = req.body;
         const product = await database_1.default.product.create({
             data: {
                 name,
@@ -179,6 +180,7 @@ const createProduct = async (req, res, next) => {
                 category,
                 hsnNo,
                 gstPercentage,
+                offerStatus,
             },
         });
         // Create media records if provided
@@ -207,7 +209,7 @@ const updateProduct = async (req, res, next) => {
             res.status(400).json({ message: "Product id is required" });
             return;
         }
-        const { name, description, price, stock, media, colors, category, hsnNo, gstPercentage, } = req.body;
+        const { name, description, price, stock, media, colors, category, hsnNo, gstPercentage, offerStatus, } = req.body;
         const product = await database_1.default.product.update({
             where: { id },
             data: {
@@ -219,6 +221,7 @@ const updateProduct = async (req, res, next) => {
                 category,
                 hsnNo,
                 gstPercentage,
+                offerStatus,
             },
         });
         // Remove old media and add new
@@ -274,6 +277,7 @@ const getProductSuggestions = async (req, res, next) => {
         const products = await database_1.default.product.findMany({
             where: {
                 deletedAt: null,
+                offerStatus: { not: "PENDING" },
                 OR: [
                     { name: { contains: q, mode: "insensitive" } },
                     { category: { contains: q, mode: "insensitive" } },
@@ -313,6 +317,7 @@ const searchProducts = async (req, res, next) => {
         const products = await database_1.default.product.findMany({
             where: {
                 deletedAt: null,
+                offerStatus: { not: "PENDING" },
                 OR: [
                     { name: { contains: q } },
                     { description: { contains: q } },

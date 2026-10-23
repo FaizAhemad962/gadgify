@@ -90,32 +90,32 @@ export const responsiveTypography = {
   },
 
   h6: {
-    xs: { fontSize: "0.875rem", fontWeight: 600, lineHeight: "1.5" },
-    md: { fontSize: "0.9375rem" },
+    xs: { fontSize: "0.9375rem", fontWeight: 600, lineHeight: "1.5" },
+    md: { fontSize: "1rem" },
   },
 
   // Body text (main content)
   body1: {
-    xs: { fontSize: "0.9375rem", lineHeight: "1.6", fontWeight: 400 },
-    md: { fontSize: "1rem" },
+    xs: { fontSize: "1rem", lineHeight: "1.6", fontWeight: 400 },
+    md: { fontSize: "1.0625rem" },
   },
 
   // Secondary body text
   body2: {
-    xs: { fontSize: "0.875rem", lineHeight: "1.5", fontWeight: 400 },
-    md: { fontSize: "0.9375rem" },
+    xs: { fontSize: "0.9375rem", lineHeight: "1.55", fontWeight: 400 },
+    md: { fontSize: "1rem" },
   },
 
   // Small text (captions, metadata)
   caption: {
-    xs: { fontSize: "0.75rem", lineHeight: "1.4", fontWeight: 400 },
-    md: { fontSize: "0.8125rem" },
+    xs: { fontSize: "0.8125rem", lineHeight: "1.45", fontWeight: 400 },
+    md: { fontSize: "0.875rem" },
   },
 
   // Overline (all caps labeling)
   overline: {
-    xs: { fontSize: "0.6875rem", fontWeight: 700, letterSpacing: "0.06em" },
-    md: { fontSize: "0.75rem" },
+    xs: { fontSize: "0.75rem", fontWeight: 700, letterSpacing: "0.06em" },
+    md: { fontSize: "0.8125rem" },
   },
 
   // UI text (buttons, labels)

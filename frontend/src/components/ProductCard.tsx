@@ -1,4 +1,4 @@
-import React, { memo } from "react";
+import React, { memo, useState } from "react";
 import {
   Card,
   CardContent,
@@ -7,12 +7,18 @@ import {
   IconButton,
   Typography,
   CircularProgress,
+  Menu,
+  MenuItem,
+  Snackbar,
 } from "@/mui/material";
 import {
   ShoppingCart,
   Favorite,
   FavoriteBorder,
   CompareArrows,
+  MoreVert,
+  Share,
+  ContentCopy,
 } from "@/mui/icons";
 import LazyImage from "../components/common/LazyImage";
 import { StarRating } from "../components/common/StarRating";
@@ -50,12 +56,63 @@ const ProductCard: React.FC<ProductCardProps> = memo(
     viewMode = "grid",
   }) => {
     const isList = viewMode === "list";
+    const [shareAnchor, setShareAnchor] = useState<HTMLElement | null>(null);
+    const [shareSnackbar, setShareSnackbar] = useState(false);
     const { isInCompare, addToCompare, removeFromCompare, isFull } =
       useCompare();
     const label = (key: string, fallback: string) => {
       const translated = t(key);
       return !translated || translated === key ? fallback : translated;
     };
+
+    const productUrl = `${window.location.origin}/products/${product.id}`;
+    const copyProductLink = async () => {
+      try {
+        await navigator.clipboard.writeText(productUrl);
+      } catch {
+        const input = document.createElement("textarea");
+        input.value = productUrl;
+        input.style.position = "fixed";
+        input.style.opacity = "0";
+        document.body.appendChild(input);
+        input.select();
+        const copied = document.execCommand("copy");
+        document.body.removeChild(input);
+        if (!copied) return;
+      }
+      setShareAnchor(null);
+      setShareSnackbar(true);
+    };
+
+    const shareWithApps = async () => {
+      setShareAnchor(null);
+      if (typeof navigator.share === "function") {
+        try {
+          await navigator.share({
+            title: product.name,
+            text: `${product.name} on Gadgify`,
+            url: productUrl,
+          });
+          return;
+        } catch (error) {
+          if (error instanceof DOMException && error.name === "AbortError") return;
+        }
+      }
+      await copyProductLink();
+    };
+
+    const shareToFacebook = () => {
+      setShareAnchor(null);
+      window.open(
+        `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(productUrl)}`,
+        "_blank",
+        "noopener,noreferrer",
+      );
+    };
+
+    // The API filters pending offers; keep the card defensive if stale cached
+    // data or another caller passes one through.
+    if (product.offerStatus === "PENDING") return null;
 
     return (
       <Card
@@ -181,6 +238,51 @@ const ProductCard: React.FC<ProductCardProps> = memo(
               }}
             />
           </IconButton>
+
+          {/* Product sharing menu */}
+          <IconButton
+            aria-label={label("common.shareProduct", "Share product")}
+            aria-haspopup="menu"
+            onClick={(event) => {
+              event.stopPropagation();
+              setShareAnchor(event.currentTarget);
+            }}
+            sx={{
+              position: "absolute",
+              top: 10,
+              left: 10,
+              bgcolor: "rgba(255,255,255,0.94)",
+              boxShadow: "0 1px 6px rgba(15, 23, 42, 0.08)",
+              p: 1,
+              "&:hover": { bgcolor: "#fff" },
+            }}
+          >
+            <MoreVert sx={{ ...appIconSx.lg, color: tokens.gray600 }} />
+          </IconButton>
+          <Menu
+            anchorEl={shareAnchor}
+            open={Boolean(shareAnchor)}
+            onClose={() => setShareAnchor(null)}
+            onClick={(event) => event.stopPropagation()}
+          >
+            <MenuItem onClick={shareToFacebook} sx={{ minHeight: 48, fontSize: "0.95rem" }}>
+              {label("common.shareFacebook", "Share on Facebook")}
+            </MenuItem>
+            <MenuItem onClick={copyProductLink} sx={{ minHeight: 48, fontSize: "0.95rem" }}>
+              {label("common.copyForInstagram", "Copy link for Instagram")}
+            </MenuItem>
+            <MenuItem onClick={copyProductLink} sx={{ minHeight: 48, fontSize: "0.95rem" }}>
+              {label("common.copyForYoutube", "Copy link for YouTube")}
+            </MenuItem>
+            <MenuItem onClick={shareWithApps} sx={{ minHeight: 48, fontSize: "0.95rem" }}>
+              <Share sx={{ mr: 1.25, fontSize: 20 }} />
+              {label("common.moreShareOptions", "More sharing options")}
+            </MenuItem>
+            <MenuItem onClick={copyProductLink} sx={{ minHeight: 48, fontSize: "0.95rem" }}>
+              <ContentCopy sx={{ mr: 1.25, fontSize: 20 }} />
+              {label("common.copyLink", "Copy link")}
+            </MenuItem>
+          </Menu>
         </Box>
 
         {/* Content */}
@@ -199,7 +301,7 @@ const ProductCard: React.FC<ProductCardProps> = memo(
             onClick={() => onNavigate(product.id)}
             sx={{
               fontWeight: 600,
-              fontSize: isList ? "1rem" : "0.95rem",
+              fontSize: isList ? "1.0625rem" : { xs: "1rem", sm: "1.0625rem" },
               color: tokens.primary,
               cursor: "pointer",
               mb: 0.5,
@@ -222,7 +324,7 @@ const ProductCard: React.FC<ProductCardProps> = memo(
               alignItems: "center",
               gap: 0.5,
               mb: 1,
-              height: "1.25rem", // Fixed height for rating row
+              minHeight: "1.5rem",
             }}
           >
             <StarRating rating={product.averageRating || 0} size="small" />
@@ -232,13 +334,14 @@ const ProductCard: React.FC<ProductCardProps> = memo(
           </Box>
 
           {/* Stock Status */}
-          <Box sx={{ mb: 1, height: "1.25rem" }}>
+          <Box sx={{ mb: 1, minHeight: "1.5rem" }}>
             {product.stock > 0 ? (
               <Typography
                 variant="caption"
                 sx={{
                   color: product.stock > 10 ? tokens.success : tokens.warning,
                   fontWeight: 600,
+                  fontSize: "0.875rem",
                 }}
               >
                 {product.stock > 10
@@ -250,7 +353,7 @@ const ProductCard: React.FC<ProductCardProps> = memo(
             ) : (
               <Typography
                 variant="caption"
-                sx={{ color: tokens.error, fontWeight: 700 }}
+                sx={{ color: tokens.error, fontWeight: 700, fontSize: "0.875rem" }}
               >
                 {label("products.outOfStock", "Out of stock")}
               </Typography>
@@ -272,7 +375,7 @@ const ProductCard: React.FC<ProductCardProps> = memo(
               sx={{
                 color: tokens.accent,
                 fontWeight: 700,
-                fontSize: isList ? "1.5rem" : "1.25rem",
+                fontSize: isList ? "1.5rem" : { xs: "1.375rem", sm: "1.5rem" },
               }}
             >
               ₹{product.price.toLocaleString()}
@@ -344,7 +447,7 @@ const ProductCard: React.FC<ProductCardProps> = memo(
               sx={{
                 borderRadius: productCardLayout.actionRadius,
                 py: 1,
-                fontSize: "0.75rem",
+                fontSize: "0.875rem",
                 fontWeight: 600,
               }}
             >
@@ -359,7 +462,7 @@ const ProductCard: React.FC<ProductCardProps> = memo(
               sx={{
                 borderRadius: productCardLayout.actionRadius,
                 py: 1,
-                fontSize: "0.75rem",
+                fontSize: "0.875rem",
                 fontWeight: 600,
               }}
             >
@@ -367,6 +470,12 @@ const ProductCard: React.FC<ProductCardProps> = memo(
             </CustomButton>
           </CardActions>
         )}
+        <Snackbar
+          open={shareSnackbar}
+          autoHideDuration={2200}
+          onClose={() => setShareSnackbar(false)}
+          message={label("common.linkCopied", "Link copied!")}
+        />
       </Card>
     );
   },

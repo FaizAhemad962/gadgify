@@ -25,6 +25,7 @@ export const getAllProducts = async (
     // Build where clause for filtering
     const whereClause: any = {
       deletedAt: null,
+      offerStatus: { not: "PENDING" },
       price: {
         gte: parseInt(minPrice as string),
         lte: parseInt(maxPrice as string),
@@ -181,7 +182,7 @@ export const getProductById = async (
   try {
     const { id } = req.params;
     const product = await prisma.product.findFirst({
-      where: { id, deletedAt: null } as any,
+      where: { id, deletedAt: null, offerStatus: { not: "PENDING" } } as any,
       include: { media: true },
     });
 
@@ -212,6 +213,7 @@ export const createProduct = async (
       category,
       hsnNo,
       gstPercentage,
+      offerStatus = "NONE",
     } = req.body;
 
     const product = await prisma.product.create({
@@ -224,6 +226,7 @@ export const createProduct = async (
         category,
         hsnNo,
         gstPercentage,
+        offerStatus,
       },
     });
 
@@ -272,6 +275,7 @@ export const updateProduct = async (
       category,
       hsnNo,
       gstPercentage,
+      offerStatus,
     } = req.body;
 
     const product = await prisma.product.update({
@@ -285,6 +289,7 @@ export const updateProduct = async (
         category,
         hsnNo,
         gstPercentage,
+        offerStatus,
       },
     });
 
@@ -354,6 +359,7 @@ export const getProductSuggestions = async (
     const products = await prisma.product.findMany({
       where: {
         deletedAt: null,
+        offerStatus: { not: "PENDING" },
         OR: [
           { name: { contains: q, mode: "insensitive" as const } },
           { category: { contains: q, mode: "insensitive" as const } },
@@ -398,6 +404,7 @@ export const searchProducts = async (
     const products = await prisma.product.findMany({
       where: {
         deletedAt: null,
+        offerStatus: { not: "PENDING" },
         OR: [
           { name: { contains: q as string } },
           { description: { contains: q as string } },

@@ -14,11 +14,12 @@ router.use(auth_1.authenticate, (0, auth_1.authorize)("ADMIN", "SUPER_ADMIN"));
 router.get("/analytics", analyticsController_1.getDashboardAnalytics);
 // Products
 router.get("/products", productController_1.getAllProductsAdmin);
-router.put("/products/:id", productController_1.updateProduct);
+router.put("/products/:id", (0, validate_1.validate)(validators_1.productSchema), productController_1.updateProduct);
 router.delete("/products/:id", productController_1.deleteProduct);
 // Orders
 router.get("/orders", orderController_1.getAllOrders);
 router.patch("/orders/:orderId", orderController_1.updateOrderStatus);
+router.patch("/orders/:orderId/cash-collected", orderController_1.markCashOnDeliveryCollected);
 // Users
 router.get("/users", userController_1.getAllUsers);
 router.post("/users", (0, validate_1.validate)(validators_1.createUserSchema), userController_1.createUser);

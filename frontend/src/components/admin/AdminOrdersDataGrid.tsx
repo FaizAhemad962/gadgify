@@ -24,6 +24,7 @@ interface AdminOrdersDataGridProps {
   onPageChange: (page: number) => void;
   onRowsPerPageChange: (rowsPerPage: number) => void;
   onStatusChange: (orderId: string, newStatus: Order["status"]) => void;
+  onMarkCashCollected: (orderId: string) => void;
 }
 
 export const AdminOrdersDataGrid = ({
@@ -35,6 +36,7 @@ export const AdminOrdersDataGrid = ({
   onPageChange,
   onRowsPerPageChange,
   onStatusChange,
+  onMarkCashCollected,
 }: AdminOrdersDataGridProps) => {
   const { t } = useTranslation();
 
@@ -149,16 +151,54 @@ export const AdminOrdersDataGrid = ({
       maxWidth: 140,
       flex: 0.9,
       sortable: false,
+      renderCell: (params: GridRenderCellParams<Order>) => {
+        const order = params.row;
+        const canMarkCashCollected =
+          order.paymentMethod === "COD" &&
+          order.status === "DELIVERED" &&
+          order.paymentStatus === "PENDING";
+        return (
+          <Chip
+            label={
+              canMarkCashCollected
+                ? t("admin.markCashCollected", "Pending · Mark cash received")
+                : getPaymentStatusLabel(params.value, t)
+            }
+            color={getPaymentStatusChipColor(params.value)}
+            clickable={canMarkCashCollected}
+            onClick={() => canMarkCashCollected && onMarkCashCollected(order.id)}
+            title={
+              canMarkCashCollected
+                ? t("admin.markCashCollectedHelp", "Confirm that the customer paid cash")
+                : undefined
+            }
+            size="small"
+            sx={{
+              fontWeight: "600",
+              minWidth: "100px",
+              justifyContent: "center",
+            }}
+          />
+        );
+      },
+    },
+    {
+      field: "paymentMethod",
+      headerName: t("checkout.paymentMethod", "Payment method"),
+      minWidth: 145,
+      maxWidth: 170,
+      flex: 0.9,
+      sortable: false,
       renderCell: (params: GridRenderCellParams) => (
         <Chip
-          label={getPaymentStatusLabel(params.value, t)}
-          color={getPaymentStatusChipColor(params.value)}
+          label={
+            params.value === "COD"
+              ? t("checkout.cashOnDelivery", "Cash on delivery")
+              : "Razorpay"
+          }
+          color={params.value === "COD" ? "warning" : "primary"}
           size="small"
-          sx={{
-            fontWeight: "600",
-            minWidth: "100px",
-            justifyContent: "center",
-          }}
+          sx={{ fontWeight: 600 }}
         />
       ),
     },
@@ -174,6 +214,7 @@ export const AdminOrdersDataGrid = ({
         const allowedStatuses = getAllowedOrderStatusTransitions(
           order.status,
           order.paymentStatus,
+          order.paymentMethod,
         );
         const accent = getOrderStatusAccent(order.status);
 

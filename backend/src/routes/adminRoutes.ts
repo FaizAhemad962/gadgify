@@ -2,6 +2,7 @@ import { Router } from "express";
 import {
   getAllOrders,
   updateOrderStatus,
+  markCashOnDeliveryCollected,
 } from "../controllers/orderController";
 import {
   getAllProductsAdmin,
@@ -17,7 +18,7 @@ import {
 } from "../controllers/userController";
 import { authenticate, authorize } from "../middlewares/auth";
 import { validate } from "../middlewares/validate";
-import { updateUserRoleSchema, createUserSchema } from "../validators";
+import { updateUserRoleSchema, createUserSchema, productSchema } from "../validators";
 
 const router = Router();
 
@@ -28,12 +29,13 @@ router.get("/analytics", getDashboardAnalytics);
 
 // Products
 router.get("/products", getAllProductsAdmin);
-router.put("/products/:id", updateProduct);
+router.put("/products/:id", validate(productSchema), updateProduct);
 router.delete("/products/:id", deleteProduct);
 
 // Orders
 router.get("/orders", getAllOrders);
 router.patch("/orders/:orderId", updateOrderStatus);
+router.patch("/orders/:orderId/cash-collected", markCashOnDeliveryCollected);
 
 // Users
 router.get("/users", getAllUsers);
